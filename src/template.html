@@ -162,6 +162,9 @@ section{padding:6rem 1.5rem;}
 /* ---------- フッター ---------- */
 footer{background:#0a0a2e;color:rgba(255,255,255,0.5);text-align:center;padding:2.5rem 1.5rem;font-size:0.82rem;letter-spacing:0.05em;}
 footer .footer-logo{font-family:'Oswald',sans-serif;color:#fff;font-size:1.2rem;letter-spacing:0.1em;margin-bottom:0.5rem;text-transform:uppercase;}
+footer .footer-links{margin-top:0.9rem;}
+footer .footer-links a{color:rgba(255,255,255,0.6);text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.25);padding-bottom:1px;transition:color 0.2s,border-color 0.2s;}
+footer .footer-links a:hover{color:#fff;border-color:#fff;}
 
 /* ---------- 戻るボタン ---------- */
 #backToTop{position:fixed;bottom:1.5rem;right:1.2rem;width:48px;height:48px;background:var(--primary);color:#fff;border:none;border-radius:50%;cursor:pointer;font-size:1.2rem;box-shadow:0 4px 16px rgba(0,0,0,0.3);z-index:500;opacity:0;transform:translateY(20px);transition:opacity 0.3s,transform 0.3s;display:flex;align-items:center;justify-content:center;}
@@ -285,6 +288,7 @@ footer .footer-logo{font-family:'Oswald',sans-serif;color:#fff;font-size:1.2rem;
 <footer>
   <div class="footer-logo">DROPPER</div>
   <p>{{footer.copy}}</p>
+  <p class="footer-links"><a href="{{PRIVACY_PATH}}">{{footer.privacy}}</a></p>
 </footer>
 
 <button id="backToTop" aria-label="Top">↑</button>
