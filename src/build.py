@@ -8,6 +8,7 @@ src/ のテンプレートと src/i18n/*.json から、
 
   src/template.html          … トップページの見た目（{{key}} が差し替え対象）
   src/privacy-template.html  … プライバシーポリシーページの見た目
+  src/guide-template.html    … 使い方ガイドページの見た目
   src/i18n/ja.json           … 日本語（本文の元データ。空欄キーのフォールバック先）
   src/i18n/en.json           … 英語（空欄は日本語にフォールバック）
   src/i18n/in.json           … インド向け Hinglish（同上）
@@ -15,6 +16,7 @@ src/ のテンプレートと src/i18n/*.json から、
 出力:
   index.html   / en/index.html   / in/index.html     … トップ
   privacy.html / en/privacy.html / in/privacy.html   … プライバシーポリシー
+  guide.html   / en/guide.html   / in/guide.html     … 使い方ガイド
 
 ページを増やすときは PAGES に1件足すだけ。
 使い方:  python3 src/build.py
@@ -54,6 +56,8 @@ PAGES = {
         "nav_prefix": "",
         # フッターからプライバシーポリシーへのリンク先（言語ごと・同じ言語のPPへ）
         "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
+        # ツールカードから使い方ガイドへのリンク先（言語ごと・同じ言語のガイドへ）
+        "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
     "privacy": {
         "template": "privacy-template.html",
@@ -67,6 +71,21 @@ PAGES = {
         "nav_prefix": "index.html",
         # PP自身のフッターからは自分を指す（リンクは出るが同一ページ）
         "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
+        "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
+    },
+    "guide": {
+        "template": "guide-template.html",
+        "filename": "guide.html",
+        "switch_paths": {
+            "ja": {"ja": "./guide.html",  "en": "./en/guide.html",  "in": "./in/guide.html"},
+            "en": {"ja": "../guide.html", "en": "./guide.html",     "in": "../in/guide.html"},
+            "in": {"ja": "../guide.html", "en": "../en/guide.html", "in": "./guide.html"},
+        },
+        # ガイドからトップのアンカーへ戻るリンク用
+        "nav_prefix": "index.html",
+        "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
+        # ガイド自身を指す（現状リンクは出ないが定義は揃えておく）
+        "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
 }
 # =========================================================================
@@ -122,6 +141,7 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{SWITCHER}}", build_switcher(page, code, strings))
     html = html.replace("{{NAV_PREFIX}}", PAGES[page]["nav_prefix"])
     html = html.replace("{{PRIVACY_PATH}}", PAGES[page]["privacy_path"][code])
+    html = html.replace("{{GUIDE_PATH}}", PAGES[page]["guide_path"][code])
     for key, value in strings.items():
         html = html.replace("{{" + key + "}}", value)
     return html
