@@ -16,7 +16,7 @@ src/ のテンプレートと src/i18n/*.json から、
 出力:
   index.html   / en/index.html   / in/index.html     … トップ
   privacy.html / en/privacy.html / in/privacy.html   … プライバシーポリシー
-  guide.html   / en/guide.html   / in/guide.html     … 使い方ガイド
+  guide.html                                        … 使い方ガイド（現在は日本語のみ）
 
 ページを増やすときは PAGES に1件足すだけ。
 使い方:  python3 src/build.py
@@ -44,6 +44,8 @@ LANGS = {
 #   switch_paths : そのページでの言語切替リンク先（現在言語 -> 各言語の相対パス）
 #   nav_prefix   : ヘッダーのトップページ内アンカーへ飛ぶための接頭辞
 #                  （トップ自身は空。別ページからは index.html を明示する）
+#   langs        : そのページを生成する言語（省略時は全言語）。
+#                  未翻訳のページを中途半端に出さないための絞り込み。
 PAGES = {
     "index": {
         "template": "template.html",
@@ -76,10 +78,15 @@ PAGES = {
     "guide": {
         "template": "guide-template.html",
         "filename": "guide.html",
+        # 【日本語のみ生成】本文86キーの翻訳と、英語UIでのスクショ撮り直し(8枚x2言語)が
+        # 済むまで en/in は出さない。翻訳が終わったら ["ja","en","in"] に戻す。
+        "langs": ["ja"],
+        # 英語/Hinglishのガイドが無いので、言語切替はそれぞれのトップページへ逃がす
+        # （en/in の guide.html を指すと404になる）
         "switch_paths": {
-            "ja": {"ja": "./guide.html",  "en": "./en/guide.html",  "in": "./in/guide.html"},
-            "en": {"ja": "../guide.html", "en": "./guide.html",     "in": "../in/guide.html"},
-            "in": {"ja": "../guide.html", "en": "../en/guide.html", "in": "./guide.html"},
+            "ja": {"ja": "./guide.html",  "en": "./en/",  "in": "./in/"},
+            "en": {"ja": "../guide.html", "en": "./",     "in": "../in/"},
+            "in": {"ja": "../guide.html", "en": "../en/", "in": "./"},
         },
         # ガイドからトップのアンカーへ戻るリンク用
         "nav_prefix": "index.html",
@@ -98,9 +105,16 @@ def load_dict(code):
     return json.loads((SRC / "i18n" / f"{code}.json").read_text(encoding="utf-8"))
 
 
+def page_langs(page):
+    """そのページを生成する言語コードの一覧（langs 未指定なら全言語）。"""
+    return PAGES[page].get("langs", list(LANGS))
+
+
 def build_hreflang(page):
-    """そのページの各言語版を指す hreflang 群を作る。"""
+    """そのページの各言語版を指す hreflang 群を作る。
+    生成しない言語は hreflang に含めない（存在しないURLを宣言しないため）。"""
     fname = PAGES[page]["filename"]
+    codes = page_langs(page)
 
     def href_for(meta):
         sub = (meta["dir"] + "/") if meta["dir"] else ""
@@ -110,9 +124,12 @@ def build_hreflang(page):
         return f"{SITE_URL}/{sub}{fname}"
 
     lines = [
-        f'<link rel="alternate" hreflang="{meta["hreflang"]}" href="{href_for(meta)}">'
-        for meta in LANGS.values()
+        f'<link rel="alternate" hreflang="{LANGS[c]["hreflang"]}" href="{href_for(LANGS[c])}">'
+        for c in codes
     ]
+    # 1言語しか無いページに hreflang 群は不要（x-default だけ残すと不整合になる）
+    if len(codes) < 2:
+        return ""
     lines.append(f'<link rel="alternate" hreflang="x-default" href="{href_for(LANGS["ja"])}">')
     return "\n".join(lines)
 
@@ -132,6 +149,16 @@ def build_switcher(page, current, strings):
     return "".join(parts)
 
 
+def build_guide_btn(page, code, strings):
+    """ツールカードの「使い方ガイド」ボタン。
+    その言語のガイドが生成されない場合は、押せない準備中バッジにする。"""
+    label = strings.get("tool1.btn2", "")
+    if code in page_langs("guide"):
+        href = PAGES[page]["guide_path"][code]
+        return f'<a class="btn-sm line" href="{href}">{label}</a>'
+    return f'<span class="btn-sm disabled">{label}</span>'
+
+
 def render(template, page, code, ja, langdict, hreflang):
     # 空欄や未定義キーは日本語にフォールバック
     strings = {k: (langdict.get(k) or ja.get(k, "")) for k in ja}
@@ -142,6 +169,7 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{NAV_PREFIX}}", PAGES[page]["nav_prefix"])
     html = html.replace("{{PRIVACY_PATH}}", PAGES[page]["privacy_path"][code])
     html = html.replace("{{GUIDE_PATH}}", PAGES[page]["guide_path"][code])
+    html = html.replace("{{GUIDE_BTN}}", build_guide_btn(page, code, strings))
     for key, value in strings.items():
         html = html.replace("{{" + key + "}}", value)
     return html
@@ -157,7 +185,9 @@ def main():
             continue
         template = template_path.read_text(encoding="utf-8")
         hreflang = build_hreflang(page)
-        for code, meta in LANGS.items():
+        codes = page_langs(page)
+        for code in codes:
+            meta = LANGS[code]
             html = render(template, page, code, ja, dicts[code], hreflang)
             outdir = OUT / meta["dir"] if meta["dir"] else OUT
             outdir.mkdir(parents=True, exist_ok=True)
