@@ -15,15 +15,15 @@
   "tools.label": "Series",
   "tools.title": "Dropper <span class=\"blue\">series</span>",
   "tools.desc": "Aise tools jo aap sirf file drop karke use karte ho. Jo karna hai uske hisaab se chunein aur turant shuru karein.",
-  "tool1.status": "Coming soon",
+  "tool1.status": "Review mein",
   "tool1.name": "Calendar Dropper",
   "tool1.desc": "Bas event ka flyer (PDF ya image) drop karo, aur date aur venue Google Calendar mein automatic add ho jaate hain. Flyer, roster, results aur photos bhi event ke saath attach ho jaate hain. Kisi bhi sport ya event ke liye.",
   "tool1.tag1": "Sirf Google",
   "tool1.tag2": "Roz auto-check",
   "tool1.tag3": "Koi bhi sport",
   "tool1.tag4": "Handover aasan",
-  "tool1.price": "Price launch par batayenge",
-  "tool1.btn1": "Try karein (jald)",
+  "tool1.price": "Abhi free (aage paid plans aayenge)",
+  "tool1.btn1": "Try karein",
   "tool1.btn2": "Guide (jald)",
   "placeholder.status": "In development",
   "placeholder.name": "Agla Dropper jald aa raha hai",
@@ -88,5 +88,7 @@
   "privacy.s8body": "Is policy mein koi bhi badlav isi page par post kiya jayega. Agar badlav important hoga, to tool ke andar bhi announce kiya jayega.",
   "privacy.s9title": "9. Contact",
   "privacy.s9body": "Is policy ke baare mein sawaal ke liye, <a href=\"mailto:movie.pingpong@gmail.com\">movie.pingpong@gmail.com</a> par contact karein.",
-  "privacy.back": "← Top page par wapas"
+  "privacy.back": "← Top page par wapas",
+  "tool1.url": "https://app.dropper-tools.com/calendar-in/",
+  "tool1.notice": "⚠️ Ye app abhi Google ke review mein hai, isliye sign in karte waqt \"Google hasn't verified this app\" ka warning aata hai. Continue karne ke liye \"Advanced\" → \"Go to dropper-tools.com (unsafe)\" chunein. Review poora hote hi ye warning hat jayega."
 }

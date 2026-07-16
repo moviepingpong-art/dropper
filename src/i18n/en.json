@@ -15,15 +15,15 @@
   "tools.label": "Series",
   "tools.title": "The Dropper <span class=\"blue\">series</span>",
   "tools.desc": "Tools you use simply by dropping in a file. Pick the one that fits what you want to do and start right away.",
-  "tool1.status": "Coming soon",
+  "tool1.status": "Under review",
   "tool1.name": "Calendar Dropper",
   "tool1.desc": "Just drop in the event flyer (PDF or image) and the date and venue are added to Google Calendar automatically. The flyer, roster, results and photos are attached to the event as well. Works for any sport or event.",
   "tool1.tag1": "Google only",
   "tool1.tag2": "Checks daily",
   "tool1.tag3": "Any sport works",
   "tool1.tag4": "Easy handover",
-  "tool1.price": "Price announced at launch",
-  "tool1.btn1": "Try it (coming soon)",
+  "tool1.price": "Free for now (paid plans planned)",
+  "tool1.btn1": "Try it",
   "tool1.btn2": "User guide (coming soon)",
   "placeholder.status": "In development",
   "placeholder.name": "Next Dropper coming soon",
@@ -88,5 +88,7 @@
   "privacy.s8body": "Any changes to this policy will be posted on this page. If a change is significant, it will also be announced within the tool.",
   "privacy.s9title": "9. Contact",
   "privacy.s9body": "For questions about this policy, please contact <a href=\"mailto:movie.pingpong@gmail.com\">movie.pingpong@gmail.com</a>.",
-  "privacy.back": "← Back to top page"
+  "privacy.back": "← Back to top page",
+  "tool1.url": "https://app.dropper-tools.com/calendar-en/",
+  "tool1.notice": "⚠️ This app is currently under review by Google, so a warning saying \"Google hasn't verified this app\" appears when you sign in. Choose \"Advanced\" → \"Go to dropper-tools.com (unsafe)\" to continue. The warning will disappear once the review is complete."
 }

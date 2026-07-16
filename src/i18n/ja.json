@@ -14,15 +14,15 @@
   "tools.label": "Series",
   "tools.title": "ドロッパー<span class=\"blue\">シリーズ</span>",
   "tools.desc": "ファイルをドロップして使う道具たちです。やりたいことに合わせて選んで、すぐに使い始められます。",
-  "tool1.status": "準備中",
+  "tool1.status": "審査中",
   "tool1.name": "カレンダードロッパー",
   "tool1.desc": "大会の要項（PDF・画像）をドロップするだけで、開催日と会場をGoogleカレンダーに自動登録。要項・名簿・結果・写真もまとめて予定に添付します。どんな競技・大会でも使えます。",
   "tool1.tag1": "Googleだけで完結",
   "tool1.tag2": "毎日自動チェック",
   "tool1.tag3": "どんな競技でもOK",
   "tool1.tag4": "引き継ぎカンタン",
-  "tool1.price": "価格は公開時に発表します",
-  "tool1.btn1": "使ってみる（準備中）",
+  "tool1.price": "現在無料（今後有料化予定）",
+  "tool1.btn1": "使ってみる",
   "tool1.btn2": "使い方ガイド（準備中）",
   "placeholder.status": "開発中",
   "placeholder.name": "次のドロッパーを準備中",
@@ -87,5 +87,7 @@
   "privacy.s8body": "本ポリシーの内容を変更する場合は、このページに掲載します。重要な変更がある場合は、ツール上でもお知らせします。",
   "privacy.s9title": "9. お問い合わせ",
   "privacy.s9body": "本ポリシーに関するお問い合わせは、<a href=\"mailto:movie.pingpong@gmail.com\">movie.pingpong@gmail.com</a> までご連絡ください。",
-  "privacy.back": "← トップページへ戻る"
+  "privacy.back": "← トップページへ戻る",
+  "tool1.url": "https://app.dropper-tools.com/calendar/",
+  "tool1.notice": "⚠️ 現在Googleの審査申請中のため、ログイン時に「このアプリはGoogleで確認されていません」という警告が表示されます。「詳細」→「dropper-tools.com（安全ではないページ）に移動」を選ぶとご利用いただけます。審査完了後、この警告は表示されなくなります。"
 }
