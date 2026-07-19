@@ -190,5 +190,13 @@
   "privacy.s10title": "10. Is Policy mein Changes",
   "privacy.s10body": "Is policy mein koi bhi badlav isi page par post kiya jayega. Agar badlav important hoga, to tool ke andar bhi announce kiya jayega.",
   "privacy.s11title": "11. Contact",
-  "privacy.s11body": "Is policy ke baare mein sawaal ke liye, <a href=\"mailto:movie.pingpong@gmail.com\">movie.pingpong@gmail.com</a> par contact karein."
+  "privacy.s11body": "Is policy ke baare mein sawaal ke liye, <a href=\"mailto:movie.pingpong@gmail.com\">movie.pingpong@gmail.com</a> par contact karein.",
+  "footer.visitors": "Total visitors",
+  "privacy.s11analyticsTitle": "11. Analytics",
+  "privacy.s11analyticsBody": "Dropper service improve karne ke liye site usage samajhne hetu yeh tools use karta hai. Yeh site browsing ke statistical information handle karte hain aur aapke Google Calendar ya Drive ke contents (Google user data) se unrelated hain.",
+  "privacy.s11a1": "Google Analytics: page views aur referrers jaise statistics cookies use karke collect karta hai. Collect ki gayi information anonymized usage statistics hai aur kisi vyakti ko identify nahi karti. Data <a href=\"https://policies.google.com/privacy\" target=\"_blank\" rel=\"noopener\">Google ki Privacy Policy</a> ke according handle hota hai.",
+  "privacy.s11a2": "Visitor counter (hits.sh): page views ki ginti karke dikhata hai. Yeh cookies use nahi karta.",
+  "privacy.s11a3": "Agar aap cookies allow nahi karna chahte, to browser settings mein unhe disable karein ya <a href=\"https://tools.google.com/dlpage/gaoptout\" target=\"_blank\" rel=\"noopener\">Google Analytics Opt-out Add-on</a> use karein.",
+  "privacy.s12title": "12. Contact",
+  "privacy.s12body": "Is policy ke baare mein sawaal ke liye, <a href=\"mailto:movie.pingpong@gmail.com\">movie.pingpong@gmail.com</a> par contact karein."
 }

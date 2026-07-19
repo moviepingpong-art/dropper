@@ -156,6 +156,18 @@ def build_guide_btn(page, code, strings):
     return f'<span class="btn-sm disabled">{label}</span>'
 
 
+# Google Analytics (GA4) タグ。全ページの <head> 直下に入る（{{GA}} を置換）。
+# dropper-tools.com と app.dropper-tools.com は同じ測定IDでクロスドメイン計測（GA側で設定済み）。
+GA_TAG = """<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PQPKYYYXKG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PQPKYYYXKG');
+</script>"""
+
+
 def render(template, page, code, ja, langdict, hreflang):
     # 空欄や未定義キーは日本語にフォールバック
     strings = {k: (langdict.get(k) or ja.get(k, "")) for k in ja}
@@ -167,6 +179,7 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{PRIVACY_PATH}}", PAGES[page]["privacy_path"][code])
     html = html.replace("{{GUIDE_PATH}}", PAGES[page]["guide_path"][code])
     html = html.replace("{{LANG_DIR}}", code)   # 使い方ガイドの画像は言語別フォルダ assets/guide/<code>/
+    html = html.replace("{{GA}}", GA_TAG)
     html = html.replace("{{GUIDE_BTN}}", build_guide_btn(page, code, strings))
     for key, value in strings.items():
         html = html.replace("{{" + key + "}}", value)

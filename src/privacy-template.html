@@ -2,6 +2,7 @@
 <html lang="{{LANG}}">
 <head>
 <meta charset="UTF-8">
+{{GA}}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{privacy.metaTitle}}</title>
 <meta name="description" content="{{privacy.metaDesc}}">
@@ -331,8 +332,18 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </section>
 
   <section class="legal-sec">
-    <h2>{{privacy.s11title}}</h2>
-    <div class="legal-contact">{{privacy.s11body}}</div>
+    <h2>{{privacy.s11analyticsTitle}}</h2>
+    <p>{{privacy.s11analyticsBody}}</p>
+    <ul>
+      <li>{{privacy.s11a1}}</li>
+      <li>{{privacy.s11a2}}</li>
+      <li>{{privacy.s11a3}}</li>
+    </ul>
+  </section>
+
+  <section class="legal-sec">
+    <h2>{{privacy.s12title}}</h2>
+    <div class="legal-contact">{{privacy.s12body}}</div>
   </section>
 
   <a href="{{NAV_PREFIX}}" class="legal-back">{{privacy.back}}</a>

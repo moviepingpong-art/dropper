@@ -190,5 +190,13 @@
   "privacy.s10title": "10. Changes to This Policy",
   "privacy.s10body": "Any changes to this policy will be posted on this page. If a change is significant, it will also be announced within the tool.",
   "privacy.s11title": "11. Contact",
-  "privacy.s11body": "For questions about this policy, please contact <a href=\"mailto:movie.pingpong@gmail.com\">movie.pingpong@gmail.com</a>."
+  "privacy.s11body": "For questions about this policy, please contact <a href=\"mailto:movie.pingpong@gmail.com\">movie.pingpong@gmail.com</a>.",
+  "footer.visitors": "Total visitors",
+  "privacy.s11analyticsTitle": "11. Analytics",
+  "privacy.s11analyticsBody": "Dropper uses the following tools to understand site usage for the purpose of improving the service. These handle statistical information about site browsing and are unrelated to the contents of your Google Calendar or Drive (Google user data).",
+  "privacy.s11a1": "Google Analytics: collects statistics such as page views and referrers using cookies. The information collected is anonymized usage statistics and does not identify individuals. Data is handled in accordance with <a href=\"https://policies.google.com/privacy\" target=\"_blank\" rel=\"noopener\">Google&#39;s Privacy Policy</a>.",
+  "privacy.s11a2": "Visitor counter (hits.sh): counts and displays the number of page views. It does not use cookies.",
+  "privacy.s11a3": "If you do not wish to allow cookies, you can disable them in your browser settings or use the <a href=\"https://tools.google.com/dlpage/gaoptout\" target=\"_blank\" rel=\"noopener\">Google Analytics Opt-out Add-on</a>.",
+  "privacy.s12title": "12. Contact",
+  "privacy.s12body": "For questions about this policy, please contact <a href=\"mailto:movie.pingpong@gmail.com\">movie.pingpong@gmail.com</a>."
 }

@@ -2,6 +2,7 @@
 <html lang="{{LANG}}">
 <head>
 <meta charset="UTF-8">
+{{GA}}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{meta.title}}</title>
 <meta name="description" content="{{meta.desc}}">
@@ -165,6 +166,9 @@ section{padding:6rem 1.5rem;}
 footer{background:#0a0a2e;color:rgba(255,255,255,0.5);text-align:center;padding:2.5rem 1.5rem;font-size:0.82rem;letter-spacing:0.05em;}
 footer .footer-logo{font-family:'Oswald',sans-serif;color:#fff;font-size:1.2rem;letter-spacing:0.1em;margin-bottom:0.5rem;text-transform:uppercase;}
 footer .footer-links{margin-top:0.9rem;}
+footer .footer-visitors{margin-top:0.9rem;}
+footer .footer-visitors img{height:22px;vertical-align:middle;opacity:0.9;}
+footer .footer-visitors-label{display:block;font-size:0.72rem;color:rgba(255,255,255,0.5);margin-bottom:0.35rem;letter-spacing:0.05em;}
 footer .footer-links a{color:rgba(255,255,255,0.6);text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.25);padding-bottom:1px;transition:color 0.2s,border-color 0.2s;}
 footer .footer-links a:hover{color:#fff;border-color:#fff;}
 
@@ -291,6 +295,11 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 <footer>
   <div class="footer-logo">DROPPER</div>
   <p>{{footer.copy}}</p>
+  <p class="footer-visitors">
+    <span class="footer-visitors-label">{{footer.visitors}}</span>
+    <img src="https://hits.sh/dropper-tools.com.svg?style=flat-square&label=visitors&color=0f9d8c&labelColor=555555"
+         alt="visitor counter" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+  </p>
   <p class="footer-links"><a href="{{PRIVACY_PATH}}">{{footer.privacy}}</a></p>
 </footer>
 
