@@ -180,6 +180,7 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{GUIDE_PATH}}", PAGES[page]["guide_path"][code])
     html = html.replace("{{LANG_DIR}}", code)   # 使い方ガイドの画像は言語別フォルダ assets/guide/<code>/
     html = html.replace("{{GA}}", GA_TAG)
+    html = html.replace("{{HITS_PATH}}", "" if code == "ja" else "/" + code)   # 訪問者カウンターを言語別に分ける(hits.shはパス別カウント)
     html = html.replace("{{GUIDE_BTN}}", build_guide_btn(page, code, strings))
     for key, value in strings.items():
         html = html.replace("{{" + key + "}}", value)
