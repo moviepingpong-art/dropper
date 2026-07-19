@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>使い方ガイド | カレンダードロッパー</title>
-<meta name="description" content="カレンダードロッパーの使い方ガイド。大会の要項をドロップするだけでGoogleカレンダーとGoogleドライブに自動登録する手順を、画面つきで説明します。">
+<title>User Guide | Calendar Dropper</title>
+<meta name="description" content="How to use Calendar Dropper: drop a tournament announcement (PDF or image) and register the event to Google Calendar and Google Drive automatically. With screenshots.">
 <link rel="alternate" hreflang="ja" href="https://dropper-tools.com/guide.html">
 <link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/guide.html">
 <link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/guide.html">
@@ -292,195 +292,195 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 <body>
 
 <header>
-  <a href="index.html" class="logo">DROPPER <span class="dot">●</span> <span class="jp">ドロッパー</span></a>
+  <a href="index.html" class="logo">DROPPER <span class="dot">●</span> <span class="jp">Dropper</span></a>
   <div class="header-right">
     <nav>
       <a href="index.html#tools">Series</a>
       <a href="index.html#policy">Notes</a>
       <a href="index.html#about">About</a>
     </nav>
-    <div class="lang-switch"><a href="./guide.html" class="lang-link active" hreflang="ja">日本語</a><span class="sep">/</span><a href="./en/guide.html" class="lang-link" hreflang="en">English</a><span class="sep">/</span><a href="./in/guide.html" class="lang-link" hreflang="en-IN">Hinglish</a></div>
+    <div class="lang-switch"><a href="../guide.html" class="lang-link" hreflang="ja">日本語</a><span class="sep">/</span><a href="./guide.html" class="lang-link active" hreflang="en">English</a><span class="sep">/</span><a href="../in/guide.html" class="lang-link" hreflang="en-IN">Hinglish</a></div>
   </div>
 </header>
 
 <div class="legal-wrap">
 
   <div class="legal-head">
-    <h1>カレンダードロッパー<br><span class="blue">使い方ガイド</span></h1>
-    <p class="legal-date">はじめての方へ</p>
+    <h1>Calendar Dropper<br><span class="blue">User Guide</span></h1>
+    <p class="legal-date">For first-time users</p>
   </div>
 
-  <p class="guide-intro">要項をドロップするだけ。カレンダーとドライブに、大会の予定と要項が同時に入ります。</p>
+  <p class="guide-intro">Just drop the announcement. The event goes to your Calendar and the file goes to your Drive — in one step.</p>
 
   <!-- 目次 -->
-  <nav class="guide-toc" aria-label="目次">
-    <h2>目次</h2>
+  <nav class="guide-toc" aria-label="Contents">
+    <h2>Contents</h2>
     <ol>
-      <li><a href="#s1">ドロッパーとは</a></li>
-      <li><a href="#s2">使う前に</a></li>
-      <li><a href="#s3">基本の流れ</a></li>
-      <li><a href="#s4">登録されるもの</a></li>
-      <li><a href="#s5">AI機能を使う（任意）</a></li>
-      <li><a href="#s6">よくある質問</a></li>
-      <li><a href="#s7">困ったときは</a></li>
+      <li><a href="#s1">What is Dropper?</a></li>
+      <li><a href="#s2">Before you start</a></li>
+      <li><a href="#s3">How it works</a></li>
+      <li><a href="#s4">What gets registered</a></li>
+      <li><a href="#s5">Using AI (optional)</a></li>
+      <li><a href="#s6">FAQ</a></li>
+      <li><a href="#s7">Need help?</a></li>
     </ol>
   </nav>
 
   <!-- 1. ドロッパーとは -->
   <section class="legal-sec" id="s1">
-    <h2>ドロッパーとは</h2>
-    <p>スポーツ大会の要項（PDF・画像）を読み取って、あなたのGoogleカレンダーに予定を、Googleドライブに要項ファイルを自動で登録するWebツールです。</p>
-    <p>インストールは不要。ブラウザだけで動きます。読み取りも登録も、すべてあなたのGoogleアカウントの中で完結します。<strong>ドロッパーはサーバーを持たず、あなたのデータを預かりません。</strong></p>
+    <h2>What is Dropper?</h2>
+    <p>Dropper is a web tool that reads a sports tournament announcement (PDF or image), creates the event in your Google Calendar, and saves the file to your Google Drive.</p>
+    <p>No installation — it runs in your browser. Reading and registration all happen inside your own Google account. <strong>Dropper has no server and never stores your data.</strong></p>
   </section>
 
   <!-- 2. 使う前に -->
   <section class="legal-sec" id="s2">
-    <h2>使う前に</h2>
-    <p>必要なものは Googleアカウント ひとつだけです。</p>
+    <h2>Before you start</h2>
+    <p>All you need is a Google account.</p>
     <table class="legal-table">
       <thead>
-        <tr><th>必要なもの</th><th>備考</th></tr>
+        <tr><th>What you need</th><th>Notes</th></tr>
       </thead>
       <tbody>
-        <tr><td>Googleアカウント</td><td>カレンダーとドライブを使うため</td></tr>
-        <tr><td>ブラウザ</td><td>Chrome / Edge / Safari など</td></tr>
-        <tr><td>要項ファイル</td><td>PDF または 画像（JPG・PNG）</td></tr>
+        <tr><td>Google account</td><td>For Calendar and Drive</td></tr>
+        <tr><td>Browser</td><td>Chrome / Edge / Safari, etc.</td></tr>
+        <tr><td>Announcement file</td><td>PDF or image (JPG / PNG)</td></tr>
       </tbody>
     </table>
   </section>
 
   <!-- 3. 基本の流れ -->
   <section class="legal-sec" id="s3">
-    <h2>基本の流れ</h2>
+    <h2>How it works</h2>
 
     <div class="guide-step">
-      <h3><span class="guide-step-num">1</span>ログインする</h3>
-      <p>「Googleでログイン」を押して、アカウントを選びます。</p>
+      <h3><span class="guide-step-num">1</span>Sign in</h3>
+      <p>Click "Sign in with Google" and choose your account.</p>
       <figure class="guide-shot">
-        <img src="/assets/guide/ja/step1-login.png" alt="画面上の「Googleでログイン」ボタン" loading="lazy">
-        <figcaption>「Googleでログイン」を押す</figcaption>
+        <img src="/assets/guide/en/step1-login.png" alt="The Sign in with Google button" loading="lazy">
+        <figcaption>Click "Sign in with Google"</figcaption>
       </figure>
-      <p>続いて許可を求める画面が出ます。ドロッパーが求めるのは次の3つだけです。</p>
+      <p>Google will ask for permissions. Dropper requests only these three:</p>
       <ul>
-        <li><strong>カレンダーの予定</strong> — 大会の予定を作るため</li>
-        <li><strong>ドロッパーが作ったドライブのファイル</strong> — 要項を保存するため</li>
-        <li><strong>アプリの設定データ</strong> — 設定を覚えておくため</li>
+        <li><strong>Calendar events</strong> — to create the tournament event</li>
+        <li><strong>Drive files created by Dropper</strong> — to save the announcement</li>
+        <li><strong>App configuration data</strong> — to remember your settings</li>
       </ul>
       <figure class="guide-shot">
-        <img src="/assets/guide/ja/step1-consent.png" alt="Googleの同意画面。3つの権限が一覧表示されている" loading="lazy">
-        <figcaption>同意画面。求める権限は3つだけ</figcaption>
+        <img src="/assets/guide/en/step1-consent.png" alt="Google consent screen listing the three permissions" loading="lazy">
+        <figcaption>The consent screen — only three permissions</figcaption>
       </figure>
       <!-- ▼▼▼ 審査通過後にこのブロックごと削除する（tool1.notice と同時に） ▼▼▼ -->
-      <div class="guide-note">⚠️ 現在Googleの審査申請中のため、ここで「このアプリはGoogleで確認されていません」という警告が表示されます。「詳細」→「dropper-tools.com（安全ではないページ）に移動」を選んでください。審査完了後、この警告は表示されなくなります。</div>
+      <div class="guide-note">⚠️ Dropper is currently under Google's verification review, so you will see a "Google hasn't verified this app" warning here. Click "Advanced" → "Go to dropper-tools.com (unsafe)" to continue. This warning will disappear once the review is complete.</div>
       <!-- ▲▲▲ 審査通過後にこのブロックごと削除する ▲▲▲ -->
     </div>
 
     <div class="guide-step">
-      <h3><span class="guide-step-num">2</span>要項をドロップする</h3>
-      <p>要項のPDFや画像を、画面のエリアにドラッグ＆ドロップします。クリックしてファイルを選んでもOKです。</p>
+      <h3><span class="guide-step-num">2</span>Drop the announcement</h3>
+      <p>Drag and drop the announcement PDF or image onto the drop area. You can also click to choose a file.</p>
       <figure class="guide-shot">
-        <img src="/assets/guide/ja/step2-drop.png" alt="要項のPDFをドロップエリアにドラッグしている様子" loading="lazy">
-        <figcaption>ドラッグ＆ドロップ、またはクリックして選択</figcaption>
+        <img src="/assets/guide/en/step2-drop.png" alt="Dropping an announcement PDF onto the drop area" loading="lazy">
+        <figcaption>Drag & drop, or click to choose</figcaption>
       </figure>
     </div>
 
     <div class="guide-step">
-      <h3><span class="guide-step-num">3</span>読み取り結果を確認する</h3>
-      <p>大会名・日付・会場・種目などが自動で読み取られ、カードに表示されます。<strong>ここで必ず内容を確認してください。</strong>違っていれば、その場で直せます。</p>
+      <h3><span class="guide-step-num">3</span>Check the results</h3>
+      <p>The tournament name, date, venue, events and more are read automatically and shown on a card. <strong>Always check the results here.</strong> Anything wrong can be fixed on the spot.</p>
       <figure class="guide-shot">
-        <img src="/assets/guide/ja/step3-card.png" alt="読み取り結果のカード。大会名・日付・会場・種目が表示されている" loading="lazy">
-        <figcaption>読み取り結果。その場で修正できる</figcaption>
+        <img src="/assets/guide/en/step3-card.png" alt="The result card showing tournament name, date, venue and events" loading="lazy">
+        <figcaption>The results — editable in place</figcaption>
       </figure>
     </div>
 
     <div class="guide-step">
-      <h3><span class="guide-step-num">4</span>登録する</h3>
-      <p>「登録」を押すと、カレンダーとドライブに反映されます。</p>
+      <h3><span class="guide-step-num">4</span>Register</h3>
+      <p>Click "Register" and everything goes to your Calendar and Drive.</p>
       <figure class="guide-shot">
-        <img src="/assets/guide/ja/step4-done.png" alt="登録完了を知らせる表示" loading="lazy">
-        <figcaption>登録完了</figcaption>
+        <img src="/assets/guide/en/step4-done.png" alt="The registration complete message" loading="lazy">
+        <figcaption>Done</figcaption>
       </figure>
     </div>
   </section>
 
   <!-- 4. 登録されるもの -->
   <section class="legal-sec" id="s4">
-    <h2>登録されるもの</h2>
+    <h2>What gets registered</h2>
     <table class="legal-table">
       <thead>
-        <tr><th>場所</th><th>内容</th></tr>
+        <tr><th>Where</th><th>What</th></tr>
       </thead>
       <tbody>
-        <tr><td>Googleカレンダー</td><td>大会当日の予定（大会名・時刻・会場）</td></tr>
-        <tr><td>Googleドライブ</td><td>マイドライブ直下に <code>&lt;年&gt; Tournaments / &lt;月&gt; / 大会名 /</code> を作り（例：<code>2026 Tournaments / 09 /</code>）、要項ファイルを保存</td></tr>
+        <tr><td>Google Calendar</td><td>The tournament-day event (name, time, venue)</td></tr>
+        <tr><td>Google Drive</td><td>A folder tree <code>&lt;Year&gt; Tournaments / &lt;Month&gt; / Tournament name /</code> in My Drive (e.g. <code>2026 Tournaments / 09 /</code>), with the announcement file inside</td></tr>
       </tbody>
     </table>
     <figure class="guide-shot">
-      <img src="/assets/guide/ja/result-drive.png" alt="Googleドライブのフォルダ構成。年・月・大会名の階層になっている" loading="lazy">
-      <figcaption>ドライブに作られるフォルダ構成</figcaption>
+      <img src="/assets/guide/en/result-drive.png" alt="Google Drive folder structure: year, month, tournament name" loading="lazy">
+      <figcaption>The folders created in Drive</figcaption>
     </figure>
   </section>
 
   <!-- 5. AI機能 -->
   <section class="legal-sec" id="s5">
-    <h2>AI機能を使う（任意）</h2>
-    <p>読み取りの精度を上げたいときは、AI（Google Gemini）を使えます。<strong>使うかどうかはあなたが選びます。</strong>使わなくても基本の読み取りは動きます。</p>
+    <h2>Using AI (optional)</h2>
+    <p>For better reading accuracy you can use AI (Google Gemini). <strong>It's entirely your choice.</strong> The basic reading works without it.</p>
 
-    <h3 class="guide-sub">AIを使うには</h3>
-    <p>ログイン後に「AIを使う／使わない」を選ぶポップアップが出ます。「使う」を選ぶと、APIキーの入力画面が開きます。</p>
+    <h3 class="guide-sub">Turning AI on</h3>
+    <p>After signing in, a popup asks whether to use AI. Choose "Use AI" and the API key screen opens.</p>
     <figure class="guide-shot">
-      <img src="/assets/guide/ja/ai-choice.png" alt="「AIを使う」「AIを使わない」を選ぶポップアップ" loading="lazy">
-      <figcaption>AIを使うかどうかは自分で選ぶ</figcaption>
+      <img src="/assets/guide/en/ai-choice.png" alt="Popup asking whether to use AI" loading="lazy">
+      <figcaption>AI is opt-in — you decide</figcaption>
     </figure>
 
-    <h3 class="guide-sub">APIキーの取り方</h3>
+    <h3 class="guide-sub">Getting an API key</h3>
     <ol class="guide-ol">
-      <li>Google AI Studio を開く</li>
-      <li>Googleアカウントでログインする</li>
-      <li>「APIキーを作成」を押す</li>
-      <li>表示されたキーをコピーして、ドロッパーの入力欄に貼り付ける</li>
+      <li>Open Google AI Studio</li>
+      <li>Sign in with your Google account</li>
+      <li>Click "Create API key"</li>
+      <li>Copy the key and paste it into Dropper</li>
     </ol>
-    <p>無料で取得できます。所要3分ほどです。</p>
+    <p>It's free and takes about 3 minutes.</p>
     <figure class="guide-shot">
-      <img src="/assets/guide/ja/ai-key-modal.png" alt="APIキーの入力モーダル。取得手順とAI Studioを開くボタンがある" loading="lazy">
-      <figcaption>APIキー入力画面。取得手順もここに書いてある</figcaption>
+      <img src="/assets/guide/en/ai-key-modal.png" alt="API key modal with setup steps and a button to open AI Studio" loading="lazy">
+      <figcaption>The key screen — instructions included</figcaption>
     </figure>
 
-    <div class="guide-safe">🔒 キーはあなたの端末（ブラウザ）の中だけに保存されます。開発者には送られません。</div>
-    <div class="guide-note">⚠️ 無料枠では、送信内容がGoogleのサービス改善に利用される場合があります。機密文書はドロップしないでください。</div>
-    <p>選択はブラウザに記憶されるので、次回以降ポップアップは出ません。変更したいときは、画面上部のバナーから「AI設定を変更」を押してください。</p>
+    <div class="guide-safe">🔒 Your key is stored only on your device (browser). It is never sent to the developer.</div>
+    <div class="guide-note">⚠️ On the free tier, submitted content may be used to improve Google's services. Do not drop confidential documents.</div>
+    <p>Your choice is remembered, so the popup won't appear again. To change it, click "AI settings" in the banner at the top of the screen.</p>
   </section>
 
   <!-- 6. よくある質問 -->
   <section class="legal-sec" id="s6">
-    <h2>よくある質問</h2>
+    <h2>FAQ</h2>
     <dl class="guide-faq">
-      <dt>料金はかかりますか</dt><dd>現在は無料です。今後有料化を予定しています。</dd>
-      <dt>どの競技に対応していますか</dt><dd>卓球をはじめ複数の競技に対応しています。画面上部の競技セレクタから選んでください。</dd>
-      <dt>読み取りが間違っていました</dt><dd>カード上で直接修正してから登録できます。要項のレイアウトによって読み取りにくい場合があります。AI機能を使うと改善することがあります。</dd>
-      <dt>登録した予定を消したい</dt><dd>Googleカレンダーとドライブから、通常の操作で削除してください。ドロッパー側に削除機能はありません。</dd>
-      <dt>データはどこかに送られますか</dt><dd>いいえ。ドロッパーはサーバーを持ちません。AI機能を使う場合のみ、要項のテキストがあなた自身のAPIキーでGeminiに送られます。詳しくは<a href="./privacy.html">プライバシーポリシー</a>をご覧ください。</dd>
+      <dt>Is it free?</dt><dd>Free for now. Paid plans are planned for the future.</dd>
+      <dt>Which sports are supported?</dt><dd>Table tennis and several other sports. Pick one from the sport selector at the top of the screen.</dd>
+      <dt>The reading was wrong.</dt><dd>You can edit the card directly before registering. Some announcement layouts are harder to read; using AI often helps.</dd>
+      <dt>How do I delete a registered event?</dt><dd>Delete it from Google Calendar and Drive as you normally would. Dropper has no delete function.</dd>
+      <dt>Is my data sent anywhere?</dt><dd>No. Dropper has no server. Only if you enable AI, the announcement text is sent to Gemini using your own API key. See the <a href="./privacy.html">privacy policy</a> for details.</dd>
     </dl>
   </section>
 
   <!-- 7. 困ったときは -->
   <section class="legal-sec" id="s7">
-    <h2>困ったときは</h2>
-    <div class="legal-contact">ご質問・不具合のご連絡は <a href="mailto:movie.pingpong@gmail.com">movie.pingpong@gmail.com</a> までお願いします。個人開発のため、返信にお時間をいただく場合があります。</div>
+    <h2>Need help?</h2>
+    <div class="legal-contact">For questions or bug reports, contact <a href="mailto:movie.pingpong@gmail.com">movie.pingpong@gmail.com</a>. This is a one-person project, so replies may take a while.</div>
   </section>
 
   <div class="guide-cta">
-    <a class="btn-sm fill" href="https://app.dropper-tools.com/calendar/" target="_blank" rel="noopener">カレンダードロッパーを使ってみる ↗</a>
+    <a class="btn-sm fill" href="https://app.dropper-tools.com/calendar-en/" target="_blank" rel="noopener">Try Calendar Dropper ↗</a>
   </div>
 
-  <a href="index.html" class="legal-back">← トップページへ戻る</a>
+  <a href="index.html" class="legal-back">← Back to top page</a>
 
 </div>
 
 <footer>
   <div class="footer-logo">DROPPER</div>
-  <p>ドロッパー © 2026</p>
-  <p class="footer-links"><a href="./privacy.html">プライバシーポリシー</a></p>
+  <p>Dropper © 2026</p>
+  <p class="footer-links"><a href="./privacy.html">Privacy Policy</a></p>
 </footer>
 
 <button id="backToTop" aria-label="Top">↑</button>

@@ -78,15 +78,12 @@ PAGES = {
     "guide": {
         "template": "guide-template.html",
         "filename": "guide.html",
-        # 【日本語のみ生成】本文86キーの翻訳と、英語UIでのスクショ撮り直し(8枚x2言語)が
-        # 済むまで en/in は出さない。翻訳が終わったら ["ja","en","in"] に戻す。
-        "langs": ["ja"],
-        # 英語/Hinglishのガイドが無いので、言語切替はそれぞれのトップページへ逃がす
-        # （en/in の guide.html を指すと404になる）
+        # 3言語すべて生成（翻訳・スクショ完了済み）。画像は assets/guide/<code>/ を参照。
+        "langs": ["ja", "en", "in"],
         "switch_paths": {
-            "ja": {"ja": "./guide.html",  "en": "./en/",  "in": "./in/"},
-            "en": {"ja": "../guide.html", "en": "./",     "in": "../in/"},
-            "in": {"ja": "../guide.html", "en": "../en/", "in": "./"},
+            "ja": {"ja": "./guide.html",  "en": "./en/guide.html",  "in": "./in/guide.html"},
+            "en": {"ja": "../guide.html", "en": "./guide.html",     "in": "../in/guide.html"},
+            "in": {"ja": "../guide.html", "en": "../en/guide.html", "in": "./guide.html"},
         },
         # ガイドからトップのアンカーへ戻るリンク用
         "nav_prefix": "index.html",
@@ -169,6 +166,7 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{NAV_PREFIX}}", PAGES[page]["nav_prefix"])
     html = html.replace("{{PRIVACY_PATH}}", PAGES[page]["privacy_path"][code])
     html = html.replace("{{GUIDE_PATH}}", PAGES[page]["guide_path"][code])
+    html = html.replace("{{LANG_DIR}}", code)   # 使い方ガイドの画像は言語別フォルダ assets/guide/<code>/
     html = html.replace("{{GUIDE_BTN}}", build_guide_btn(page, code, strings))
     for key, value in strings.items():
         html = html.replace("{{" + key + "}}", value)
