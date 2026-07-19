@@ -230,7 +230,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 
   <div class="legal-head">
     <h1>プライバシー<span class="blue">ポリシー</span></h1>
-    <p class="legal-date">制定日：2026年7月15日</p>
+    <p class="legal-date">制定日：2026年7月15日／改定日：2026年7月19日</p>
   </div>
 
   <p class="legal-lead">ドロッパーは、お客様のブラウザ内で動作するツールです。当方はサーバーを保有しておらず、お客様のデータを収集・保存・送信することは一切ありません。</p>
@@ -281,32 +281,60 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </section>
 
   <section class="legal-sec">
-    <h2>5. お客様の端末に保存される情報</h2>
-    <p>以下の情報を、お客様の端末内（ブラウザのlocalStorage）に保存します。当方がこれらを参照することはできません。ブラウザの設定からいつでも削除できます。</p>
+    <h2>5. データの共有・第三者提供</h2>
+    <p>ドロッパーは、お客様のGoogleユーザーデータを、当方または第三者へ販売・共有・移転することはありません。当方はサーバーを保有しておらず、これらのデータを受け取ること自体がありません。</p>
+    <ul>
+      <li>唯一の例外は、お客様が「AIを使う」を選択した場合です。このときに限り、要項から読み取った文字が、お客様ご自身のAPIキーを用いて Google の Gemini API へ送信されます。これはお客様の選択にもとづく、お客様とGoogleの間の直接的な送信であり、当方を経由しません。</li>
+      <li>Gemini API に送信されたデータの取り扱いは、<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Googleのプライバシーポリシー</a>に従います。</li>
+      <li>上記以外に、Googleユーザーデータを広告・分析・その他いかなる第三者にも提供することはありません。</li>
+    </ul>
+  </section>
+
+  <section class="legal-sec">
+    <h2>6. データの保護</h2>
+    <p>ドロッパーは、お客様のデータを保護するために以下の仕組みを採用しています。</p>
+    <ul>
+      <li>すべての通信は暗号化された接続（HTTPS）で行われます。</li>
+      <li>ドロッパーはサーバーを保有しないため、お客様のデータが当方の管理下に保存されることはなく、外部からの侵害の対象になりません。</li>
+      <li>Gemini APIキーおよび設定情報は、お客様の端末内（ブラウザのlocalStorage）にのみ保存され、当方を含む外部へ送信されることはありません。</li>
+      <li>GoogleサービスおよびGemini APIへのアクセスは、いずれもお客様ご自身のGoogleアカウントの認証・認可のもとで行われます。</li>
+    </ul>
+  </section>
+
+  <section class="legal-sec">
+    <h2>7. データの保持と削除</h2>
+    <p>ドロッパーはサーバーを保有しないため、お客様のGoogleユーザーデータを当方が保持することはありません。お客様の端末内（ブラウザのlocalStorage）には、次の情報のみが保存されます（当方が参照することはできません）。</p>
     <ul>
       <li>AI機能を使うかどうかの選択</li>
       <li>Gemini APIキー（AIを使うことを選んだ場合のみ）</li>
       <li>保存先フォルダの情報</li>
     </ul>
+    <p>これらのデータは、以下の方法でいつでも削除できます。</p>
+    <ul>
+      <li>文字読み取り（OCR）のために一時的に作成するファイルは、読み取り後ただちに削除されます。</li>
+      <li>Googleカレンダーに作成した予定、およびGoogleドライブに保存した要項ファイルは、お客様ご自身が管理し、いつでもGoogleの画面から削除できます（ドロッパー側に削除機能はありません）。</li>
+      <li>端末内に保存されたAPIキー・設定情報は、ブラウザの設定からいつでも削除できます。</li>
+      <li>ドロッパーのGoogleアカウントへのアクセス権は、<a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Googleアカウントのセキュリティ設定</a>からいつでも取り消せます。</li>
+    </ul>
   </section>
 
   <section class="legal-sec">
-    <h2>6. 料金について</h2>
+    <h2>8. 料金について</h2>
     <p>現時点では無料で提供しており、決済情報の取得・保存は行いません。将来的に有料の機能を提供する場合は、本ポリシーを改訂したうえでお知らせします。</p>
   </section>
 
   <section class="legal-sec">
-    <h2>7. Google API Services User Data Policy への準拠</h2>
+    <h2>9. Google API Services User Data Policy への準拠</h2>
     <p>ドロッパーによるGoogleユーザーデータの利用および他アプリへの提供は、Limited Use requirements を含む <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a> に準拠します。</p>
   </section>
 
   <section class="legal-sec">
-    <h2>8. 本ポリシーの変更</h2>
+    <h2>10. 本ポリシーの変更</h2>
     <p>本ポリシーの内容を変更する場合は、このページに掲載します。重要な変更がある場合は、ツール上でもお知らせします。</p>
   </section>
 
   <section class="legal-sec">
-    <h2>9. お問い合わせ</h2>
+    <h2>11. お問い合わせ</h2>
     <div class="legal-contact">本ポリシーに関するお問い合わせは、<a href="mailto:movie.pingpong@gmail.com">movie.pingpong@gmail.com</a> までご連絡ください。</div>
   </section>
 
