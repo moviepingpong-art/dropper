@@ -15,7 +15,7 @@
   "tools.label": "Series",
   "tools.title": "The Dropper <span class=\"blue\">series</span>",
   "tools.desc": "Tools you use simply by dropping in a file. Pick the one that fits what you want to do and start right away.",
-  "tool1.status": "Under review",
+  "tool1.status": "Available",
   "tool1.name": "Calendar Dropper",
   "tool1.desc": "Just drop in the event flyer (PDF or image) and the date and venue are added to Google Calendar automatically. The flyer, roster, results and photos are attached to the event as well. Works for any sport or event.",
   "tool1.tag1": "Google only",

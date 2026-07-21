@@ -14,7 +14,7 @@
   "tools.label": "Series",
   "tools.title": "ドロッパー<span class=\"blue\">シリーズ</span>",
   "tools.desc": "ファイルをドロップして使う道具たちです。やりたいことに合わせて選んで、すぐに使い始められます。",
-  "tool1.status": "審査中",
+  "tool1.status": "公開中",
   "tool1.name": "カレンダードロッパー",
   "tool1.desc": "大会の要項（PDF・画像）をドロップするだけで、開催日と会場をGoogleカレンダーに自動登録。要項・名簿・結果・写真もまとめて予定に添付します。どんな競技・大会でも使えます。",
   "tool1.tag1": "Googleだけで完結",
