@@ -1,7 +1,7 @@
 {
   "_note": "Hinglish（ローマ字のヒンディー英語混在）。空欄/未定義のキーは自動で日本語にフォールバックします。最終的にはネイティブ確認推奨。",
-  "meta.title": "Dropper | Bas file drop karo, baaki hum dekh lenge",
-  "meta.desc": "Dropper ek series hai chote tools ki, jahan aap bas file drop karte ho aur kaam ho jaata hai. Pehla tool event dates ko Google Calendar mein daal deta hai.",
+  "meta.title": "Tournament dates Google Calendar mein auto-add | Dropper",
+  "meta.desc": "Tournament flyer (PDF ya image) drop karo — Dropper date aur venue apne aap Google Calendar mein daal deta hai, aur file event se attach karta hai. Har sport ke liye. Free.",
   "logo.jp": "Dropper",
   "nav.tools": "Series",
   "nav.policy": "Notes",
@@ -91,7 +91,7 @@
   "privacy.back": "← Top page par wapas",
   "tool1.url": "https://app.dropper-tools.com/calendar-in/",
   "tool1.notice": "⚠️ Ye app abhi Google ke review mein hai, isliye sign in karte waqt \"Google hasn't verified this app\" ka warning aata hai. Continue karne ke liye \"Advanced\" → \"Go to dropper-tools.com (unsafe)\" chunein. Review poora hote hi ye warning hat jayega.",
-  "guide.metaTitle": "User Guide | Calendar Dropper",
+  "guide.metaTitle": "Calendar Dropper kaise use karein | Step-by-step guide",
   "guide.metaDesc": "Calendar Dropper kaise use karein: tournament flyer (PDF ya image) drop karo aur event apne aap Google Calendar aur Google Drive mein register ho jaata hai. Screenshots ke saath.",
   "guide.title": "Calendar Dropper<br><span class=\"blue\">User Guide</span>",
   "guide.subtitle": "Pehli baar use karne walon ke liye",

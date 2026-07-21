@@ -168,6 +168,66 @@ GA_TAG = """<!-- Google Analytics (GA4) -->
 </script>"""
 
 
+# ===== SEO: canonical / OGP / Twitter / JSON-LD ==========================
+BRAND = {"ja": "ドロッパー", "en": "Dropper", "in": "Dropper"}
+OG_LOCALE = {"ja": "ja_JP", "en": "en_US", "in": "en_IN"}
+# ページごとの (タイトルキー, 説明キー)
+SEO_KEYS = {
+    "index":   ("meta.title", "meta.desc"),
+    "privacy": ("privacy.metaTitle", "privacy.metaDesc"),
+    "guide":   ("guide.metaTitle", "guide.metaDesc"),
+}
+
+
+def canonical_url(page, code):
+    """そのページ・言語の正規URL（hreflang と同じ組み立て）。"""
+    meta = LANGS[code]
+    sub = (meta["dir"] + "/") if meta["dir"] else ""
+    if page == "index":
+        return f"{SITE_URL}/{sub}"
+    return f"{SITE_URL}/{sub}{PAGES[page]['filename']}"
+
+
+def _attr(s):
+    """HTML属性値エスケープ。"""
+    return (s or "").replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def build_seo_head(page, code, strings):
+    """canonical・OGP・Twitterカード・(トップのみ)JSON-LD をまとめて返す。"""
+    tkey, dkey = SEO_KEYS[page]
+    title = strings.get(tkey, "")
+    desc = strings.get(dkey, "")
+    url = canonical_url(page, code)
+    brand = BRAND[code]
+    out = [
+        f'<link rel="canonical" href="{url}">',
+        '<meta property="og:type" content="website">',
+        f'<meta property="og:site_name" content="{_attr(brand)}">',
+        f'<meta property="og:title" content="{_attr(title)}">',
+        f'<meta property="og:description" content="{_attr(desc)}">',
+        f'<meta property="og:url" content="{url}">',
+        f'<meta property="og:locale" content="{OG_LOCALE[code]}">',
+        '<meta name="twitter:card" content="summary">',
+        f'<meta name="twitter:title" content="{_attr(title)}">',
+        f'<meta name="twitter:description" content="{_attr(desc)}">',
+    ]
+    # トップページは WebApplication の構造化データ（JSON-LD）を付ける
+    if page == "index":
+        ld = {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": brand,
+            "url": url,
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web",
+            "description": desc,
+            "inLanguage": LANGS[code]["hreflang"],
+        }
+        out.append('<script type="application/ld+json">' + json.dumps(ld, ensure_ascii=False) + "</script>")
+    return "\n".join(out)
+
+
 def render(template, page, code, ja, langdict, hreflang):
     # 空欄や未定義キーは日本語にフォールバック
     strings = {k: (langdict.get(k) or ja.get(k, "")) for k in ja}
@@ -180,6 +240,7 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{GUIDE_PATH}}", PAGES[page]["guide_path"][code])
     html = html.replace("{{LANG_DIR}}", code)   # 使い方ガイドの画像は言語別フォルダ assets/guide/<code>/
     html = html.replace("{{GA}}", GA_TAG)
+    html = html.replace("{{SEO}}", build_seo_head(page, code, strings))
     html = html.replace("{{HITS_PATH}}", "" if code == "ja" else "/" + code)   # 訪問者カウンターを言語別に分ける(hits.shはパス別カウント)
     html = html.replace("{{GUIDE_BTN}}", build_guide_btn(page, code, strings))
     for key, value in strings.items():

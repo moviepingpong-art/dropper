@@ -1,7 +1,7 @@
 {
   "_note": "空欄/未定義のキーは自動で日本語にフォールバックします。",
-  "meta.title": "Dropper | Just drop a file, and leave the rest to us",
-  "meta.desc": "Dropper is a series of small tools where you just drop a file and the work gets done. The first one auto-adds event dates to Google Calendar. Works for any sport or situation.",
+  "meta.title": "Add tournament dates to Google Calendar automatically | Dropper",
+  "meta.desc": "Drop a tournament flyer (PDF or image) and Dropper auto-adds the date and venue to Google Calendar, and attaches the file to the event. Works for any sport. Free to try.",
   "logo.jp": "Dropper",
   "nav.tools": "Series",
   "nav.policy": "Notes",
@@ -91,7 +91,7 @@
   "privacy.back": "← Back to top page",
   "tool1.url": "https://app.dropper-tools.com/calendar-en/",
   "tool1.notice": "⚠️ This app is currently under review by Google, so a warning saying \"Google hasn't verified this app\" appears when you sign in. Choose \"Advanced\" → \"Go to dropper-tools.com (unsafe)\" to continue. The warning will disappear once the review is complete.",
-  "guide.metaTitle": "User Guide | Calendar Dropper",
+  "guide.metaTitle": "How to use Calendar Dropper | Tournament flyer to Google Calendar",
   "guide.metaDesc": "How to use Calendar Dropper: drop a tournament announcement (PDF or image) and register the event to Google Calendar and Google Drive automatically. With screenshots.",
   "guide.title": "Calendar Dropper<br><span class=\"blue\">User Guide</span>",
   "guide.subtitle": "For first-time users",
