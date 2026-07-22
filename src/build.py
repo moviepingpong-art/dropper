@@ -208,9 +208,14 @@ def build_seo_head(page, code, strings):
         f'<meta property="og:description" content="{_attr(desc)}">',
         f'<meta property="og:url" content="{url}">',
         f'<meta property="og:locale" content="{OG_LOCALE[code]}">',
-        '<meta name="twitter:card" content="summary">',
+        f'<meta property="og:image" content="{SITE_URL}/assets/og/og-{code}.png">',
+        '<meta property="og:image:width" content="1200">',
+        '<meta property="og:image:height" content="630">',
+        f'<meta property="og:image:alt" content="{_attr(brand)}">',
+        '<meta name="twitter:card" content="summary_large_image">',
         f'<meta name="twitter:title" content="{_attr(title)}">',
         f'<meta name="twitter:description" content="{_attr(desc)}">',
+        f'<meta name="twitter:image" content="{SITE_URL}/assets/og/og-{code}.png">',
     ]
     # トップページは WebApplication の構造化データ（JSON-LD）を付ける
     if page == "index":
