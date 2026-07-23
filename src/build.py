@@ -230,6 +230,38 @@ def build_seo_head(page, code, strings):
             "inLanguage": LANGS[code]["hreflang"],
         }
         out.append('<script type="application/ld+json">' + json.dumps(ld, ensure_ascii=False) + "</script>")
+    # ガイドページは HowTo の構造化データ（4ステップ）
+    if page == "guide":
+        import re as _re
+
+        def _plain(s):
+            return _re.sub(r"<[^>]+>", "", s or "").strip()
+
+        steps = []
+        for i in range(1, 5):
+            st_name = strings.get(f"guide.st{i}title", "")
+            st_text = _plain(strings.get(f"guide.st{i}body", ""))
+            if not st_name:
+                continue
+            steps.append({
+                "@type": "HowToStep",
+                "position": len(steps) + 1,
+                "name": st_name,
+                "text": st_text,
+                "url": f"{url}#s3",
+            })
+        if steps:
+            ld = {
+                "@context": "https://schema.org",
+                "@type": "HowTo",
+                "name": title,
+                "description": desc,
+                "inLanguage": LANGS[code]["hreflang"],
+                "totalTime": "PT2M",
+                "tool": [{"@type": "HowToTool", "name": brand}],
+                "step": steps,
+            }
+            out.append('<script type="application/ld+json">' + json.dumps(ld, ensure_ascii=False) + "</script>")
     return "\n".join(out)
 
 
