@@ -19,7 +19,7 @@
   "tools.desc": "Tools you use simply by dropping in a file. Pick the one that fits what you want to do and start right away.",
   "tool1.status": "Available",
   "tool1.name": "Event Dropper",
-  "tool1.desc": "Just drop in the event document (PDF or image) and the date and venue are added to Google Calendar automatically. The document, roster, results and photos are attached to the event as well. You can also create ready-to-post WhatsApp/SNS announcements from the details in one tap. Works for any event.",
+  "tool1.desc": "Just drop in the event document (PDF or image) and the date and venue are added to Google Calendar automatically. You can also create ready-to-post WhatsApp/SNS announcements from the details in one tap. Works for any event.",
   "tool1.tag1": "Google only",
   "tool1.tag2": "Adds to Calendar",
   "tool1.tag3": "Any event works",
