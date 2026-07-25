@@ -98,6 +98,12 @@ nav a:hover::after{transform:scaleX(1);}
 .hero-bg-shape.s2{width:500px;height:500px;background:var(--accent2);opacity:0.08;bottom:-150px;left:-150px;}
 .hero-bg-shape.s3{width:300px;height:300px;background:var(--accent);opacity:0.06;top:40%;left:25%;}
 .hero-content{text-align:center;z-index:1;animation:fadeUp 0.9s ease both;padding:0 1.5rem;display:flex;flex-direction:column;align-items:center;}
+.hero-free-badge{
+  display:inline-block;background:var(--green);color:#fff;
+  font-size:clamp(0.78rem,3vw,1rem);font-weight:700;letter-spacing:0.06em;
+  padding:0.42em 1.4em;border-radius:50px;margin-bottom:0.8rem;white-space:nowrap;
+  box-shadow:0 4px 16px rgba(0,200,150,0.4);
+}
 .hero-badge{
   display:inline-block;background:var(--accent);color:#fff;
   font-size:clamp(0.85rem,3.5vw,1.2rem);font-weight:700;letter-spacing:0.08em;
@@ -226,6 +232,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   <div class="hero-bg-shape s2"></div>
   <div class="hero-bg-shape s3"></div>
   <div class="hero-content">
+    <span class="hero-free-badge">🎉 Free to use right now</span>
     <span class="hero-badge">The Dropper Series</span>
     <h1>DROP<span class="accent-txt">PER</span>
       <span class="sub">Drop the tournament flyer — it goes straight to Google Calendar</span>
@@ -235,7 +242,8 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <p class="hero-catch-close">More tools are on the way.</p>
     </div>
     <div class="hero-actions">
-      <a href="#tools" class="btn btn-primary">See the series</a>
+      <a href="https://app.dropper-tools.com/calendar-en/" class="btn btn-primary" target="_blank" rel="noopener">Use it now</a>
+      <a href="#tools" class="btn btn-ghost">See the series</a>
       <a href="#about" class="btn btn-ghost">What is Dropper</a>
     </div>
   </div>
