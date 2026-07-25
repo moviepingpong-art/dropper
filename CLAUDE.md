@@ -27,6 +27,16 @@ GitHub Pages で公開している静的サイト。公開URL: https://dropper-t
 - hreflang は `ja` / `en` / `en-IN` / `x-default=ja`。`sitemap.xml` と揃える。
 - Search Console に sitemap 送信済み。
 
+## GitHub Pages と `.nojekyll`（重要・消さない）
+
+- 直下に **`.nojekyll`**（空ファイル）を置いてある。**削除しないこと。**
+- GitHub Pages はデフォルトで **Jekyll** が走る。このサイトは `build.py` が生成する
+  **純粋な静的HTML**なので Jekyll は不要。`.nojekyll` があると Jekyll 処理が
+  完全にスキップされ、ファイルがそのまま配信される。
+- これが無いと、`CLAUDE.md` など本文に `{{...}}` を含む Markdown を Jekyll が
+  **Liquid構文と誤認**して `pages build and deployment` が失敗する（実際に失敗した）。
+  ビルドが失敗すると deploy が skip され、公開ページが更新されなくなる。
+
 ---
 
 # ⚠️ 絶対に変更してはいけないもの（Google OAuth審査）
