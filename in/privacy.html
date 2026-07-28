@@ -279,8 +279,8 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         <tr><th>Scope</th><th>Kyun zaroori hai</th></tr>
       </thead>
       <tbody>
-        <tr><td>Google Calendar events banana aur edit karna<br><small>(calendar.events)</small></td><td>Aapke document se padhi gayi event details ko aapke apne calendar mein add karne ke liye.</td></tr>
-        <tr><td>Is app ki banayi files ka access<br><small>(drive.file)</small></td><td>Document ka text padhne (OCR) aur usse aapke apne Google Drive mein save karne ke liye.</td></tr>
+        <tr><td>Google Calendar events banana aur edit karna<br><small>(calendar.events)</small></td><td>Aapke event document ya schedule se padhi gayi dates ko aapke apne calendar mein add karne ke liye.</td></tr>
+        <tr><td>Is app ki banayi files ka access<br><small>(drive.file)</small></td><td>Event document ya schedule ka text padhne (OCR) aur usse aapke apne Google Drive mein save karne ke liye.</td></tr>
         <tr><td>App-specific data folder<br><small>(drive.appdata)</small></td><td>Yaad rakhne ke liye ki files kis folder mein save hoti hain, taaki aapke alag-alag devices (phone, computer) par wahi folder use ho.</td></tr>
       </tbody>
     </table>
@@ -293,10 +293,10 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 
   <section class="legal-sec">
     <h2>4. AI feature (Gemini) ke baare mein</h2>
-    <div class="legal-note">AI feature use karne par, aapke document se padha gaya text Google ke Gemini API ko bheja jaata hai. Ye feature use karna hai ya nahi, ye poori tarah aapki choice hai.</div>
+    <div class="legal-note">AI feature use karne par, aapke event document ya schedule se padha gaya text — ya file khud (PDF ya image) — Google ke Gemini API ko bheja jaata hai. Ye feature use karna hai ya nahi, ye poori tarah aapki choice hai.</div>
     <ul>
       <li>AI use karna opt-in hai. Sign in ke baad ek dialog aapse "AI use karein" ya "AI use na karein" chunne ko kehta hai.</li>
-      <li>Sirf tab jab aap "AI use karein" chunte hain, document ka text Google ke Gemini API ko bheja jaata hai.</li>
+      <li>Sirf tab jab aap "AI use karein" chunte hain, event document ya schedule ka text — ya file khud (PDF ya image) — Google ke Gemini API ko bheja jaata hai.</li>
       <li>Request aapki khud ki li hui API key use karti hai. Key sirf aapke device par (browser ke localStorage mein) store hoti hai aur hamein kabhi nahi bheji jaati.</li>
       <li>Gemini API ko bheje gaye data ka handling Google ki apni policies ke hisaab se hota hai.</li>
       <li>Agar aap "AI use na karein" chunte hain, to koi bhi text aapke browser aur aapke apne Google account ke bahar nahi jaata.</li>
@@ -307,7 +307,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
     <h2>5. Data Sharing aur Third-Party Disclosure</h2>
     <p>DROPPER aapke Google user data ko hamare ya kisi third party ko na bechta hai, na share karta hai, na transfer karta hai. DROPPER ka koi server nahi hai, isliye yeh data hum tak pahunchta hi nahi.</p>
     <ul>
-      <li>Sirf ek exception hai — jab aap "Use AI" choose karte hain. Tabhi event document se padha gaya text aapke apne API key se Google ke Gemini API ko bheja jaata hai. Yeh aapke choice par, aapke aur Google ke beech direct transmission hai, hamare through nahi jaata.</li>
+      <li>Sirf ek exception hai — jab aap "Use AI" choose karte hain. Tabhi event document ya schedule se padha gaya text — ya file khud (PDF ya image) — aapke apne API key se Google ke Gemini API ko bheja jaata hai. Yeh aapke choice par, aapke aur Google ke beech direct transmission hai, hamare through nahi jaata.</li>
       <li>Gemini API ko bheje gaye data ka handling <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google ki Privacy Policy</a> ke according hota hai.</li>
       <li>Iske alawa, hum Google user data kisi bhi advertiser, analytics provider ya third party ko kabhi disclose nahi karte.</li>
     </ul>
@@ -335,7 +335,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
     <p>Yeh data aap kabhi bhi in tareekon se delete kar sakte hain:</p>
     <ul>
       <li>Text recognition (OCR) ke liye temporarily banayi gayi files padhne ke turant baad delete ho jaati hain.</li>
-      <li>Google Calendar mein banaye gaye events aur Google Drive mein save ki gayi event documents aap khud manage karte hain aur kabhi bhi Google se delete kar sakte hain (DROPPER mein delete function nahi hai).</li>
+      <li>Google Calendar mein banaye gaye events aur Google Drive mein save ki gayi event documents ya schedules aap khud manage karte hain aur kabhi bhi Google se delete kar sakte hain (DROPPER mein delete function nahi hai).</li>
       <li>Device par store ki gayi API key aur settings ko aap kabhi bhi apne browser settings se delete kar sakte hain.</li>
       <li>DROPPER ki aapke Google account tak access ko aap kabhi bhi apni <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Google Account security settings</a> se revoke kar sakte hain.</li>
     </ul>

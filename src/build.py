@@ -157,9 +157,8 @@ def build_guide_btn(page, code, strings):
 
 
 # 予定表ドロッパー（シリーズ第2弾）を掲載する言語。
-# 通常モードの読み取りが日本語専用のため、公開は ja のみ。
-# ここに en/in を足さないこと（リンクしても機能しない）。
-TOOL2_LANGS = ["ja"]
+# 2026-07-29 に en/in も公開したため3言語。リンク先は tool2.url（言語ごとに別URL）。
+TOOL2_LANGS = ["ja", "en", "in"]
 
 
 def build_tool2_card(code):
