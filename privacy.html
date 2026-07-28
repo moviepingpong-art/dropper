@@ -279,8 +279,8 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         <tr><th>権限</th><th>利用目的</th></tr>
       </thead>
       <tbody>
-        <tr><td>Googleカレンダーの予定の作成・編集<br><small>(calendar.events)</small></td><td>イベント文書から読み取った大会情報を、お客様のカレンダーに予定として登録するため。</td></tr>
-        <tr><td>このアプリが作成したファイルへのアクセス<br><small>(drive.file)</small></td><td>イベント文書の文字読み取り（OCR）と、お客様のGoogleドライブへの保存のため。</td></tr>
+        <tr><td>Googleカレンダーの予定の作成・編集<br><small>(calendar.events)</small></td><td>イベント文書や予定表から読み取った予定の情報を、お客様のカレンダーに予定として登録するため。</td></tr>
+        <tr><td>このアプリが作成したファイルへのアクセス<br><small>(drive.file)</small></td><td>イベント文書や予定表の文字読み取り（OCR）と、お客様のGoogleドライブへの保存のため。</td></tr>
         <tr><td>アプリ専用のデータ領域<br><small>(drive.appdata)</small></td><td>保存先フォルダの情報を記録し、パソコンとスマートフォンなど複数の端末で同じフォルダを使えるようにするため。</td></tr>
       </tbody>
     </table>
@@ -293,10 +293,10 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 
   <section class="legal-sec">
     <h2>4. AI機能（Gemini）について</h2>
-    <div class="legal-note">AI機能を使うと、イベント文書から読み取った文字が Google の Gemini（AI）へ送信されます。この機能を使うかどうかは、お客様がお選びいただけます。</div>
+    <div class="legal-note">AI機能を使うと、イベント文書や予定表から読み取った文字、または当該ファイル（PDF・画像）そのものが Google の Gemini（AI）へ送信されます。この機能を使うかどうかは、お客様がお選びいただけます。</div>
     <ul>
       <li>AIの利用は選択制です。ログイン後に表示される画面で「AIを使う」「AIを使わない」をお選びいただけます。</li>
-      <li>「AIを使う」を選んだ場合のみ、イベント文書から読み取った文字が Google の Gemini API へ送信されます。</li>
+      <li>「AIを使う」を選んだ場合のみ、イベント文書や予定表から読み取った文字、または当該ファイル（PDF・画像）そのものが Google の Gemini API へ送信されます。</li>
       <li>送信には、お客様ご自身が取得したAPIキーを使用します。キーはお客様の端末内（ブラウザのlocalStorage）にのみ保存され、当方へ送信されることはありません。</li>
       <li>Gemini API に送信されたデータの取り扱いは、Google のポリシーに従います。</li>
       <li>「AIを使わない」を選んだ場合、外部へ文字が送信されることは一切ありません。</li>
@@ -307,7 +307,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
     <h2>5. データの共有・第三者提供</h2>
     <p>ドロッパーは、お客様のGoogleユーザーデータを、当方または第三者へ販売・共有・移転することはありません。当方はサーバーを保有しておらず、これらのデータを受け取ること自体がありません。</p>
     <ul>
-      <li>唯一の例外は、お客様が「AIを使う」を選択した場合です。このときに限り、イベント文書から読み取った文字が、お客様ご自身のAPIキーを用いて Google の Gemini API へ送信されます。これはお客様の選択にもとづく、お客様とGoogleの間の直接的な送信であり、当方を経由しません。</li>
+      <li>唯一の例外は、お客様が「AIを使う」を選択した場合です。このときに限り、イベント文書や予定表から読み取った文字、または当該ファイル（PDF・画像）そのものが、お客様ご自身のAPIキーを用いて Google の Gemini API へ送信されます。これはお客様の選択にもとづく、お客様とGoogleの間の直接的な送信であり、当方を経由しません。</li>
       <li>Gemini API に送信されたデータの取り扱いは、<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Googleのプライバシーポリシー</a>に従います。</li>
       <li>上記以外に、Googleユーザーデータを広告・分析・その他いかなる第三者にも提供することはありません。</li>
     </ul>
@@ -335,7 +335,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
     <p>これらのデータは、以下の方法でいつでも削除できます。</p>
     <ul>
       <li>文字読み取り（OCR）のために一時的に作成するファイルは、読み取り後ただちに削除されます。</li>
-      <li>Googleカレンダーに作成した予定、およびGoogleドライブに保存したイベント文書は、お客様ご自身が管理し、いつでもGoogleの画面から削除できます（ドロッパー側に削除機能はありません）。</li>
+      <li>Googleカレンダーに作成した予定、およびGoogleドライブに保存したイベント文書や予定表は、お客様ご自身が管理し、いつでもGoogleの画面から削除できます（ドロッパー側に削除機能はありません）。</li>
       <li>端末内に保存されたAPIキー・設定情報は、ブラウザの設定からいつでも削除できます。</li>
       <li>ドロッパーのGoogleアカウントへのアクセス権は、<a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Googleアカウントのセキュリティ設定</a>からいつでも取り消せます。</li>
     </ul>

@@ -236,7 +236,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <!-- ツール1：カレンダー自動登録 -->
       <article class="tool-card">
         <span class="tool-status status-open">{{tool1.status}}</span>
-        <div class="tool-icon">📅</div>
+        <div class="tool-icon">🎪</div>
         <h3 class="tool-name">{{tool1.name}}</h3>
         <p class="tool-desc">{{tool1.desc}}</p>
         <div class="tool-tags">
@@ -253,13 +253,9 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         </div>
       </article>
 
-      <!-- 次のツール（準備中プレースホルダ） -->
-      <article class="tool-card placeholder">
-        <span class="tool-status status-dev">{{placeholder.status}}</span>
-        <div class="tool-icon">🛠️</div>
-        <h3 class="tool-name">{{placeholder.name}}</h3>
-        <p class="tool-desc">{{placeholder.desc}}</p>
-      </article>
+      <!-- ツール2：予定表ドロッパー（ja のみ実カード。en/in は準備中プレースホルダ）
+           出し分けは build.py の build_tool2_card() / TOOL2_LANGS -->
+      {{TOOL2_CARD}}
 
     </div>
   </div>

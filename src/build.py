@@ -156,6 +156,43 @@ def build_guide_btn(page, code, strings):
     return f'<span class="btn-sm disabled">{label}</span>'
 
 
+# 予定表ドロッパー（シリーズ第2弾）を掲載する言語。
+# 通常モードの読み取りが日本語専用のため、公開は ja のみ。
+# ここに en/in を足さないこと（リンクしても機能しない）。
+TOOL2_LANGS = ["ja"]
+
+
+def build_tool2_card(code):
+    """シリーズ2枚目のカード。
+    公開言語では予定表ドロッパーの実カード、それ以外は従来の準備中プレースホルダ。
+    ここで返す文字列の {{...}} は、このあとの辞書置換でまとめて差し替わる。
+    ※ 予定表ドロッパーの使い方ガイドは未作成のため、ガイドボタンは出さない。"""
+    if code in TOOL2_LANGS:
+        return """<article class="tool-card">
+        <span class="tool-status status-open">{{tool2.status}}</span>
+        <div class="tool-icon">📅</div>
+        <h3 class="tool-name">{{tool2.name}}</h3>
+        <p class="tool-desc">{{tool2.desc}}</p>
+        <div class="tool-tags">
+          <span class="tool-tag">{{tool2.tag1}}</span>
+          <span class="tool-tag">{{tool2.tag2}}</span>
+          <span class="tool-tag">{{tool2.tag3}}</span>
+          <span class="tool-tag">{{tool2.tag4}}</span>
+          <span class="tool-tag">{{tool2.tag5}}</span>
+        </div>
+        <p class="tool-price">{{tool2.price}}</p>
+        <div class="tool-actions">
+          <a class="btn-sm fill" href="{{tool2.url}}" target="_blank" rel="noopener">{{tool2.btn1}}</a>
+        </div>
+      </article>"""
+    return """<article class="tool-card placeholder">
+        <span class="tool-status status-dev">{{placeholder.status}}</span>
+        <div class="tool-icon">🛠️</div>
+        <h3 class="tool-name">{{placeholder.name}}</h3>
+        <p class="tool-desc">{{placeholder.desc}}</p>
+      </article>"""
+
+
 # Google Analytics (GA4) タグ。全ページの <head> 直下に入る（{{GA}} を置換）。
 # dropper-tools.com と app.dropper-tools.com は同じ測定IDでクロスドメイン計測（GA側で設定済み）。
 GA_TAG = """<!-- Google Analytics (GA4) -->
@@ -280,6 +317,7 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{SEO}}", build_seo_head(page, code, strings))
     html = html.replace("{{HITS_PATH}}", "" if code == "ja" else "/" + code)   # 訪問者カウンターを言語別に分ける(hits.shはパス別カウント)
     html = html.replace("{{GUIDE_BTN}}", build_guide_btn(page, code, strings))
+    html = html.replace("{{TOOL2_CARD}}", build_tool2_card(code))
     for key, value in strings.items():
         html = html.replace("{{" + key + "}}", value)
     return html

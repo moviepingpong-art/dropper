@@ -235,7 +235,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
     <span class="hero-free-badge">🎉 今なら無料公開中</span>
     <span class="hero-badge">ドロッパーシリーズ</span>
     <h1>DROP<span class="accent-txt">PER</span>
-      <span class="sub">イベント文書をドロップするだけで、Googleカレンダー自動登録、SNS案内自動作成</span>
+      <span class="sub">その1枚を、ドロップするだけ。予定はまとめてGoogleカレンダーへ。</span>
     </h1>
     <div class="hero-catch">
       <p class="hero-catch-main">ファイルを、ドロップ。<br>あとは、おまかせ。</p>
@@ -261,7 +261,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <!-- ツール1：カレンダー自動登録 -->
       <article class="tool-card">
         <span class="tool-status status-open">公開中</span>
-        <div class="tool-icon">📅</div>
+        <div class="tool-icon">🎪</div>
         <h3 class="tool-name">イベントドロッパー</h3>
         <p class="tool-desc">イベント文書（PDF・画像）をドロップするだけで、開催日と会場をGoogleカレンダーに自動登録。さらに、抽出した内容からLINE・SNS用の案内文もワンタップで作成。どんなイベントでも使えます。</p>
         <div class="tool-tags">
@@ -278,12 +278,24 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         </div>
       </article>
 
-      <!-- 次のツール（準備中プレースホルダ） -->
-      <article class="tool-card placeholder">
-        <span class="tool-status status-dev">開発中</span>
-        <div class="tool-icon">🛠️</div>
-        <h3 class="tool-name">次のドロッパーを準備中</h3>
-        <p class="tool-desc">ドロップして使える新しい道具を、これから少しずつ追加していきます。公開までもうしばらくお待ちください。</p>
+      <!-- ツール2：予定表ドロッパー（ja のみ実カード。en/in は準備中プレースホルダ）
+           出し分けは build.py の build_tool2_card() / TOOL2_LANGS -->
+      <article class="tool-card">
+        <span class="tool-status status-open">公開中</span>
+        <div class="tool-icon">📅</div>
+        <h3 class="tool-name">予定表ドロッパー</h3>
+        <p class="tool-desc">年間行事予定表や大会日程を1枚ドロップするだけで、その中の予定をまとめて読み取り。一覧で確認してから、Googleカレンダーへ一括登録できます。マス目のカレンダー形式にも対応。実際の学校の年間行事予定表で157件を読み取り、原本と一致することを確認済みです。</p>
+        <div class="tool-tags">
+          <span class="tool-tag">1枚からまとめて登録</span>
+          <span class="tool-tag">マス目の予定表もOK</span>
+          <span class="tool-tag">一覧で確認してから登録</span>
+          <span class="tool-tag">Googleだけで完結</span>
+          <span class="tool-tag">二重登録を防ぐ</span>
+        </div>
+        <p class="tool-price">現在無料（今後有料化予定）</p>
+        <div class="tool-actions">
+          <a class="btn-sm fill" href="https://app.dropper-tools.com/schedule/" target="_blank" rel="noopener">使ってみる</a>
+        </div>
       </article>
 
     </div>
@@ -321,7 +333,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   <div class="section-inner">
     <p class="section-label">About</p>
     <h2 class="section-title">ドロッパー<span class="blue">とは</span></h2>
-    <p class="section-desc">「ファイルを放り込むだけで、面倒が片づく」。そんな小さな道具をドロッパーと名づけ、シリーズで作って公開しています。第一弾は、イベント文書を読み取って開催日・会場をGoogleカレンダーに自動登録し、LINE・SNSの案内文まで作る道具。やり方はどれも同じ＝ドロップするだけなので、特定の団体や競技に限らず誰でも使えます。道具はこれから少しずつ増えていきます。</p>
+    <p class="section-desc">「ファイルを放り込むだけで、面倒が片づく」。そんな小さな道具をドロッパーと名づけ、シリーズで作って公開しています。第一弾は、イベント文書を読み取って開催日・会場をGoogleカレンダーに自動登録し、LINE・SNSの案内文まで作る道具。第二弾は、年間行事予定表のような「予定がたくさん並んだ1枚」を読み取って、まとめてカレンダーに入れる道具です。やり方はどれも同じ＝ドロップするだけなので、特定の団体や競技に限らず誰でも使えます。道具はこれから少しずつ増えていきます。</p>
   </div>
 </section>
 
