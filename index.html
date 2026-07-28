@@ -140,6 +140,35 @@ nav a:hover::after{transform:scaleX(1);}
 .btn-ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,0.5);}
 .btn-ghost:hover{background:rgba(255,255,255,0.12);border-color:#fff;}
 
+/* ---------- ツール選択ポップアップ ---------- */
+.picker-overlay{
+  position:fixed;inset:0;z-index:200;display:none;
+  align-items:center;justify-content:center;padding:1.5rem;
+  background:rgba(26,26,46,0.6);backdrop-filter:blur(4px);
+}
+.picker-overlay.open{display:flex;}
+.picker{
+  background:var(--card);border-radius:14px;padding:2rem 1.6rem 1.5rem;
+  width:100%;max-width:480px;box-shadow:0 24px 60px rgba(0,0,0,0.3);
+  animation:pickerIn 0.2s ease-out;
+}
+@keyframes pickerIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+.picker-title{font-size:1.02rem;font-weight:700;text-align:center;line-height:1.5;margin-bottom:1.4rem;}
+.picker-list{display:grid;gap:0.9rem;}
+.picker-item{
+  display:flex;align-items:center;gap:1rem;text-decoration:none;background:#fff;
+  border:2px solid var(--border);border-radius:10px;padding:1rem 1.1rem;transition:all 0.18s;
+}
+.picker-item:hover{border-color:var(--primary);background:var(--primary-pale);transform:translateY(-2px);}
+.picker-emoji{font-size:1.9rem;line-height:1;flex-shrink:0;}
+.picker-name{display:block;font-weight:700;font-size:0.97rem;color:var(--text-dark);}
+.picker-line{display:block;font-size:0.79rem;color:var(--text-mid);line-height:1.5;}
+.picker-close{
+  display:block;margin:1.3rem auto 0;padding:0.4em 1.4em;border:none;border-radius:6px;
+  background:none;color:var(--text-light);font-family:inherit;font-size:0.82rem;font-weight:700;cursor:pointer;
+}
+.picker-close:hover{color:var(--text-mid);background:var(--bg);}
+
 /* ---------- セクション共通 ---------- */
 section{padding:6rem 1.5rem;}
 .section-inner{max-width:960px;margin:0 auto;}
@@ -242,7 +271,8 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <p class="hero-catch-close">シリーズは、これから増えていきます。</p>
     </div>
     <div class="hero-actions">
-      <a href="https://app.dropper-tools.com/calendar/" class="btn btn-primary" target="_blank" rel="noopener">今すぐ使ってみる</a>
+      <!-- クリックでツール選択ポップアップを開く。JS無効時はシリーズ節へ飛ぶ -->
+      <a href="#tools" class="btn btn-primary" id="heroUseBtn" aria-haspopup="dialog">今すぐ使ってみる</a>
       <a href="#tools" class="btn btn-ghost">シリーズを見る</a>
       <a href="#about" class="btn btn-ghost">ドロッパーとは</a>
     </div>
@@ -351,10 +381,53 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 
 <button id="backToTop" aria-label="Top">↑</button>
 
+<!-- ツール選択ポップアップ（ヒーローの「使ってみる」から開く） -->
+<div class="picker-overlay" id="toolPicker" role="dialog" aria-modal="true" aria-labelledby="pickerTitle">
+  <div class="picker">
+    <p class="picker-title" id="pickerTitle">どちらのドロッパーを使いますか？</p>
+    <div class="picker-list">
+      <a class="picker-item" href="https://app.dropper-tools.com/calendar/" target="_blank" rel="noopener">
+        <span class="picker-emoji">🎪</span>
+        <span>
+          <span class="picker-name">イベントドロッパー</span>
+          <span class="picker-line">チラシ1枚から1件</span>
+        </span>
+      </a>
+      <a class="picker-item" href="https://app.dropper-tools.com/schedule/" target="_blank" rel="noopener">
+        <span class="picker-emoji">📅</span>
+        <span>
+          <span class="picker-name">予定表ドロッパー</span>
+          <span class="picker-line">1枚からまとめて何件も</span>
+        </span>
+      </a>
+    </div>
+    <button type="button" class="picker-close" id="pickerClose">閉じる</button>
+  </div>
+</div>
+
 <script>
 const btt=document.getElementById('backToTop');
 addEventListener('scroll',()=>{btt.classList.toggle('visible',scrollY>400);});
 btt.addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
+
+// ツール選択ポップアップ
+const picker=document.getElementById('toolPicker');
+const pickerBtn=document.getElementById('heroUseBtn');
+const openPicker=()=>{
+  picker.classList.add('open');
+  document.body.style.overflow='hidden';
+  picker.querySelector('.picker-item').focus();
+};
+const closePicker=()=>{
+  picker.classList.remove('open');
+  document.body.style.overflow='';
+  pickerBtn.focus();
+};
+pickerBtn.addEventListener('click',e=>{e.preventDefault();openPicker();});
+document.getElementById('pickerClose').addEventListener('click',closePicker);
+picker.addEventListener('click',e=>{if(e.target===picker)closePicker();});
+picker.querySelectorAll('.picker-item').forEach(a=>a.addEventListener('click',closePicker));
+addEventListener('keydown',e=>{if(e.key==='Escape'&&picker.classList.contains('open'))closePicker();});
 </script>
 
 </body>
