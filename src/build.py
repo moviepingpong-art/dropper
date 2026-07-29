@@ -91,6 +91,21 @@ PAGES = {
         # ガイド自身を指す（現状リンクは出ないが定義は揃えておく）
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
+    # 予定表ドロッパーの使い方ガイド。スクショが日本語版のみのため ja だけ生成する。
+    # en/in を足すときは assets/guide-schedule/<code>/ に画像を置き、langs に追加する。
+    "guide-schedule": {
+        "template": "guide-schedule-template.html",
+        "filename": "guide-schedule.html",
+        "langs": ["ja"],
+        # ja だけ生成するので、他言語へは各言語のトップへ逃がす（404を出さないため）
+        "switch_paths": {
+            "ja": {"ja": "./guide-schedule.html", "en": "./en/", "in": "./in/"},
+        },
+        "nav_prefix": "index.html",
+        "privacy_path": {"ja": "./privacy.html"},
+        # イベントドロッパー側のガイドへのリンク用
+        "guide_path": {"ja": "./guide.html"},
+    },
 }
 # =========================================================================
 
@@ -160,12 +175,23 @@ def build_guide_btn(page, code, strings):
 # 2026-07-29 に en/in も公開したため3言語。リンク先は tool2.url（言語ごとに別URL）。
 TOOL2_LANGS = ["ja", "en", "in"]
 
+# トップから予定表ドロッパーのガイドへのパス（生成される言語だけリンクを出す）
+GSCHED_PATH = {"ja": "./guide-schedule.html", "en": "../guide-schedule.html", "in": "../guide-schedule.html"}
 
-def build_tool2_card(code):
+
+def build_tool2_guide_btn(code, strings):
+    """予定表カードの「使い方ガイド」ボタン。その言語のガイドが無ければ出さない。"""
+    if code not in page_langs("guide-schedule"):
+        return ""
+    label = strings.get("tool2.btn2", "")
+    return f'\n          <a class="btn-sm line" href="{GSCHED_PATH[code]}">{label}</a>'
+
+
+def build_tool2_card(code, strings):
     """シリーズ2枚目のカード。
     公開言語では予定表ドロッパーの実カード、それ以外は従来の準備中プレースホルダ。
     ここで返す文字列の {{...}} は、このあとの辞書置換でまとめて差し替わる。
-    ※ 予定表ドロッパーの使い方ガイドは未作成のため、ガイドボタンは出さない。"""
+    ガイドボタンはガイドが生成される言語だけに出る（build_tool2_guide_btn）。"""
     if code in TOOL2_LANGS:
         return """<article class="tool-card">
         <span class="tool-status status-open">{{tool2.status}}</span>
@@ -181,7 +207,7 @@ def build_tool2_card(code):
         </div>
         <p class="tool-price">{{tool2.price}}</p>
         <div class="tool-actions">
-          <a class="btn-sm fill" href="{{tool2.url}}" target="_blank" rel="noopener">{{tool2.btn1}}</a>
+          <a class="btn-sm fill" href="{{tool2.url}}" target="_blank" rel="noopener">{{tool2.btn1}}</a>""" + build_tool2_guide_btn(code, strings) + """
         </div>
       </article>"""
     return """<article class="tool-card placeholder">
@@ -212,7 +238,11 @@ SEO_KEYS = {
     "index":   ("meta.title", "meta.desc"),
     "privacy": ("privacy.metaTitle", "privacy.metaDesc"),
     "guide":   ("guide.metaTitle", "guide.metaDesc"),
+    "guide-schedule": ("gsched.metaTitle", "gsched.metaDesc"),
 }
+
+# HowTo 構造化データを出すガイドページ: ページ名 -> (キー接頭辞, ステップ数)
+HOWTO_PAGES = {"guide": ("guide", 4), "guide-schedule": ("gsched", 5)}
 
 
 def canonical_url(page, code):
@@ -266,17 +296,18 @@ def build_seo_head(page, code, strings):
             "inLanguage": LANGS[code]["hreflang"],
         }
         out.append('<script type="application/ld+json">' + json.dumps(ld, ensure_ascii=False) + "</script>")
-    # ガイドページは HowTo の構造化データ（4ステップ）
-    if page == "guide":
+    # ガイドページは HowTo の構造化データ
+    if page in HOWTO_PAGES:
+        prefix, nsteps = HOWTO_PAGES[page]
         import re as _re
 
         def _plain(s):
             return _re.sub(r"<[^>]+>", "", s or "").strip()
 
         steps = []
-        for i in range(1, 5):
-            st_name = strings.get(f"guide.st{i}title", "")
-            st_text = _plain(strings.get(f"guide.st{i}body", ""))
+        for i in range(1, nsteps + 1):
+            st_name = strings.get(f"{prefix}.st{i}title", "")
+            st_text = _plain(strings.get(f"{prefix}.st{i}body", ""))
             if not st_name:
                 continue
             steps.append({
@@ -316,7 +347,7 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{SEO}}", build_seo_head(page, code, strings))
     html = html.replace("{{HITS_PATH}}", "" if code == "ja" else "/" + code)   # 訪問者カウンターを言語別に分ける(hits.shはパス別カウント)
     html = html.replace("{{GUIDE_BTN}}", build_guide_btn(page, code, strings))
-    html = html.replace("{{TOOL2_CARD}}", build_tool2_card(code))
+    html = html.replace("{{TOOL2_CARD}}", build_tool2_card(code, strings))
     for key, value in strings.items():
         html = html.replace("{{" + key + "}}", value)
     return html

@@ -62,6 +62,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://dropper-tools.com/guide-schedule.html</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://dropper-tools.com/privacy.html</loc>
     <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/privacy.html"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/privacy.html"/>

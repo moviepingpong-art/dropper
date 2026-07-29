@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}">
+<head>
+<meta charset="UTF-8">
+{{GA}}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{gsched.metaTitle}}</title>
+<meta name="description" content="{{gsched.metaDesc}}">
+{{SEO}}
+{{HREFLANG}}
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ドロッパー DROPPER  -  使い方ガイド
+   ※このファイルは src/guide-template.html から自動生成されています。
+     編集は src/ 側を直して build.py を実行してください。
+   スクリーンショットは /assets/guide/ に置きます（3言語で共用）。
+   ============================================================ */
+
+/* ============================================================
+   ドロッパー DROPPER  -  プライバシーポリシー
+   ※このファイルは src/privacy-template.html から自動生成されています。
+     編集は src/ 側を直して build.py を実行してください。
+   ============================================================ */
+
+/* ============================================================
+   便利ツール集 TOOLBOX  -  style（白山クラブサイトのデザインに準拠）
+   ※このファイルは src/template.html から自動生成されています。
+     編集は src/ 側を直して build.py を実行してください。
+   ============================================================ */
+:root{
+  --primary:#0057ff; --primary-light:#3a7fff; --primary-pale:#e0eaff; --primary-dark:#0040cc;
+  --accent:#ff5722; --accent2:#ffca28; --green:#00c896;
+  --bg:#f4f6fb; --card:#ffffff;
+  --text-dark:#1a1a2e; --text-mid:#4a4a6a; --text-light:#9090b0; --border:#e0e4f0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text-dark);line-height:1.8;}
+
+/* ---------- ヘッダー ---------- */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(255,255,255,0.97);backdrop-filter:blur(12px);
+  border-bottom:3px solid var(--primary);
+  padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;gap:1rem;
+}
+.logo{
+  font-family:'Oswald',sans-serif;font-size:1.25rem;font-weight:700;color:var(--primary);
+  letter-spacing:0.08em;text-decoration:none;text-transform:uppercase;display:flex;align-items:center;gap:0.5rem;
+}
+.logo .dot{color:var(--accent);}
+.logo .jp{font-family:'Noto Sans JP',sans-serif;font-size:0.78rem;font-weight:700;color:var(--text-mid);letter-spacing:0.06em;text-transform:none;}
+.header-right{display:flex;align-items:center;gap:1.5rem;}
+nav{display:flex;gap:1.6rem;}
+nav a{
+  font-size:0.78rem;font-weight:700;color:var(--text-mid);text-decoration:none;
+  letter-spacing:0.1em;text-transform:uppercase;transition:color 0.2s;position:relative;
+}
+nav a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:2px;background:var(--accent);transform:scaleX(0);transition:transform 0.2s;}
+nav a:hover{color:var(--primary);}
+nav a:hover::after{transform:scaleX(1);}
+.lang-switch{display:flex;align-items:center;gap:0.4rem;font-size:0.72rem;font-weight:700;letter-spacing:0.03em;}
+.lang-switch a{color:var(--text-light);text-decoration:none;transition:color 0.2s;}
+.lang-switch a.active{color:var(--primary);}
+.lang-switch a:hover{color:var(--primary);}
+.lang-switch .sep{color:var(--border);}
+@media(max-width:640px){
+  header{padding:0 1.1rem;}
+  .header-right{gap:0.9rem;}
+  nav{gap:1rem;}
+  nav a{font-size:0.68rem;letter-spacing:0.05em;}
+  .logo{font-size:1.05rem;}
+  .logo .jp{display:none;}
+  .lang-switch{font-size:0.66rem;gap:0.3rem;}
+}
+
+/* ---------- ヒーロー ---------- */
+.hero{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;padding-top:64px;
+  background:linear-gradient(135deg,#0a0a2e 0%,#0057ff 60%,#1a1aff 100%);
+}
+.hero-bg-shape{position:absolute;border-radius:50%;}
+.hero-bg-shape.s1{width:700px;height:700px;background:#fff;opacity:0.06;top:-200px;right:-200px;}
+.hero-bg-shape.s2{width:500px;height:500px;background:var(--accent2);opacity:0.08;bottom:-150px;left:-150px;}
+.hero-bg-shape.s3{width:300px;height:300px;background:var(--accent);opacity:0.06;top:40%;left:25%;}
+.hero-content{text-align:center;z-index:1;animation:fadeUp 0.9s ease both;padding:0 1.5rem;display:flex;flex-direction:column;align-items:center;}
+.hero-badge{
+  display:inline-block;background:var(--accent);color:#fff;
+  font-size:clamp(0.85rem,3.5vw,1.2rem);font-weight:700;letter-spacing:0.08em;
+  padding:0.5em 1.8em;border-radius:4px;margin-bottom:1.1rem;white-space:nowrap;
+}
+.hero h1{
+  font-family:'Oswald',sans-serif;font-size:clamp(2.6rem,9vw,5rem);font-weight:700;color:#fff;
+  line-height:1.05;letter-spacing:0.06em;text-transform:uppercase;
+}
+.hero h1 .accent-txt{color:var(--accent2);}
+.hero h1 .sub{
+  font-family:'Noto Sans JP',sans-serif;font-size:0.26em;color:rgba(255,255,255,0.75);
+  display:block;font-weight:400;margin-top:0.8em;letter-spacing:0.2em;text-transform:none;
+}
+.hero-catch{margin:1.8rem 0 2rem;display:flex;flex-direction:column;align-items:center;gap:0.6rem;}
+.hero-catch-main{
+  font-size:clamp(1.15rem,4vw,1.6rem);font-weight:900;color:#fff;line-height:1.65;
+  letter-spacing:0.04em;text-shadow:0 2px 20px rgba(0,0,0,0.4);
+}
+.hero-catch-close{
+  font-size:clamp(1rem,3vw,1.25rem);font-weight:700;color:var(--accent2);
+  letter-spacing:0.12em;text-shadow:0 0 20px rgba(255,202,40,0.35);
+}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;}
+
+/* ---------- ボタン ---------- */
+.btn{
+  display:inline-block;padding:0.8em 2.4em;border-radius:6px;font-size:0.88rem;font-weight:700;
+  text-decoration:none;letter-spacing:0.08em;transition:all 0.22s;cursor:pointer;
+  font-family:'Noto Sans JP',sans-serif;border:none;
+}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 6px 20px rgba(255,87,34,0.4);}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(255,87,34,0.5);}
+.btn-ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,0.5);}
+.btn-ghost:hover{background:rgba(255,255,255,0.12);border-color:#fff;}
+
+/* ---------- セクション共通 ---------- */
+section{padding:6rem 1.5rem;}
+.section-inner{max-width:960px;margin:0 auto;}
+.section-label{font-family:'Oswald',sans-serif;font-size:0.78rem;letter-spacing:0.25em;color:var(--accent);font-weight:500;text-transform:uppercase;margin-bottom:0.4rem;}
+.section-title{font-family:'Oswald',sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;color:var(--text-dark);margin-bottom:1rem;line-height:1.2;letter-spacing:0.04em;}
+.section-title .blue{color:var(--primary);}
+.section-desc{color:var(--text-mid);font-size:0.95rem;max-width:600px;margin-bottom:3rem;line-height:2;}
+
+/* ---------- ツール一覧 ---------- */
+#tools{background:linear-gradient(180deg,#f0f5ff 0%,#ffffff 100%);}
+.tools-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.8rem;}
+@media(max-width:760px){.tools-grid{grid-template-columns:1fr;}}
+.tool-card{
+  position:relative;background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:2rem 1.8rem;box-shadow:0 4px 18px rgba(10,10,46,0.06);
+  transition:transform 0.2s,box-shadow 0.2s;display:flex;flex-direction:column;
+}
+.tool-card:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(10,10,46,0.12);}
+.tool-card.placeholder{background:#f7f9ff;border-style:dashed;box-shadow:none;}
+.tool-card.placeholder:hover{transform:none;box-shadow:none;}
+.tool-status{
+  position:absolute;top:1.2rem;right:1.2rem;font-size:0.7rem;font-weight:700;letter-spacing:0.08em;
+  padding:0.28em 0.9em;border-radius:50px;
+}
+.status-open{background:rgba(0,200,150,0.14);color:#00936e;}
+.status-soon{background:rgba(255,202,40,0.18);color:#9a7600;}
+.status-dev{background:rgba(144,144,176,0.16);color:var(--text-light);}
+.tool-icon{font-size:2.4rem;line-height:1;margin-bottom:0.9rem;}
+.tool-name{font-family:'Oswald',sans-serif;font-size:1.3rem;font-weight:700;color:var(--text-dark);letter-spacing:0.02em;margin-bottom:0.7rem;line-height:1.3;}
+.tool-card.placeholder .tool-name,.tool-card.placeholder .tool-desc,.tool-card.placeholder .tool-icon{color:var(--text-light);}
+.tool-desc{font-size:0.9rem;color:var(--text-mid);line-height:1.9;margin-bottom:1.2rem;}
+.tool-tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.6rem;}
+.tool-tag{font-size:0.72rem;font-weight:700;color:var(--primary-dark);background:var(--primary-pale);border-radius:6px;padding:0.3em 0.8em;letter-spacing:0.03em;}
+.tool-price{font-size:0.82rem;font-weight:700;color:var(--text-dark);margin-bottom:1.2rem;}
+.tool-price .yen{color:var(--accent);font-size:1.05rem;}
+.tool-actions{display:flex;gap:0.8rem;flex-wrap:wrap;margin-top:auto;}
+.btn-sm{padding:0.6em 1.5em;font-size:0.8rem;border-radius:6px;font-weight:700;text-decoration:none;transition:all 0.2s;cursor:pointer;font-family:'Noto Sans JP',sans-serif;border:none;letter-spacing:0.05em;}
+.btn-sm.fill{background:var(--primary);color:#fff;}
+.btn-sm.fill:hover{background:var(--primary-dark);}
+.btn-sm.line{background:#fff;color:var(--primary);border:2px solid var(--border);}
+.btn-sm.line:hover{border-color:var(--primary);}
+.btn-sm.disabled{background:#eef0f6;color:var(--text-light);cursor:default;}
+
+/* ---------- ご利用にあたって ---------- */
+#policy{background:linear-gradient(180deg,#ffffff 0%,#f0f5ff 100%);}
+.policy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:0.5rem;}
+@media(max-width:760px){.policy-grid{grid-template-columns:1fr;}}
+.policy-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.6rem 1.4rem;}
+.policy-icon{font-size:1.8rem;line-height:1;margin-bottom:0.6rem;}
+.policy-item h3{font-size:1rem;font-weight:700;color:var(--text-dark);margin-bottom:0.5rem;}
+.policy-item p{font-size:0.85rem;color:var(--text-mid);line-height:1.85;}
+
+/* ---------- フッター ---------- */
+footer{background:#0a0a2e;color:rgba(255,255,255,0.5);text-align:center;padding:2.5rem 1.5rem;font-size:0.82rem;letter-spacing:0.05em;}
+footer .footer-logo{font-family:'Oswald',sans-serif;color:#fff;font-size:1.2rem;letter-spacing:0.1em;margin-bottom:0.5rem;text-transform:uppercase;}
+footer .footer-links{margin-top:0.9rem;}
+footer .footer-links a{color:rgba(255,255,255,0.6);text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.25);padding-bottom:1px;transition:color 0.2s,border-color 0.2s;}
+footer .footer-links a:hover{color:#fff;border-color:#fff;}
+
+/* ---------- 戻るボタン ---------- */
+#backToTop{position:fixed;bottom:1.5rem;right:1.2rem;width:48px;height:48px;background:var(--primary);color:#fff;border:none;border-radius:50%;cursor:pointer;font-size:1.2rem;box-shadow:0 4px 16px rgba(0,0,0,0.3);z-index:500;opacity:0;transform:translateY(20px);transition:opacity 0.3s,transform 0.3s;display:flex;align-items:center;justify-content:center;}
+#backToTop.visible{opacity:1;transform:translateY(0);}
+#backToTop:hover{background:var(--primary-dark);transform:translateY(-3px);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+
+/* ---------- プライバシーポリシー本文 ---------- */
+.legal-wrap{max-width:820px;margin:0 auto;padding:7rem 1.5rem 4rem;}
+.legal-head{border-bottom:3px solid var(--primary);padding-bottom:1.2rem;margin-bottom:2.2rem;}
+.legal-head h1{font-size:1.9rem;font-weight:900;letter-spacing:0.02em;line-height:1.4;}
+.legal-head .legal-date{margin-top:0.6rem;font-size:0.8rem;color:var(--text-light);letter-spacing:0.05em;}
+.legal-lead{background:var(--primary-pale);border-radius:10px;padding:1.1rem 1.3rem;margin-bottom:2.4rem;font-size:0.95rem;color:var(--text-mid);}
+.legal-sec{margin-bottom:2.4rem;}
+.legal-sec h2{font-size:1.15rem;font-weight:700;color:var(--primary);margin-bottom:0.8rem;padding-left:0.7rem;border-left:4px solid var(--accent);line-height:1.5;}
+.legal-sec p{font-size:0.93rem;color:var(--text-mid);margin-bottom:0.8rem;}
+.legal-sec ul{list-style:none;margin:0.6rem 0 0.9rem;}
+.legal-sec ul li{position:relative;padding-left:1.1rem;font-size:0.93rem;color:var(--text-mid);margin-bottom:0.5rem;}
+.legal-sec ul li::before{content:"";position:absolute;left:0;top:0.72em;width:6px;height:6px;border-radius:50%;background:var(--accent);}
+.legal-table{width:100%;border-collapse:collapse;margin:0.9rem 0 1rem;font-size:0.88rem;}
+.legal-table th,.legal-table td{border:1px solid var(--border);padding:0.7rem 0.8rem;text-align:left;vertical-align:top;}
+.legal-table th{background:var(--primary-pale);color:var(--text-dark);font-weight:700;white-space:nowrap;}
+.legal-table td{color:var(--text-mid);}
+.legal-note{background:#fff8e6;border:1px solid var(--accent2);border-radius:10px;padding:1rem 1.2rem;margin:1rem 0;font-size:0.9rem;color:var(--text-mid);}
+.legal-contact{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.3rem;font-size:0.93rem;color:var(--text-mid);}
+.legal-contact a{color:var(--primary);text-decoration:none;}
+.legal-contact a:hover{text-decoration:underline;}
+.legal-back{display:inline-block;margin-top:2.5rem;font-size:0.88rem;color:var(--primary);text-decoration:none;font-weight:700;}
+.legal-back:hover{text-decoration:underline;}
+@media(max-width:640px){
+  .legal-wrap{padding:6rem 1.1rem 3rem;}
+  .legal-head h1{font-size:1.45rem;}
+  .legal-table th,.legal-table td{padding:0.55rem 0.6rem;font-size:0.82rem;}
+  .legal-table th{white-space:normal;}
+}
+/* ---------- 使い方ガイド ---------- */
+.guide-intro{background:var(--primary-pale);border-radius:10px;padding:1.1rem 1.3rem;margin-bottom:2.4rem;font-size:0.95rem;color:var(--text-mid);}
+.guide-toc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.4rem;margin-bottom:2.6rem;}
+.guide-toc h2{font-size:0.78rem;font-family:'Oswald',sans-serif;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:0.7rem;}
+.guide-toc ol{list-style:none;counter-reset:toc;display:grid;grid-template-columns:repeat(2,1fr);gap:0.35rem 1.2rem;}
+@media(max-width:640px){.guide-toc ol{grid-template-columns:1fr;}}
+.guide-toc li{counter-increment:toc;font-size:0.88rem;}
+.guide-toc li::before{content:counter(toc) ".";color:var(--accent);font-weight:700;margin-right:0.45em;}
+.guide-toc a{color:var(--text-mid);text-decoration:none;transition:color 0.2s;}
+.guide-toc a:hover{color:var(--primary);text-decoration:underline;}
+
+/* スクリーンショット */
+.guide-shot{margin:1.1rem 0 1.4rem;}
+.guide-shot img{
+  display:block;width:100%;height:auto;border:1px solid var(--border);border-radius:10px;
+  background:#eef0f6;min-height:120px;box-shadow:0 4px 16px rgba(10,10,46,0.08);
+}
+.guide-shot figcaption{margin-top:0.5rem;font-size:0.78rem;color:var(--text-light);text-align:center;letter-spacing:0.03em;}
+
+/* ステップ */
+.guide-step{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem 1.5rem 1.2rem;margin-bottom:1.4rem;}
+.guide-step h3{
+  display:flex;align-items:center;gap:0.7rem;font-size:1.05rem;font-weight:700;
+  color:var(--text-dark);margin-bottom:0.8rem;line-height:1.4;
+}
+.guide-step-num{
+  flex:none;width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;
+  font-family:'Oswald',sans-serif;font-size:0.95rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.guide-step p{font-size:0.93rem;color:var(--text-mid);margin-bottom:0.7rem;}
+.guide-step ul{list-style:none;margin:0.6rem 0 0.9rem;}
+.guide-step ul li{position:relative;padding-left:1.1rem;font-size:0.93rem;color:var(--text-mid);margin-bottom:0.5rem;}
+.guide-step ul li::before{content:"";position:absolute;left:0;top:0.72em;width:6px;height:6px;border-radius:50%;background:var(--accent);}
+.guide-step .guide-shot{margin-bottom:0.6rem;}
+
+/* サブ見出し */
+.guide-sub{font-size:0.98rem;font-weight:700;color:var(--text-dark);margin:1.4rem 0 0.6rem;}
+
+/* 番号付き手順 */
+.guide-ol{list-style:none;counter-reset:gol;margin:0.7rem 0 1rem;}
+.guide-ol li{counter-increment:gol;position:relative;padding-left:2rem;font-size:0.93rem;color:var(--text-mid);margin-bottom:0.55rem;}
+.guide-ol li::before{
+  content:counter(gol);position:absolute;left:0;top:0.15em;width:1.35rem;height:1.35rem;
+  border-radius:50%;background:var(--primary-pale);color:var(--primary-dark);
+  font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;
+}
+
+/* 注意ボックス */
+.guide-note{background:#fff8e6;border:1px solid var(--accent2);border-radius:10px;padding:1rem 1.2rem;margin:1rem 0;font-size:0.9rem;color:var(--text-mid);}
+.guide-safe{background:rgba(0,200,150,0.09);border:1px solid rgba(0,200,150,0.4);border-radius:10px;padding:1rem 1.2rem;margin:1rem 0;font-size:0.9rem;color:var(--text-mid);}
+
+/* FAQ */
+.guide-faq{border-top:1px solid var(--border);}
+.guide-faq dt{
+  font-size:0.95rem;font-weight:700;color:var(--text-dark);padding:1.1rem 0 0.5rem;
+  display:flex;gap:0.6rem;align-items:baseline;
+}
+.guide-faq dt::before{content:"Q";font-family:'Oswald',sans-serif;color:var(--primary);flex:none;font-size:1rem;}
+.guide-faq dd{
+  font-size:0.9rem;color:var(--text-mid);padding:0 0 1.1rem 0;border-bottom:1px solid var(--border);
+  display:flex;gap:0.6rem;align-items:baseline;
+}
+.guide-faq dd::before{content:"A";font-family:'Oswald',sans-serif;color:var(--accent);flex:none;font-size:1rem;}
+.guide-faq a{color:var(--primary);text-decoration:none;}
+.guide-faq a:hover{text-decoration:underline;}
+
+/* CTA */
+.guide-cta{text-align:center;margin:2.8rem 0 1rem;}
+.guide-cta .btn-sm{display:inline-block;}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="{{NAV_PREFIX}}" class="logo">DROPPER <span class="dot">●</span> <span class="jp">{{logo.jp}}</span></a>
+  <div class="header-right">
+    <nav>
+      <a href="{{NAV_PREFIX}}#tools">{{nav.tools}}</a>
+      <a href="{{NAV_PREFIX}}#policy">{{nav.policy}}</a>
+      <a href="{{NAV_PREFIX}}#about">{{nav.about}}</a>
+    </nav>
+    <div class="lang-switch">{{SWITCHER}}</div>
+  </div>
+</header>
+
+<div class="legal-wrap">
+
+  <div class="legal-head">
+    <h1>{{gsched.title}}</h1>
+    <p class="legal-date">{{gsched.subtitle}}</p>
+  </div>
+
+  <p class="guide-intro">{{gsched.lead}}</p>
+
+  <!-- 目次 -->
+  <nav class="guide-toc" aria-label="{{gsched.tocLabel}}">
+    <h2>{{gsched.tocLabel}}</h2>
+    <ol>
+      <li><a href="#s1">{{gsched.s1title}}</a></li>
+      <li><a href="#s2">{{gsched.s2title}}</a></li>
+      <li><a href="#s3">{{gsched.s3title}}</a></li>
+      <li><a href="#s4">{{gsched.s4title}}</a></li>
+      <li><a href="#s5">{{gsched.s5title}}</a></li>
+      <li><a href="#s6">{{gsched.s6title}}</a></li>
+      <li><a href="#s7">{{gsched.s7title}}</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1. 予定表ドロッパーとは -->
+  <section class="legal-sec" id="s1">
+    <h2>{{gsched.s1title}}</h2>
+    <p>{{gsched.s1body1}}</p>
+    <p>{{gsched.s1body2}}</p>
+  </section>
+
+  <!-- 2. 使う前に -->
+  <section class="legal-sec" id="s2">
+    <h2>{{gsched.s2title}}</h2>
+    <p>{{gsched.s2body}}</p>
+    <table class="legal-table">
+      <thead>
+        <tr><th>{{gsched.s2thItem}}</th><th>{{gsched.s2thNote}}</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>{{gsched.s2r1a}}</td><td>{{gsched.s2r1b}}</td></tr>
+        <tr><td>{{gsched.s2r2a}}</td><td>{{gsched.s2r2b}}</td></tr>
+        <tr><td>{{gsched.s2r3a}}</td><td>{{gsched.s2r3b}}</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 3. 基本の流れ -->
+  <section class="legal-sec" id="s3">
+    <h2>{{gsched.s3title}}</h2>
+
+    <div class="guide-step">
+      <h3><span class="guide-step-num">1</span>{{gsched.st1title}}</h3>
+      <p>{{gsched.st1body}}</p>
+      <figure class="guide-shot">
+        <img src="/assets/guide-schedule/{{LANG_DIR}}/step1-login.png" alt="{{gsched.shot1alt}}" loading="lazy">
+        <figcaption>{{gsched.shot1cap}}</figcaption>
+      </figure>
+    </div>
+
+    <div class="guide-step">
+      <h3><span class="guide-step-num">2</span>{{gsched.st2title}}</h3>
+      <p>{{gsched.st2body}}</p>
+      <div class="guide-note">{{gsched.st2note}}</div>
+      <figure class="guide-shot">
+        <img src="/assets/guide-schedule/{{LANG_DIR}}/step2-setup.png" alt="{{gsched.shot2alt}}" loading="lazy">
+        <figcaption>{{gsched.shot2cap}}</figcaption>
+      </figure>
+    </div>
+
+    <div class="guide-step">
+      <h3><span class="guide-step-num">3</span>{{gsched.st3title}}</h3>
+      <p>{{gsched.st3body}}</p>
+      <figure class="guide-shot">
+        <img src="/assets/guide-schedule/{{LANG_DIR}}/step3-drop.png" alt="{{gsched.shot3alt}}" loading="lazy">
+        <figcaption>{{gsched.shot3cap}}</figcaption>
+      </figure>
+    </div>
+
+    <div class="guide-step">
+      <h3><span class="guide-step-num">4</span>{{gsched.st4title}}</h3>
+      <p>{{gsched.st4body}}</p>
+      <figure class="guide-shot">
+        <img src="/assets/guide-schedule/{{LANG_DIR}}/step4-list.png" alt="{{gsched.shot4alt}}" loading="lazy">
+        <figcaption>{{gsched.shot4cap}}</figcaption>
+      </figure>
+    </div>
+
+    <div class="guide-step">
+      <h3><span class="guide-step-num">5</span>{{gsched.st5title}}</h3>
+      <p>{{gsched.st5body}}</p>
+      <figure class="guide-shot">
+        <img src="/assets/guide-schedule/{{LANG_DIR}}/step5-register.png" alt="{{gsched.shot5alt}}" loading="lazy">
+        <figcaption>{{gsched.shot5cap}}</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 4. 読み取り方（通常モードとAIモード） -->
+  <section class="legal-sec" id="s4">
+    <h2>{{gsched.s4title}}</h2>
+    <p>{{gsched.s4body}}</p>
+    <table class="legal-table">
+      <thead>
+        <tr><th>{{gsched.s4thMode}}</th><th>{{gsched.s4thFor}}</th><th>{{gsched.s4thNeed}}</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>{{gsched.s4r1a}}</td><td>{{gsched.s4r1b}}</td><td>{{gsched.s4r1c}}</td></tr>
+        <tr><td>{{gsched.s4r2a}}</td><td>{{gsched.s4r2b}}</td><td>{{gsched.s4r2c}}</td></tr>
+      </tbody>
+    </table>
+    <div class="guide-note">{{gsched.s4grid}}</div>
+    <figure class="guide-shot">
+      <img src="/assets/guide-schedule/{{LANG_DIR}}/ai-choice.png" alt="{{gsched.shot6alt}}" loading="lazy">
+      <figcaption>{{gsched.shot6cap}}</figcaption>
+    </figure>
+
+    <h3 class="guide-sub">{{gsched.s4sub2}}</h3>
+    <ol class="guide-ol">
+      <li>{{gsched.s4k1}}</li>
+      <li>{{gsched.s4k2}}</li>
+      <li>{{gsched.s4k3}}</li>
+      <li>{{gsched.s4k4}}</li>
+    </ol>
+    <figure class="guide-shot">
+      <img src="/assets/guide-schedule/{{LANG_DIR}}/ai-key-modal.png" alt="{{gsched.shot7alt}}" loading="lazy">
+      <figcaption>{{gsched.shot7cap}}</figcaption>
+    </figure>
+    <div class="guide-safe">{{gsched.s4note1}}</div>
+    <div class="guide-note">{{gsched.s4note2}}</div>
+    <p>{{gsched.s4body2}}</p>
+  </section>
+
+  <!-- 5. 読み取り結果の見かた -->
+  <section class="legal-sec" id="s5">
+    <h2>{{gsched.s5title}}</h2>
+    <p>{{gsched.s5body}}</p>
+
+    <h3 class="guide-sub">{{gsched.s5sub1}}</h3>
+    <p>{{gsched.s5sub1body}}</p>
+
+    <h3 class="guide-sub">{{gsched.s5sub2}}</h3>
+    <p>{{gsched.s5sub2body}}</p>
+
+    <h3 class="guide-sub">{{gsched.s5sub3}}</h3>
+    <p>{{gsched.s5sub3body}}</p>
+
+    <h3 class="guide-sub">{{gsched.s5sub4}}</h3>
+    <p>{{gsched.s5sub4body}}</p>
+  </section>
+
+  <!-- 6. よくある質問 -->
+  <section class="legal-sec" id="s6">
+    <h2>{{gsched.s6title}}</h2>
+    <dl class="guide-faq">
+      <dt>{{gsched.s6q1}}</dt><dd>{{gsched.s6a1}}</dd>
+      <dt>{{gsched.s6q2}}</dt><dd>{{gsched.s6a2}}</dd>
+      <dt>{{gsched.s6q3}}</dt><dd>{{gsched.s6a3}}</dd>
+      <dt>{{gsched.s6q4}}</dt><dd>{{gsched.s6a4}}</dd>
+      <dt>{{gsched.s6q5}}</dt><dd>{{gsched.s6a5}}</dd>
+      <dt>{{gsched.s6q6}}</dt><dd>{{gsched.s6a6}}</dd>
+    </dl>
+  </section>
+
+  <!-- 7. 困ったときは -->
+  <section class="legal-sec" id="s7">
+    <h2>{{gsched.s7title}}</h2>
+    <div class="legal-contact">{{gsched.s7body}}</div>
+  </section>
+
+  <div class="guide-cta">
+    <a class="btn-sm fill" href="{{tool2.url}}" target="_blank" rel="noopener">{{gsched.ctaBtn}}</a>
+  </div>
+
+  <a href="{{NAV_PREFIX}}" class="legal-back">{{gsched.back}}</a>
+
+</div>
+
+<footer>
+  <div class="footer-logo">DROPPER</div>
+  <p>{{footer.copy}}</p>
+  <p class="footer-links"><a href="{{PRIVACY_PATH}}">{{footer.privacy}}</a></p>
+</footer>
+
+<button id="backToTop" aria-label="Top">↑</button>
+
+<script>
+const btt=document.getElementById('backToTop');
+addEventListener('scroll',()=>{btt.classList.toggle('visible',scrollY>400);});
+btt.addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
+</script>
+
+</body>
+</html>
