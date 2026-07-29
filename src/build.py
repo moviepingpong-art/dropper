@@ -91,20 +91,15 @@ PAGES = {
         # ガイド自身を指す（現状リンクは出ないが定義は揃えておく）
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
-    # 予定表ドロッパーの使い方ガイド。
-    # 文言(gsched.*)は3言語そろっているが、スクショが日本語版しか無いため生成は ja だけ。
-    # en/in を公開するときは assets/guide-schedule/{en,in}/ に画像7枚を置き、
-    # langs を ["ja", "en", "in"] にして sitemap.xml にも2URLを追加する。
+    # 予定表ドロッパーの使い方ガイド。3言語すべて生成（翻訳・スクショ完了済み）。
+    # 画像は assets/guide-schedule/<code>/ を参照（各言語7枚）。
     "guide-schedule": {
         "template": "guide-schedule-template.html",
         "filename": "guide-schedule.html",
-        "langs": ["ja"],
-        # ja だけ生成している間は、他言語へは各言語のトップへ逃がす（404を出さないため）。
-        # 3言語化したら ja 行のコメントアウトを入れ替える。
+        "langs": ["ja", "en", "in"],
         "switch_paths": {
-            "ja": {"ja": "./guide-schedule.html", "en": "./en/", "in": "./in/"},
-            # 3言語化したとき用（現在は未使用）
-            "en": {"ja": "../guide-schedule.html", "en": "./guide-schedule.html", "in": "../in/guide-schedule.html"},
+            "ja": {"ja": "./guide-schedule.html",  "en": "./en/guide-schedule.html",  "in": "./in/guide-schedule.html"},
+            "en": {"ja": "../guide-schedule.html", "en": "./guide-schedule.html",     "in": "../in/guide-schedule.html"},
             "in": {"ja": "../guide-schedule.html", "en": "../en/guide-schedule.html", "in": "./guide-schedule.html"},
         },
         "nav_prefix": "index.html",

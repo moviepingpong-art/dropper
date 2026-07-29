@@ -63,6 +63,30 @@
   </url>
   <url>
     <loc>https://dropper-tools.com/guide-schedule.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/guide-schedule.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/guide-schedule.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/guide-schedule.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/guide-schedule.html"/>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dropper-tools.com/en/guide-schedule.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/guide-schedule.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/guide-schedule.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/guide-schedule.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/guide-schedule.html"/>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dropper-tools.com/in/guide-schedule.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/guide-schedule.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/guide-schedule.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/guide-schedule.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/guide-schedule.html"/>
     <lastmod>2026-07-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
