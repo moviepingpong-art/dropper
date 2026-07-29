@@ -47,7 +47,7 @@ nav a{
 nav a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:2px;background:var(--accent);transform:scaleX(0);transition:transform 0.2s;}
 nav a:hover{color:var(--primary);}
 nav a:hover::after{transform:scaleX(1);}
-.lang-switch{display:flex;align-items:center;gap:0.4rem;font-size:0.72rem;font-weight:700;letter-spacing:0.03em;}
+.lang-switch{display:flex;align-items:center;gap:0.4rem;font-size:0.72rem;font-weight:700;letter-spacing:0.03em;white-space:nowrap;flex-shrink:0;}
 .lang-switch a{color:var(--text-light);text-decoration:none;transition:color 0.2s;}
 .lang-switch a.active{color:var(--primary);}
 .lang-switch a:hover{color:var(--primary);}
@@ -60,6 +60,12 @@ nav a:hover::after{transform:scaleX(1);}
   .logo{font-size:1.05rem;}
   .logo .jp{display:none;}
   .lang-switch{font-size:0.66rem;gap:0.3rem;}
+}
+
+/* 狭い画面では3言語の切替表示を優先し、ヘッダーのナビを隠す
+   （SERIES/ABOUT はヒーローのボタンからも辿れる） */
+@media(max-width:520px){
+  nav{display:none;}
 }
 
 /* ---------- ヒーロー ---------- */
