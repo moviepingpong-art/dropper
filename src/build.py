@@ -91,20 +91,26 @@ PAGES = {
         # ガイド自身を指す（現状リンクは出ないが定義は揃えておく）
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
-    # 予定表ドロッパーの使い方ガイド。スクショが日本語版のみのため ja だけ生成する。
-    # en/in を足すときは assets/guide-schedule/<code>/ に画像を置き、langs に追加する。
+    # 予定表ドロッパーの使い方ガイド。
+    # 文言(gsched.*)は3言語そろっているが、スクショが日本語版しか無いため生成は ja だけ。
+    # en/in を公開するときは assets/guide-schedule/{en,in}/ に画像7枚を置き、
+    # langs を ["ja", "en", "in"] にして sitemap.xml にも2URLを追加する。
     "guide-schedule": {
         "template": "guide-schedule-template.html",
         "filename": "guide-schedule.html",
         "langs": ["ja"],
-        # ja だけ生成するので、他言語へは各言語のトップへ逃がす（404を出さないため）
+        # ja だけ生成している間は、他言語へは各言語のトップへ逃がす（404を出さないため）。
+        # 3言語化したら ja 行のコメントアウトを入れ替える。
         "switch_paths": {
             "ja": {"ja": "./guide-schedule.html", "en": "./en/", "in": "./in/"},
+            # 3言語化したとき用（現在は未使用）
+            "en": {"ja": "../guide-schedule.html", "en": "./guide-schedule.html", "in": "../in/guide-schedule.html"},
+            "in": {"ja": "../guide-schedule.html", "en": "../en/guide-schedule.html", "in": "./guide-schedule.html"},
         },
         "nav_prefix": "index.html",
-        "privacy_path": {"ja": "./privacy.html"},
+        "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
         # イベントドロッパー側のガイドへのリンク用
-        "guide_path": {"ja": "./guide.html"},
+        "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
 }
 # =========================================================================
