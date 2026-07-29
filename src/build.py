@@ -176,8 +176,9 @@ def build_guide_btn(page, code, strings):
 # 2026-07-29 に en/in も公開したため3言語。リンク先は tool2.url（言語ごとに別URL）。
 TOOL2_LANGS = ["ja", "en", "in"]
 
-# トップから予定表ドロッパーのガイドへのパス（生成される言語だけリンクを出す）
-GSCHED_PATH = {"ja": "./guide-schedule.html", "en": "../guide-schedule.html", "in": "../guide-schedule.html"}
+# トップから予定表ドロッパーのガイドへのパス（生成される言語だけリンクを出す）。
+# ガイドは各言語フォルダ内に生成されるので、どの言語も同階層の "./" を指す。
+GSCHED_PATH = {"ja": "./guide-schedule.html", "en": "./guide-schedule.html", "in": "./guide-schedule.html"}
 
 
 def build_tool2_guide_btn(code, strings):
