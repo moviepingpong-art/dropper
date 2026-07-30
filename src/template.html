@@ -195,6 +195,20 @@ section{padding:6rem 1.5rem;}
 .btn-sm.line:hover{border-color:var(--primary);}
 .btn-sm.disabled{background:#eef0f6;color:var(--text-light);cursor:default;}
 
+/* ---------- AIモード（APIキー案内への誘導帯） ---------- */
+/* APIキー入力を「怖い作業」に見せないため、トップでも先に
+   「クレカ不要・0円・キーは端末内だけ」を言い切る。詳細は apikey.html へ。 */
+#apikey-band{background:linear-gradient(180deg,#f0f5ff 0%,#ffffff 100%);}
+.ak-band{
+  background:var(--card);border:1px solid var(--border);border-left:6px solid var(--accent);
+  border-radius:12px;padding:1.9rem 1.8rem;box-shadow:0 4px 18px rgba(10,10,46,0.06);
+}
+.ak-band-catch{font-size:clamp(1.05rem,3.2vw,1.35rem);font-weight:900;color:var(--text-dark);line-height:1.6;margin-bottom:0.7rem;}
+.ak-band p{font-size:0.9rem;color:var(--text-mid);line-height:1.95;}
+.ak-band-badges{display:flex;flex-wrap:wrap;gap:0.5rem;margin:1.1rem 0 1.3rem;}
+.ak-band-badge{font-size:0.76rem;font-weight:700;color:#00936e;background:rgba(0,200,150,0.14);border-radius:50px;padding:0.35em 0.95em;white-space:nowrap;}
+@media(max-width:640px){.ak-band{padding:1.5rem 1.2rem;}}
+
 /* ---------- ご利用にあたって ---------- */
 #policy{background:linear-gradient(180deg,#ffffff 0%,#f0f5ff 100%);}
 .policy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:0.5rem;}
@@ -293,6 +307,24 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
            掲載言語の出し分けは build.py の build_tool2_card() / TOOL2_LANGS -->
       {{TOOL2_CARD}}
 
+    </div>
+  </div>
+</section>
+
+<!-- AIモード：APIキー案内ページへの誘導。文言は apikey.band* -->
+<section id="apikey-band">
+  <div class="section-inner">
+    <p class="section-label">{{apikey.bandLabel}}</p>
+    <h2 class="section-title">{{apikey.bandTitle}}</h2>
+    <div class="ak-band">
+      <p class="ak-band-catch">{{apikey.catchMain}}</p>
+      <p>{{apikey.bandDesc}}</p>
+      <div class="ak-band-badges">
+        <span class="ak-band-badge">{{apikey.badge1}}</span>
+        <span class="ak-band-badge">{{apikey.badge2}}</span>
+        <span class="ak-band-badge">{{apikey.bandB3}}</span>
+      </div>
+      <a class="btn-sm fill" href="{{APIKEY_PATH}}">{{apikey.bandBtn}}</a>
     </div>
   </div>
 </section>

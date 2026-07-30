@@ -1,15 +1,47 @@
 <!DOCTYPE html>
-<html lang="{{LANG}}">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-{{GA}}
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PQPKYYYXKG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PQPKYYYXKG');
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{gsched.metaTitle}}</title>
-<meta name="description" content="{{gsched.metaDesc}}">
-{{SEO}}
-{{HREFLANG}}
+<title>How to get a Gemini API key | No credit card, 3 minutes, free tier | Dropper</title>
+<meta name="description" content="How to get the Gemini API key used by Dropper's AI mode, in three steps. No credit card required, and nothing to pay inside the free tier. Your key is stored only in your own browser and is never sent to our server.">
+<link rel="canonical" href="https://dropper-tools.com/en/apikey.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dropper">
+<meta property="og:title" content="How to get a Gemini API key | No credit card, 3 minutes, free tier | Dropper">
+<meta property="og:description" content="How to get the Gemini API key used by Dropper's AI mode, in three steps. No credit card required, and nothing to pay inside the free tier. Your key is stored only in your own browser and is never sent to our server.">
+<meta property="og:url" content="https://dropper-tools.com/en/apikey.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://dropper-tools.com/assets/og/og-en.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Dropper">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How to get a Gemini API key | No credit card, 3 minutes, free tier | Dropper">
+<meta name="twitter:description" content="How to get the Gemini API key used by Dropper's AI mode, in three steps. No credit card required, and nothing to pay inside the free tier. Your key is stored only in your own browser and is never sent to our server.">
+<meta name="twitter:image" content="https://dropper-tools.com/assets/og/og-en.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "HowTo", "name": "How to get a Gemini API key | No credit card, 3 minutes, free tier | Dropper", "description": "How to get the Gemini API key used by Dropper's AI mode, in three steps. No credit card required, and nothing to pay inside the free tier. Your key is stored only in your own browser and is never sent to our server.", "inLanguage": "en", "totalTime": "PT3M", "tool": [{"@type": "HowToTool", "name": "Dropper"}], "step": [{"@type": "HowToStep", "position": 1, "name": "Open Google AI Studio", "text": "Use the button below to open Google's own page (aistudio.google.com). This is Google's site, not ours.", "url": "https://dropper-tools.com/en/apikey.html#steps"}, {"@type": "HowToStep", "position": 2, "name": "Sign in with your Google account", "text": "Sign in with the Google account you normally use. You will not be asked for payment details here.", "url": "https://dropper-tools.com/en/apikey.html#steps"}, {"@type": "HowToStep", "position": 3, "name": "Press \"Create API key\" and copy it", "text": "A string starting with \"AIza…\" appears. Copy it, paste it into Dropper's API key field, and you're done.", "url": "https://dropper-tools.com/en/apikey.html#steps"}]}</script>
+<link rel="alternate" hreflang="ja" href="https://dropper-tools.com/apikey.html">
+<link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/apikey.html">
+<link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/apikey.html">
+<link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/apikey.html">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 <style>
+/* ============================================================
+   ドロッパー DROPPER  -  Gemini APIキーの案内ページ
+   ※このファイルは src/apikey-template.html から自動生成されています。
+     編集は src/ 側を直して build.py を実行してください。
+   狙い: 「クレカ不要・0円」「キーは端末内だけ」を先に見せて、
+          APIキー入力の心理的ハードルを下げること。
+   ============================================================ */
 /* ============================================================
    ドロッパー DROPPER  -  使い方ガイド
    ※このファイルは src/guide-template.html から自動生成されています。
@@ -289,7 +321,92 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 .guide-faq a{color:var(--primary);text-decoration:none;}
 .guide-faq a:hover{text-decoration:underline;}
 
-/* ---------- APIキー案内ページへの誘導 ---------- */
+/* CTA */
+.guide-cta{text-align:center;margin:2.8rem 0 1rem;}
+.guide-cta .btn-sm{display:inline-block;}
+
+/* ---------- APIキー案内ページ ---------- */
+/* 「クレカ不要・0円」を最初の画面で言い切るための帯。ヒーローと同じ配色。 */
+.ak-hero{
+  background:linear-gradient(135deg,#0a0a2e 0%,#0057ff 65%,#1a1aff 100%);
+  padding:8rem 1.5rem 3.4rem;position:relative;overflow:hidden;
+}
+.ak-hero-bg{position:absolute;border-radius:50%;}
+.ak-hero-bg.b1{width:520px;height:520px;background:#fff;opacity:0.06;top:-190px;right:-140px;}
+.ak-hero-bg.b2{width:340px;height:340px;background:var(--accent2);opacity:0.09;bottom:-160px;left:-90px;}
+.ak-hero-inner{max-width:820px;margin:0 auto;position:relative;z-index:1;}
+.ak-hero .ak-eyebrow{
+  font-family:'Oswald',sans-serif;font-size:0.74rem;letter-spacing:0.24em;
+  color:var(--accent2);text-transform:uppercase;margin-bottom:0.7rem;
+}
+.ak-hero h1{
+  font-size:clamp(1.55rem,5.2vw,2.5rem);font-weight:900;color:#fff;line-height:1.45;letter-spacing:0.01em;
+}
+.ak-hero h1 .blue{color:var(--accent2);}
+.ak-catch{margin:1.5rem 0 1.4rem;}
+.ak-catch-main{
+  font-size:clamp(1.1rem,3.8vw,1.5rem);font-weight:900;color:#fff;line-height:1.6;
+  text-shadow:0 2px 18px rgba(0,0,0,0.35);
+}
+.ak-catch-sub{margin-top:0.5rem;font-size:clamp(0.9rem,2.6vw,1.02rem);color:rgba(255,255,255,0.85);line-height:1.9;}
+.ak-badges{display:flex;flex-wrap:wrap;gap:0.6rem;margin:0 0 1.7rem;}
+.ak-badge{
+  background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.45);color:#fff;
+  font-size:0.82rem;font-weight:700;letter-spacing:0.02em;padding:0.45em 1.1em;border-radius:50px;
+  backdrop-filter:blur(4px);white-space:nowrap;
+}
+.ak-hero-actions{display:flex;gap:0.9rem;flex-wrap:wrap;}
+.ak-hero-actions .btn{font-size:0.85rem;}
+@media(max-width:640px){
+  .ak-hero{padding:6.6rem 1.1rem 2.6rem;}
+  .ak-badge{font-size:0.75rem;padding:0.4em 0.9em;}
+  .ak-hero-actions .btn{padding:0.8em 1.5em;}
+}
+
+/* 本文（ヒーローの下は上余白を詰める。ヘッダー分は帯が持っている） */
+.ak-wrap{max-width:820px;margin:0 auto;padding:3rem 1.5rem 4rem;}
+@media(max-width:640px){.ak-wrap{padding:2.4rem 1.1rem 3rem;}}
+
+/* 「何ができる」3枚のカード */
+.ak-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem;margin:1.2rem 0 0.4rem;}
+@media(max-width:760px){.ak-cards{grid-template-columns:1fr;}}
+.ak-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem 1.3rem;
+  box-shadow:0 4px 18px rgba(10,10,46,0.06);}
+.ak-card-icon{font-size:1.9rem;line-height:1;margin-bottom:0.6rem;}
+.ak-card h3{font-size:0.98rem;font-weight:700;color:var(--text-dark);margin-bottom:0.5rem;line-height:1.5;}
+.ak-card p{font-size:0.86rem;color:var(--text-mid);line-height:1.9;}
+
+/* お金の話（3点） */
+.ak-money{list-style:none;margin:1.1rem 0 0;}
+.ak-money li{
+  background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.35);border-radius:10px;
+  padding:0.95rem 1.15rem;margin-bottom:0.7rem;font-size:0.91rem;color:var(--text-mid);line-height:1.9;
+}
+.ak-money li strong{color:var(--text-dark);}
+
+/* 大きなAI Studioボタン */
+.ak-studio{text-align:center;margin:1.6rem 0 0.6rem;}
+.ak-studio .btn{font-size:0.95rem;padding:0.95em 2.6em;}
+.ak-studio-note{margin-top:0.7rem;font-size:0.8rem;color:var(--text-light);}
+
+/* 最後のCTA（2つのツールへ） */
+.ak-cta{background:var(--primary-pale);border-radius:12px;padding:1.7rem 1.5rem;text-align:center;margin:2.6rem 0 1rem;}
+.ak-cta p{font-size:0.98rem;font-weight:700;color:var(--text-dark);margin-bottom:1.1rem;}
+.ak-cta-btns{display:flex;gap:0.8rem;flex-wrap:wrap;justify-content:center;}
+
+/* トップページの誘導帯 */
+#apikey-band{background:linear-gradient(180deg,#f0f5ff 0%,#ffffff 100%);}
+.ak-band{
+  background:var(--card);border:1px solid var(--border);border-left:6px solid var(--accent);
+  border-radius:12px;padding:1.9rem 1.8rem;box-shadow:0 4px 18px rgba(10,10,46,0.06);
+}
+.ak-band-catch{font-size:clamp(1.05rem,3.2vw,1.35rem);font-weight:900;color:var(--text-dark);line-height:1.6;margin-bottom:0.7rem;}
+.ak-band p{font-size:0.9rem;color:var(--text-mid);line-height:1.95;}
+.ak-band-badges{display:flex;flex-wrap:wrap;gap:0.5rem;margin:1.1rem 0 1.3rem;}
+.ak-band-badge{font-size:0.76rem;font-weight:700;color:#00936e;background:rgba(0,200,150,0.14);border-radius:50px;padding:0.35em 0.95em;white-space:nowrap;}
+@media(max-width:640px){.ak-band{padding:1.5rem 1.2rem;}}
+
+/* ガイドからの誘導（1行の目立つリンク） */
 .ak-link-box{
   background:var(--primary-pale);border-radius:10px;padding:1.05rem 1.2rem;margin:1.2rem 0;
   font-size:0.9rem;color:var(--text-mid);line-height:1.9;
@@ -297,209 +414,160 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 .ak-link-box a{display:inline-block;margin-top:0.35rem;color:var(--primary);font-weight:700;text-decoration:none;}
 .ak-link-box a:hover{text-decoration:underline;}
 
-/* CTA */
-.guide-cta{text-align:center;margin:2.8rem 0 1rem;}
-.guide-cta .btn-sm{display:inline-block;}
 </style>
 </head>
 <body>
 
 <header>
-  <a href="{{NAV_PREFIX}}" class="logo">DROPPER <span class="dot">●</span> <span class="jp">{{logo.jp}}</span></a>
+  <a href="index.html" class="logo">DROPPER <span class="dot">●</span> <span class="jp">Dropper</span></a>
   <div class="header-right">
     <nav>
-      <a href="{{NAV_PREFIX}}#tools">{{nav.tools}}</a>
-      <a href="{{NAV_PREFIX}}#policy">{{nav.policy}}</a>
-      <a href="{{NAV_PREFIX}}#about">{{nav.about}}</a>
+      <a href="index.html#tools">Series</a>
+      <a href="index.html#policy">Notes</a>
+      <a href="index.html#about">About</a>
     </nav>
-    <div class="lang-switch">{{SWITCHER}}</div>
+    <div class="lang-switch"><a href="../apikey.html" class="lang-link" hreflang="ja">日本語</a><span class="sep">/</span><a href="./apikey.html" class="lang-link active" hreflang="en">English</a><span class="sep">/</span><a href="../in/apikey.html" class="lang-link" hreflang="en-IN">Hinglish</a></div>
   </div>
 </header>
 
-<div class="legal-wrap">
-
-  <div class="legal-head">
-    <h1>{{gsched.title}}</h1>
-    <p class="legal-date">{{gsched.subtitle}}</p>
+<!-- 「クレカ不要・0円」を最初に言い切る帯。ここで不信感を解いてから手順に入る。 -->
+<section class="ak-hero">
+  <span class="ak-hero-bg b1"></span>
+  <span class="ak-hero-bg b2"></span>
+  <div class="ak-hero-inner">
+    <p class="ak-eyebrow">AI Mode</p>
+    <h1>How to get a Gemini API key<br><span class="blue">No card · 3 minutes · Free</span></h1>
+    <div class="ak-catch">
+      <p class="ak-catch-main">No more copy-paste, over and over.</p>
+      <p class="ak-catch-sub">A free API key — no credit card — turns Gemini into a tool built for your job.</p>
+    </div>
+    <div class="ak-badges">
+      <span class="ak-badge">💳 No card needed</span>
+      <span class="ak-badge">🆓 Free inside the free tier</span>
+      <span class="ak-badge">⏱ About 3 minutes</span>
+    </div>
+    <div class="ak-hero-actions">
+      <a class="btn btn-primary" href="#steps">Three steps to get your key</a>
+      <a class="btn btn-ghost" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Open Google AI Studio ↗</a>
+    </div>
   </div>
+</section>
 
-  <p class="guide-intro">{{gsched.lead}}</p>
+<div class="ak-wrap">
 
-  <!-- 目次 -->
-  <nav class="guide-toc" aria-label="{{gsched.tocLabel}}">
-    <h2>{{gsched.tocLabel}}</h2>
-    <ol>
-      <li><a href="#s1">{{gsched.s1title}}</a></li>
-      <li><a href="#s2">{{gsched.s2title}}</a></li>
-      <li><a href="#s3">{{gsched.s3title}}</a></li>
-      <li><a href="#s4">{{gsched.s4title}}</a></li>
-      <li><a href="#s5">{{gsched.s5title}}</a></li>
-      <li><a href="#s6">{{gsched.s6title}}</a></li>
-      <li><a href="#s7">{{gsched.s7title}}</a></li>
-    </ol>
-  </nav>
+  <p class="guide-intro">AI mode runs on your own API key. "API key" sounds technical, but all you do is press one button on Google's own page and copy the text it gives you.</p>
 
-  <!-- 1. 予定表ドロッパーとは -->
-  <section class="legal-sec" id="s1">
-    <h2>{{gsched.s1title}}</h2>
-    <p>{{gsched.s1body1}}</p>
-    <p>{{gsched.s1body2}}</p>
+  <!-- APIキーとは -->
+  <section class="legal-sec" id="what">
+    <h2>What an API key is</h2>
+    <p>It is a spare key that lets Gemini be called from your own Google account. Dropper borrows that key to ask the AI, on your behalf, to read the file you dropped.</p>
+    <p>The key stays yours. Dropper never holds it for you — it sits inside your browser only. You can regenerate it or throw it away on Google's side at any time.</p>
   </section>
 
-  <!-- 2. 使う前に -->
-  <section class="legal-sec" id="s2">
-    <h2>{{gsched.s2title}}</h2>
-    <p>{{gsched.s2body}}</p>
+  <!-- 何ができるようになるか（メリットの明確化） -->
+  <section class="legal-sec" id="can">
+    <h2>What an API key lets you do</h2>
+    <p>It is not the same as pasting a question into the official chat window.</p>
+    <div class="ak-cards">
+      <div class="ak-card">
+        <div class="ak-card-icon">📥</div>
+        <h3>Hundreds of entries from one sheet</h3>
+        <p>Schedule Dropper read 157 events from a single school year planner and registered them straight into Google Calendar. The work of pasting into a chat and retyping each line disappears entirely.</p>
+      </div>
+      <div class="ak-card">
+        <div class="ak-card-icon">🎛️</div>
+        <h3>In a screen built for your task</h3>
+        <p>Name, date, venue and deadline come out field by field, so you can fix them on the spot before registering. That is what a purpose-built tool can do with the AI's brain, and the official chat cannot.</p>
+      </div>
+      <div class="ak-card">
+        <div class="ak-card-icon">💰</div>
+        <h3>Pay per use, not per month</h3>
+        <p>There is no subscription to sign up for. As long as you stay inside the free tier it costs nothing — which makes it cheaper than a monthly plan, especially if you only use it now and then.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 無料・クレカ不要（心理的ハードルを下げる） -->
+  <section class="legal-sec" id="money">
+    <h2>Why there is nothing to worry about on cost</h2>
+    <p>Getting an API key in Google AI Studio does not involve entering any payment details.</p>
+    <ul class="ak-money">
+      <li>💳 <strong>No credit card screen ever appears.</strong> You start using it while there is simply no way to bill you.</li>
+      <li>🆓 <strong>The free tier is roughly 1,500 requests a day.</strong> One file read is one request, so personal use rarely comes close.</li>
+      <li>🛑 <strong>Going over the limit stops the requests — it does not charge you.</strong> For the rest of that day you can use standard mode without AI, and the free tier resets the next day.</li>
+    </ul>
+  </section>
+
+  <!-- 安全性の可視化（保存先の明記） -->
+  <section class="legal-sec" id="safe">
+    <h2>Where the key you type actually goes</h2>
+    <p>Dropper has no server. Here is exactly where your key goes.</p>
     <table class="legal-table">
       <thead>
-        <tr><th>{{gsched.s2thItem}}</th><th>{{gsched.s2thNote}}</th></tr>
+        <tr><th>Item</th><th>How it actually works</th></tr>
       </thead>
       <tbody>
-        <tr><td>{{gsched.s2r1a}}</td><td>{{gsched.s2r1b}}</td></tr>
-        <tr><td>{{gsched.s2r2a}}</td><td>{{gsched.s2r2b}}</td></tr>
-        <tr><td>{{gsched.s2r3a}}</td><td>{{gsched.s2r3b}}</td></tr>
+        <tr><td>Where the key is stored</td><td>Only on your own device (your browser's localStorage). It is not synced to your other devices either.</td></tr>
+        <tr><td>Our server</td><td>There isn't one. We cannot receive your key, or anything that was read from your file.</td></tr>
+        <tr><td>Where the key is sent</td><td>To Google's Gemini API only, and only to ask — with your key — that your own file be read.</td></tr>
+        <tr><td>If you want to stop</td><td>Clearing your browser data removes the key. Deleting the key in Google AI Studio disables it immediately.</td></tr>
       </tbody>
     </table>
+    <div class="guide-safe">🔒 The same points are written out on this page: <a href="./privacy.html">Privacy Policy</a></div>
   </section>
 
-  <!-- 3. 基本の流れ -->
-  <section class="legal-sec" id="s3">
-    <h2>{{gsched.s3title}}</h2>
+  <!-- 取得手順（3ステップ）。HowTo構造化データもこの3ステップから作る。 -->
+  <section class="legal-sec" id="steps">
+    <h2>Three steps to get your key</h2>
+    <p>If you have a Google account, you need nothing else.</p>
 
     <div class="guide-step">
-      <h3><span class="guide-step-num">1</span>{{gsched.st1title}}</h3>
-      <p>{{gsched.st1body}}</p>
-      <figure class="guide-shot">
-        <img src="/assets/guide-schedule/{{LANG_DIR}}/step1-login.png" alt="{{gsched.shot1alt}}" loading="lazy">
-        <figcaption>{{gsched.shot1cap}}</figcaption>
-      </figure>
+      <h3><span class="guide-step-num">1</span>Open Google AI Studio</h3>
+      <p>Use the button below to open Google's own page (aistudio.google.com). This is Google's site, not ours.</p>
+    </div>
+    <div class="guide-step">
+      <h3><span class="guide-step-num">2</span>Sign in with your Google account</h3>
+      <p>Sign in with the Google account you normally use. You will not be asked for payment details here.</p>
+    </div>
+    <div class="guide-step">
+      <h3><span class="guide-step-num">3</span>Press "Create API key" and copy it</h3>
+      <p>A string starting with "AIza…" appears. Copy it, paste it into Dropper's API key field, and you're done.</p>
     </div>
 
-    <div class="guide-step">
-      <h3><span class="guide-step-num">2</span>{{gsched.st2title}}</h3>
-      <p>{{gsched.st2body}}</p>
-      <div class="guide-note">{{gsched.st2note}}</div>
-      <figure class="guide-shot">
-        <img src="/assets/guide-schedule/{{LANG_DIR}}/step2-setup.png" alt="{{gsched.shot2alt}}" loading="lazy">
-        <figcaption>{{gsched.shot2cap}}</figcaption>
-      </figure>
-    </div>
-
-    <div class="guide-step">
-      <h3><span class="guide-step-num">3</span>{{gsched.st3title}}</h3>
-      <p>{{gsched.st3body}}</p>
-      <figure class="guide-shot">
-        <img src="/assets/guide-schedule/{{LANG_DIR}}/step3-drop.png" alt="{{gsched.shot3alt}}" loading="lazy">
-        <figcaption>{{gsched.shot3cap}}</figcaption>
-      </figure>
-    </div>
-
-    <div class="guide-step">
-      <h3><span class="guide-step-num">4</span>{{gsched.st4title}}</h3>
-      <p>{{gsched.st4body}}</p>
-      <figure class="guide-shot">
-        <img src="/assets/guide-schedule/{{LANG_DIR}}/step4-list.png" alt="{{gsched.shot4alt}}" loading="lazy">
-        <figcaption>{{gsched.shot4cap}}</figcaption>
-      </figure>
-    </div>
-
-    <div class="guide-step">
-      <h3><span class="guide-step-num">5</span>{{gsched.st5title}}</h3>
-      <p>{{gsched.st5body}}</p>
-      <figure class="guide-shot">
-        <img src="/assets/guide-schedule/{{LANG_DIR}}/step5-register.png" alt="{{gsched.shot5alt}}" loading="lazy">
-        <figcaption>{{gsched.shot5cap}}</figcaption>
-      </figure>
+    <div class="ak-studio">
+      <a class="btn btn-primary" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Open Google AI Studio ↗</a>
+      <p class="ak-studio-note">※ Keep your key to yourself. If someone does see it, delete that key in AI Studio and create a new one — the old key stops working.</p>
     </div>
   </section>
 
-  <!-- 4. 読み取り方（通常モードとAIモード） -->
-  <section class="legal-sec" id="s4">
-    <h2>{{gsched.s4title}}</h2>
-    <p>{{gsched.s4body}}</p>
-    <table class="legal-table">
-      <thead>
-        <tr><th>{{gsched.s4thMode}}</th><th>{{gsched.s4thFor}}</th><th>{{gsched.s4thNeed}}</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>{{gsched.s4r1a}}</td><td>{{gsched.s4r1b}}</td><td>{{gsched.s4r1c}}</td></tr>
-        <tr><td>{{gsched.s4r2a}}</td><td>{{gsched.s4r2b}}</td><td>{{gsched.s4r2c}}</td></tr>
-      </tbody>
-    </table>
-    <div class="guide-note">{{gsched.s4grid}}</div>
-    <figure class="guide-shot">
-      <img src="/assets/guide-schedule/{{LANG_DIR}}/ai-choice.png" alt="{{gsched.shot6alt}}" loading="lazy">
-      <figcaption>{{gsched.shot6cap}}</figcaption>
-    </figure>
-
-    <h3 class="guide-sub">{{gsched.s4sub2}}</h3>
-    <ol class="guide-ol">
-      <li>{{gsched.s4k1}}</li>
-      <li>{{gsched.s4k2}}</li>
-      <li>{{gsched.s4k3}}</li>
-      <li>{{gsched.s4k4}}</li>
-    </ol>
-    <figure class="guide-shot">
-      <img src="/assets/guide-schedule/{{LANG_DIR}}/ai-key-modal.png" alt="{{gsched.shot7alt}}" loading="lazy">
-      <figcaption>{{gsched.shot7cap}}</figcaption>
-    </figure>
-    <div class="guide-safe">{{gsched.s4note1}}</div>
-    <div class="guide-note">{{gsched.s4note2}}</div>
-    <p>{{gsched.s4body2}}</p>
-    <div class="ak-link-box">{{apikey.fromGuide}}<br>
-      <a href="{{APIKEY_PATH}}">{{apikey.fromGuideLink}}</a>
-    </div>
-  </section>
-
-  <!-- 5. 読み取り結果の見かた -->
-  <section class="legal-sec" id="s5">
-    <h2>{{gsched.s5title}}</h2>
-    <p>{{gsched.s5body}}</p>
-
-    <h3 class="guide-sub">{{gsched.s5sub1}}</h3>
-    <p>{{gsched.s5sub1body}}</p>
-
-    <h3 class="guide-sub">{{gsched.s5sub2}}</h3>
-    <p>{{gsched.s5sub2body}}</p>
-
-    <h3 class="guide-sub">{{gsched.s5sub3}}</h3>
-    <p>{{gsched.s5sub3body}}</p>
-
-    <h3 class="guide-sub">{{gsched.s5sub4}}</h3>
-    <p>{{gsched.s5sub4body}}</p>
-  </section>
-
-  <!-- 6. よくある質問 -->
-  <section class="legal-sec" id="s6">
-    <h2>{{gsched.s6title}}</h2>
+  <!-- よくある不安 -->
+  <section class="legal-sec" id="faq">
+    <h2>Common worries</h2>
     <dl class="guide-faq">
-      <dt>{{gsched.s6q1}}</dt><dd>{{gsched.s6a1}}</dd>
-      <dt>{{gsched.s6q2}}</dt><dd>{{gsched.s6a2}}</dd>
-      <dt>{{gsched.s6q3}}</dt><dd>{{gsched.s6a3}}</dd>
-      <dt>{{gsched.s6q4}}</dt><dd>{{gsched.s6a4}}</dd>
-      <dt>{{gsched.s6q5}}</dt><dd>{{gsched.s6a5}}</dd>
-      <dt>{{gsched.s6q6}}</dt><dd>{{gsched.s6a6}}</dd>
+      <dt>Could I be charged without noticing?</dt><dd>There is no credit card on file, so there is no way to bill you. Going past the free tier stops that day's requests rather than charging you.</dd>
+      <dt>What if my key is stolen?</dt><dd>The key sits on your device only and is never sent to our server. If you are still uneasy, delete the key in Google AI Studio — it stops working the moment you delete it, and you can create a new one.</dd>
+      <dt>If I use up the free tier, does the tool stop working?</dt><dd>No. Standard mode, which does not use AI, keeps working. AI mode gets its free tier back the next day.</dd>
+      <dt>Can I use it on confidential documents?</dt><dd>On the free tier, what you send may be used to improve Google's services. Please do not put confidential documents through AI mode (standard mode sends nothing outside).</dd>
+      <dt>Is the tool unusable without an API key?</dt><dd>No. Standard mode works from the start with no key at all. AI mode is an extra option for people who want the reading to be more accurate.</dd>
     </dl>
   </section>
 
-  <!-- 7. 困ったときは -->
-  <section class="legal-sec" id="s7">
-    <h2>{{gsched.s7title}}</h2>
-    <div class="legal-contact">{{gsched.s7body}}</div>
-  </section>
-
-  <div class="guide-cta">
-    <a class="btn-sm fill" href="{{tool2.url}}" target="_blank" rel="noopener">{{gsched.ctaBtn}}</a>
+  <div class="ak-cta">
+    <p>Got your key? Put it to work</p>
+    <div class="ak-cta-btns">
+      <a class="btn-sm fill" href="https://app.dropper-tools.com/calendar-en/" target="_blank" rel="noopener">🎪 Open Event Dropper ↗</a>
+      <a class="btn-sm fill" href="https://app.dropper-tools.com/schedule-en/" target="_blank" rel="noopener">📅 Open Schedule Dropper ↗</a>
+    </div>
   </div>
 
-  <a href="{{NAV_PREFIX}}" class="legal-back">{{gsched.back}}</a>
+  <a href="index.html" class="legal-back">← Back to top page</a>
 
 </div>
 
 <footer>
   <div class="footer-logo">DROPPER</div>
-  <p>{{footer.copy}}</p>
-  <p class="footer-links"><a href="{{PRIVACY_PATH}}">{{footer.privacy}}</a></p>
+  <p>Dropper © 2026</p>
+  <p class="footer-links"><a href="./privacy.html">Privacy Policy</a></p>
 </footer>
 
 <button id="backToTop" aria-label="Top">↑</button>

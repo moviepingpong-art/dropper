@@ -92,6 +92,36 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://dropper-tools.com/apikey.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/apikey.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/apikey.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/apikey.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/apikey.html"/>
+    <lastmod>2026-07-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dropper-tools.com/en/apikey.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/apikey.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/apikey.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/apikey.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/apikey.html"/>
+    <lastmod>2026-07-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dropper-tools.com/in/apikey.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/apikey.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/apikey.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/apikey.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/apikey.html"/>
+    <lastmod>2026-07-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://dropper-tools.com/privacy.html</loc>
     <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/privacy.html"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/privacy.html"/>
