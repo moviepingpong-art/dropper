@@ -5,9 +5,11 @@ GitHub Pages で公開している静的サイト。公開URL: https://dropper-t
 ## 2層構造（重要）
 
 - `src/` は**配信されない材料**。`build.py` + `template.html` / `guide-template.html` /
-  `privacy-template.html` + `i18n/{ja,en,in}.json`
-- `python3 src/build.py` を実行すると、直下の `index.html` / `guide.html` / `privacy.html` と
-  `en/` `in/` の各3ページ（計9ページ）が生成される。
+  `guide-schedule-template.html` / `privacy-template.html` / `apikey-template.html`
+  + `i18n/{ja,en,in}.json`
+- `python3 src/build.py` を実行すると、直下と `en/` `in/` に
+  `index.html` / `guide.html` / `guide-schedule.html` / `privacy.html` / `apikey.html`
+  の5ページ×3言語（計15ページ）が生成される。
 - **GitHub Actions等の自動ビルドは無い。** `src/` を直しただけでは公開ページは変わらない。
   必ず `build.py` を実行し、**生成HTMLも一緒にコミットする**。
 
@@ -16,6 +18,18 @@ GitHub Pages で公開している静的サイト。公開URL: https://dropper-t
 - 文言はすべて `src/i18n/{ja,en,in}.json`。テンプレートに直書きしない。
 - キーを足すときは **3言語すべてに同じキー**を足す（1つでも欠けると `{{...}}` が未置換で残る）。
 - ビルド後の検証: 生成HTMLに `{{` が残っていないか grep する。
+
+## APIキー案内ページ（`apikey.html`）
+
+APIキー入力のハードルを下げるための専用ページ。**ツール本体のポップアップ2か所からここへ送っている**
+（`app.dropper-tools.com` 側の `i18n.js` / `schedule-i18n.js` が言語別に href を張り替える）。
+
+- **ファイル名・場所を変えない。** 変えるとツール本体からのリンクが404になる（別リポジトリなので気づきにくい）。
+- 順番に意味がある: 帯で「クレカ不要・3分・0円」→ 何ができるか → お金の心配がいらない理由 →
+  キーの保存先（表）→ 3ステップ → よくある不安。**キーの取り方より先に、お金と保存先の不安を消す**。
+- 手順セクションの `id="steps"` は `build.py` の `HOWTO_PAGES` が HowTo 構造化データの
+  リンク先に使う。id を変えるなら `HOWTO_PAGES` も直す。
+- ページを増やしたら **`sitemap.xml` にも3言語分を足す**（`build.py` の生成対象外）。
 
 ## SEO関連（構築済み・壊さない）
 
