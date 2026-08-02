@@ -346,6 +346,27 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
            掲載言語の出し分けは build.py の build_tool2_card() / TOOL2_LANGS -->
       {{TOOL2_CARD}}
 
+      <!-- ツール3：決めごとドロッパー。3言語とも公開済みなので出し分けが要らず、
+           ツール2のような build.py 側の生成関数は使わずここに直接書いている。
+           使い方ガイドはまだ無いのでガイドボタンは出さない。 -->
+      <article class="tool-card">
+        <span class="tool-status status-open">{{tool3.status}}</span>
+        <div class="tool-icon">✅</div>
+        <h3 class="tool-name">{{tool3.name}}</h3>
+        <p class="tool-desc">{{tool3.desc}}</p>
+        <div class="tool-tags">
+          <span class="tool-tag">{{tool3.tag1}}</span>
+          <span class="tool-tag">{{tool3.tag2}}</span>
+          <span class="tool-tag">{{tool3.tag3}}</span>
+          <span class="tool-tag">{{tool3.tag4}}</span>
+          <span class="tool-tag">{{tool3.tag5}}</span>
+        </div>
+        <p class="tool-price">{{tool3.price}}</p>
+        <div class="tool-actions">
+          <a class="btn-sm fill" href="{{tool3.url}}" target="_blank" rel="noopener">{{tool3.btn1}}</a>
+        </div>
+      </article>
+
     </div>
   </div>
 </section>
@@ -434,6 +455,13 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         <span>
           <span class="picker-name">{{tool2.name}}</span>
           <span class="picker-line">{{picker.t2line}}</span>
+        </span>
+      </a>
+      <a class="picker-item" href="{{tool3.url}}" target="_blank" rel="noopener">
+        <span class="picker-emoji">✅</span>
+        <span>
+          <span class="picker-name">{{tool3.name}}</span>
+          <span class="picker-line">{{picker.t3line}}</span>
         </span>
       </a>
     </div>

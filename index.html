@@ -388,6 +388,27 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         </div>
       </article>
 
+      <!-- ツール3：決めごとドロッパー。3言語とも公開済みなので出し分けが要らず、
+           ツール2のような build.py 側の生成関数は使わずここに直接書いている。
+           使い方ガイドはまだ無いのでガイドボタンは出さない。 -->
+      <article class="tool-card">
+        <span class="tool-status status-open">公開中</span>
+        <div class="tool-icon">✅</div>
+        <h3 class="tool-name">決めごとドロッパー</h3>
+        <p class="tool-desc">会話のスクリーンショットや打ち合わせメモ、議事録をドロップするだけで、決まったこと・まだ決まっていないこと・やること・記録に仕分け。「結局これ決まったんだっけ？」と読み返す時間がなくなります。手書きのノートやホワイトボードの写真も読み取れます。</p>
+        <div class="tool-tags">
+          <span class="tool-tag">ログイン不要で試せる</span>
+          <span class="tool-tag">会話のスクショから</span>
+          <span class="tool-tag">手書きメモ・議事録もOK</span>
+          <span class="tool-tag">決まったこと／未決を仕分け</span>
+          <span class="tool-tag">カレンダーにも登録できる</span>
+        </div>
+        <p class="tool-price">現在無料（今後有料化予定）</p>
+        <div class="tool-actions">
+          <a class="btn-sm fill" href="https://app.dropper-tools.com/decide/" target="_blank" rel="noopener">使ってみる</a>
+        </div>
+      </article>
+
     </div>
   </div>
 </section>
@@ -462,7 +483,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 <!-- ツール選択ポップアップ（ヒーローの「使ってみる」から開く） -->
 <div class="picker-overlay" id="toolPicker" role="dialog" aria-modal="true" aria-labelledby="pickerTitle">
   <div class="picker">
-    <p class="picker-title" id="pickerTitle">どちらのドロッパーを使いますか？</p>
+    <p class="picker-title" id="pickerTitle">どのドロッパーを使いますか？</p>
     <div class="picker-list">
       <a class="picker-item" href="https://app.dropper-tools.com/calendar/" target="_blank" rel="noopener">
         <span class="picker-emoji">🎪</span>
@@ -476,6 +497,13 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         <span>
           <span class="picker-name">予定表ドロッパー</span>
           <span class="picker-line">1枚からまとめて何件も</span>
+        </span>
+      </a>
+      <a class="picker-item" href="https://app.dropper-tools.com/decide/" target="_blank" rel="noopener">
+        <span class="picker-emoji">✅</span>
+        <span>
+          <span class="picker-name">決めごとドロッパー</span>
+          <span class="picker-line">会話やメモから決まったこと</span>
         </span>
       </a>
     </div>
