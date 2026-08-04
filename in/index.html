@@ -209,6 +209,59 @@ section{padding:6rem 1.5rem;}
 .tool-desc{font-size:0.9rem;color:var(--text-mid);line-height:1.9;margin-bottom:1.2rem;}
 .tool-tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.6rem;}
 .tool-tag{font-size:0.72rem;font-weight:700;color:var(--primary-dark);background:var(--primary-pale);border-radius:6px;padding:0.3em 0.8em;letter-spacing:0.03em;}
+
+/* ---------- シリーズカードの図（ツール本体の #tools-modal と同じ考え方） ----------
+   3本の違いは「1枚から何が、いくつ出てくるか」に尽きるので、図はそこだけを描く。
+   SVG ではなく HTML+CSS で組む。ラベルが普通のテキストなので辞書のキー（tool1.fig1 など）が
+   そのまま効き、英語で文字幅が伸びても折り返せるため。
+   配色はツール本体（ティール系）ではなく、この周知サイトの青系にそろえてある。 */
+.tool-fig{
+  display:flex;align-items:center;gap:0.55rem;flex-wrap:nowrap;
+  background:#f7f9ff;border:1px solid var(--border);border-radius:10px;
+  padding:0.9rem 0.8rem;margin-bottom:1.2rem;overflow-x:auto;
+}
+.tf-col{display:flex;flex-direction:column;align-items:center;gap:0.4rem;flex:none;}
+.tf-cap{font-size:0.66rem;font-weight:700;color:var(--primary-dark);white-space:nowrap;letter-spacing:0.02em;}
+.tf-arrow{flex:none;font-size:1rem;font-weight:700;color:var(--primary-light);}
+.tf-sheet{width:62px;background:#fff;border:2px solid var(--primary);border-radius:6px;
+  padding:6px 5px;display:flex;flex-direction:column;gap:3px;}
+.tf-sheet.wide{width:74px;}
+.tf-bar{height:3px;border-radius:2px;background:var(--primary-pale);}
+.tf-bar.t{height:5px;background:var(--primary-light);width:80%;}
+.tf-bar.hi{background:var(--accent2);}
+.tf-bar.s{width:60%;}
+.tf-tbl{display:grid;grid-template-columns:11px 1fr;gap:2px 3px;}
+.tf-tbl i{display:block;height:3px;border-radius:2px;background:var(--accent2);}
+.tf-tbl b{display:block;height:3px;border-radius:2px;background:var(--primary-pale);}
+.tf-cal{width:68px;background:#fff;border:2px solid var(--primary);border-radius:6px;overflow:hidden;}
+.tf-cal-top{height:7px;background:var(--primary);}
+.tf-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1.5px;padding:4px;}
+.tf-cal-grid s{display:block;height:5px;border-radius:1px;background:#eef1fa;}
+.tf-cal-grid s.f{background:var(--green);}
+.tf-cal-grid s.f1{background:var(--accent2);box-shadow:0 0 0 1.5px var(--accent);}
+.tf-bub{position:relative;width:68px;background:#fff;border:2px solid var(--primary);border-radius:7px;
+  padding:6px 5px;display:flex;flex-direction:column;gap:3px;}
+.tf-bub::after{content:'';position:absolute;left:10px;bottom:-7px;width:0;height:0;
+  border:5px solid transparent;border-top-color:var(--primary);border-bottom:0;}
+.tf-chk{width:70px;background:#fff;border:2px solid var(--primary);border-radius:6px;
+  padding:6px 5px;display:flex;flex-direction:column;gap:4px;}
+.tf-chk div{display:flex;align-items:center;gap:3px;}
+.tf-chk em{flex:none;width:6px;height:6px;border-radius:2px;background:var(--primary);}
+.tf-chk .tf-bar{flex:1;}
+.tf-chat{width:64px;background:#fff;border:2px solid var(--primary);border-radius:6px;
+  padding:6px 4px;display:flex;flex-direction:column;gap:3px;}
+.tf-chat u{display:block;height:7px;border-radius:4px;background:var(--primary-pale);width:74%;}
+.tf-chat u.r{margin-left:auto;background:rgba(0,200,150,0.35);width:62%;}
+.tf-bins{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.tf-bin{background:#fff;border:2px solid var(--primary-pale);border-radius:6px;
+  padding:4px 5px;font-size:0.58rem;font-weight:700;color:var(--primary-dark);white-space:nowrap;}
+.tf-bin.a{border-color:var(--green);}
+.tf-bin.b{border-color:var(--accent2);}
+/* カードが1列になる幅では図を折り返す。ツール本体は横スクロールにしているが、
+   周知サイトは流し読みされるため、切れて見えるより折り返したほうがよい。 */
+@media(max-width:760px){
+  .tool-fig{flex-wrap:wrap;justify-content:center;row-gap:0.7rem;}
+}
 .tool-price{font-size:0.82rem;font-weight:700;color:var(--text-dark);margin-bottom:1.2rem;}
 .tool-price .yen{color:var(--accent);font-size:1.05rem;}
 .tool-actions{display:flex;gap:0.8rem;flex-wrap:wrap;margin-top:auto;}
@@ -352,6 +405,34 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         <div class="tool-icon">🎪</div>
         <h3 class="tool-name">Event Dropper</h3>
         <p class="tool-desc">Bas event document (PDF ya image) drop karo, aur date aur venue Google Calendar mein automatic add ho jaate hain. Extracted details se WhatsApp/SNS announcement bhi ek tap mein ban jaata hai. Kisi bhi event ke liye.</p>
+        <div class="tool-fig" aria-hidden="true">
+          <div class="tf-col">
+            <div class="tf-sheet">
+              <span class="tf-bar t"></span><span class="tf-bar hi"></span><span class="tf-bar s"></span>
+              <span class="tf-bar"></span><span class="tf-bar s"></span>
+            </div>
+            <span class="tf-cap">Ek flyer</span>
+          </div>
+          <span class="tf-arrow">&rarr;</span>
+          <div class="tf-col">
+            <div class="tf-cal">
+              <div class="tf-cal-top"></div>
+              <div class="tf-cal-grid">
+                <s></s><s></s><s></s><s></s><s></s><s></s><s></s>
+                <s></s><s></s><s class="f1"></s><s></s><s></s><s></s><s></s>
+                <s></s><s></s><s></s><s></s><s></s><s></s><s></s>
+              </div>
+            </div>
+            <span class="tf-cap">Calendar mein ek entry</span>
+          </div>
+          <span class="tf-arrow">&#65291;</span>
+          <div class="tf-col">
+            <div class="tf-bub">
+              <span class="tf-bar t"></span><span class="tf-bar"></span><span class="tf-bar s"></span>
+            </div>
+            <span class="tf-cap">WhatsApp/SNS post</span>
+          </div>
+        </div>
         <div class="tool-tags">
           <span class="tool-tag">Sirf Google</span>
           <span class="tool-tag">Calendar mein add</span>
@@ -373,6 +454,40 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         <div class="tool-icon">📅</div>
         <h3 class="tool-name">Schedule Dropper</h3>
         <p class="tool-desc">Ek sheet drop karein — year planner, fixture list, ya season calendar — aur usme likhi saari entries ek saath padh li jaati hain. List check karke sab ek saath Google Calendar mein add karein. Calendar-grid layout bhi chalta hai.</p>
+        <div class="tool-fig" aria-hidden="true">
+          <div class="tf-col">
+            <div class="tf-sheet wide">
+              <span class="tf-bar t"></span>
+              <div class="tf-tbl">
+                <i></i><b></b><i></i><b></b><i></i><b></b>
+                <i></i><b></b><i></i><b></b><i></i><b></b>
+              </div>
+            </div>
+            <span class="tf-cap">Ek sheet</span>
+          </div>
+          <span class="tf-arrow">&rarr;</span>
+          <div class="tf-col">
+            <div class="tf-chk">
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+            </div>
+            <span class="tf-cap">List check karein</span>
+          </div>
+          <span class="tf-arrow">&rarr;</span>
+          <div class="tf-col">
+            <div class="tf-cal">
+              <div class="tf-cal-top"></div>
+              <div class="tf-cal-grid">
+                <s></s><s class="f"></s><s></s><s class="f"></s><s></s><s></s><s class="f"></s>
+                <s class="f"></s><s></s><s class="f"></s><s></s><s class="f"></s><s></s><s></s>
+                <s></s><s class="f"></s><s></s><s></s><s class="f"></s><s class="f"></s><s></s>
+              </div>
+            </div>
+            <span class="tf-cap">Sab ek saath add</span>
+          </div>
+        </div>
         <div class="tool-tags">
           <span class="tool-tag">Ek sheet se kai entries</span>
           <span class="tool-tag">Calendar grid bhi</span>
@@ -395,6 +510,36 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         <div class="tool-icon">✅</div>
         <h3 class="tool-name">Decide Dropper</h3>
         <p class="tool-desc">Chat screenshot, meeting notes ya minutes drop karein — aur ye sab ko tay hua, abhi tay nahi hua, karne wale kaam, aur ho chuki baaton ke record mein baant deta hai. Aakhir tay kya hua, ye dhoondhne ka time bachta hai. Handwritten notes aur whiteboard ki photo bhi chalti hai.</p>
+        <div class="tool-fig" aria-hidden="true">
+          <div class="tf-col">
+            <div class="tf-chat">
+              <u></u><u class="r"></u><u></u><u class="r"></u>
+            </div>
+            <span class="tf-cap">Chat aur notes</span>
+          </div>
+          <span class="tf-arrow">&rarr;</span>
+          <div class="tf-col">
+            <div class="tf-bins">
+              <span class="tf-bin a">✅ Tay hua</span>
+              <span class="tf-bin b">❓ Pending</span>
+              <span class="tf-bin a">📌 Karna hai</span>
+              <span class="tf-bin">🗒 Record</span>
+            </div>
+            <span class="tf-cap">Chaar mein baant</span>
+          </div>
+          <span class="tf-arrow">&rarr;</span>
+          <div class="tf-col">
+            <div class="tf-cal">
+              <div class="tf-cal-top"></div>
+              <div class="tf-cal-grid">
+                <s></s><s></s><s></s><s class="f1"></s><s></s><s></s><s></s>
+                <s></s><s class="f1"></s><s></s><s></s><s></s><s></s><s></s>
+                <s></s><s></s><s></s><s></s><s></s><s class="f1"></s><s></s>
+              </div>
+            </div>
+            <span class="tf-cap">Sirf deadline add</span>
+          </div>
+        </div>
         <div class="tool-tags">
           <span class="tool-tag">Bina sign-in try karein</span>
           <span class="tool-tag">Chat screenshots se</span>

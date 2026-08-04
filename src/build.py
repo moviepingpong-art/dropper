@@ -220,6 +220,40 @@ def build_tool2_card(code, strings):
         <div class="tool-icon">📅</div>
         <h3 class="tool-name">{{tool2.name}}</h3>
         <p class="tool-desc">{{tool2.desc}}</p>
+        <div class="tool-fig" aria-hidden="true">
+          <div class="tf-col">
+            <div class="tf-sheet wide">
+              <span class="tf-bar t"></span>
+              <div class="tf-tbl">
+                <i></i><b></b><i></i><b></b><i></i><b></b>
+                <i></i><b></b><i></i><b></b><i></i><b></b>
+              </div>
+            </div>
+            <span class="tf-cap">{{tool2.fig1}}</span>
+          </div>
+          <span class="tf-arrow">&rarr;</span>
+          <div class="tf-col">
+            <div class="tf-chk">
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+            </div>
+            <span class="tf-cap">{{tool2.fig2}}</span>
+          </div>
+          <span class="tf-arrow">&rarr;</span>
+          <div class="tf-col">
+            <div class="tf-cal">
+              <div class="tf-cal-top"></div>
+              <div class="tf-cal-grid">
+                <s></s><s class="f"></s><s></s><s class="f"></s><s></s><s></s><s class="f"></s>
+                <s class="f"></s><s></s><s class="f"></s><s></s><s class="f"></s><s></s><s></s>
+                <s></s><s class="f"></s><s></s><s></s><s class="f"></s><s class="f"></s><s></s>
+              </div>
+            </div>
+            <span class="tf-cap">{{tool2.fig3}}</span>
+          </div>
+        </div>
         <div class="tool-tags">
           <span class="tool-tag">{{tool2.tag1}}</span>
           <span class="tool-tag">{{tool2.tag2}}</span>
