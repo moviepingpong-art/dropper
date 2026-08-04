@@ -122,6 +122,21 @@ PAGES = {
         # イベントドロッパー側のガイドへのリンク用
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
+    # 決めごとドロッパーの使い方ガイド。まず日本語のみ（翻訳・スクショが日本語だけ揃っている）。
+    # en/in を足すときは langs に追加し、assets/guide-decide/<code>/ に画像7枚を置くこと。
+    "guide-decide": {
+        "template": "guide-decide-template.html",
+        "filename": "guide-decide.html",
+        "langs": ["ja"],
+        "switch_paths": {
+            "ja": {"ja": "./guide-decide.html",  "en": "./en/guide-decide.html",  "in": "./in/guide-decide.html"},
+            "en": {"ja": "../guide-decide.html", "en": "./guide-decide.html",     "in": "../in/guide-decide.html"},
+            "in": {"ja": "../guide-decide.html", "en": "../en/guide-decide.html", "in": "./guide-decide.html"},
+        },
+        "nav_prefix": "index.html",
+        "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
+        "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
+    },
 }
 # =========================================================================
 
@@ -163,12 +178,22 @@ def build_hreflang(page):
 
 
 def build_switcher(page, current, strings):
+    """ヘッダーの言語切替。
+    そのページが生成されない言語は、リンクではなく押せないラベルにする。
+    （リンクのままだと存在しないURLへ飛んで404になる。1言語だけ先に公開する
+      ページがあるため、ここを踏まないと気づきにくい。）"""
     parts = []
     paths = PAGES[page]["switch_paths"]
+    available = page_langs(page)
     for i, code in enumerate(LANGS):
         if i > 0:
             parts.append('<span class="sep">/</span>')
         label = strings.get(f"ui.lang.{code}") or code
+        if code not in available:
+            parts.append(
+                f'<span class="lang-link" style="opacity:.4;cursor:default">{label}</span>'
+            )
+            continue
         active = " active" if code == current else ""
         href = paths[current][code]
         parts.append(
@@ -207,6 +232,21 @@ def build_tool2_guide_btn(code, strings):
         return ""
     label = strings.get("tool2.btn2", "")
     return f'\n          <a class="btn-sm line" href="{GSCHED_PATH[code]}">{label}</a>'
+
+
+# 決めごとドロッパーのガイドへのパス（{{TOOL3_GUIDE_BTN}}）。
+# ガイドは各言語フォルダ内に生成されるので、どの言語も同階層の "./" でよい。
+GDECIDE_PATH = {"ja": "./guide-decide.html", "en": "./guide-decide.html", "in": "./guide-decide.html"}
+
+
+def build_tool3_guide_btn(code, strings):
+    """決めごとカードの「使い方ガイド」ボタン。
+    ガイドは現在 ja のみ生成しているので、en/in ではボタンごと出さない
+    （出すと存在しないURLへのリンクになる）。"""
+    if code not in page_langs("guide-decide"):
+        return ""
+    label = strings.get("tool3.btn2", "")
+    return f'\n          <a class="btn-sm line" href="{GDECIDE_PATH[code]}">{label}</a>'
 
 
 def build_tool2_card(code, strings):
@@ -295,6 +335,7 @@ SEO_KEYS = {
     "privacy": ("privacy.metaTitle", "privacy.metaDesc"),
     "guide":   ("guide.metaTitle", "guide.metaDesc"),
     "guide-schedule": ("gsched.metaTitle", "gsched.metaDesc"),
+    "guide-decide": ("gdecide.metaTitle", "gdecide.metaDesc"),
     "apikey":  ("apikey.metaTitle", "apikey.metaDesc"),
 }
 
@@ -304,6 +345,7 @@ SEO_KEYS = {
 HOWTO_PAGES = {
     "guide": ("guide", 4, "s3", "PT2M"),
     "guide-schedule": ("gsched", 5, "s3", "PT2M"),
+    "guide-decide": ("gdecide", 5, "s3", "PT2M"),
     "apikey": ("apikey", 3, "steps", "PT3M"),
 }
 
@@ -412,6 +454,7 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{HITS_PATH}}", "" if code == "ja" else "/" + code)   # 訪問者カウンターを言語別に分ける(hits.shはパス別カウント)
     html = html.replace("{{GUIDE_BTN}}", build_guide_btn(page, code, strings))
     html = html.replace("{{TOOL2_CARD}}", build_tool2_card(code, strings))
+    html = html.replace("{{TOOL3_GUIDE_BTN}}", build_tool3_guide_btn(code, strings))
     for key, value in strings.items():
         html = html.replace("{{" + key + "}}", value)
     return html

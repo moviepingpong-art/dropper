@@ -91,6 +91,14 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <!-- 決めごとドロッパーのガイド。現在は日本語のみ。
+       en/in を公開したら、この url を3件に増やし hreflang 4種を足すこと。 -->
+  <url>
+    <loc>https://dropper-tools.com/guide-decide.html</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
   <url>
     <loc>https://dropper-tools.com/apikey.html</loc>
     <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/apikey.html"/>
