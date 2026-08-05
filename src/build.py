@@ -122,12 +122,13 @@ PAGES = {
         # イベントドロッパー側のガイドへのリンク用
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
-    # 決めごとドロッパーの使い方ガイド。まず日本語のみ（翻訳・スクショが日本語だけ揃っている）。
-    # en/in を足すときは langs に追加し、assets/guide-decide/<code>/ に画像7枚を置くこと。
+    # 決めごとドロッパーの使い方ガイド。3言語すべて生成（翻訳・スクショ完了済み）。
+    # 画像は assets/guide-decide/<code>/ を参照（各言語7枚）。en と in は画面の文言が
+    # 別物（Padhein / Jo tay hua など）なので、スクショも辞書も言語ごとに分けてある。
     "guide-decide": {
         "template": "guide-decide-template.html",
         "filename": "guide-decide.html",
-        "langs": ["ja"],
+        "langs": ["ja", "en", "in"],
         "switch_paths": {
             "ja": {"ja": "./guide-decide.html",  "en": "./en/guide-decide.html",  "in": "./in/guide-decide.html"},
             "en": {"ja": "../guide-decide.html", "en": "./guide-decide.html",     "in": "../in/guide-decide.html"},
