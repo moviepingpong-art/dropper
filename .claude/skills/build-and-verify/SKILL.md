@@ -21,20 +21,21 @@ python3 src/build.py
 
 ## 手順2：検証
 
-### 2-1. 15ページ生成されたか（5ページ × 3言語）
+### 2-1. 18ページ生成されたか（6ページ × 3言語）
 
 | 場所 | ファイル |
 |---|---|
-| 直下 | index.html / guide.html / guide-schedule.html / privacy.html / apikey.html |
-| `en/` | 同じ5ファイル |
-| `in/` | 同じ5ファイル |
+| 直下 | index.html / guide.html / guide-schedule.html / guide-decide.html / privacy.html / apikey.html |
+| `en/` | 同じ6ファイル |
+| `in/` | 同じ6ファイル |
 
 ページを増やすときは `build.py` の `PAGES` に足す。ここの表も更新する。
+（`guide-decide.html` は決めごとドロッパーのガイド。2026-08 に追加され、この表も更新した）
 
 ### 2-2. 未置換プレースホルダが残っていないか
 
 ```
-grep -rn "{{" index.html guide.html guide-schedule.html privacy.html apikey.html en/ in/
+grep -rn "{{" index.html guide.html guide-schedule.html guide-decide.html privacy.html apikey.html en/ in/
 ```
 
 **0件**であること。残っていれば `src/i18n/{ja,en,in}.json` のキー欠落。
@@ -69,6 +70,10 @@ grep -rn "{{" index.html guide.html guide-schedule.html privacy.html apikey.html
 - 辞書の値の中にプレースホルダ（`{{...}}`）を書いても展開されない。実パスを直書きする
 - `robots.txt` と `sitemap.xml` は **build.py の生成対象外の静的ファイル**。消さない。
   **ページを増やしたら `sitemap.xml` に3言語分を手で足す**（hreflang 4種も揃える）
+- **内部リンクで `index.html` と書かないこと**（`build.py` の `nav_prefix` は `"./"`）。
+  canonical・hreflang・sitemap はすべて `/` 表記なので、内部リンクだけ `index.html` にすると
+  GA4 で `/` と `/index.html` が別ページとして二重計上され、SEOの評価も分散する。
+  2026-08-06 まで実際にそうなっており、過去28日で48表示・7ユーザーぶんが分離していた
 - `apikey.html` は**ツール本体（`app.dropper-tools.com`）のポップアップからリンクされている**。
   ファイル名・場所を変えると別リポジトリ側が404になる。`id="steps"` は `build.py` の
   `HOWTO_PAGES` が HowTo 構造化データのリンク先に使う
