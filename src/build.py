@@ -43,7 +43,11 @@ LANGS = {
 #   filename     : 出力ファイル名（各言語フォルダ内）
 #   switch_paths : そのページでの言語切替リンク先（現在言語 -> 各言語の相対パス）
 #   nav_prefix   : ヘッダーのトップページ内アンカーへ飛ぶための接頭辞
-#                  （トップ自身は空。別ページからは index.html を明示する）
+#                  （トップ自身は空。別ページからは "./" でディレクトリ表記にする）
+#                  index.html と書かないこと。canonical・hreflang・sitemap は
+#                  すべて "/" 表記なので、内部リンクだけ index.html にすると
+#                  GA4 で「/」と「/index.html」が別ページとして二重計上される
+#                  （実測: 過去28日で 48表示ぶんが分離していた）。SEOの評価も分散する。
 #   langs        : そのページを生成する言語（省略時は全言語）。
 #                  未翻訳のページを中途半端に出さないための絞り込み。
 PAGES = {
@@ -70,7 +74,7 @@ PAGES = {
             "in": {"ja": "../privacy.html", "en": "../en/privacy.html", "in": "./privacy.html"},
         },
         # プライバシーポリシーからトップのアンカーへ戻るリンク用
-        "nav_prefix": "index.html",
+        "nav_prefix": "./",
         # PP自身のフッターからは自分を指す（リンクは出るが同一ページ）
         "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
@@ -86,7 +90,7 @@ PAGES = {
             "in": {"ja": "../guide.html", "en": "../en/guide.html", "in": "./guide.html"},
         },
         # ガイドからトップのアンカーへ戻るリンク用
-        "nav_prefix": "index.html",
+        "nav_prefix": "./",
         "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
         # ガイド自身を指す（現状リンクは出ないが定義は揃えておく）
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
@@ -102,7 +106,7 @@ PAGES = {
             "en": {"ja": "../apikey.html", "en": "./apikey.html",     "in": "../in/apikey.html"},
             "in": {"ja": "../apikey.html", "en": "../en/apikey.html", "in": "./apikey.html"},
         },
-        "nav_prefix": "index.html",
+        "nav_prefix": "./",
         "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
@@ -117,7 +121,7 @@ PAGES = {
             "en": {"ja": "../guide-schedule.html", "en": "./guide-schedule.html",     "in": "../in/guide-schedule.html"},
             "in": {"ja": "../guide-schedule.html", "en": "../en/guide-schedule.html", "in": "./guide-schedule.html"},
         },
-        "nav_prefix": "index.html",
+        "nav_prefix": "./",
         "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
         # イベントドロッパー側のガイドへのリンク用
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
@@ -134,7 +138,7 @@ PAGES = {
             "en": {"ja": "../guide-decide.html", "en": "./guide-decide.html",     "in": "../in/guide-decide.html"},
             "in": {"ja": "../guide-decide.html", "en": "../en/guide-decide.html", "in": "./guide-decide.html"},
         },
-        "nav_prefix": "index.html",
+        "nav_prefix": "./",
         "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
