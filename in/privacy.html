@@ -363,7 +363,20 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </section>
 
   <section class="legal-sec">
-    <h2>11. Analytics</h2>
+    <h2>11. LINE official account version ke baare mein</h2>
+    <p>LINE official account "Dropper" chat mein bheji gayi images aur PDFs ko padhkar result wapas deta hai. Sirf is feature ke liye processing hamare server (Google Apps Script) se hoti hai; browser version poori tarah aapke device par chalta hai aur hamare server se nahi jaata. Handling is prakaar hai.</p>
+    <ul>
+      <li>Aapke bheje gaye images ya PDFs hum store nahi karte. Padhne ke liye Google ke Gemini API ko bheje jaate hain aur processing khatam hote hi discard kar diye jaate hain.</li>
+      <li>Extract kiya gaya content (event ka naam, dates, venue, etc.) bhi store nahi hota. Wo reply mein wapas milta hai aur calendar mein add karne wali link ke andar embed hota hai.</li>
+      <li>In requests ke liye operator ki apni API key use hoti hai (browser version mein aapki apni key hoti hai). Free tier mein chalne ke kaaran, per person daily limit rakhi gayi hai.</li>
+      <li>Usage samajhne ke liye hum sirf date aur time, bheji gayi cheez ka type, result, laga hua time, aur aapke LINE user identifier se bana hashed string (sirf pehle 8 characters) record karte hain. Is string se original identifier wapas nahi nikala ja sakta.</li>
+      <li>Hum aapki LINE profile information (display name, profile image, phone number, etc.) nahi lete.</li>
+      <li>Gemini API ko bheja gaya data Google ki policies ke hisaab se handle hota hai (section 4 jaisa hi). Free tier mein use karne par, bheja gaya content Google ki services behtar banane ke liye use ho sakta hai.</li>
+    </ul>
+  </section>
+
+  <section class="legal-sec">
+    <h2>12. Analytics</h2>
     <p>Dropper service improve karne ke liye site usage samajhne hetu yeh tools use karta hai. Yeh site browsing ke statistical information handle karte hain aur aapke Google Calendar ya Drive ke contents (Google user data) se unrelated hain.</p>
     <ul>
       <li>Google Analytics: page views aur referrers jaise statistics cookies use karke collect karta hai. Collect ki gayi information anonymized usage statistics hai aur kisi vyakti ko identify nahi karti. Data <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google ki Privacy Policy</a> ke according handle hota hai.</li>
@@ -373,7 +386,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </section>
 
   <section class="legal-sec">
-    <h2>12. Contact</h2>
+    <h2>13. Contact</h2>
     <div class="legal-contact">Is policy ke baare mein sawaal ke liye, <a href="mailto:movie.pingpong@gmail.com">movie.pingpong@gmail.com</a> par contact karein.</div>
   </section>
 

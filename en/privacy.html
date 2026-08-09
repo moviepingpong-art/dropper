@@ -363,7 +363,20 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </section>
 
   <section class="legal-sec">
-    <h2>11. Analytics</h2>
+    <h2>11. About the LINE official account version</h2>
+    <p>The LINE official account "Dropper" reads images and PDFs sent in the chat and returns the result. For this feature only, the processing goes through our server (Google Apps Script); the browser version runs entirely on your device and does not go through our server. The handling is as follows.</p>
+    <ul>
+      <li>We do not store the images or PDFs you send. They are sent to Google's Gemini API for reading and discarded as soon as processing finishes.</li>
+      <li>We do not store the extracted content (event name, dates, venue, etc.) either. It is returned to you in the reply and embedded in the link used to add the event to your calendar.</li>
+      <li>The operator's own API key is used for these requests (in the browser version it is your own key). Because it runs within the free tier, there is a daily limit per person.</li>
+      <li>To understand usage, we record only the date and time, the type of item sent, the result, the time taken, and a hashed string derived from your LINE user identifier (first 8 characters only). The original identifier cannot be recovered from this string.</li>
+      <li>We do not obtain your LINE profile information (display name, profile image, phone number, etc.).</li>
+      <li>Data sent to the Gemini API is handled according to Google's policies (same as section 4). When used within the free tier, the content sent may be used to improve Google's services.</li>
+    </ul>
+  </section>
+
+  <section class="legal-sec">
+    <h2>12. Analytics</h2>
     <p>Dropper uses the following tools to understand site usage for the purpose of improving the service. These handle statistical information about site browsing and are unrelated to the contents of your Google Calendar or Drive (Google user data).</p>
     <ul>
       <li>Google Analytics: collects statistics such as page views and referrers using cookies. The information collected is anonymized usage statistics and does not identify individuals. Data is handled in accordance with <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google&#39;s Privacy Policy</a>.</li>
@@ -373,7 +386,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </section>
 
   <section class="legal-sec">
-    <h2>12. Contact</h2>
+    <h2>13. Contact</h2>
     <div class="legal-contact">For questions about this policy, please contact <a href="mailto:movie.pingpong@gmail.com">movie.pingpong@gmail.com</a>.</div>
   </section>
 

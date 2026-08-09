@@ -363,7 +363,20 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </section>
 
   <section class="legal-sec">
-    <h2>11. アクセス解析について</h2>
+    <h2>11. LINE公式アカウント版について</h2>
+    <p>LINE公式アカウント「ドロッパー」では、トークに送信された画像・PDFを読み取って結果をお返しします。この機能に限り、読み取りの処理は当方のサーバー（Google Apps Script）を経由します（ブラウザ版はお客様の端末内で完結し、当方のサーバーを経由しません）。取り扱いは次のとおりです。</p>
+    <ul>
+      <li>送信された画像・PDFを当方が保存することはありません。読み取りのため Google の Gemini API へ送信し、処理が終わり次第そのまま破棄します。</li>
+      <li>読み取った内容（大会名・日程・会場など）も保存しません。その場で返信としてお返しし、カレンダー登録用のリンクの中に埋め込んでお渡しします。</li>
+      <li>送信には運営者が取得したAPIキーを使用します（ブラウザ版はお客様ご自身のキーです）。無料の範囲で運用しているため、お一人あたり1日の利用回数に上限を設けています。</li>
+      <li>利用状況を把握するため、日時・送信されたものの種類・処理の結果・処理にかかった時間と、LINEの利用者識別子をハッシュ化した文字列（先頭8文字のみ）を記録します。この文字列から元の識別子を復元することはできません。</li>
+      <li>LINEのプロフィール情報（表示名・アイコン画像・電話番号など）は取得しません。</li>
+      <li>Gemini API に送信されたデータの取り扱いは Google のポリシーに従います（第4項と同じ）。無料の範囲での利用では、送信内容が Google のサービス改善に利用される場合があります。</li>
+    </ul>
+  </section>
+
+  <section class="legal-sec">
+    <h2>12. アクセス解析について</h2>
     <p>ドロッパーでは、サービス改善のためにアクセス状況を把握する目的で、以下のツールを利用しています。これらが扱うのはサイトの閲覧に関する統計情報であり、Googleカレンダーやドライブの内容（Googleユーザーデータ）とは無関係です。</p>
     <ul>
       <li>Google アナリティクス：ページの閲覧数や参照元などの統計を、Cookie を用いて収集します。収集される情報は匿名化された利用統計であり、個人を特定するものではありません。データの取り扱いは <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google のプライバシーポリシー</a> に従います。</li>
@@ -373,7 +386,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </section>
 
   <section class="legal-sec">
-    <h2>12. お問い合わせ</h2>
+    <h2>13. お問い合わせ</h2>
     <div class="legal-contact">本ポリシーに関するお問い合わせは、<a href="mailto:movie.pingpong@gmail.com">movie.pingpong@gmail.com</a> までご連絡ください。</div>
   </section>
 
