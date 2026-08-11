@@ -442,6 +442,38 @@ def build_seo_head(page, code, strings):
     return "\n".join(out)
 
 
+# LINE公式アカウントの友だち追加ブロック（トップページ）。
+# **日本語のときだけ出す。** LINE Botは日本語のみで、en/inの利用者はLINEを使わない
+# （WhatsApp圏）。この方針はプライバシーポリシー・あいさつメッセージと揃える。
+# 返す文字列の {{...}} は、このあとの辞書置換でまとめて差し替わる（build_tool2_card と同じ）。
+# 友だち追加URLは公式アカウントのベーシックID @937eheeb から導出した標準形。
+# QRは assets/line-qr.png（同じURLを符号化。差し替えるならファイルとURLの両方をそろえる）。
+LINE_ADD_URL = "https://line.me/R/ti/p/@937eheeb"
+
+def build_line_cta(code, strings):
+    if code != "ja":
+        return ""
+    return """<section id="line-band">
+  <div class="section-inner">
+    <div class="line-card">
+      <div class="line-card-body">
+        <p class="section-label">{{line.ctaLabel}}</p>
+        <h2 class="line-title">{{line.ctaTitle}}</h2>
+        <p class="line-text">{{line.ctaText}}</p>
+        <a class="btn-line" href="%s" target="_blank" rel="noopener">
+          <span class="btn-line-icon" aria-hidden="true">LINE</span>{{line.btn}}
+        </a>
+      </div>
+      <div class="line-card-qr">
+        <img src="assets/line-qr.png" width="150" height="150" alt="LINEで友だち追加するQRコード">
+        <p class="line-qr-cap">{{line.qrCap}}</p>
+      </div>
+    </div>
+  </div>
+</section>
+""" % LINE_ADD_URL
+
+
 def render(template, page, code, ja, langdict, hreflang):
     # 空欄や未定義キーは日本語にフォールバック
     strings = {k: (langdict.get(k) or ja.get(k, "")) for k in ja}
@@ -460,6 +492,7 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{GUIDE_BTN}}", build_guide_btn(page, code, strings))
     html = html.replace("{{TOOL2_CARD}}", build_tool2_card(code, strings))
     html = html.replace("{{TOOL3_GUIDE_BTN}}", build_tool3_guide_btn(code, strings))
+    html = html.replace("{{LINE_CTA}}", build_line_cta(code, strings))
     for key, value in strings.items():
         html = html.replace("{{" + key + "}}", value)
     return html

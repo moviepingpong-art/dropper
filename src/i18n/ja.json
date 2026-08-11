@@ -510,5 +510,10 @@
   "apikey.bandBtn": "APIキーの取り方を見る",
   "apikey.fromGuide": "APIキーの取り方・安全性・お金の心配がいらない理由は、専用ページで詳しく説明しています。",
   "apikey.fromGuideLink": "Gemini APIキーの取り方（クレカ不要・3分・0円）→",
-  "apikey.bandB3": "🔒 キーは端末内だけ"
+  "apikey.bandB3": "🔒 キーは端末内だけ",
+  "line.ctaLabel": "LINEでもっと手軽に",
+  "line.ctaTitle": "LINEに送るだけ。ログインなしで試せます",
+  "line.ctaText": "公式アカウント「ドロッパー」に大会要項の画像やPDFを送ると、内容を読み取って、カレンダー登録リンクと案内文をお返しします。アプリを開いたり、ログインしたりする必要はありません。",
+  "line.btn": "友だち追加して試す",
+  "line.qrCap": "パソコンの方は、スマホのLINEでこのQRを読み取ってください"
 }

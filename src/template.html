@@ -278,6 +278,27 @@ section{padding:6rem 1.5rem;}
 .idle-note{font-size:0.76rem;color:var(--text-light);line-height:1.8;}
 @media(max-width:640px){#idle-band{padding:2.2rem 0 0.5rem;}.idle-card{padding:1.6rem 1.2rem;}}
 
+/* LINE友だち追加バンド（日本語トップのみ。build_line_cta が出力）。LINE緑を主役にする */
+#line-band{padding:2.6rem 0 0.5rem;}
+.line-card{background:var(--card);border:2px solid rgba(6,199,85,0.35);border-radius:16px;
+  box-shadow:0 6px 24px rgba(6,199,85,0.12);padding:2rem;display:flex;gap:2rem;align-items:center;}
+.line-card-body{flex:1;min-width:0;}
+.line-title{font-family:'Oswald',sans-serif;font-size:clamp(1.3rem,4vw,1.9rem);font-weight:700;
+  color:var(--text-dark);line-height:1.4;margin-bottom:0.7rem;}
+.line-text{font-size:0.92rem;color:var(--text-mid);line-height:1.9;margin-bottom:1.3rem;}
+.btn-line{display:inline-flex;align-items:center;gap:0.6em;background:#06C755;color:#fff;
+  font-weight:700;font-size:0.95rem;text-decoration:none;padding:0.75em 1.6em;border-radius:10px;
+  box-shadow:0 6px 18px rgba(6,199,85,0.35);transition:all 0.2s;}
+.btn-line:hover{background:#05b34c;transform:translateY(-2px);box-shadow:0 10px 24px rgba(6,199,85,0.45);}
+.btn-line-icon{font-family:'Oswald',sans-serif;font-weight:700;font-size:0.7rem;letter-spacing:0.08em;
+  background:rgba(255,255,255,0.25);border-radius:5px;padding:0.2em 0.5em;}
+.line-card-qr{flex-shrink:0;text-align:center;}
+.line-card-qr img{display:block;border:1px solid var(--border);border-radius:10px;background:#fff;padding:6px;}
+.line-qr-cap{font-size:0.72rem;color:var(--text-light);line-height:1.6;margin-top:0.5rem;max-width:150px;}
+/* スマホでは横並びをやめ、QRは隠す（タップでボタンから直行できる） */
+@media(max-width:640px){.line-card{flex-direction:column;gap:1.2rem;padding:1.6rem 1.2rem;}
+  .line-card-qr{display:none;}}
+
 /* ---------- ご利用にあたって ---------- */
 #policy{background:linear-gradient(180deg,#ffffff 0%,#f0f5ff 100%);}
 .policy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:0.5rem;}
@@ -342,6 +363,8 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
     </div>
   </div>
 </section>
+
+{{LINE_CTA}}
 
 <!-- hero直下：Googleアカウントに眠っているAIの無料枠を、この道具に回してもらう帯。
      下の #apikey-band（コピペはもう終わり）とは役割が違う。あちらは詳しい説明への導線、
