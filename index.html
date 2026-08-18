@@ -280,6 +280,13 @@ section{padding:6rem 1.5rem;}
 }
 .tool-price{font-size:0.82rem;font-weight:700;color:var(--text-dark);margin-bottom:1.2rem;}
 .tool-price .yen{color:var(--accent);font-size:1.05rem;}
+/* 「お試し公開」のカードにだけ出す一言。値段のすぐ下に置きたいので、
+   .tool-price の下マージン（1.2rem）を負マージンで詰めている。 */
+.tool-note{
+  margin:-0.75rem 0 1.15rem;padding:0.55em 0.85em;border-radius:6px;
+  background:rgba(255,202,40,0.12);border-left:3px solid rgba(255,202,40,0.75);
+  font-size:0.78rem;line-height:1.75;color:var(--text-mid);
+}
 .tool-actions{display:flex;gap:0.8rem;flex-wrap:wrap;margin-top:auto;}
 .btn-sm{padding:0.6em 1.5em;font-size:0.8rem;border-radius:6px;font-weight:700;text-decoration:none;transition:all 0.2s;cursor:pointer;font-family:'Noto Sans JP',sans-serif;border:none;letter-spacing:0.05em;}
 .btn-sm.fill{background:var(--primary);color:#fff;}
@@ -622,7 +629,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
            他の3本が「1枚から何が出てくるか」なのに対し、これは1件に対して人が集まる。
            この違いが伝わるように、最後を人数の集計にしてある。 -->
       <article class="tool-card">
-        <span class="tool-status status-open">公開中</span>
+        <span class="tool-status status-soon">お試し公開</span>
         <div class="tool-icon">🙋</div>
         <h3 class="tool-name">出欠ドロッパー</h3>
         <p class="tool-desc">案内文にリンクを1本足すだけの出欠システム。メンバーは名簿から自分の名前を選んで〇△×を送るだけ、アプリも登録も不要です。回答はあなた自身のGoogleスプレッドシートにだけ保存されます。イベントドロッパーで読み取った要項を、そのまま出欠に使えます。</p>
@@ -655,6 +662,9 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
           <span class="tool-tag">未回答者がひと目で分かる</span>
         </div>
         <p class="tool-price">完全無料</p>
+        <!-- 出欠だけ「お試し公開」。動くが手を入れている最中なので、
+             使ってから気づくより先に伝える。 -->
+        <p class="tool-note">いま手を入れている最中の新しいツールです。ひととおり使えますが、画面や手順は今後変わることがあります。まずはお試しでどうぞ。</p>
         <div class="tool-actions">
           <a class="btn-sm fill" href="https://app.dropper-tools.com/attend/setup.html" target="_blank" rel="noopener">使ってみる</a>
         </div>
