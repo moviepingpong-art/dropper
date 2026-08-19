@@ -273,6 +273,15 @@ section{padding:6rem 1.5rem;}
 /* ---------- AIモード（APIキー案内への誘導帯） ---------- */
 /* APIキー入力を「怖い作業」に見せないため、トップでも先に
    「クレカ不要・0円・キーは端末内だけ」を言い切る。詳細は apikey.html へ。 */
+/* 出欠だけを置く段。シリーズの白い下端から続けたいので背景は白、上の余白も詰める。 */
+#after-drop{background:#fff;padding-top:1.5rem;}
+.after-flow{display:flex;align-items:center;gap:0.7rem;flex-wrap:wrap;margin:-1.8rem 0 2.2rem;}
+.af-step{font-size:0.82rem;font-weight:700;color:var(--text-mid);background:#f0f5ff;
+  border-radius:50px;padding:0.5em 1.1em;}
+.af-step.now{color:var(--primary);background:rgba(24,144,255,0.12);}
+.af-arrow{color:var(--text-light);font-weight:700;}
+/* 1枚だけなので、横いっぱいに伸ばさずカード幅に留める */
+.after-card{max-width:520px;}
 #apikey-band{background:linear-gradient(180deg,#f0f5ff 0%,#ffffff 100%);}
 .ak-band{
   background:var(--card);border:1px solid var(--border);border-left:6px solid var(--accent);
@@ -530,51 +539,71 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         </div>
       </article>
 
-      <!-- 出欠ドロッパー。図の要点は「1件 → 名簿から選ぶ → 〇△×が集まる」。
-           他の3本が「1枚から何が出てくるか」なのに対し、これは1件に対して人が集まる。
-           この違いが伝わるように、最後を人数の集計にしてある。 -->
-      <article class="tool-card">
-        <span class="tool-status status-soon">{{tool4.status}}</span>
-        <div class="tool-icon">🙋</div>
-        <h3 class="tool-name">{{tool4.name}}</h3>
-        <p class="tool-desc">{{tool4.desc}}</p>
-        <div class="tool-fig" aria-hidden="true">
-          <div class="tf-col">
-            <div class="tf-one"><b></b><i></i></div>
-            <span class="tf-cap">{{tool4.fig1}}</span>
-          </div>
-          <span class="tf-arrow">&rarr;</span>
-          <div class="tf-col">
-            <div class="tf-names">
-              <span class="tf-name sel"></span><span class="tf-name"></span>
-              <span class="tf-name"></span><span class="tf-name"></span>
-            </div>
-            <span class="tf-cap">{{tool4.fig2}}</span>
-          </div>
-          <span class="tf-arrow">&rarr;</span>
-          <div class="tf-col">
-            <div class="tf-count">
-              <em class="o">〇</em><em class="s">△</em><em class="x">×</em>
-            </div>
-            <span class="tf-cap">{{tool4.fig3}}</span>
-          </div>
-        </div>
-        <div class="tool-tags">
-          <span class="tool-tag">{{tool4.tag1}}</span>
-          <span class="tool-tag">{{tool4.tag2}}</span>
-          <span class="tool-tag">{{tool4.tag3}}</span>
-          <span class="tool-tag">{{tool4.tag4}}</span>
-          <span class="tool-tag">{{tool4.tag5}}</span>
-        </div>
-        <p class="tool-price">{{tool4.price}}</p>
-        <!-- 出欠だけ「お試し公開」。動くが手を入れている最中なので、
-             使ってから気づくより先に伝える。 -->
-        <p class="tool-note">{{tool4.note}}</p>
-        <div class="tool-actions">
-          <a class="btn-sm fill" href="{{tool4.url}}" target="_blank" rel="noopener">{{tool4.btn1}}</a>
-        </div>
-      </article>
+    </div>
+  </div>
+</section>
 
+<!-- ドロップした、そのあと。
+     上の3本は「1枚から何かを作る」道具で、入口がファイル。
+     出欠だけは「作ったあとに人が集まる」受け皿で、入口が人。
+     同じ並びに置くと tools.desc の「ファイルをドロップして使う道具たち」から外れるため、
+     段を分けて、つながりのほうを見出しで説明している。
+     図の要点は「1件 → 名簿から選ぶ → 〇△×が集まる」。他の3本が
+     「1枚から何が出てくるか」なのに対し、これは1件に対して人が集まる。 -->
+<section id="after-drop">
+  <div class="section-inner">
+    <p class="section-label">{{after.label}}</p>
+    <h2 class="section-title">{{after.title}}</h2>
+    <p class="section-desc">{{after.desc}}</p>
+
+    <div class="after-flow" aria-hidden="true">
+      <span class="af-step">{{after.step1}}</span>
+      <span class="af-arrow">&rarr;</span>
+      <span class="af-step now">{{after.step2}}</span>
+    </div>
+
+    <div class="after-card">
+        <article class="tool-card">
+          <span class="tool-status status-soon">{{tool4.status}}</span>
+          <div class="tool-icon">🙋</div>
+          <h3 class="tool-name">{{tool4.name}}</h3>
+          <p class="tool-desc">{{tool4.desc}}</p>
+          <div class="tool-fig" aria-hidden="true">
+            <div class="tf-col">
+              <div class="tf-one"><b></b><i></i></div>
+              <span class="tf-cap">{{tool4.fig1}}</span>
+            </div>
+            <span class="tf-arrow">&rarr;</span>
+            <div class="tf-col">
+              <div class="tf-names">
+                <span class="tf-name sel"></span><span class="tf-name"></span>
+                <span class="tf-name"></span><span class="tf-name"></span>
+              </div>
+              <span class="tf-cap">{{tool4.fig2}}</span>
+            </div>
+            <span class="tf-arrow">&rarr;</span>
+            <div class="tf-col">
+              <div class="tf-count">
+                <em class="o">〇</em><em class="s">△</em><em class="x">×</em>
+              </div>
+              <span class="tf-cap">{{tool4.fig3}}</span>
+            </div>
+          </div>
+          <div class="tool-tags">
+            <span class="tool-tag">{{tool4.tag1}}</span>
+            <span class="tool-tag">{{tool4.tag2}}</span>
+            <span class="tool-tag">{{tool4.tag3}}</span>
+            <span class="tool-tag">{{tool4.tag4}}</span>
+            <span class="tool-tag">{{tool4.tag5}}</span>
+          </div>
+          <p class="tool-price">{{tool4.price}}</p>
+          <!-- 出欠だけ「お試し公開」。動くが手を入れている最中なので、
+               使ってから気づくより先に伝える。 -->
+          <p class="tool-note">{{tool4.note}}</p>
+          <div class="tool-actions">
+            <a class="btn-sm fill" href="{{tool4.url}}" target="_blank" rel="noopener">{{tool4.btn1}}</a>
+          </div>
+        </article>
     </div>
   </div>
 </section>
