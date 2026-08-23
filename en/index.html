@@ -186,7 +186,9 @@ section{padding:6rem 1.5rem;}
 
 /* ---------- ツール一覧 ---------- */
 #tools{background:linear-gradient(180deg,#f0f5ff 0%,#ffffff 100%);}
-.tools-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.8rem;}
+/* カードごとに中身の量が違う（ツール1は出欠の説明を抱えている）ので、
+   行の高さに引き伸ばさない。伸ばすと短いカードの中に大きな空白ができる。 */
+.tools-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.8rem;align-items:start;}
 @media(max-width:760px){.tools-grid{grid-template-columns:1fr;}}
 .tool-card{
   position:relative;background:var(--card);border:1px solid var(--border);border-radius:14px;
@@ -258,11 +260,8 @@ section{padding:6rem 1.5rem;}
   padding:4px 5px;font-size:0.58rem;font-weight:700;color:var(--primary-dark);white-space:nowrap;}
 .tf-bin.a{border-color:var(--green);}
 .tf-bin.b{border-color:var(--accent2);}
-/* 出欠ドロッパーの図：1件 → 名簿から選ぶ → 〇△×が集まる */
-.tf-one{width:64px;background:#fff;border:2px solid var(--primary);border-radius:6px;
-  padding:6px;display:flex;flex-direction:column;gap:4px;}
-.tf-one b{display:block;height:7px;border-radius:4px;background:var(--primary);width:80%;}
-.tf-one i{display:block;height:5px;border-radius:3px;background:var(--primary-pale);width:55%;}
+/* 出欠の図の部品：名簿から選ぶ → 〇△×が集まる。
+   ツール1カードの中の .tool-attend で使う（出欠は単体の道具ではないため） */
 .tf-names{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
 .tf-name{display:block;width:30px;height:11px;border-radius:5px;
   background:#fff;border:2px solid var(--primary-pale);}
@@ -277,6 +276,13 @@ section{padding:6rem 1.5rem;}
    周知サイトは流し読みされるため、切れて見えるより折り返したほうがよい。 */
 @media(max-width:760px){
   .tool-fig{flex-wrap:wrap;justify-content:center;row-gap:0.7rem;}
+  .ta-row{justify-content:center;}
+}
+/* スマホ幅では中途半端に折り返し、矢印だけが行末に残る（英語はラベルが長く下段も折り返す）。
+   縦に積んで矢印を下向きにする。 */
+@media(max-width:480px){
+  .ta-row{flex-direction:column;}
+  .ta-row .tf-arrow{transform:rotate(90deg);}
 }
 .tool-price{font-size:0.82rem;font-weight:700;color:var(--text-dark);margin-bottom:1.2rem;}
 .tool-price .yen{color:var(--accent);font-size:1.05rem;}
@@ -287,6 +293,35 @@ section{padding:6rem 1.5rem;}
   background:rgba(255,202,40,0.12);border-left:3px solid rgba(255,202,40,0.75);
   font-size:0.78rem;line-height:1.75;color:var(--text-mid);
 }
+/* ---------- 出欠の説明（イベントドロッパーのカードの中） ----------
+   出欠は単体では始められず、この道具で読み取った行事から立ち上がる。
+   それが見て分かるように、図は「上段＝この道具の画面／下段＝そこから開く受付」の2段。
+   横1列に4ステップ並べるとカード幅（約400px）に収まらず、別の道具にも見えてしまう。
+   四角い部品は tf-* をそのまま流用しているので、配色・線幅は他の3枚と揃う。 */
+.tool-attend{
+  background:#f7f9ff;border:1px solid var(--border);border-left:4px solid var(--primary);
+  border-radius:10px;padding:1.1rem 1rem;margin:0 0 1.4rem;
+}
+.ta-head{font-size:0.88rem;font-weight:900;color:var(--text-dark);line-height:1.6;margin-bottom:0.5rem;}
+.ta-desc{font-size:0.82rem;color:var(--text-mid);line-height:1.85;margin-bottom:0.9rem;}
+.ta-fig{display:flex;flex-direction:column;align-items:center;}
+.ta-stage{width:100%;background:#fff;border:1px solid var(--border);border-radius:8px;padding:0.7rem;}
+.ta-stage-label{
+  display:inline-block;font-size:0.64rem;font-weight:700;letter-spacing:0.04em;
+  color:var(--primary-dark);background:var(--primary-pale);border-radius:5px;
+  padding:0.25em 0.7em;margin-bottom:0.6rem;
+}
+.ta-row{display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;}
+/* ツール本体の実物のボタンを模したもの。ここを押すと出欠に移る、という一点を示す */
+.ta-btn{
+  font-size:0.72rem;font-weight:700;color:#fff;background:var(--primary);
+  border-radius:6px;padding:0.5em 0.9em;white-space:nowrap;
+}
+.ta-down{display:flex;flex-direction:column;align-items:center;padding:0.3rem 0;}
+.ta-down-arrow{font-size:1.05rem;font-weight:700;color:var(--primary-light);line-height:1.2;}
+.ta-down-cap{font-size:0.64rem;font-weight:700;color:var(--text-light);text-align:center;}
+/* 注意書きは .tool-note を流用する。あちらは値段の下に置く前提で負マージンが入っている */
+.tool-attend .tool-note{margin:1rem 0 0;}
 .tool-actions{display:flex;gap:0.8rem;flex-wrap:wrap;margin-top:auto;}
 .btn-sm{padding:0.6em 1.5em;font-size:0.8rem;border-radius:6px;font-weight:700;text-decoration:none;transition:all 0.2s;cursor:pointer;font-family:'Noto Sans JP',sans-serif;border:none;letter-spacing:0.05em;}
 .btn-sm.fill{background:var(--primary);color:#fff;}
@@ -298,15 +333,6 @@ section{padding:6rem 1.5rem;}
 /* ---------- AIモード（APIキー案内への誘導帯） ---------- */
 /* APIキー入力を「怖い作業」に見せないため、トップでも先に
    「クレカ不要・0円・キーは端末内だけ」を言い切る。詳細は apikey.html へ。 */
-/* 出欠だけを置く段。シリーズの白い下端から続けたいので背景は白、上の余白も詰める。 */
-#after-drop{background:#fff;padding-top:1.5rem;}
-.after-flow{display:flex;align-items:center;gap:0.7rem;flex-wrap:wrap;margin:-1.8rem 0 2.2rem;}
-.af-step{font-size:0.82rem;font-weight:700;color:var(--text-mid);background:#f0f5ff;
-  border-radius:50px;padding:0.5em 1.1em;}
-.af-step.now{color:var(--primary);background:rgba(24,144,255,0.12);}
-.af-arrow{color:var(--text-light);font-weight:700;}
-/* 1枚だけなので、横いっぱいに伸ばさずカード幅に留める */
-.after-card{max-width:520px;}
 #apikey-band{background:linear-gradient(180deg,#f0f5ff 0%,#ffffff 100%);}
 .ak-band{
   background:var(--card);border:1px solid var(--border);border-left:6px solid var(--accent);
@@ -502,6 +528,53 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
           <span class="tool-tag">Easy handover</span>
           <span class="tool-tag">WhatsApp/SNS posts</span>
         </div>
+        <!-- 出欠の受付。単体の道具として並べず、イベントドロッパーの中の
+             「読み取ったあとの続き」として説明する（出欠だけでは始められないため）。
+             図の意味は上段＝この道具の画面、下段＝そこから立ち上がる受付。 -->
+        <div class="tool-attend">
+          <p class="ta-head">Read it, then collect the replies</p>
+          <p class="ta-desc">From the screen you get after reading a document, you can open attendance right away. Members pick their name from the roster and tap yes / maybe / no - no app and no sign-up.</p>
+          <div class="ta-fig" aria-hidden="true">
+            <div class="ta-stage">
+              <span class="ta-stage-label">Event Dropper</span>
+              <div class="ta-row">
+                <div class="tf-col">
+                  <div class="tf-sheet">
+                    <span class="tf-bar t"></span><span class="tf-bar hi"></span>
+                    <span class="tf-bar"></span><span class="tf-bar s"></span>
+                  </div>
+                  <span class="tf-cap">Read the document</span>
+                </div>
+                <span class="tf-arrow">&rarr;</span>
+                <span class="ta-btn">🙋 To attendance</span>
+              </div>
+            </div>
+            <div class="ta-down">
+              <span class="ta-down-arrow">&darr;</span>
+              <span class="ta-down-cap">Name, date and venue carry over</span>
+            </div>
+            <div class="ta-stage">
+              <span class="ta-stage-label">Attendance</span>
+              <div class="ta-row">
+                <div class="tf-col">
+                  <div class="tf-names">
+                    <span class="tf-name sel"></span><span class="tf-name"></span>
+                    <span class="tf-name"></span><span class="tf-name"></span>
+                  </div>
+                  <span class="tf-cap">Pick from the roster</span>
+                </div>
+                <span class="tf-arrow">&rarr;</span>
+                <div class="tf-col">
+                  <div class="tf-count">
+                    <em class="o">〇</em><em class="s">△</em><em class="x">×</em>
+                  </div>
+                  <span class="tf-cap">Tally the replies</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="tool-note">Attendance cannot be used on its own - it starts from an event you read here. It is still a preview, so screens and steps may change.</p>
+        </div>
         <p class="tool-price">Completely free</p>
         <div class="tool-actions">
           <a class="btn-sm fill" href="https://app.dropper-tools.com/calendar-en/" target="_blank" rel="noopener">Try it</a>
@@ -616,71 +689,6 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         </div>
       </article>
 
-    </div>
-  </div>
-</section>
-
-<!-- ドロップした、そのあと。
-     上の3本は「1枚から何かを作る」道具で、入口がファイル。
-     出欠だけは「作ったあとに人が集まる」受け皿で、入口が人。
-     同じ並びに置くと tools.desc の「ファイルをドロップして使う道具たち」から外れるため、
-     段を分けて、つながりのほうを見出しで説明している。
-     図の要点は「1件 → 名簿から選ぶ → 〇△×が集まる」。他の3本が
-     「1枚から何が出てくるか」なのに対し、これは1件に対して人が集まる。 -->
-<section id="after-drop">
-  <div class="section-inner">
-    <p class="section-label">After the drop</p>
-    <h2 class="section-title">What happens <span class="blue">after the drop</span></h2>
-    <p class="section-desc">The three tools above turn one file into dates, announcements or decisions. This one picks up the question that comes next - who is actually coming? An event you read with Event Dropper can go straight to collecting replies. You can also add events by hand and skip the droppers entirely.</p>
-
-    <div class="after-flow" aria-hidden="true">
-      <span class="af-step">Read one file</span>
-      <span class="af-arrow">&rarr;</span>
-      <span class="af-step now">Collect replies</span>
-    </div>
-
-    <div class="after-card">
-        <article class="tool-card">
-          <span class="tool-status status-soon">Preview</span>
-          <div class="tool-icon">🙋</div>
-          <h3 class="tool-name">Attendance Dropper</h3>
-          <p class="tool-desc">An attendance system that needs just one link in your announcement. Members pick their name from the roster and tap yes / maybe / no - no app and no sign-up. Setting up takes a group name and a roster, a few minutes on a phone. Anything you read with Event Dropper can be reused here.</p>
-          <div class="tool-fig" aria-hidden="true">
-            <div class="tf-col">
-              <div class="tf-one"><b></b><i></i></div>
-              <span class="tf-cap">One event</span>
-            </div>
-            <span class="tf-arrow">&rarr;</span>
-            <div class="tf-col">
-              <div class="tf-names">
-                <span class="tf-name sel"></span><span class="tf-name"></span>
-                <span class="tf-name"></span><span class="tf-name"></span>
-              </div>
-              <span class="tf-cap">Pick your name</span>
-            </div>
-            <span class="tf-arrow">&rarr;</span>
-            <div class="tf-col">
-              <div class="tf-count">
-                <em class="o">〇</em><em class="s">△</em><em class="x">×</em>
-              </div>
-              <span class="tf-cap">Totals by gender</span>
-            </div>
-          </div>
-          <div class="tool-tags">
-            <span class="tool-tag">Answer from a chat menu</span>
-            <span class="tool-tag">No app, no sign-up</span>
-            <span class="tool-tag">Set up in minutes</span>
-            <span class="tool-tag">Totals by gender</span>
-            <span class="tool-tag">See who has not replied</span>
-          </div>
-          <p class="tool-price">Completely free</p>
-          <!-- 出欠だけ「お試し公開」。動くが手を入れている最中なので、
-               使ってから気づくより先に伝える。 -->
-          <p class="tool-note">This one is new and still being worked on. It does the whole job today, but screens and steps may change. Try it out and tell us what is missing.</p>
-          <div class="tool-actions">
-            <a class="btn-sm fill" href="https://app.dropper-tools.com/attend/admin.html" target="_blank" rel="noopener">Try it</a>
-          </div>
-        </article>
     </div>
   </div>
 </section>
