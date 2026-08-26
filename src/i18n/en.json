@@ -126,6 +126,7 @@
   "privacy.s3n1": "All of this data is processed inside your own Google account. We never receive any of it.",
   "privacy.s3n2": "drive.file is limited to files this app itself creates. It cannot see the rest of your Google Drive.",
   "privacy.s3n3": "Temporary files created for text recognition (OCR) are deleted immediately after the text is read.",
+  "privacy.s3n4": "These scopes have been reviewed by Google (OAuth verification) and were approved in July 2026.",
   "privacy.s4title": "4. About the AI feature (Gemini)",
   "privacy.s4notice": "When the AI feature is used, the text read from your event document or schedule — or the file itself (PDF or image) — is sent to Google's Gemini API. Whether to use this feature is entirely your choice.",
   "privacy.s4n1": "Using AI is opt-in. After you sign in, a dialog asks you to choose \"Use AI\" or \"Do not use AI\".",

@@ -126,6 +126,7 @@
   "privacy.s3n1": "Ye saara data aapke apne Google account ke andar process hota hai. Hum ismein se kuch bhi receive nahi karte.",
   "privacy.s3n2": "drive.file sirf un files tak limited hai jo ye app khud banata hai. Ye aapki baaki Google Drive nahi dekh sakta.",
   "privacy.s3n3": "Text recognition (OCR) ke liye banayi gayi temporary files, text padhte hi turant delete kar di jaati hain.",
+  "privacy.s3n4": "In scopes ke liye Dropper ne Google ka review (OAuth verification) pass kiya hai — July 2026 mein approve hua.",
   "privacy.s4title": "4. AI feature (Gemini) ke baare mein",
   "privacy.s4notice": "AI feature use karne par, aapke event document ya schedule se padha gaya text — ya file khud (PDF ya image) — Google ke Gemini API ko bheja jaata hai. Ye feature use karna hai ya nahi, ye poori tarah aapki choice hai.",
   "privacy.s4n1": "AI use karna opt-in hai. Sign in ke baad ek dialog aapse \"AI use karein\" ya \"AI use na karein\" chunne ko kehta hai.",
