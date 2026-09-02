@@ -236,7 +236,7 @@ section{padding:6rem 1.5rem;}
 .tf-bin.a{border-color:var(--green);}
 .tf-bin.b{border-color:var(--accent2);}
 /* 出欠の図の部品：名簿から選ぶ → 〇△×が集まる。
-   ツール1カードの中の .tool-attend で使う（出欠は単体の道具ではないため） */
+   ツール1カードの中の .tool-attend で使う（出欠はカードを持たないため） */
 .tf-names{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
 .tf-name{display:block;width:30px;height:11px;border-radius:5px;
   background:#fff;border:2px solid var(--primary-pale);}
@@ -269,8 +269,9 @@ section{padding:6rem 1.5rem;}
   font-size:0.78rem;line-height:1.75;color:var(--text-mid);
 }
 /* ---------- 出欠の説明（イベントドロッパーのカードの中） ----------
-   出欠は単体では始められず、この道具で読み取った行事から立ち上がる。
-   それが見て分かるように、図は「上段＝この道具の画面／下段＝そこから開く受付」の2段。
+   主な道は、この道具で読み取った行事からそのまま立ち上げるほう。
+   （要項が無くても始められるが、それは note で添えるだけにしてある。2026-09-03）
+   主な道が見て分かるように、図は「上段＝この道具の画面／下段＝そこから開く受付」の2段。
    横1列に4ステップ並べるとカード幅（約400px）に収まらず、別の道具にも見えてしまう。
    四角い部品は tf-* をそのまま流用しているので、配色・線幅は他の3枚と揃う。 */
 .tool-attend{
@@ -504,7 +505,8 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
           <span class="tool-tag">{{tool1.tag5}}</span>
         </div>
         <!-- 出欠の受付。単体の道具として並べず、イベントドロッパーの中の
-             「読み取ったあとの続き」として説明する（出欠だけでは始められないため）。
+             「読み取ったあとの続き」として説明する。**そちらが主な道だから**であって、
+             出欠だけでは始められないからではない（要項なしでも始められる。2026-09-03）。
              図の意味は上段＝この道具の画面、下段＝そこから立ち上がる受付。 -->
         <div class="tool-attend">
           <p class="ta-head">{{tool1.attendHead}}</p>

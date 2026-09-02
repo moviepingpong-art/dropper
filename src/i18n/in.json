@@ -44,7 +44,7 @@
   "tool1.attendPass": "Naam, date, venue saath jaate hain",
   "tool1.attendFig2": "Roster se chunein",
   "tool1.attendFig3": "Replies ka total",
-  "tool1.attendNote": "Attendance akele nahi chalta - yahin padhe hue event se hi shuru hota hai. Abhi preview hai, isliye screens aur steps badal sakte hain.",
+  "tool1.attendNote": "Document na ho to bhi, pehli screen ke “＋ Attendance shuru karein” se shuru kar sakte hain. Abhi preview hai, isliye screens aur steps badal sakte hain.",
   "tool2.status": "Available",
   "tool2.name": "Schedule Dropper",
   "tool2.desc": "Ek sheet drop karein — year planner, fixture list, ya season calendar — aur usme likhi saari entries ek saath padh li jaati hain. List check karke sab ek saath Google Calendar mein add karein. Calendar-grid layout bhi chalta hai.",
