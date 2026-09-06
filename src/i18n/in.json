@@ -532,5 +532,7 @@
   "apikey.fromGuideLink": "Gemini API key kaise lein (card nahi, 3 minute, free) →",
   "apikey.bandB3": "🔒 Key sirf aapke device par",
   "tools.shelf": "Ek aur tool",
-  "toolA.url": "https://app.dropper-tools.com/calendar-in/?go=attend"
+  "toolA.url": "https://app.dropper-tools.com/calendar-in/?go=attend",
+  "tool1.attendOr": "ya",
+  "tool1.attendFig1b": "document nahi\nkhud type karein"
 }
