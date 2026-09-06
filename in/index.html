@@ -327,6 +327,14 @@ section{padding:6rem 1.5rem;}
 .ta-down{display:flex;flex-direction:column;align-items:center;padding:0.3rem 0;}
 .ta-down-arrow{font-size:1.05rem;font-weight:700;color:var(--primary-light);line-height:1.2;}
 .ta-down-cap{font-size:0.64rem;font-weight:700;color:var(--text-light);text-align:center;}
+/* もう一本の入口（チラシを通らない道）。破線＝紙を経由しない、の合図 */
+/* 左側の2択。**行き先は1つ**なので、矢印とボタンは分けない */
+.tf-ways{display:flex;flex-direction:column;align-items:center;gap:0.3rem;flex:none;}
+.tf-or{font-size:0.62rem;font-weight:700;color:var(--text-light);}
+/* 要項が無い側。**破線＝紙を通らない道**。中は空で、鉛筆だけ置く */
+.tf-sheet.blank{border-style:dashed;justify-content:center;align-items:center;min-height:34px;}
+.tf-pen{font-size:1rem;line-height:1;color:var(--primary-light);}
+.tf-cap.two{white-space:pre-line;line-height:1.35;text-align:center;}
 /* 注意書きは .tool-note を流用する。あちらは値段の下に置く前提で負マージンが入っている */
 .tool-attend .tool-note{margin:1rem 0 0;}
 .tool-actions{display:flex;gap:0.8rem;flex-wrap:wrap;margin-top:auto;}
@@ -666,12 +674,23 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         <div class="ta-stage">
           <span class="ta-stage-label">Event Dropper</span>
           <div class="ta-row">
-            <div class="tf-col">
-              <div class="tf-sheet">
-                <span class="tf-bar t"></span><span class="tf-bar hi"></span>
-                <span class="tf-bar"></span><span class="tf-bar s"></span>
+            <!-- ★ 左で道が分かれ、**行き先は同じ**。これが言いたいこと。
+                 上＝要項を読み取る（実線）／下＝要項が無く、手で入力する（破線）。
+                 実線と破線で「紙を通る／通らない」を分けている。 -->
+            <div class="tf-ways">
+              <div class="tf-col">
+                <div class="tf-sheet">
+                  <span class="tf-bar t"></span><span class="tf-bar hi"></span>
+                  <span class="tf-bar"></span><span class="tf-bar s"></span>
+                </div>
+                <span class="tf-cap">Document padhein</span>
               </div>
-              <span class="tf-cap">Document padhein</span>
+              <span class="tf-or">ya</span>
+              <div class="tf-col">
+                <div class="tf-sheet blank"><span class="tf-pen">&#9998;</span></div>
+                <span class="tf-cap two">document nahi
+khud type karein</span>
+              </div>
             </div>
             <span class="tf-arrow">&rarr;</span>
             <span class="ta-btn">🙋 Attendance par jayein</span>

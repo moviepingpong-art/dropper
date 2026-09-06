@@ -536,5 +536,7 @@
   "line.btn": "友だち追加して試す",
   "line.qrCap": "パソコンの方は、スマホのLINEでこのQRを読み取ってください",
   "tools.shelf": "もう一つの道具",
-  "toolA.url": "https://app.dropper-tools.com/calendar/?go=attend"
+  "toolA.url": "https://app.dropper-tools.com/calendar/?go=attend",
+  "tool1.attendOr": "または",
+  "tool1.attendFig1b": "要項はない\n項目は手入力"
 }

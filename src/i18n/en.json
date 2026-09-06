@@ -532,5 +532,7 @@
   "apikey.fromGuideLink": "How to get a Gemini API key (no card, 3 minutes, free) →",
   "apikey.bandB3": "🔒 Key stays on your device",
   "tools.shelf": "One more tool",
-  "toolA.url": "https://app.dropper-tools.com/calendar-en/?go=attend"
+  "toolA.url": "https://app.dropper-tools.com/calendar-en/?go=attend",
+  "tool1.attendOr": "or",
+  "tool1.attendFig1b": "no document\ntype it in"
 }
