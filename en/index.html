@@ -261,7 +261,7 @@ section{padding:6rem 1.5rem;}
 .tf-bin.a{border-color:var(--green);}
 .tf-bin.b{border-color:var(--accent2);}
 /* 出欠の図の部品：名簿から選ぶ → 〇△×が集まる。
-   ツール1カードの中の .tool-attend で使う（出欠はカードを持たないため） */
+   棚を分けた下の .tool-attend で使う（出欠はカードを持たないため） */
 .tf-names{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
 .tf-name{display:block;width:30px;height:11px;border-radius:5px;
   background:#fff;border:2px solid var(--primary-pale);}
@@ -293,7 +293,13 @@ section{padding:6rem 1.5rem;}
   background:rgba(255,202,40,0.12);border-left:3px solid rgba(255,202,40,0.75);
   font-size:0.78rem;line-height:1.75;color:var(--text-mid);
 }
-/* ---------- 出欠の説明（イベントドロッパーのカードの中） ----------
+/* 棚の区切り。3本（紙から出す）と出欠（集める）は向きが逆なので、線で分けて下に置く */
+.tools-shelf{display:flex;align-items:center;gap:14px;margin:2.6rem 0 1.4rem;}
+.tools-shelf::before,.tools-shelf::after{content:'';flex:1;height:1px;background:rgba(10,10,46,0.12);}
+.tools-shelf span{font-size:0.85rem;font-weight:700;color:var(--text-light);white-space:nowrap;}
+.shelf-actions{margin-top:1.1rem;justify-content:center;}
+
+/* ---------- 出欠の説明（棚を分けた下に置く） ----------
    主な道は、この道具で読み取った行事からそのまま立ち上げるほう。
    （要項が無くても始められるが、それは note で添えるだけにしてある。2026-09-03）
    主な道が見て分かるように、図は「上段＝この道具の画面／下段＝そこから開く受付」の2段。
@@ -529,54 +535,6 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
           <span class="tool-tag">Easy handover</span>
           <span class="tool-tag">WhatsApp/SNS posts</span>
         </div>
-        <!-- 出欠の受付。単体の道具として並べず、イベントドロッパーの中の
-             「読み取ったあとの続き」として説明する。**そちらが主な道だから**であって、
-             出欠だけでは始められないからではない（要項なしでも始められる。2026-09-03）。
-             図の意味は上段＝この道具の画面、下段＝そこから立ち上がる受付。 -->
-        <div class="tool-attend">
-          <p class="ta-head">Read it, then collect the replies</p>
-          <p class="ta-desc">From the screen you get after reading a document, you can open attendance right away. Members pick their name from the roster and tap yes / maybe / no - no app and no sign-up.</p>
-          <div class="ta-fig" aria-hidden="true">
-            <div class="ta-stage">
-              <span class="ta-stage-label">Event Dropper</span>
-              <div class="ta-row">
-                <div class="tf-col">
-                  <div class="tf-sheet">
-                    <span class="tf-bar t"></span><span class="tf-bar hi"></span>
-                    <span class="tf-bar"></span><span class="tf-bar s"></span>
-                  </div>
-                  <span class="tf-cap">Read the document</span>
-                </div>
-                <span class="tf-arrow">&rarr;</span>
-                <span class="ta-btn">🙋 To attendance</span>
-              </div>
-            </div>
-            <div class="ta-down">
-              <span class="ta-down-arrow">&darr;</span>
-              <span class="ta-down-cap">Name, date and venue carry over</span>
-            </div>
-            <div class="ta-stage">
-              <span class="ta-stage-label">Attendance</span>
-              <div class="ta-row">
-                <div class="tf-col">
-                  <div class="tf-names">
-                    <span class="tf-name sel"></span><span class="tf-name"></span>
-                    <span class="tf-name"></span><span class="tf-name"></span>
-                  </div>
-                  <span class="tf-cap">Pick from the roster</span>
-                </div>
-                <span class="tf-arrow">&rarr;</span>
-                <div class="tf-col">
-                  <div class="tf-count">
-                    <em class="o">〇</em><em class="s">△</em><em class="x">×</em>
-                  </div>
-                  <span class="tf-cap">Tally the replies</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <p class="tool-note">No document? You can also start from “🙋 Just collect attendance” on the first screen. It is still a preview, so screens and steps may change.</p>
-        </div>
         <p class="tool-price">Completely free</p>
         <div class="tool-actions">
           <a class="btn-sm fill" href="https://app.dropper-tools.com/calendar-en/" target="_blank" rel="noopener">Try it</a>
@@ -691,6 +649,62 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         </div>
       </article>
 
+    </div>
+
+    <!-- ★ 出欠は**4枚目のカードにしない。ツール1の中にも置かない**（2026-09-06）。
+         3本は「紙から出す」道具、出欠は「集める」道具で、**向きが逆**。同じ棚に並べると
+         名前（ドロッパー＝ドロップする道具）が嘘になるので、**棚を分けて**下に置く。
+         チラシなしでも単体で使えるようになったので、間借りの理由も無くなった。
+         **「ドロッパー」を名前に入れない**（2026-09-06）。画面と同じ「出欠システム」で通す。
+         図の意味は上段＝イベントドロッパーの画面、下段＝そこから立ち上がる受付。
+         文言・図はツール本体（dropper-app の tmAttend* / .ta-*）と**対**。片方だけ直さない。 -->
+    <div class="tools-shelf"><span>One more tool</span></div>
+    <div class="tool-attend">
+      <p class="ta-head">🙋 Attendance</p>
+      <p class="ta-desc">Collects and counts replies from your members. Start it from an event you just read, or on its own without any document. Members pick their name from the roster and tap yes / maybe / no - no app and no sign-up.</p>
+      <div class="ta-fig" aria-hidden="true">
+        <div class="ta-stage">
+          <span class="ta-stage-label">Event Dropper</span>
+          <div class="ta-row">
+            <div class="tf-col">
+              <div class="tf-sheet">
+                <span class="tf-bar t"></span><span class="tf-bar hi"></span>
+                <span class="tf-bar"></span><span class="tf-bar s"></span>
+              </div>
+              <span class="tf-cap">Read the document</span>
+            </div>
+            <span class="tf-arrow">&rarr;</span>
+            <span class="ta-btn">🙋 To attendance</span>
+          </div>
+        </div>
+        <div class="ta-down">
+          <span class="ta-down-arrow">&darr;</span>
+          <span class="ta-down-cap">Name, date and venue carry over</span>
+        </div>
+        <div class="ta-stage">
+          <span class="ta-stage-label">Attendance</span>
+          <div class="ta-row">
+            <div class="tf-col">
+              <div class="tf-names">
+                <span class="tf-name sel"></span><span class="tf-name"></span>
+                <span class="tf-name"></span><span class="tf-name"></span>
+              </div>
+              <span class="tf-cap">Pick from the roster</span>
+            </div>
+            <span class="tf-arrow">&rarr;</span>
+            <div class="tf-col">
+              <div class="tf-count">
+                <em class="o">〇</em><em class="s">△</em><em class="x">×</em>
+              </div>
+              <span class="tf-cap">Tally the replies</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="tool-note">Start it from “🙋 Just collect attendance” on the first screen. It is still a preview, so screens and steps may change.</p>
+    </div>
+    <div class="tool-actions shelf-actions">
+      <a class="btn-sm fill" href="https://app.dropper-tools.com/calendar-en/?go=attend" target="_blank" rel="noopener">Try it</a>
     </div>
   </div>
 </section>
