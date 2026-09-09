@@ -659,5 +659,6 @@
   "gattend.shotAdminAlt": "The organiser's All answers section, showing the counts, then who said yes, maybe or no by name, and finally who has not answered yet",
   "gattend.shotAdminCap": "The admin screen shows names even when the group has names turned off. At the bottom are the people who have not answered, and a button to copy their names.",
   "gattend.shotHandoffAlt": "An Event Dropper card with the venue and deadline fields and a To the attendance system button",
-  "gattend.shotHandoffCap": "Attendance can be opened straight from a card you just read from a document."
+  "gattend.shotHandoffCap": "Attendance can be opened straight from a card you just read from a document.",
+  "footer.newsletter": "📮 Notes from building this"
 }

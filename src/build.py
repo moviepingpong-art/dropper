@@ -291,6 +291,27 @@ def build_attend_guide_btn(code, strings):
     return '\n      <a class="btn-sm line" href="%s">%s</a>' % (GATTEND_PATH[code], label)
 
 
+# Substack（英語のニュースレター）。**フッターから出す導線はここ1本だけ。**
+SUBSTACK_URL = "https://tetsuyaworkshop.substack.com"
+
+
+def build_substack_link(code, strings):
+    """フッターのニュースレターへの導線（{{SUBSTACK_LINK}}）。
+
+    ★ **日本語のページには出さない。** ニュースレターは英語で書いており、
+      日本語の読者には note がある。ここに英語の記事を出すと行き止まりになる。
+    ★ 逆向き（Substack の記事 → dropper-tools.com/en/）は前からある。
+      **こちら向きが無かったので、英語で来た人から書き手が見えなかった**（2026-09-09）。
+    """
+    if code == "ja":
+        return ""
+    label = strings.get("footer.newsletter", "")
+    if not label:
+        return ""
+    return ('&nbsp;&nbsp;&middot;&nbsp;&nbsp;'
+            '<a href="%s" target="_blank" rel="noopener">%s</a>' % (SUBSTACK_URL, label))
+
+
 def build_tool2_card(code, strings):
     """シリーズ2枚目のカード。
     公開言語では予定表ドロッパーの実カード、それ以外は従来の準備中プレースホルダ。
@@ -556,6 +577,7 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{TOOL2_CARD}}", build_tool2_card(code, strings))
     html = html.replace("{{TOOL3_GUIDE_BTN}}", build_tool3_guide_btn(code, strings))
     html = html.replace("{{ATTEND_GUIDE_BTN}}", build_attend_guide_btn(code, strings))
+    html = html.replace("{{SUBSTACK_LINK}}", build_substack_link(code, strings))
     html = strip_shots(html, page, code)
     html = html.replace("{{LINE_CTA}}", build_line_cta(code, strings))
     for key, value in strings.items():

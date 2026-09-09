@@ -659,5 +659,6 @@
   "gattend.shotAdminAlt": "Organiser ka Sabke jawab section, jismein ginti, phir naam ke saath kaun yes, maybe ya no hai, aur aakhir mein kisne jawab nahi diya",
   "gattend.shotAdminCap": "Admin screen par naam tab bhi dikhte hain jab group mein naam band hon. Neeche wo log hain jinhone jawab nahi diya, aur unke naam copy karne ka button.",
   "gattend.shotHandoffAlt": "Event Dropper ka card, jismein jagah aur last date ke khaane hain aur attendance par jaane ka button",
-  "gattend.shotHandoffCap": "Document se abhi padhe hue card se seedha attendance shuru ki ja sakti hai."
+  "gattend.shotHandoffCap": "Document se abhi padhe hue card se seedha attendance shuru ki ja sakti hai.",
+  "footer.newsletter": "📮 Notes from building this"
 }
