@@ -14,9 +14,11 @@
    ドロッパー DROPPER  -  使い方ガイド（出欠システム）
    ※このファイルは src/guide-attend-template.html から自動生成されています。
      編集は src/ 側を直して build.py を実行してください。
-   段階1（2026-09-09）は日本語のみ・スクリーンショット無しで公開する。
-     画面を入れるときは /assets/guide-attend/<言語コード>/ に置き、
-     .guide-shot の figure を各ステップに足す（他3本のガイドと同じ作り）。
+   スクリーンショットは /assets/guide-attend/<言語コード>/ に置く（言語別）。
+     ★ 13枚そろっている（2026-09-09）。**メンバーの画面と管理画面で「みんなの回答」が
+       別物**なので、差し替えるときに取り違えないこと——管理画面のほうは、団体が
+       「名前を伏せる」設定でも名前と未回答者が出る。
+     ★ en / in はまだ生成していない（build.py の PAGES を見ること）。
    ============================================================ */
 
 /* ============================================================
@@ -381,6 +383,14 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <h3><span class="guide-step-num">1</span>{{gattend.st1title}}</h3>
       <p>{{gattend.st1body}}</p>
       <div class="guide-note">{{gattend.st1note}}</div>
+      <figure class="guide-shot">
+        <img src="/assets/guide-attend/{{LANG_DIR}}/step1-create.png" alt="{{gattend.shotCreateAlt}}" loading="lazy">
+        <figcaption>{{gattend.shotCreateCap}}</figcaption>
+      </figure>
+      <figure class="guide-shot">
+        <img src="/assets/guide-attend/{{LANG_DIR}}/step1-bulk.png" alt="{{gattend.shotBulkAlt}}" loading="lazy">
+        <figcaption>{{gattend.shotBulkCap}}</figcaption>
+      </figure>
       <div class="guide-safe">{{gattend.st1note2}}</div>
     </div>
 
@@ -388,24 +398,44 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <h3><span class="guide-step-num">2</span>{{gattend.st2title}}</h3>
       <p>{{gattend.st2body}}</p>
       <div class="guide-note">{{gattend.st2note}}</div>
+      <figure class="guide-shot">
+        <img src="/assets/guide-attend/{{LANG_DIR}}/step2-key.png" alt="{{gattend.shotKeyAlt}}" loading="lazy">
+        <figcaption>{{gattend.shotKeyCap}}</figcaption>
+      </figure>
       <p>{{gattend.st2note2}}</p>
     </div>
 
     <div class="guide-step">
       <h3><span class="guide-step-num">3</span>{{gattend.st3title}}</h3>
       <p>{{gattend.st3body}}</p>
+      <figure class="guide-shot">
+        <img src="/assets/guide-attend/{{LANG_DIR}}/step3-manual.png" alt="{{gattend.shotManualAlt}}" loading="lazy">
+        <figcaption>{{gattend.shotManualCap}}</figcaption>
+      </figure>
       <div class="guide-note">{{gattend.st3note}}</div>
     </div>
 
     <div class="guide-step">
       <h3><span class="guide-step-num">4</span>{{gattend.st4title}}</h3>
       <p>{{gattend.st4body}}</p>
+      <figure class="guide-shot">
+        <img src="/assets/guide-attend/{{LANG_DIR}}/step4-make.png" alt="{{gattend.shotMakeAlt}}" loading="lazy">
+        <figcaption>{{gattend.shotMakeCap}}</figcaption>
+      </figure>
+      <figure class="guide-shot">
+        <img src="/assets/guide-attend/{{LANG_DIR}}/step4-announce.png" alt="{{gattend.shotAnnAlt}}" loading="lazy">
+        <figcaption>{{gattend.shotAnnCap}}</figcaption>
+      </figure>
       <div class="guide-safe">{{gattend.st4note}}</div>
     </div>
 
     <div class="guide-step">
       <h3><span class="guide-step-num">5</span>{{gattend.st5title}}</h3>
       <p>{{gattend.st5body}}</p>
+      <figure class="guide-shot">
+        <img src="/assets/guide-attend/{{LANG_DIR}}/step5-answers.png" alt="{{gattend.shotAdminAlt}}" loading="lazy">
+        <figcaption>{{gattend.shotAdminCap}}</figcaption>
+      </figure>
       <div class="guide-note">{{gattend.st5note}}</div>
     </div>
   </section>
@@ -432,22 +462,47 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   <section class="legal-sec" id="s5">
     <h2>{{gattend.s5title}}</h2>
     <p>{{gattend.s5body}}</p>
+    <figure class="guide-shot">
+      <img src="/assets/guide-attend/{{LANG_DIR}}/member-list.png" alt="{{gattend.shotTabsAlt}}" loading="lazy">
+      <figcaption>{{gattend.shotTabsCap}}</figcaption>
+    </figure>
 
     <h3 class="guide-sub">{{gattend.s5sub1}}</h3>
     <p>{{gattend.s5sub1body}}</p>
+    <figure class="guide-shot">
+      <img src="/assets/guide-attend/{{LANG_DIR}}/member-first.png" alt="{{gattend.shotFirstAlt}}" loading="lazy">
+      <figcaption>{{gattend.shotFirstCap}}</figcaption>
+    </figure>
+    <figure class="guide-shot">
+      <img src="/assets/guide-attend/{{LANG_DIR}}/member-answer.png" alt="{{gattend.shotMarkAlt}}" loading="lazy">
+      <figcaption>{{gattend.shotMarkCap}}</figcaption>
+    </figure>
     <div class="guide-safe">{{gattend.s5sub1note}}</div>
 
     <h3 class="guide-sub">{{gattend.s5sub2}}</h3>
     <p>{{gattend.s5sub2body}}</p>
+    <figure class="guide-shot">
+      <img src="/assets/guide-attend/{{LANG_DIR}}/member-my.png" alt="{{gattend.shotMyAlt}}" loading="lazy">
+      <figcaption>{{gattend.shotMyCap}}</figcaption>
+    </figure>
 
     <h3 class="guide-sub">{{gattend.s5sub3}}</h3>
     <p>{{gattend.s5sub3body}}</p>
+    <figure class="guide-shot">
+      <img src="/assets/guide-attend/{{LANG_DIR}}/member-all.png" alt="{{gattend.shotAllAlt}}" loading="lazy">
+      <figcaption>{{gattend.shotAllCap}}</figcaption>
+    </figure>
+
   </section>
 
   <!-- 6. イベントドロッパーからの連携 -->
   <section class="legal-sec" id="s6">
     <h2>{{gattend.s6title}}</h2>
     <p>{{gattend.s6body}}</p>
+    <figure class="guide-shot">
+      <img src="/assets/guide-attend/{{LANG_DIR}}/dropper-handoff.png" alt="{{gattend.shotHandoffAlt}}" loading="lazy">
+      <figcaption>{{gattend.shotHandoffCap}}</figcaption>
+    </figure>
     <ol class="guide-ol">
       <li>{{gattend.s6o1}}</li>
       <li>{{gattend.s6o2}}</li>
