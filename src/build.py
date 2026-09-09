@@ -142,17 +142,19 @@ PAGES = {
         "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
-    # 出欠システムの使い方ガイド。**段階1（2026-09-09）は日本語だけ**。
-    # 他3本と違い、スクリーンショットをまだ撮っていないので画像を1枚も参照していない
-    # （テンプレートに .guide-shot が無い）。画面を入れるときは
-    # assets/guide-attend/<code>/ に置き、テンプレートに figure を足す。
-    # en/in を出すときは i18n の en.json / in.json に gattend.* を足してから
-    # langs に足すこと。**辞書が無いまま langs に足すと日本語のページが3つ出る**
-    # （render のフォールバックが ja を返すため。{{...}} は残らないので気づきにくい）。
+    # 出欠システムの使い方ガイド。2026-09-09 新設、同日に3言語へ。
+    # ★ **スクリーンショットは日本語だけ**（shot_langs）。出欠システムの画面は
+    #   en/in にも訳があるので、日本語の画面を英語のページに並べるわけにはいかない。
+    #   撮り直すのは26枚ぶんの手間になるため、en/in は文章だけで出す。
+    #   撮れたら assets/guide-attend/<code>/ に置き、shot_langs に足すだけでよい
+    #   （テンプレートは共通のまま。figure は render が言語ごとに落としている）。
+    # ★ 辞書が無いまま langs に足すと**日本語のページが3つ出る**
+    #   （render のフォールバックが ja を返すため。{{...}} は残らないので気づきにくい）。
     "guide-attend": {
         "template": "guide-attend-template.html",
         "filename": "guide-attend.html",
-        "langs": ["ja"],
+        "langs": ["ja", "en", "in"],
+        "shot_langs": ["ja"],
         "switch_paths": {
             "ja": {"ja": "./guide-attend.html",  "en": "./en/guide-attend.html",  "in": "./in/guide-attend.html"},
             "en": {"ja": "../guide-attend.html", "en": "./guide-attend.html",     "in": "../in/guide-attend.html"},
@@ -512,6 +514,29 @@ def build_line_cta(code, strings):
 """ % LINE_ADD_URL
 
 
+# 画像を出す言語。省略しているページは、生成するすべての言語で画像を出す。
+def shot_langs(page):
+    return PAGES[page].get("shot_langs")
+
+
+def strip_shots(html, page, code):
+    """その言語にスクリーンショットが無いページから <figure class="guide-shot"> を落とす。
+
+    **テンプレートを言語ごとに分けないための仕組み。** 分けると、文章を直すたびに
+    2枚のテンプレートを直すことになり、必ず片方が古くなる。
+    落とすのは figure だけなので、本文と手順はそのまま残る。"""
+    langs = shot_langs(page)
+    if langs is None or code in langs:
+        return html
+    import re as _re
+    out = _re.sub(r"[ \t]*<figure class=\"guide-shot\">.*?</figure>\n?", "",
+                  html, flags=_re.S)
+    # ★ "guide-shot" で見ないこと。**CSS に .guide-shot の定義が残る**（正しい）。
+    #   見るのは figure のほうだけ。
+    assert "<figure" not in out, "figure を落としきれていない: %s/%s" % (page, code)
+    return out
+
+
 def render(template, page, code, ja, langdict, hreflang):
     # 空欄や未定義キーは日本語にフォールバック
     strings = {k: (langdict.get(k) or ja.get(k, "")) for k in ja}
@@ -531,6 +556,7 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{TOOL2_CARD}}", build_tool2_card(code, strings))
     html = html.replace("{{TOOL3_GUIDE_BTN}}", build_tool3_guide_btn(code, strings))
     html = html.replace("{{ATTEND_GUIDE_BTN}}", build_attend_guide_btn(code, strings))
+    html = strip_shots(html, page, code)
     html = html.replace("{{LINE_CTA}}", build_line_cta(code, strings))
     for key, value in strings.items():
         html = html.replace("{{" + key + "}}", value)

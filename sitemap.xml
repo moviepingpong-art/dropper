@@ -183,6 +183,30 @@
   </url>
   <url>
     <loc>https://dropper-tools.com/guide-attend.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/guide-attend.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/guide-attend.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/guide-attend.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/guide-attend.html"/>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dropper-tools.com/en/guide-attend.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/guide-attend.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/guide-attend.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/guide-attend.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/guide-attend.html"/>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dropper-tools.com/in/guide-attend.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/guide-attend.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/guide-attend.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/guide-attend.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/guide-attend.html"/>
     <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
