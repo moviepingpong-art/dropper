@@ -1,13 +1,38 @@
 <!DOCTYPE html>
-<html lang="{{LANG}}">
+<html lang="en-IN">
 <head>
 <meta charset="UTF-8">
-{{GA}}
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PQPKYYYXKG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PQPKYYYXKG');
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{gattend.metaTitle}}</title>
-<meta name="description" content="{{gattend.metaDesc}}">
-{{SEO}}
-{{HREFLANG}}
+<title>Guide | Ek link se attendance jama karein aur ginein (Attendance)</title>
+<meta name="description" content="Dropper Attendance ka guide. Group banayein, roster paste karein, aur ek link baant dein. Members ko na app chahiye, na account, na sign-in - wo roster se apna naam chunte hain aur yes, maybe ya no tap karte hain. Setup se lekar ginti aur officers ke saath share karne tak, sab yahan.">
+<link rel="canonical" href="https://dropper-tools.com/in/guide-attend.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dropper">
+<meta property="og:title" content="Guide | Ek link se attendance jama karein aur ginein (Attendance)">
+<meta property="og:description" content="Dropper Attendance ka guide. Group banayein, roster paste karein, aur ek link baant dein. Members ko na app chahiye, na account, na sign-in - wo roster se apna naam chunte hain aur yes, maybe ya no tap karte hain. Setup se lekar ginti aur officers ke saath share karne tak, sab yahan.">
+<meta property="og:url" content="https://dropper-tools.com/in/guide-attend.html">
+<meta property="og:locale" content="en_IN">
+<meta property="og:image" content="https://dropper-tools.com/assets/og/og-in.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Dropper">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Guide | Ek link se attendance jama karein aur ginein (Attendance)">
+<meta name="twitter:description" content="Dropper Attendance ka guide. Group banayein, roster paste karein, aur ek link baant dein. Members ko na app chahiye, na account, na sign-in - wo roster se apna naam chunte hain aur yes, maybe ya no tap karte hain. Setup se lekar ginti aur officers ke saath share karne tak, sab yahan.">
+<meta name="twitter:image" content="https://dropper-tools.com/assets/og/og-in.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "HowTo", "name": "Guide | Ek link se attendance jama karein aur ginein (Attendance)", "description": "Dropper Attendance ka guide. Group banayein, roster paste karein, aur ek link baant dein. Members ko na app chahiye, na account, na sign-in - wo roster se apna naam chunte hain aur yes, maybe ya no tap karte hain. Setup se lekar ginti aur officers ke saath share karne tak, sab yahan.", "inLanguage": "en-IN", "totalTime": "PT5M", "tool": [{"@type": "HowToTool", "name": "Dropper"}], "step": [{"@type": "HowToStep", "position": 1, "name": "Group banayein", "text": "Attendance ka admin screen kholein, “Naya group banayein” ke neeche group ka naam aur members ke naam bharein, aur “Isi se banayein” dabayein. Sirf naam bhi kaafi hai.", "url": "https://dropper-tools.com/in/guide-attend.html#s3"}, {"@type": "HowToStep", "position": 2, "name": "Admin link save karein (zaroor)", "text": "Group ban jaane par admin link sirf ek baar dikhta hai. Wahi aapki chaabi hai, aur screen band karne ke baad dobara kabhi nahi dikhega.", "url": "https://dropper-tools.com/in/guide-attend.html#s3"}, {"@type": "HowToStep", "position": 3, "name": "Event add karein", "text": "Admin screen par “Event se attendance banayein” ke neeche event add karein. “+ Haath se daalein” se event ka naam, date, last date, jagah aur entries bhar sakte hain. Event ka document ho to use Event Dropper se le aa sakte hain (section 6).", "url": "https://dropper-tools.com/in/guide-attend.html#s3"}, {"@type": "HowToStep", "position": 4, "name": "Attendance shuru karein aur link baantein", "text": "“Is event ki attendance shuru karein” dabate hi jawab aane lagte hain. Bas attendance link members ko de dijiye.", "url": "https://dropper-tools.com/in/guide-attend.html#s3"}, {"@type": "HowToStep", "position": 5, "name": "Dekhein kitna aaya", "text": "Admin screen ka “Sabke jawab” har entry ki ginti dikhata hai, aur yeh bhi ki kaun yes, maybe ya no hai. Members ne jo baat likhi ho, wo bhi yahin dikhti hai.", "url": "https://dropper-tools.com/in/guide-attend.html#s3"}]}</script>
+<link rel="alternate" hreflang="ja" href="https://dropper-tools.com/guide-attend.html">
+<link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/guide-attend.html">
+<link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/guide-attend.html">
+<link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/guide-attend.html">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
@@ -311,244 +336,192 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 <body>
 
 <header>
-  <a href="{{NAV_PREFIX}}" class="logo">DROPPER <span class="dot">●</span> <span class="jp">{{logo.jp}}</span></a>
+  <a href="./" class="logo">DROPPER <span class="dot">●</span> <span class="jp">Dropper</span></a>
   <div class="header-right">
     <nav>
-      <a href="{{NAV_PREFIX}}#tools">{{nav.tools}}</a>
-      <a href="{{NAV_PREFIX}}#policy">{{nav.policy}}</a>
-      <a href="{{NAV_PREFIX}}#about">{{nav.about}}</a>
+      <a href="./#tools">Series</a>
+      <a href="./#policy">Notes</a>
+      <a href="./#about">About</a>
     </nav>
-    <div class="lang-switch">{{SWITCHER}}</div>
+    <div class="lang-switch"><a href="../guide-attend.html" class="lang-link" hreflang="ja">日本語</a><span class="sep">/</span><a href="../en/guide-attend.html" class="lang-link" hreflang="en">English</a><span class="sep">/</span><a href="./guide-attend.html" class="lang-link active" hreflang="en-IN">Hinglish</a></div>
   </div>
 </header>
 
 <div class="legal-wrap">
 
   <div class="legal-head">
-    <h1>{{gattend.title}}</h1>
-    <p class="legal-date">{{gattend.subtitle}}</p>
+    <h1>Attendance<br><span class="blue">Guide</span></h1>
+    <p class="legal-date">Yahan se shuru karein</p>
   </div>
 
-  <p class="guide-intro">{{gattend.lead}}</p>
+  <p class="guide-intro">Practice ya tournament ki attendance ek hi link se jama karein aur ginein. Members ko na app chahiye, na account, na sign-in. Organiser ko bhi Google account nahi chahiye, agar sirf attendance leni hai.</p>
 
   <!-- 目次 -->
-  <nav class="guide-toc" aria-label="{{gattend.tocLabel}}">
-    <h2>{{gattend.tocLabel}}</h2>
+  <nav class="guide-toc" aria-label="Is page par">
+    <h2>Is page par</h2>
     <ol>
-      <li><a href="#s1">{{gattend.s1title}}</a></li>
-      <li><a href="#s2">{{gattend.s2title}}</a></li>
-      <li><a href="#s3">{{gattend.s3title}}</a></li>
-      <li><a href="#s4">{{gattend.s4title}}</a></li>
-      <li><a href="#s5">{{gattend.s5title}}</a></li>
-      <li><a href="#s6">{{gattend.s6title}}</a></li>
-      <li><a href="#s7">{{gattend.s7title}}</a></li>
-      <li><a href="#s8">{{gattend.s8title}}</a></li>
+      <li><a href="#s1">1. Attendance kya hai</a></li>
+      <li><a href="#s2">2. Shuru karne se pehle</a></li>
+      <li><a href="#s3">3. Organiser ko kya karna hai</a></li>
+      <li><a href="#s4">4. Teen link, teen kaam</a></li>
+      <li><a href="#s5">5. Members ko kya dikhta hai</a></li>
+      <li><a href="#s6">6. Event Dropper se attendance shuru karna</a></li>
+      <li><a href="#s7">7. Aksar poochhe jaane wale sawaal</a></li>
+      <li><a href="#s8">8. Kuch kaam na kare to</a></li>
     </ol>
   </nav>
 
   <!-- 1. 出欠システムとは。★ 他3本と違い「データを預かる」ことを最初に言う -->
   <section class="legal-sec" id="s1">
-    <h2>{{gattend.s1title}}</h2>
-    <p>{{gattend.s1body1}}</p>
-    <p>{{gattend.s1body2}}</p>
-    <p>{{gattend.s1body3}}</p>
-    <div class="guide-note">{{gattend.s1note}}</div>
+    <h2>1. Attendance kya hai</h2>
+    <p>Practice, tournament aur doosre events ke jawab jama karke ginne ka web tool. Organiser group banata hai, members ko roster mein daalta hai, aur ek attendance link baant deta hai. Members us link ko kholte hain, roster se apna naam chunte hain, aur yes, maybe ya no tap kar dete hain.</p>
+    <p><strong>Har group ke liye ek hi link hota hai.</strong> Naya event jodne par bhi wo nahi badalta, isliye group chat mein ek baar pin kar dijiye. Baar-baar naya link baantne ki zaroorat nahi.</p>
+    <p>Series ke chaar tools mein se <strong>sirf Attendance mein hum aapka data rakhte hain</strong>. Alag-alag device se kai log likhte hain aur sabko ek hi result dikhna hota hai, isliye yeh akele browser ke andar nahi ho sakta. Hum kya rakhte hain aur use kaise delete karna hai, wo privacy policy mein likha hai.</p>
+    <div class="guide-note">Yeh tool abhi preview mein hai. Screens aur steps badal sakte hain.</div>
   </section>
 
   <!-- 2. 使う前に。★ APIキーの節は無い（出欠はAIを使わない）。
        代わりに「合鍵は管理リンク1本」をここで先に言う -->
   <section class="legal-sec" id="s2">
-    <h2>{{gattend.s2title}}</h2>
-    <p>{{gattend.s2body}}</p>
+    <h2>2. Shuru karne se pehle</h2>
+    <p>Itna hi chahiye. <strong>Na Google account, na kuch install karna.</strong></p>
     <table class="legal-table">
       <thead>
-        <tr><th>{{gattend.s2thItem}}</th><th>{{gattend.s2thNote}}</th></tr>
+        <tr><th>Kya chahiye</th><th>Detail</th></tr>
       </thead>
       <tbody>
-        <tr><td>{{gattend.s2r1a}}</td><td>{{gattend.s2r1b}}</td></tr>
-        <tr><td>{{gattend.s2r2a}}</td><td>{{gattend.s2r2b}}</td></tr>
-        <tr><td>{{gattend.s2r3a}}</td><td>{{gattend.s2r3b}}</td></tr>
-        <tr><td>{{gattend.s2r4a}}</td><td>{{gattend.s2r4b}}</td></tr>
+        <tr><td>Ek browser</td><td>Computer ya phone, dono par chalta hai. Kuch install nahi karna.</td></tr>
+        <tr><td>Group ka naam</td><td>Aisa naam jo aapke members pehchaan lein. Baad mein badal sakte hain.</td></tr>
+        <tr><td>Members ke naam</td><td>Jo roster mein jayenge. Spreadsheet se seedha paste kar sakte hain. Gender aur note optional hain, par gender daalne se ginti mein breakdown milta hai.</td></tr>
+        <tr><td>Members tak pahunchne ka zariya</td><td>Attendance link jaise bhi baantein - group chat, email, ya kaagaz par.</td></tr>
       </tbody>
     </table>
-    <div class="guide-note">{{gattend.s2key}}</div>
-    <div class="guide-safe">{{gattend.s2safe}}</div>
+    <div class="guide-note">&#128273; Organiser ki ek hi chaabi hai: <strong>admin link</strong>. Na password, na account. <strong>Wo link kho gaya to kuch wapas nahi mil sakta.</strong> Step 2 use save karne ko kehta hai, aur wo zaroori hai.</div>
+    <div class="guide-safe">Members roster se apna naam chunte hain. Na sign-up, na sign-in. Chuna hua naam us device par yaad rakh liya jata hai, isliye dobara chunna nahi padta.</div>
   </section>
 
   <!-- 3. 基本の流れ（5ステップ）。HowTo 構造化データはここを指す（build.py の HOWTO_PAGES）。
        ★ ステップ2は「保存する」だけの回。作業としては小さいが、
          ここを飛ばすと全部が戻せなくなるので、独立した手順にしてある。 -->
   <section class="legal-sec" id="s3">
-    <h2>{{gattend.s3title}}</h2>
+    <h2>3. Organiser ko kya karna hai</h2>
 
     <div class="guide-step">
-      <h3><span class="guide-step-num">1</span>{{gattend.st1title}}</h3>
-      <p>{{gattend.st1body}}</p>
-      <div class="guide-note">{{gattend.st1note}}</div>
-      <figure class="guide-shot">
-        <img src="/assets/guide-attend/{{LANG_DIR}}/step1-create.png" alt="{{gattend.shotCreateAlt}}" loading="lazy">
-        <figcaption>{{gattend.shotCreateCap}}</figcaption>
-      </figure>
-      <figure class="guide-shot">
-        <img src="/assets/guide-attend/{{LANG_DIR}}/step1-bulk.png" alt="{{gattend.shotBulkAlt}}" loading="lazy">
-        <figcaption>{{gattend.shotBulkCap}}</figcaption>
-      </figure>
-      <div class="guide-safe">{{gattend.st1note2}}</div>
+      <h3><span class="guide-step-num">1</span>Group banayein</h3>
+      <p>Attendance ka admin screen kholein, “Naya group banayein” ke neeche group ka naam aur members ke naam bharein, aur “Isi se banayein” dabayein. <strong>Sirf naam bhi kaafi hai.</strong></p>
+      <div class="guide-note">Spreadsheet ya text file ka roster “&#8801; List paste karein” se ek saath ja sakta hai. Ek line mein ek aadmi. Gender aur note bhi daal rahe hain to tab ya comma se alag karein.</div>
+      <div class="guide-safe">Ek switch hai: “Members ko bhi dikhayein ki kaun 〇, △ ya × hai”. Use band karne par members ko sirf ginti dikhti hai, gender ke hisaab se. <strong>Admin screen par aapko naam dono haalat mein dikhte hain</strong>, kyunki team chunne ke liye wo chahiye. Baad mein badal sakte hain.</div>
     </div>
 
     <div class="guide-step">
-      <h3><span class="guide-step-num">2</span>{{gattend.st2title}}</h3>
-      <p>{{gattend.st2body}}</p>
-      <div class="guide-note">{{gattend.st2note}}</div>
-      <figure class="guide-shot">
-        <img src="/assets/guide-attend/{{LANG_DIR}}/step2-key.png" alt="{{gattend.shotKeyAlt}}" loading="lazy">
-        <figcaption>{{gattend.shotKeyCap}}</figcaption>
-      </figure>
-      <p>{{gattend.st2note2}}</p>
+      <h3><span class="guide-step-num">2</span>Admin link save karein (zaroor)</h3>
+      <p>Group ban jaane par <strong>admin link</strong> <strong>sirf ek baar</strong> dikhta hai. Wahi aapki chaabi hai, aur screen band karne ke baad dobara kabhi nahi dikhega.</p>
+      <div class="guide-note">&#9888;&#65039; <strong>Admin link kho gaya to roster aur sabke jawab hamesha ke liye chale jayenge.</strong> Chaabi khud hamare server par nahi rakhi jaati, isliye poochne par bhi hum bhej nahi sakte. Screen par “Copy” dabayein aur <strong>bookmark ke URL field mein paste karein</strong>, ya khud ko message kar dein.</div>
+      <p>Sirf address bar ko bookmark na karein. Chaabi wala hissa chhoot sakta hai. Hamesha screen ke “Copy” button ka istemal karein.</p>
     </div>
 
     <div class="guide-step">
-      <h3><span class="guide-step-num">3</span>{{gattend.st3title}}</h3>
-      <p>{{gattend.st3body}}</p>
-      <figure class="guide-shot">
-        <img src="/assets/guide-attend/{{LANG_DIR}}/step3-manual.png" alt="{{gattend.shotManualAlt}}" loading="lazy">
-        <figcaption>{{gattend.shotManualCap}}</figcaption>
-      </figure>
-      <div class="guide-note">{{gattend.st3note}}</div>
+      <h3><span class="guide-step-num">3</span>Event add karein</h3>
+      <p>Admin screen par “Event se attendance banayein” ke neeche event add karein. “+ Haath se daalein” se event ka naam, date, last date, jagah aur entries bhar sakte hain. Event ka document ho to use Event Dropper se le aa sakte hain (section 6).</p>
+      <div class="guide-note"><strong>Do last date hoti hain.</strong> Ek wo jab tak tournament mein entry bhejni hoti hai. Members ko jawab kis din tak dena hai, wo usi se peeche ginkar apne aap tay hota hai - default saat din pehle. <strong>Jawab “jawab ki last date” par band hote hain</strong>, aur kitne din peeche rakhna hai wo aap badal sakte hain.</div>
     </div>
 
     <div class="guide-step">
-      <h3><span class="guide-step-num">4</span>{{gattend.st4title}}</h3>
-      <p>{{gattend.st4body}}</p>
-      <figure class="guide-shot">
-        <img src="/assets/guide-attend/{{LANG_DIR}}/step4-make.png" alt="{{gattend.shotMakeAlt}}" loading="lazy">
-        <figcaption>{{gattend.shotMakeCap}}</figcaption>
-      </figure>
-      <figure class="guide-shot">
-        <img src="/assets/guide-attend/{{LANG_DIR}}/step4-announce.png" alt="{{gattend.shotAnnAlt}}" loading="lazy">
-        <figcaption>{{gattend.shotAnnCap}}</figcaption>
-      </figure>
-      <div class="guide-safe">{{gattend.st4note}}</div>
+      <h3><span class="guide-step-num">4</span>Attendance shuru karein aur link baantein</h3>
+      <p>“Is event ki attendance shuru karein” dabate hi jawab aane lagte hain. Bas attendance link members ko de dijiye.</p>
+      <div class="guide-safe"><strong>Har group ke liye ek hi link</strong>, aur wo kabhi nahi badalta. Group chat mein pin kar dijiye, members jab chahein khol lenge. Naya event jodne par naya link baantna nahi padta.</div>
     </div>
 
     <div class="guide-step">
-      <h3><span class="guide-step-num">5</span>{{gattend.st5title}}</h3>
-      <p>{{gattend.st5body}}</p>
-      <figure class="guide-shot">
-        <img src="/assets/guide-attend/{{LANG_DIR}}/step5-answers.png" alt="{{gattend.shotAdminAlt}}" loading="lazy">
-        <figcaption>{{gattend.shotAdminCap}}</figcaption>
-      </figure>
-      <div class="guide-note">{{gattend.st5note}}</div>
+      <h3><span class="guide-step-num">5</span>Dekhein kitna aaya</h3>
+      <p>Admin screen ka “Sabke jawab” har entry ki ginti dikhata hai, aur yeh bhi ki kaun yes, maybe ya no hai. Members ne jo baat likhi ho, wo bhi yahin dikhti hai.</p>
+      <div class="guide-note"><strong>Jinhone abhi jawab nahi diya, unke naam sirf is admin screen par aur officers wale viewing link par dikhte hain.</strong> Members ko kabhi nahi. Kisse jaakar poochna hai, wo yahan se pata chalta hai.</div>
     </div>
   </section>
 
   <!-- 4. 3本のリンク。★ この道具でいちばん事故が起きるところなので独立させる -->
   <section class="legal-sec" id="s4">
-    <h2>{{gattend.s4title}}</h2>
-    <p>{{gattend.s4body}}</p>
+    <h2>4. Teen link, teen kaam</h2>
+    <p>Attendance mein teen link hain aur teenon ka kaam alag hai. <strong>Kaunsa kisko dena hai, yeh mat gadbadaiye.</strong></p>
     <table class="legal-table">
       <thead>
-        <tr><th>{{gattend.s4thLink}}</th><th>{{gattend.s4thWho}}</th><th>{{gattend.s4thWhat}}</th></tr>
+        <tr><th>Link</th><th>Kisko dena hai</th><th>Kya kar sakta hai</th></tr>
       </thead>
       <tbody>
-        <tr><td>{{gattend.s4r1a}}</td><td>{{gattend.s4r1b}}</td><td>{{gattend.s4r1c}}</td></tr>
-        <tr><td>{{gattend.s4r2a}}</td><td>{{gattend.s4r2b}}</td><td>{{gattend.s4r2c}}</td></tr>
-        <tr><td>{{gattend.s4r3a}}</td><td>{{gattend.s4r3b}}</td><td>{{gattend.s4r3c}}</td></tr>
+        <tr><td>Admin link</td><td>Kisi ko nahi</td><td>Roster aur jawab badal sakta hai, aur poora group delete bhi kar sakta hai. Kho gaya to wapas nahi milta.</td></tr>
+        <tr><td>Attendance link</td><td>Sabhi members</td><td>Jawab dena, apne jawab dekhna, sabke jawab dekhna. Har group ke liye ek, aur badalta nahi.</td></tr>
+        <tr><td>Officers ke liye viewing link</td><td>Officers aur madad karne wale</td><td>Sirf dekhne ke liye. Kaun yes, maybe ya no hai, unki baat, aur kisne jawab nahi diya - sab dikhta hai. Kuch badal nahi sakta.</td></tr>
       </tbody>
     </table>
-    <div class="guide-note">{{gattend.s4note}}</div>
+    <div class="guide-note">Officers badal jayein to admin screen par “Naya banayein” dabayein - purana viewing link usi waqt band ho jata hai. <strong>Officer ko admin link mat dijiye</strong> - usse poora group delete ho sakta hai.</div>
   </section>
 
   <!-- 5. メンバーの画面。3つのタブの呼び名は出欠システム側と同じ語を使うこと
        （出欠入力／わたしの回答／みんなの回答。hakusan-attendance の CLAUDE.md の決めごと） -->
   <section class="legal-sec" id="s5">
-    <h2>{{gattend.s5title}}</h2>
-    <p>{{gattend.s5body}}</p>
-    <figure class="guide-shot">
-      <img src="/assets/guide-attend/{{LANG_DIR}}/member-list.png" alt="{{gattend.shotTabsAlt}}" loading="lazy">
-      <figcaption>{{gattend.shotTabsCap}}</figcaption>
-    </figure>
+    <h2>5. Members ko kya dikhta hai</h2>
+    <p>Mila hua link kholte hi neeche teen tab aa jate hain. Na kuch install karna, na account banana.</p>
 
-    <h3 class="guide-sub">{{gattend.s5sub1}}</h3>
-    <p>{{gattend.s5sub1body}}</p>
-    <figure class="guide-shot">
-      <img src="/assets/guide-attend/{{LANG_DIR}}/member-first.png" alt="{{gattend.shotFirstAlt}}" loading="lazy">
-      <figcaption>{{gattend.shotFirstCap}}</figcaption>
-    </figure>
-    <figure class="guide-shot">
-      <img src="/assets/guide-attend/{{LANG_DIR}}/member-answer.png" alt="{{gattend.shotMarkAlt}}" loading="lazy">
-      <figcaption>{{gattend.shotMarkCap}}</figcaption>
-    </figure>
-    <div class="guide-safe">{{gattend.s5sub1note}}</div>
+    <h3 class="guide-sub">Jawab</h3>
+    <p>Pehli baar member roster se apna naam chunta hai aur “Yeh main hoon” dabata hai. <strong>Yeh us device par sirf ek baar hota hai.</strong> Uske baad khule hue event dikhte hain, aur har entry par yes, maybe ya no chunkar bhej dete hain. “Ek baat (optional)” mein likh sakte hain, jaise “30 minute late aaunga” ya “do gaadi la sakta hoon”.</p>
+    <div class="guide-safe">Last date se pehle jitni baar chahein jawab badal sakte hain. Galat dab jaane se kuch bigadta nahi.</div>
 
-    <h3 class="guide-sub">{{gattend.s5sub2}}</h3>
-    <p>{{gattend.s5sub2body}}</p>
-    <figure class="guide-shot">
-      <img src="/assets/guide-attend/{{LANG_DIR}}/member-my.png" alt="{{gattend.shotMyAlt}}" loading="lazy">
-      <figcaption>{{gattend.shotMyCap}}</figcaption>
-    </figure>
+    <h3 class="guide-sub">Mere jawab</h3>
+    <p>Us member ne kis event mein kya jawab diya, uski poori list - aur jo abhi baaki hain wo bhi.</p>
 
-    <h3 class="guide-sub">{{gattend.s5sub3}}</h3>
-    <p>{{gattend.s5sub3body}}</p>
-    <figure class="guide-shot">
-      <img src="/assets/guide-attend/{{LANG_DIR}}/member-all.png" alt="{{gattend.shotAllAlt}}" loading="lazy">
-      <figcaption>{{gattend.shotAllCap}}</figcaption>
-    </figure>
+    <h3 class="guide-sub">Sabke jawab</h3>
+    <p>Har entry ki ginti, gender ke hisaab se. Jin groups mein organiser ne naam dikhane chune hain, wahan yeh bhi dikhta hai ki kaun yes, maybe ya no hai. <strong>Jinhone jawab nahi diya, unke naam members ko kabhi nahi dikhte.</strong></p>
 
   </section>
 
   <!-- 6. イベントドロッパーからの連携 -->
   <section class="legal-sec" id="s6">
-    <h2>{{gattend.s6title}}</h2>
-    <p>{{gattend.s6body}}</p>
-    <figure class="guide-shot">
-      <img src="/assets/guide-attend/{{LANG_DIR}}/dropper-handoff.png" alt="{{gattend.shotHandoffAlt}}" loading="lazy">
-      <figcaption>{{gattend.shotHandoffCap}}</figcaption>
-    </figure>
+    <h2>6. Event Dropper se attendance shuru karna</h2>
+    <p>Event ka document PDF ya photo mein ho to pehle Event Dropper se padhwa lein aur wahin se attendance shuru karein. Event ka naam, date, jagah aur last date sab apne aap aa jate hain.</p>
     <ol class="guide-ol">
-      <li>{{gattend.s6o1}}</li>
-      <li>{{gattend.s6o2}}</li>
-      <li>{{gattend.s6o3}}</li>
-      <li>{{gattend.s6o4}}</li>
+      <li>Event Dropper se document padhwayein aur card dekh lein.</li>
+      <li>“&#128587; Attendance par jayein” dabayein. Admin screen khulega, event pehle se aaya hua.</li>
+      <li>“Isi se attendance shuru karein” dabayein. Jawab shuru ho jate hain aur aap Event Dropper par wapas aa jate hain.</li>
+      <li>Attendance link announcement mein aa jata hai, group chat par bhejne ke liye taiyaar.</li>
     </ol>
-    <div class="guide-note">{{gattend.s6note}}</div>
-    <div class="guide-safe">{{gattend.s6note2}}</div>
+    <div class="guide-note">Naye device par pehle admin link paste karke apna group kholein. “Is device par yaad rakhein” dabate hi agli baar paste nahi karna padega. <strong>Share kiye ja rahe device par yeh mat karein</strong> - us device ko chalane wala koi bhi wahi sab kar sakega jo aap karte hain.</div>
+    <div class="guide-safe">Document ki zaroorat hi nahi hai. Sirf attendance leni ho to pehli screen ke “&#128587; Sirf attendance jama karein” se shuru karein.</div>
   </section>
 
   <!-- 7. よくある質問 -->
   <section class="legal-sec" id="s7">
-    <h2>{{gattend.s7title}}</h2>
+    <h2>7. Aksar poochhe jaane wale sawaal</h2>
     <dl class="guide-faq">
-      <dt>{{gattend.s7q1}}</dt><dd>{{gattend.s7a1}}</dd>
-      <dt>{{gattend.s7q2}}</dt><dd>{{gattend.s7a2}}</dd>
-      <dt>{{gattend.s7q3}}</dt><dd>{{gattend.s7a3}}</dd>
-      <dt>{{gattend.s7q4}}</dt><dd>{{gattend.s7a4}}</dd>
-      <dt>{{gattend.s7q5}}</dt><dd>{{gattend.s7a5}}</dd>
-      <dt>{{gattend.s7q6}}</dt><dd>{{gattend.s7a6}}</dd>
-      <dt>{{gattend.s7q7}}</dt><dd>{{gattend.s7a7}}</dd>
-      <dt>{{gattend.s7q8}}</dt><dd>{{gattend.s7a8}}</dd>
-      <dt>{{gattend.s7q9}}</dt><dd>{{gattend.s7a9}}</dd>
+      <dt>Kya members ko app install karna padega</dt><dd>Nahi. Wo link browser mein kholte hain. Na account banana hai, na kahin sign-in karna hai.</dd>
+      <dt>Kya organiser ko Google account chahiye</dt><dd>Attendance ke liye nahi. Sign-in sirf Event Dropper ki taraf maanga jata hai, jab document padhwate hain ya calendar mein kuch daalte hain.</dd>
+      <dt>Mera admin link kho gaya</dt><dd>Maafi chahte hain, wo wapas nahi mil sakta. Chaabi khud hamare server par nahi hoti - hoti, to hum aapka roster aur jawab padh sakte the. Group dobara banayein aur naya link baant dein.</dd>
+      <dt>Naye phone par wahi group khul jayega</dt><dd>Haan, agar admin link save kiya hai: admin screen ke “Pehle se group hai?” mein paste kar dein. Agar Event Dropper mein Google se sign-in kiya tha, to chaabi aapki apni Google Drive mein rakhi hai - naye device par sign-in karte hi wapas aa jati hai.</dd>
+      <dt>Har event ke liye naya link baantna padega</dt><dd>Nahi. Har group ke liye ek hi attendance link hai aur wo kabhi nahi badalta.</dd>
+      <dt>Koi member club chhod de to</dt><dd>“Group ka naam aur members” mein us aadmi ke note mein “left” likhkar save kar dein. Wo roster se hat jayega.</dd>
+      <dt>Last date ke baad bhi jawab de sakte hain</dt><dd>Nahi. Jawab “jawab ki last date” par band ho jate hain. Use admin screen ke “Jawab ki last date badlein” se aage-peeche kar sakte hain. Result baad mein bhi dikhta rehta hai.</dd>
+      <dt>Data delete kaise karein</dt><dd>Admin screen ka “Yeh group delete karein” roster, events aur sabhi jawab hata deta hai. Yeh wapas nahi ho sakta, aur baante hue link khulna band ho jate hain.</dd>
+      <dt>Kya iska paisa lagta hai</dt><dd>Nahi, aur koi ad bhi nahi hai.</dd>
     </dl>
   </section>
 
   <!-- 8. 困ったときは -->
   <section class="legal-sec" id="s8">
-    <h2>{{gattend.s8title}}</h2>
-    <div class="legal-contact">{{gattend.s8body}}</div>
+    <h2>8. Kuch kaam na kare to</h2>
+    <div class="legal-contact">Tools free hone ke kaaran hum one-on-one support nahi dete. Kuch kaam na kare to is page ke steps ek baar phir dekh lein. Koi member kahe ki link theek nahi hai, to aksar URL ka kuch hissa kat gaya hota hai - admin screen ke “Attendance link” se use dobara copy karke bhej dein.</div>
   </section>
 
   <div class="guide-cta">
-    <a class="btn-sm fill" href="{{toolA.url}}" target="_blank" rel="noopener">{{gattend.ctaBtn}}</a>
+    <a class="btn-sm fill" href="https://app.dropper-tools.com/calendar-in/?go=attend" target="_blank" rel="noopener">&#128587; Attendance aazmayein &#8599;</a>
   </div>
 
-  <a href="{{NAV_PREFIX}}" class="legal-back">{{gattend.back}}</a>
+  <a href="./" class="legal-back">← Top page par wapas</a>
 
 </div>
 
 <footer>
   <div class="footer-logo">DROPPER</div>
-  <p>{{footer.copy}}</p>
-  <p class="footer-links"><a href="{{PRIVACY_PATH}}">{{footer.privacy}}</a></p>
+  <p>Dropper © 2026</p>
+  <p class="footer-links"><a href="./privacy.html">Privacy Policy</a></p>
 </footer>
 
 <button id="backToTop" aria-label="Top">↑</button>

@@ -1,13 +1,38 @@
 <!DOCTYPE html>
-<html lang="{{LANG}}">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-{{GA}}
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PQPKYYYXKG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PQPKYYYXKG');
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{gattend.metaTitle}}</title>
-<meta name="description" content="{{gattend.metaDesc}}">
-{{SEO}}
-{{HREFLANG}}
+<title>User guide | Collect and count attendance with one link (Attendance)</title>
+<meta name="description" content="The user guide for Dropper Attendance. Create a group, paste in your roster and hand out one link. Members need no app, no account and no sign-in - they pick their name from the roster and tap yes, maybe or no. Covers setting up, counting the replies, and sharing them with your officers.">
+<link rel="canonical" href="https://dropper-tools.com/en/guide-attend.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dropper">
+<meta property="og:title" content="User guide | Collect and count attendance with one link (Attendance)">
+<meta property="og:description" content="The user guide for Dropper Attendance. Create a group, paste in your roster and hand out one link. Members need no app, no account and no sign-in - they pick their name from the roster and tap yes, maybe or no. Covers setting up, counting the replies, and sharing them with your officers.">
+<meta property="og:url" content="https://dropper-tools.com/en/guide-attend.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://dropper-tools.com/assets/og/og-en.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Dropper">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="User guide | Collect and count attendance with one link (Attendance)">
+<meta name="twitter:description" content="The user guide for Dropper Attendance. Create a group, paste in your roster and hand out one link. Members need no app, no account and no sign-in - they pick their name from the roster and tap yes, maybe or no. Covers setting up, counting the replies, and sharing them with your officers.">
+<meta name="twitter:image" content="https://dropper-tools.com/assets/og/og-en.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "HowTo", "name": "User guide | Collect and count attendance with one link (Attendance)", "description": "The user guide for Dropper Attendance. Create a group, paste in your roster and hand out one link. Members need no app, no account and no sign-in - they pick their name from the roster and tap yes, maybe or no. Covers setting up, counting the replies, and sharing them with your officers.", "inLanguage": "en", "totalTime": "PT5M", "tool": [{"@type": "HowToTool", "name": "Dropper"}], "step": [{"@type": "HowToStep", "position": 1, "name": "Create a group", "text": "Open the Attendance admin screen, fill in the group name and your members' names under “Create a group”, and press “Create with this”. Names on their own are enough.", "url": "https://dropper-tools.com/en/guide-attend.html#s3"}, {"@type": "HowToStep", "position": 2, "name": "Save the admin link (do this)", "text": "Once the group exists, the admin link is shown once. That link is your key, and it is never shown again after you close the screen.", "url": "https://dropper-tools.com/en/guide-attend.html#s3"}, {"@type": "HowToStep", "position": 3, "name": "Add an event", "text": "Add events under “Turn an event into attendance” on the admin screen. “+ Add one by hand” lets you fill in the event name, the date, the entry deadline, the venue and the entries. If you have the event document, you can bring it across from Event Dropper instead (section 6).", "url": "https://dropper-tools.com/en/guide-attend.html#s3"}, {"@type": "HowToStep", "position": 4, "name": "Open attendance and hand out the link", "text": "Press “Open attendance for this event” and replies start coming in. All that is left is to hand the attendance link to your members.", "url": "https://dropper-tools.com/en/guide-attend.html#s3"}, {"@type": "HowToStep", "position": 5, "name": "See how it is going", "text": "“All answers” on the admin screen shows the count for each entry and who said yes, maybe or no. Anything a member wrote in their note appears here too.", "url": "https://dropper-tools.com/en/guide-attend.html#s3"}]}</script>
+<link rel="alternate" hreflang="ja" href="https://dropper-tools.com/guide-attend.html">
+<link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/guide-attend.html">
+<link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/guide-attend.html">
+<link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/guide-attend.html">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
@@ -311,244 +336,192 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 <body>
 
 <header>
-  <a href="{{NAV_PREFIX}}" class="logo">DROPPER <span class="dot">●</span> <span class="jp">{{logo.jp}}</span></a>
+  <a href="./" class="logo">DROPPER <span class="dot">●</span> <span class="jp">Dropper</span></a>
   <div class="header-right">
     <nav>
-      <a href="{{NAV_PREFIX}}#tools">{{nav.tools}}</a>
-      <a href="{{NAV_PREFIX}}#policy">{{nav.policy}}</a>
-      <a href="{{NAV_PREFIX}}#about">{{nav.about}}</a>
+      <a href="./#tools">Series</a>
+      <a href="./#policy">Notes</a>
+      <a href="./#about">About</a>
     </nav>
-    <div class="lang-switch">{{SWITCHER}}</div>
+    <div class="lang-switch"><a href="../guide-attend.html" class="lang-link" hreflang="ja">日本語</a><span class="sep">/</span><a href="./guide-attend.html" class="lang-link active" hreflang="en">English</a><span class="sep">/</span><a href="../in/guide-attend.html" class="lang-link" hreflang="en-IN">Hinglish</a></div>
   </div>
 </header>
 
 <div class="legal-wrap">
 
   <div class="legal-head">
-    <h1>{{gattend.title}}</h1>
-    <p class="legal-date">{{gattend.subtitle}}</p>
+    <h1>Attendance<br><span class="blue">User guide</span></h1>
+    <p class="legal-date">Start here</p>
   </div>
 
-  <p class="guide-intro">{{gattend.lead}}</p>
+  <p class="guide-intro">Collect and count replies for a practice or a tournament with a single link. Members need no app, no account and no sign-in. As the organiser you do not need a Google account either, as long as you only want attendance.</p>
 
   <!-- 目次 -->
-  <nav class="guide-toc" aria-label="{{gattend.tocLabel}}">
-    <h2>{{gattend.tocLabel}}</h2>
+  <nav class="guide-toc" aria-label="On this page">
+    <h2>On this page</h2>
     <ol>
-      <li><a href="#s1">{{gattend.s1title}}</a></li>
-      <li><a href="#s2">{{gattend.s2title}}</a></li>
-      <li><a href="#s3">{{gattend.s3title}}</a></li>
-      <li><a href="#s4">{{gattend.s4title}}</a></li>
-      <li><a href="#s5">{{gattend.s5title}}</a></li>
-      <li><a href="#s6">{{gattend.s6title}}</a></li>
-      <li><a href="#s7">{{gattend.s7title}}</a></li>
-      <li><a href="#s8">{{gattend.s8title}}</a></li>
+      <li><a href="#s1">1. What Attendance is</a></li>
+      <li><a href="#s2">2. Before you start</a></li>
+      <li><a href="#s3">3. What the organiser does</a></li>
+      <li><a href="#s4">4. Three links, three jobs</a></li>
+      <li><a href="#s5">5. What members see</a></li>
+      <li><a href="#s6">6. Starting attendance from Event Dropper</a></li>
+      <li><a href="#s7">7. Common questions</a></li>
+      <li><a href="#s8">8. If something goes wrong</a></li>
     </ol>
   </nav>
 
   <!-- 1. 出欠システムとは。★ 他3本と違い「データを預かる」ことを最初に言う -->
   <section class="legal-sec" id="s1">
-    <h2>{{gattend.s1title}}</h2>
-    <p>{{gattend.s1body1}}</p>
-    <p>{{gattend.s1body2}}</p>
-    <p>{{gattend.s1body3}}</p>
-    <div class="guide-note">{{gattend.s1note}}</div>
+    <h2>1. What Attendance is</h2>
+    <p>A web tool that collects and counts replies for practices, tournaments and other events. As the organiser you create a group, put your members in the roster, and hand out one attendance link. Members open it, pick their own name from the roster, and tap yes, maybe or no.</p>
+    <p><strong>There is one link per group.</strong> It does not change when you add another event, so you can pin it to your group chat once and leave it there. You never have to hand out a new link.</p>
+    <p>Of the four tools in the series, <strong>Attendance is the only one where we hold your data</strong>. Several people write from different devices and everyone has to see the same result, so it cannot work inside one browser alone. What we hold, and how to delete it, is set out in the privacy policy.</p>
+    <div class="guide-note">This tool is still a preview. Screens and steps may change.</div>
   </section>
 
   <!-- 2. 使う前に。★ APIキーの節は無い（出欠はAIを使わない）。
        代わりに「合鍵は管理リンク1本」をここで先に言う -->
   <section class="legal-sec" id="s2">
-    <h2>{{gattend.s2title}}</h2>
-    <p>{{gattend.s2body}}</p>
+    <h2>2. Before you start</h2>
+    <p>Here is everything you need. <strong>No Google account, and nothing to install.</strong></p>
     <table class="legal-table">
       <thead>
-        <tr><th>{{gattend.s2thItem}}</th><th>{{gattend.s2thNote}}</th></tr>
+        <tr><th>What you need</th><th>Details</th></tr>
       </thead>
       <tbody>
-        <tr><td>{{gattend.s2r1a}}</td><td>{{gattend.s2r1b}}</td></tr>
-        <tr><td>{{gattend.s2r2a}}</td><td>{{gattend.s2r2b}}</td></tr>
-        <tr><td>{{gattend.s2r3a}}</td><td>{{gattend.s2r3b}}</td></tr>
-        <tr><td>{{gattend.s2r4a}}</td><td>{{gattend.s2r4b}}</td></tr>
+        <tr><td>A browser</td><td>Works on a computer or a phone. Nothing to install.</td></tr>
+        <tr><td>A group name</td><td>Something your members will recognise. You can change it later.</td></tr>
+        <tr><td>Your members' names</td><td>The names that go in the roster. You can paste them straight out of a spreadsheet. Gender and notes are optional, but gender gives you a breakdown in the count.</td></tr>
+        <tr><td>A way to reach your members</td><td>However you hand out the attendance link - a group chat, email, or printed on paper.</td></tr>
       </tbody>
     </table>
-    <div class="guide-note">{{gattend.s2key}}</div>
-    <div class="guide-safe">{{gattend.s2safe}}</div>
+    <div class="guide-note">&#128273; Your only key as the organiser is the <strong>admin link</strong>. There is no password and no account. <strong>Lose that link and nothing can be recovered.</strong> Step 2 tells you to save it, and you should.</div>
+    <div class="guide-safe">Members pick a name from the roster. There is no sign-up and no sign-in. The name they pick is remembered on that device, so they do not have to pick again.</div>
   </section>
 
   <!-- 3. 基本の流れ（5ステップ）。HowTo 構造化データはここを指す（build.py の HOWTO_PAGES）。
        ★ ステップ2は「保存する」だけの回。作業としては小さいが、
          ここを飛ばすと全部が戻せなくなるので、独立した手順にしてある。 -->
   <section class="legal-sec" id="s3">
-    <h2>{{gattend.s3title}}</h2>
+    <h2>3. What the organiser does</h2>
 
     <div class="guide-step">
-      <h3><span class="guide-step-num">1</span>{{gattend.st1title}}</h3>
-      <p>{{gattend.st1body}}</p>
-      <div class="guide-note">{{gattend.st1note}}</div>
-      <figure class="guide-shot">
-        <img src="/assets/guide-attend/{{LANG_DIR}}/step1-create.png" alt="{{gattend.shotCreateAlt}}" loading="lazy">
-        <figcaption>{{gattend.shotCreateCap}}</figcaption>
-      </figure>
-      <figure class="guide-shot">
-        <img src="/assets/guide-attend/{{LANG_DIR}}/step1-bulk.png" alt="{{gattend.shotBulkAlt}}" loading="lazy">
-        <figcaption>{{gattend.shotBulkCap}}</figcaption>
-      </figure>
-      <div class="guide-safe">{{gattend.st1note2}}</div>
+      <h3><span class="guide-step-num">1</span>Create a group</h3>
+      <p>Open the Attendance admin screen, fill in the group name and your members' names under “Create a group”, and press “Create with this”. <strong>Names on their own are enough.</strong></p>
+      <div class="guide-note">A roster in a spreadsheet or a text file can go in all at once with “&#8801; Paste a list”. One person per line. Separate with a tab or a comma if you are also adding gender and a note.</div>
+      <div class="guide-safe">There is a switch marked “Let members see who answered yes, maybe or no, by name”. Turn it off and members see only the counts, split by gender. <strong>Either way you see the names on the admin screen</strong>, because you need them to pick a team. You can change it later.</div>
     </div>
 
     <div class="guide-step">
-      <h3><span class="guide-step-num">2</span>{{gattend.st2title}}</h3>
-      <p>{{gattend.st2body}}</p>
-      <div class="guide-note">{{gattend.st2note}}</div>
-      <figure class="guide-shot">
-        <img src="/assets/guide-attend/{{LANG_DIR}}/step2-key.png" alt="{{gattend.shotKeyAlt}}" loading="lazy">
-        <figcaption>{{gattend.shotKeyCap}}</figcaption>
-      </figure>
-      <p>{{gattend.st2note2}}</p>
+      <h3><span class="guide-step-num">2</span>Save the admin link (do this)</h3>
+      <p>Once the group exists, the <strong>admin link</strong> is shown <strong>once</strong>. That link is your key, and it is never shown again after you close the screen.</p>
+      <div class="guide-note">&#9888;&#65039; <strong>Lose the admin link and the roster and the replies are gone for good.</strong> We do not store the key itself on our server, so there is nothing for us to send you if you ask. Press “Copy” on the screen and <strong>paste it into the URL field of a bookmark</strong>, or send it to yourself in a message.</div>
+      <p>Do not simply bookmark the address bar. The key part may not be included. Always use the “Copy” button on the screen.</p>
     </div>
 
     <div class="guide-step">
-      <h3><span class="guide-step-num">3</span>{{gattend.st3title}}</h3>
-      <p>{{gattend.st3body}}</p>
-      <figure class="guide-shot">
-        <img src="/assets/guide-attend/{{LANG_DIR}}/step3-manual.png" alt="{{gattend.shotManualAlt}}" loading="lazy">
-        <figcaption>{{gattend.shotManualCap}}</figcaption>
-      </figure>
-      <div class="guide-note">{{gattend.st3note}}</div>
+      <h3><span class="guide-step-num">3</span>Add an event</h3>
+      <p>Add events under “Turn an event into attendance” on the admin screen. “+ Add one by hand” lets you fill in the event name, the date, the entry deadline, the venue and the entries. If you have the event document, you can bring it across from Event Dropper instead (section 6).</p>
+      <div class="guide-note"><strong>There are two deadlines.</strong> The entry deadline is when you have to enter the tournament. The date your members have to answer by is worked back from it automatically, seven days earlier by default. <strong>Replies stop on the answer deadline</strong>, and you can change how many days back it sits.</div>
     </div>
 
     <div class="guide-step">
-      <h3><span class="guide-step-num">4</span>{{gattend.st4title}}</h3>
-      <p>{{gattend.st4body}}</p>
-      <figure class="guide-shot">
-        <img src="/assets/guide-attend/{{LANG_DIR}}/step4-make.png" alt="{{gattend.shotMakeAlt}}" loading="lazy">
-        <figcaption>{{gattend.shotMakeCap}}</figcaption>
-      </figure>
-      <figure class="guide-shot">
-        <img src="/assets/guide-attend/{{LANG_DIR}}/step4-announce.png" alt="{{gattend.shotAnnAlt}}" loading="lazy">
-        <figcaption>{{gattend.shotAnnCap}}</figcaption>
-      </figure>
-      <div class="guide-safe">{{gattend.st4note}}</div>
+      <h3><span class="guide-step-num">4</span>Open attendance and hand out the link</h3>
+      <p>Press “Open attendance for this event” and replies start coming in. All that is left is to hand the attendance link to your members.</p>
+      <div class="guide-safe">There is <strong>one link per group</strong>, and it never changes. Pin it to your group chat and your members can open it whenever they like. Adding another event does not mean handing out a new link.</div>
     </div>
 
     <div class="guide-step">
-      <h3><span class="guide-step-num">5</span>{{gattend.st5title}}</h3>
-      <p>{{gattend.st5body}}</p>
-      <figure class="guide-shot">
-        <img src="/assets/guide-attend/{{LANG_DIR}}/step5-answers.png" alt="{{gattend.shotAdminAlt}}" loading="lazy">
-        <figcaption>{{gattend.shotAdminCap}}</figcaption>
-      </figure>
-      <div class="guide-note">{{gattend.st5note}}</div>
+      <h3><span class="guide-step-num">5</span>See how it is going</h3>
+      <p>“All answers” on the admin screen shows the count for each entry and who said yes, maybe or no. Anything a member wrote in their note appears here too.</p>
+      <div class="guide-note"><strong>The names of people who have not answered appear only on this admin screen and on the viewing link you give your officers.</strong> Members never see them. This is where you find out who to go and ask.</div>
     </div>
   </section>
 
   <!-- 4. 3本のリンク。★ この道具でいちばん事故が起きるところなので独立させる -->
   <section class="legal-sec" id="s4">
-    <h2>{{gattend.s4title}}</h2>
-    <p>{{gattend.s4body}}</p>
+    <h2>4. Three links, three jobs</h2>
+    <p>Attendance has three links and they do different things. <strong>Do not mix up who gets which.</strong></p>
     <table class="legal-table">
       <thead>
-        <tr><th>{{gattend.s4thLink}}</th><th>{{gattend.s4thWho}}</th><th>{{gattend.s4thWhat}}</th></tr>
+        <tr><th>Link</th><th>Who gets it</th><th>What it does</th></tr>
       </thead>
       <tbody>
-        <tr><td>{{gattend.s4r1a}}</td><td>{{gattend.s4r1b}}</td><td>{{gattend.s4r1c}}</td></tr>
-        <tr><td>{{gattend.s4r2a}}</td><td>{{gattend.s4r2b}}</td><td>{{gattend.s4r2c}}</td></tr>
-        <tr><td>{{gattend.s4r3a}}</td><td>{{gattend.s4r3b}}</td><td>{{gattend.s4r3c}}</td></tr>
+        <tr><td>Admin link</td><td>Nobody but you</td><td>Edits the roster and the replies, and can delete the whole group. Cannot be recovered if lost.</td></tr>
+        <tr><td>Attendance link</td><td>All your members</td><td>Answer, look back at your own answers, see everyone's answers. One per group, and it does not change.</td></tr>
+        <tr><td>Viewing link for your officers</td><td>Officers and helpers</td><td>Read only. Shows who said yes, maybe or no, their notes, and who has not answered. Cannot change anything.</td></tr>
       </tbody>
     </table>
-    <div class="guide-note">{{gattend.s4note}}</div>
+    <div class="guide-note">When your officers change, press “Reissue” on the admin screen and the old viewing link stops working immediately. <strong>Do not give an officer the admin link instead</strong> - that one can delete the group.</div>
   </section>
 
   <!-- 5. メンバーの画面。3つのタブの呼び名は出欠システム側と同じ語を使うこと
        （出欠入力／わたしの回答／みんなの回答。hakusan-attendance の CLAUDE.md の決めごと） -->
   <section class="legal-sec" id="s5">
-    <h2>{{gattend.s5title}}</h2>
-    <p>{{gattend.s5body}}</p>
-    <figure class="guide-shot">
-      <img src="/assets/guide-attend/{{LANG_DIR}}/member-list.png" alt="{{gattend.shotTabsAlt}}" loading="lazy">
-      <figcaption>{{gattend.shotTabsCap}}</figcaption>
-    </figure>
+    <h2>5. What members see</h2>
+    <p>Opening the link they were given puts three tabs along the bottom. Nothing to install, no account to create.</p>
 
-    <h3 class="guide-sub">{{gattend.s5sub1}}</h3>
-    <p>{{gattend.s5sub1body}}</p>
-    <figure class="guide-shot">
-      <img src="/assets/guide-attend/{{LANG_DIR}}/member-first.png" alt="{{gattend.shotFirstAlt}}" loading="lazy">
-      <figcaption>{{gattend.shotFirstCap}}</figcaption>
-    </figure>
-    <figure class="guide-shot">
-      <img src="/assets/guide-attend/{{LANG_DIR}}/member-answer.png" alt="{{gattend.shotMarkAlt}}" loading="lazy">
-      <figcaption>{{gattend.shotMarkCap}}</figcaption>
-    </figure>
-    <div class="guide-safe">{{gattend.s5sub1note}}</div>
+    <h3 class="guide-sub">Answer</h3>
+    <p>The first time, a member picks their own name from the roster and presses “That's me”. <strong>That happens once on that device.</strong> After that the open events are listed, and they pick yes, maybe or no for each entry and send it. “Note (optional)” is there for things like “running 30 minutes late” or “I can bring two cars”.</p>
+    <div class="guide-safe">Answers can be changed as often as they like before the deadline. Tapping the wrong one does no harm.</div>
 
-    <h3 class="guide-sub">{{gattend.s5sub2}}</h3>
-    <p>{{gattend.s5sub2body}}</p>
-    <figure class="guide-shot">
-      <img src="/assets/guide-attend/{{LANG_DIR}}/member-my.png" alt="{{gattend.shotMyAlt}}" loading="lazy">
-      <figcaption>{{gattend.shotMyCap}}</figcaption>
-    </figure>
+    <h3 class="guide-sub">My answers</h3>
+    <p>What that member answered, event by event, including the ones they have not answered yet.</p>
 
-    <h3 class="guide-sub">{{gattend.s5sub3}}</h3>
-    <p>{{gattend.s5sub3body}}</p>
-    <figure class="guide-shot">
-      <img src="/assets/guide-attend/{{LANG_DIR}}/member-all.png" alt="{{gattend.shotAllAlt}}" loading="lazy">
-      <figcaption>{{gattend.shotAllCap}}</figcaption>
-    </figure>
+    <h3 class="guide-sub">All answers</h3>
+    <p>The count for each entry, split by gender. In groups where the organiser chose to show names, who said yes, maybe or no appears as well. <strong>The names of people who have not answered are never shown to members.</strong></p>
 
   </section>
 
   <!-- 6. イベントドロッパーからの連携 -->
   <section class="legal-sec" id="s6">
-    <h2>{{gattend.s6title}}</h2>
-    <p>{{gattend.s6body}}</p>
-    <figure class="guide-shot">
-      <img src="/assets/guide-attend/{{LANG_DIR}}/dropper-handoff.png" alt="{{gattend.shotHandoffAlt}}" loading="lazy">
-      <figcaption>{{gattend.shotHandoffCap}}</figcaption>
-    </figure>
+    <h2>6. Starting attendance from Event Dropper</h2>
+    <p>If you have the event document as a PDF or a photo, read it with Event Dropper first and open attendance from there. The event name, the date, the venue and the entry deadline all carry across.</p>
     <ol class="guide-ol">
-      <li>{{gattend.s6o1}}</li>
-      <li>{{gattend.s6o2}}</li>
-      <li>{{gattend.s6o3}}</li>
-      <li>{{gattend.s6o4}}</li>
+      <li>Read the document with Event Dropper and check the card.</li>
+      <li>Press “&#128587; To the attendance system”. The admin screen opens with the event already brought in.</li>
+      <li>Press “Open attendance with this”. Replies start, and you are taken back to Event Dropper.</li>
+      <li>The attendance link is written into the announcement, ready to post to your group chat.</li>
     </ol>
-    <div class="guide-note">{{gattend.s6note}}</div>
-    <div class="guide-safe">{{gattend.s6note2}}</div>
+    <div class="guide-note">On a device you have not used before, open your group first by pasting in the admin link. Press “Remember on this device” and you will not have to paste it again. <strong>Do not do this on a shared device</strong> - anyone who can use it can then do everything you can.</div>
+    <div class="guide-safe">You do not need a document at all. To use attendance on its own, start from “&#128587; Just collect attendance” on the first screen.</div>
   </section>
 
   <!-- 7. よくある質問 -->
   <section class="legal-sec" id="s7">
-    <h2>{{gattend.s7title}}</h2>
+    <h2>7. Common questions</h2>
     <dl class="guide-faq">
-      <dt>{{gattend.s7q1}}</dt><dd>{{gattend.s7a1}}</dd>
-      <dt>{{gattend.s7q2}}</dt><dd>{{gattend.s7a2}}</dd>
-      <dt>{{gattend.s7q3}}</dt><dd>{{gattend.s7a3}}</dd>
-      <dt>{{gattend.s7q4}}</dt><dd>{{gattend.s7a4}}</dd>
-      <dt>{{gattend.s7q5}}</dt><dd>{{gattend.s7a5}}</dd>
-      <dt>{{gattend.s7q6}}</dt><dd>{{gattend.s7a6}}</dd>
-      <dt>{{gattend.s7q7}}</dt><dd>{{gattend.s7a7}}</dd>
-      <dt>{{gattend.s7q8}}</dt><dd>{{gattend.s7a8}}</dd>
-      <dt>{{gattend.s7q9}}</dt><dd>{{gattend.s7a9}}</dd>
+      <dt>Do members have to install an app</dt><dd>No. They open the link in a browser. There is no account to create and nothing to sign in to.</dd>
+      <dt>Does the organiser need a Google account</dt><dd>Not for attendance. You are only asked to sign in on the Event Dropper side, when you read a document or add something to your calendar.</dd>
+      <dt>I lost the admin link</dt><dd>We cannot recover it, and we are sorry. The key itself is not stored on our server - if it were, we would be able to read your roster and your replies. Create the group again and hand out the new link.</dd>
+      <dt>Can I open the same group on a new phone</dt><dd>Yes, if you saved the admin link: paste it into “Already have a group?” on the admin screen. If you signed in with Google in Event Dropper, your key is kept in your own Google Drive, so signing in on the new device brings it back by itself.</dd>
+      <dt>Do I hand out a new link for every event</dt><dd>No. There is one attendance link per group and it never changes.</dd>
+      <dt>Someone left the club</dt><dd>Under “Group name and members”, write “left” in that person's note and save. They come off the roster.</dd>
+      <dt>Can people still answer after the deadline</dt><dd>No. Replies stop on the answer deadline. You can move it with “Change the answer deadline” on the admin screen. The result stays readable afterwards.</dd>
+      <dt>How do I delete the data</dt><dd>“Delete this group” on the admin screen removes the roster, the events and every reply. It cannot be undone, and the links you handed out stop opening.</dd>
+      <dt>Does it cost anything</dt><dd>No, and there are no adverts.</dd>
     </dl>
   </section>
 
   <!-- 8. 困ったときは -->
   <section class="legal-sec" id="s8">
-    <h2>{{gattend.s8title}}</h2>
-    <div class="legal-contact">{{gattend.s8body}}</div>
+    <h2>8. If something goes wrong</h2>
+    <div class="legal-contact">Because the tools are free, we don't offer one-on-one support. If something isn't working, please go through the steps on this page once more. When a member says the link is not valid, it is almost always because part of the URL was cut off - copy it again from “Attendance link” on the admin screen and send it once more.</div>
   </section>
 
   <div class="guide-cta">
-    <a class="btn-sm fill" href="{{toolA.url}}" target="_blank" rel="noopener">{{gattend.ctaBtn}}</a>
+    <a class="btn-sm fill" href="https://app.dropper-tools.com/calendar-en/?go=attend" target="_blank" rel="noopener">&#128587; Try Attendance &#8599;</a>
   </div>
 
-  <a href="{{NAV_PREFIX}}" class="legal-back">{{gattend.back}}</a>
+  <a href="./" class="legal-back">← Back to the top page</a>
 
 </div>
 
 <footer>
   <div class="footer-logo">DROPPER</div>
-  <p>{{footer.copy}}</p>
-  <p class="footer-links"><a href="{{PRIVACY_PATH}}">{{footer.privacy}}</a></p>
+  <p>Dropper © 2026</p>
+  <p class="footer-links"><a href="./privacy.html">Privacy Policy</a></p>
 </footer>
 
 <button id="backToTop" aria-label="Top">↑</button>
