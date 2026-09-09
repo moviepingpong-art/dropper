@@ -36,9 +36,11 @@
    ドロッパー DROPPER  -  使い方ガイド（出欠システム）
    ※このファイルは src/guide-attend-template.html から自動生成されています。
      編集は src/ 側を直して build.py を実行してください。
-   段階1（2026-09-09）は日本語のみ・スクリーンショット無しで公開する。
-     画面を入れるときは /assets/guide-attend/<言語コード>/ に置き、
-     .guide-shot の figure を各ステップに足す（他3本のガイドと同じ作り）。
+   スクリーンショットは /assets/guide-attend/<言語コード>/ に置く（言語別）。
+     ★ 13枚そろっている（2026-09-09）。**メンバーの画面と管理画面で「みんなの回答」が
+       別物**なので、差し替えるときに取り違えないこと——管理画面のほうは、団体が
+       「名前を伏せる」設定でも名前と未回答者が出る。
+     ★ en / in はまだ生成していない（build.py の PAGES を見ること）。
    ============================================================ */
 
 /* ============================================================
@@ -403,6 +405,14 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <h3><span class="guide-step-num">1</span>団体をつくる</h3>
       <p>出欠システムの管理画面を開き、「団体をつくる」に団体名とメンバーのお名前を入れて、「この内容でつくる」を押します。<strong>お名前だけでかまいません。</strong></p>
       <div class="guide-note">Excelやメモ帳の名簿は「≡ まとめて貼り付け」から一度に入れられます。1行に1人。区切りは<strong>タブかカンマ</strong>です（例：田中 一郎,男）。</div>
+      <figure class="guide-shot">
+        <img src="/assets/guide-attend/ja/step1-create.png" alt="出欠システムの「団体をつくる」画面。団体名の欄に「卓球クラブ」、メンバーの欄にお名前と性別が入っている" loading="lazy">
+        <figcaption>団体名とお名前を入れて「この内容でつくる」。お名前だけでもかまいません。</figcaption>
+      </figure>
+      <figure class="guide-shot">
+        <img src="/assets/guide-attend/ja/step1-bulk.png" alt="「まとめて貼り付け」を開いたところ。1行に1人ずつお名前が貼られている" loading="lazy">
+        <figcaption>Excelやメモ帳からそのまま貼れます。区切りはタブかカンマです。</figcaption>
+      </figure>
       <div class="guide-safe">「参加者どうしでも、誰が〇・△・×かを名前で見せる」という切り替えがあります。外すと、メンバーの「みんなの回答」には男女の人数だけが出ます。<strong>主催者のこの画面には、どちらにしてもお名前が出ます</strong>（大会のメンバーを選ぶのに要るため）。あとから変えられます。</div>
     </div>
 
@@ -410,24 +420,44 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <h3><span class="guide-step-num">2</span>管理リンクを保存する（必ず）</h3>
       <p>団体ができると「管理リンク」が<strong>一度だけ</strong>表示されます。これがあなたの合鍵で、この画面を閉じると二度と表示できません。</p>
       <div class="guide-note">⚠️ <strong>管理リンクをなくすと、名簿も回答も元に戻せません。</strong>当方のサーバーには合鍵そのものを保存していないため、お問い合わせいただいても復旧できない仕組みです。画面の「コピー」を押して、<strong>ブックマークのURL欄に貼り付ける</strong>か、ご自分あてにメッセージで送っておいてください。</div>
+      <figure class="guide-shot">
+        <img src="/assets/guide-attend/ja/step2-key.png" alt="「できあがりました」の画面。管理リンクと「コピー」ボタンが表示されている" loading="lazy">
+        <figcaption>★ この管理リンクを必ず保存してください。この画面を閉じると二度と表示できません（画像ではリンクの後半を伏せています）。</figcaption>
+      </figure>
       <p>※ アドレス欄をそのままブックマークしないでください。合鍵の部分が入らないことがあります。必ず画面の「コピー」からお使いください。</p>
     </div>
 
     <div class="guide-step">
       <h3><span class="guide-step-num">3</span>行事を追加する</h3>
       <p>管理画面の「行事から出欠を作る」で行事を登録します。「＋ 手で入力して追加」から、行事名・開催日・申込締切・会場・種目を入れられます。大会の要項がある場合は、イベントドロッパーから取り込めます（6章）。</p>
+      <figure class="guide-shot">
+        <img src="/assets/guide-attend/ja/step3-manual.png" alt="行事の手入力欄。行事名・開催日・申込締切・会場・種目が並んでいる" loading="lazy">
+        <figcaption>申込締切を入れると、出欠入力の締切がその場で逆算されて表示されます。</figcaption>
+      </figure>
       <div class="guide-note"><strong>締切は2つあります。</strong>「申込締切」は大会主催者へ申し込む期限です。メンバーが答える「出欠入力の締切」は、そこから逆算して自動で決まります（既定は7日前）。<strong>回答が止まるのは「出欠入力の締切」のほう</strong>で、日数は管理画面から変えられます。</div>
     </div>
 
     <div class="guide-step">
       <h3><span class="guide-step-num">4</span>出欠を作って、URLを配る</h3>
       <p>行事の「この行事で出欠を作る」を押すと、受付が始まります。あとは「出欠回答のURL」をメンバーに配るだけです。</p>
+      <figure class="guide-shot">
+        <img src="/assets/guide-attend/ja/step4-make.png" alt="追加された行事のカードと「この行事で出欠を作る」ボタン" loading="lazy">
+        <figcaption>「この行事で出欠を作る」を押すと、受付が始まります。</figcaption>
+      </figure>
+      <figure class="guide-shot">
+        <img src="/assets/guide-attend/ja/step4-announce.png" alt="LINE用の案内文。日程・会場・出欠入力の締切と、出欠回答のリンクが入っている" loading="lazy">
+        <figcaption>案内文に出欠回答のURLが入ります。そのままLINEへ送れます（画像ではURLの後半を伏せています）。</figcaption>
+      </figure>
       <div class="guide-safe">URLは<strong>団体につき1本</strong>で、ずっと変わりません。グループLINEのアナウンスに留めておけば、メンバーはいつでもそこから開けます。行事が増えても貼り直しは要りません。</div>
     </div>
 
     <div class="guide-step">
       <h3><span class="guide-step-num">5</span>集まりぐあいを見る</h3>
       <p>管理画面の「みんなの回答」に、種目ごとの人数と、誰が〇・△・×かが出ます。メンバーが書いた一言もここに出ます。</p>
+      <figure class="guide-shot">
+        <img src="/assets/guide-attend/ja/step5-answers.png" alt="主催者の管理画面の「みんなの回答」。種目ごとの人数と男女の内訳、その下に誰が〇・△・×かの名前、さらに「まだ答えていない方（1人）」と未回答者の名前が出ている" loading="lazy">
+        <figcaption>管理画面では、名前を伏せる設定でも名前が出ます。いちばん下に「まだ答えていない方」と、その名前をコピーするボタンがあります。</figcaption>
+      </figure>
       <div class="guide-note"><strong>まだ答えていない方のお名前が出るのは、この管理画面と、役員にお渡しする閲覧リンクだけ</strong>です。メンバーの画面には出しません。声をかける相手をここで確かめてください。</div>
     </div>
   </section>
@@ -454,22 +484,47 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   <section class="legal-sec" id="s5">
     <h2>5. メンバーの画面</h2>
     <p>配られたURLを開くと、下に3つのタブが出ます。アプリの用意も、アカウントの登録も要りません。</p>
+    <figure class="guide-shot">
+      <img src="/assets/guide-attend/ja/member-list.png" alt="メンバーの画面。受付中の行事のカードと、下に「出欠入力」「わたしの回答」「みんなの回答」の3つのタブ" loading="lazy">
+      <figcaption>下の3つのタブで、答える・見返す・集計を見るが分かれています。</figcaption>
+    </figure>
 
     <h3 class="guide-sub">出欠入力</h3>
     <p>はじめての方は、名簿からご自分のお名前を選んで「これで登録」を押します。<strong>登録はその端末で最初の1回だけ</strong>です。あとは受付中の行事が並ぶので、種目ごとに〇・△・×を選んで送ります。「一言（任意）」に「30分ほど遅れます」「車を2台出せます」のように書き添えられます。</p>
+    <figure class="guide-shot">
+      <img src="/assets/guide-attend/ja/member-first.png" alt="「はじめての方へ」の画面。名簿からお名前を選び、「これで登録」を押すところ" loading="lazy">
+      <figcaption>最初の1回だけ、名簿からご自分のお名前を選びます。</figcaption>
+    </figure>
+    <figure class="guide-shot">
+      <img src="/assets/guide-attend/ja/member-answer.png" alt="種目ごとに〇参加・△どちらでも・×不参加を選ぶ画面と、一言の入力欄" loading="lazy">
+      <figcaption>種目ごとに印を選んで送ります。一言は任意です。</figcaption>
+    </figure>
     <div class="guide-safe">締切前なら何度でも直せます。押し間違えても大丈夫です。</div>
 
     <h3 class="guide-sub">わたしの回答</h3>
     <p>ご自分がどの行事にどう答えたかの一覧です。まだ答えていないものも分かります。</p>
+    <figure class="guide-shot">
+      <img src="/assets/guide-attend/ja/member-my.png" alt="「わたしの回答」。自分が答えた内容が種目ごとに並んでいる" loading="lazy">
+      <figcaption>締切前なら「回答を変更する」で何度でも直せます。</figcaption>
+    </figure>
 
     <h3 class="guide-sub">みんなの回答</h3>
     <p>種目ごとの人数と、男女の内訳が出ます。主催者が「名前を見せる」を選んだ団体では、誰が〇・△・×かも出ます。<strong>まだ答えていない方のお名前は、メンバーの画面には出ません。</strong></p>
+    <figure class="guide-shot">
+      <img src="/assets/guide-attend/ja/member-all.png" alt="「みんなの回答」。種目ごとに参加・どちらでも・不参加の人数と、男女の内訳が出ている" loading="lazy">
+      <figcaption>この団体は「名前を伏せる」設定です。人数と男女の内訳だけが出ます。「名前を見せる」設定にすると、誰が〇・△・×かもここに並びます。</figcaption>
+    </figure>
+
   </section>
 
   <!-- 6. イベントドロッパーからの連携 -->
   <section class="legal-sec" id="s6">
     <h2>6. イベントドロッパーから出欠を作る</h2>
     <p>大会の要項（PDF・写真）がある場合は、イベントドロッパーで読み取ってから出欠を立ち上げられます。行事名・開催日・会場・申込締切が、そのまま引き継がれます。</p>
+    <figure class="guide-shot">
+      <img src="/assets/guide-attend/ja/dropper-handoff.png" alt="イベントドロッパーのカード。会場や締切の欄と「🙋 出欠システムへ」ボタンが並んでいる" loading="lazy">
+      <figcaption>要項を読み取ったカードから、そのまま出欠を立ち上げられます。</figcaption>
+    </figure>
     <ol class="guide-ol">
       <li>イベントドロッパーで要項を読み取り、カードの内容を確かめます。</li>
       <li>「🙋 出欠システムへ」を押します。管理画面が開いて、行事が取り込まれます。</li>
