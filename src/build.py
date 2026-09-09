@@ -142,6 +142,26 @@ PAGES = {
         "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
+    # 出欠システムの使い方ガイド。**段階1（2026-09-09）は日本語だけ**。
+    # 他3本と違い、スクリーンショットをまだ撮っていないので画像を1枚も参照していない
+    # （テンプレートに .guide-shot が無い）。画面を入れるときは
+    # assets/guide-attend/<code>/ に置き、テンプレートに figure を足す。
+    # en/in を出すときは i18n の en.json / in.json に gattend.* を足してから
+    # langs に足すこと。**辞書が無いまま langs に足すと日本語のページが3つ出る**
+    # （render のフォールバックが ja を返すため。{{...}} は残らないので気づきにくい）。
+    "guide-attend": {
+        "template": "guide-attend-template.html",
+        "filename": "guide-attend.html",
+        "langs": ["ja"],
+        "switch_paths": {
+            "ja": {"ja": "./guide-attend.html",  "en": "./en/guide-attend.html",  "in": "./in/guide-attend.html"},
+            "en": {"ja": "../guide-attend.html", "en": "./guide-attend.html",     "in": "../in/guide-attend.html"},
+            "in": {"ja": "../guide-attend.html", "en": "../en/guide-attend.html", "in": "./guide-attend.html"},
+        },
+        "nav_prefix": "./",
+        "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
+        "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
+    },
 }
 # =========================================================================
 
@@ -254,6 +274,21 @@ def build_tool3_guide_btn(code, strings):
     return f'\n          <a class="btn-sm line" href="{GDECIDE_PATH[code]}">{label}</a>'
 
 
+# 出欠システムのガイドへのパス（{{ATTEND_GUIDE_BTN}}）。
+# ガイドは各言語フォルダ内に生成されるので、どの言語も同階層の "./" でよい。
+GATTEND_PATH = {"ja": "./guide-attend.html", "en": "./guide-attend.html", "in": "./guide-attend.html"}
+
+
+def build_attend_guide_btn(code, strings):
+    """出欠の説明（.tool-attend）の下に置くガイドボタン。
+    出欠はカードを持たないので、ガイドへの道はここ1本だけ。
+    ガイドが生成されない言語ではボタンごと出さない（存在しないURLになるため）。"""
+    if code not in page_langs("guide-attend"):
+        return ""
+    label = strings.get("gattend.cardBtn", "")
+    return '\n      <a class="btn-sm line" href="%s">%s</a>' % (GATTEND_PATH[code], label)
+
+
 def build_tool2_card(code, strings):
     """シリーズ2枚目のカード。
     公開言語では予定表ドロッパーの実カード、それ以外は従来の準備中プレースホルダ。
@@ -341,6 +376,7 @@ SEO_KEYS = {
     "guide":   ("guide.metaTitle", "guide.metaDesc"),
     "guide-schedule": ("gsched.metaTitle", "gsched.metaDesc"),
     "guide-decide": ("gdecide.metaTitle", "gdecide.metaDesc"),
+    "guide-attend": ("gattend.metaTitle", "gattend.metaDesc"),
     "apikey":  ("apikey.metaTitle", "apikey.metaDesc"),
 }
 
@@ -351,6 +387,8 @@ HOWTO_PAGES = {
     "guide": ("guide", 4, "s3", "PT2M"),
     "guide-schedule": ("gsched", 5, "s3", "PT2M"),
     "guide-decide": ("gdecide", 5, "s3", "PT2M"),
+    # 出欠は主催者の準備までを含むので所要時間が長い（名簿を貼り付ける時間）
+    "guide-attend": ("gattend", 5, "s3", "PT5M"),
     "apikey": ("apikey", 3, "steps", "PT3M"),
 }
 
@@ -492,6 +530,7 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{GUIDE_BTN}}", build_guide_btn(page, code, strings))
     html = html.replace("{{TOOL2_CARD}}", build_tool2_card(code, strings))
     html = html.replace("{{TOOL3_GUIDE_BTN}}", build_tool3_guide_btn(code, strings))
+    html = html.replace("{{ATTEND_GUIDE_BTN}}", build_attend_guide_btn(code, strings))
     html = html.replace("{{LINE_CTA}}", build_line_cta(code, strings))
     for key, value in strings.items():
         html = html.replace("{{" + key + "}}", value)
