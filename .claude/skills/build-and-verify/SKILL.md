@@ -21,24 +21,34 @@ python3 src/build.py
 
 ## 手順2：検証
 
-### 2-1. 18ページ生成されたか（6ページ × 3言語）
+### 2-1. 21ページ生成されたか（7ページ × 3言語）
 
 | 場所 | ファイル |
 |---|---|
-| 直下 | index.html / guide.html / guide-schedule.html / guide-decide.html / privacy.html / apikey.html |
-| `en/` | 同じ6ファイル |
-| `in/` | 同じ6ファイル |
+| 直下 | index.html / guide.html / guide-schedule.html / guide-decide.html / guide-attend.html / privacy.html / apikey.html |
+| `en/` | 同じ7ファイル |
+| `in/` | 同じ7ファイル |
 
-ページを増やすときは `build.py` の `PAGES` に足す。ここの表も更新する。
-（`guide-decide.html` は決めごとドロッパーのガイド。2026-08 に追加され、この表も更新した）
+ページを増やすときは `build.py` の `PAGES` に足す。**ここの表と、この見出しの枚数も直す。**
+
+- `guide-decide.html` — 決めごとドロッパーのガイド（2026-08 追加）
+- `guide-attend.html` — 出欠システムの使い方（2026-09-08 追加。
+  **画像は ja だけ**。`build.py` の `shot_langs` で en / in からは figure ごと落としている）
+
+★ **2026-08-07 から 2026-09-13 まで、この節は6ページのままだった。**
+出欠ガイドを足したときに直し忘れ、下の 2-2 の grep からも漏れていた。
 
 ### 2-2. 未置換プレースホルダが残っていないか
 
 ```
-grep -rn "{{" index.html guide.html guide-schedule.html guide-decide.html privacy.html apikey.html en/ in/
+grep -rn "{{" *.html en/ in/
 ```
 
 **0件**であること。残っていれば `src/i18n/{ja,en,in}.json` のキー欠落。
+
+★ **ファイル名を並べない。** 以前は6つ書き並べていて、7ページ目を足したときに
+**出欠ガイドだけ検査対象から漏れた**（2026-09-13 に気づいた）。
+`*.html` にしておけば、ページが増えても勝手に入る。
 
 ### 2-3. 生成HTMLがコミット済みのものと一致するか
 
