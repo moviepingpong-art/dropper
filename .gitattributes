@@ -1,0 +1,4 @@
+# シェルスクリプトは必ず LF で取り出す。
+# core.autocrlf=true の環境でクローンすると CRLF になり、
+# Git Bash が「\r」ごと解釈して動かなくなる（フックが黙って失敗する）。
+tools/hooks/* text eol=lf
