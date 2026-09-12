@@ -1,0 +1,49 @@
+#!/bin/sh
+# コミット前に build.py を走らせ、生成HTMLが最新かを確かめる。
+#
+# なぜ要るか：
+#   src/ は配信されない材料で、GitHub Pages が配信するのはリポジトリ直下のHTML。
+#   自動ビルドが無いので、build.py を忘れると src と公開ページがずれたまま進む。
+#   人の記憶に頼らず、コミットのところで止める。
+#
+# 有効にするには（クローンごとに1回。.git/hooks はコミットされないため）：
+#   git config core.hooksPath tools/hooks
+#
+# どうしても止めたくないときは：
+#   git commit --no-verify
+
+set -e
+
+# Windows の Git Bash では python、環境によっては py
+if command -v python >/dev/null 2>&1; then
+  PY=python
+elif command -v py >/dev/null 2>&1; then
+  PY=py
+else
+  echo "pre-commit: python が見つかりません。ビルド確認を飛ばします。" >&2
+  exit 0
+fi
+
+if ! "$PY" src/build.py >/dev/null; then
+  echo "" >&2
+  echo "pre-commit: build.py が失敗しました。直してからコミットしてください。" >&2
+  exit 1
+fi
+
+# 生成HTMLだけを見る（src/ の中のテンプレートは対象外）
+if ! git diff --quiet -- '*.html' ':!src'; then
+  echo "" >&2
+  echo "pre-commit: 生成HTMLが最新ではありません。" >&2
+  echo "" >&2
+  git diff --name-only -- '*.html' ':!src' | sed 's/^/  /' >&2
+  echo "" >&2
+  echo "  build.py を走らせた結果、上のファイルが変わりました。" >&2
+  echo "  src/ を直したのに、生成HTMLをコミットに含めていない状態です。" >&2
+  echo "" >&2
+  echo "  次を実行してからコミットしてください：" >&2
+  echo "    git add -- '*.html' ':!src'" >&2
+  echo "" >&2
+  exit 1
+fi
+
+exit 0

@@ -19,6 +19,11 @@ python3 src/build.py
 
 **Windows（PowerShell）では `python3` は無い。`python src/build.py` を使う。**
 
+**`core.hooksPath` を設定してあれば、コミット前に自動で走る**（`tools/hooks/pre-commit`）。
+生成HTMLが最新でなければコミットが止まる。設定は `git config core.hooksPath tools/hooks`。
+**フックがあっても、この手順2の検証は人がやること。** フックが見ているのは
+「ビルド済みか」だけで、中身の正しさは見ていない。
+
 ## 手順2：検証
 
 ### 2-1. 21ページ生成されたか（7ページ × 3言語）

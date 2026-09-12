@@ -4,14 +4,27 @@ GitHub Pages で公開している静的サイト。公開URL: https://dropper-t
 
 ## 2層構造（重要）
 
-- `src/` は**配信されない材料**。`build.py` + `template.html` / `guide-template.html` /
-  `guide-schedule-template.html` / `privacy-template.html` / `apikey-template.html`
-  + `i18n/{ja,en,in}.json`
-- `python3 src/build.py` を実行すると、直下と `en/` `in/` に
-  `index.html` / `guide.html` / `guide-schedule.html` / `privacy.html` / `apikey.html`
-  の5ページ×3言語（計15ページ）が生成される。
+- `src/` は**配信されない材料**。`build.py` + `src/*-template.html` + `i18n/{ja,en,in}.json`
+- `python src/build.py` を実行すると、直下と `en/` `in/` にページが生成される。
+  **どのページが出るかは `build.py` の `PAGES` が正**（2026-09-13 時点で7ページ×3言語＝21）。
+  ★ **ページを増やしたら、ここの枚数と `sitemap.xml` も直す。**
+  ファイル名をあちこちに書き並べない（2026-09 に、増やしたのに直し忘れた箇所が出た）
 - **GitHub Actions等の自動ビルドは無い。** `src/` を直しただけでは公開ページは変わらない。
   必ず `build.py` を実行し、**生成HTMLも一緒にコミットする**。
+- **忘れないように、コミット前のフックで機械に確かめさせている**（下記）
+
+## ビルドし忘れを止めるフック
+
+`tools/hooks/pre-commit` が、コミット前に `build.py` を走らせ、
+**生成HTMLが最新でなければコミットを止める。**
+
+`.git/hooks` はコミットされないので、**クローンごとに1回だけ**次を実行する。
+
+```
+git config core.hooksPath tools/hooks
+```
+
+どうしても止めたくないときは `git commit --no-verify`。
 
 ## 文言の追加・変更
 
