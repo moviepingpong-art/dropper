@@ -580,6 +580,58 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         </div>
       </article>
 
+      <!-- 申込書ドロッパー（4本目）。申込書＋名簿 → 記入済み。
+           図の要点は「空いていた欄が全部うまる」。ツール本体の #tools-modal と同じ考え方で、
+           配色だけこのサイトの青系にしてある。 -->
+      <article class="tool-card">
+        <span class="tool-status status-open">{{tool4.status}}</span>
+        <div class="tool-icon">📝</div>
+        <h3 class="tool-name">{{tool4.name}}</h3>
+        <p class="tool-desc">{{tool4.desc}}</p>
+        <div class="tool-fig" aria-hidden="true">
+          <div class="tf-col">
+            <div class="tf-sheet wide">
+              <span class="tf-bar t"></span>
+              <div class="tf-tbl">
+                <i></i><b></b><i></i><b></b><i></i><b></b>
+              </div>
+            </div>
+            <span class="tf-cap">{{tool4.fig1}}</span>
+          </div>
+          <span class="tf-arrow">&rarr;</span>
+          <div class="tf-col">
+            <div class="tf-chk">
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+            </div>
+            <span class="tf-cap">{{tool4.fig2}}</span>
+          </div>
+          <span class="tf-arrow">&rarr;</span>
+          <div class="tf-col">
+            <div class="tf-sheet wide">
+              <span class="tf-bar t"></span>
+              <div class="tf-tbl">
+                <i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+            </div>
+            <span class="tf-cap">{{tool4.fig3}}</span>
+          </div>
+        </div>
+        <div class="tool-tags">
+          <span class="tool-tag">{{tool4.tag1}}</span>
+          <span class="tool-tag">{{tool4.tag2}}</span>
+          <span class="tool-tag">{{tool4.tag3}}</span>
+          <span class="tool-tag">{{tool4.tag4}}</span>
+          <span class="tool-tag">{{tool4.tag5}}</span>
+        </div>
+        <p class="tool-price">{{tool4.price}}</p>
+        <div class="tool-actions">
+          <a class="btn-sm fill" href="{{tool4.url}}" target="_blank" rel="noopener">{{tool4.btn1}}</a>
+        </div>
+      </article>
+
     </div>
 
     <!-- ★ 出欠は**4枚目のカードにしない。ツール1の中にも置かない**（2026-09-06）。
@@ -745,6 +797,14 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         <span>
           <span class="picker-name">{{tool3.name}}</span>
           <span class="picker-line">{{picker.t3line}}</span>
+        </span>
+      </a>
+
+      <a class="picker-item" href="{{tool4.url}}" target="_blank" rel="noopener">
+        <span class="picker-emoji">📝</span>
+        <span>
+          <span class="picker-name">{{tool4.name}}</span>
+          <span class="picker-line">{{picker.t4line}}</span>
         </span>
       </a>
     </div>

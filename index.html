@@ -675,6 +675,58 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         </div>
       </article>
 
+      <!-- 申込書ドロッパー（4本目）。申込書＋名簿 → 記入済み。
+           図の要点は「空いていた欄が全部うまる」。ツール本体の #tools-modal と同じ考え方で、
+           配色だけこのサイトの青系にしてある。 -->
+      <article class="tool-card">
+        <span class="tool-status status-open">公開中</span>
+        <div class="tool-icon">📝</div>
+        <h3 class="tool-name">申込書ドロッパー</h3>
+        <p class="tool-desc">大会の参加申込書（Excel）をドロップするだけで、クラブの名簿から性別・生年月日・年齢・住所・電話番号を埋めて返します。名簿はこのツールで作れて、郵便番号から住所も入ります。申込書に名前を書いておいても、画面で名簿から選んでも構いません。</p>
+        <div class="tool-fig" aria-hidden="true">
+          <div class="tf-col">
+            <div class="tf-sheet wide">
+              <span class="tf-bar t"></span>
+              <div class="tf-tbl">
+                <i></i><b></b><i></i><b></b><i></i><b></b>
+              </div>
+            </div>
+            <span class="tf-cap">大会の申込書</span>
+          </div>
+          <span class="tf-arrow">&rarr;</span>
+          <div class="tf-col">
+            <div class="tf-chk">
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+            </div>
+            <span class="tf-cap">名簿から選ぶ</span>
+          </div>
+          <span class="tf-arrow">&rarr;</span>
+          <div class="tf-col">
+            <div class="tf-sheet wide">
+              <span class="tf-bar t"></span>
+              <div class="tf-tbl">
+                <i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+            </div>
+            <span class="tf-cap">記入済みで保存</span>
+          </div>
+        </div>
+        <div class="tool-tags">
+          <span class="tool-tag">ログイン不要で試せる</span>
+          <span class="tool-tag">生年月日・年齢・住所を自動</span>
+          <span class="tool-tag">名簿もこのツールで作れる</span>
+          <span class="tool-tag">郵便番号から住所が入る</span>
+          <span class="tool-tag">書式を壊さずに書き込む</span>
+        </div>
+        <p class="tool-price">完全無料</p>
+        <div class="tool-actions">
+          <a class="btn-sm fill" href="https://app.dropper-tools.com/entry/" target="_blank" rel="noopener">使ってみる</a>
+        </div>
+      </article>
+
     </div>
 
     <!-- ★ 出欠は**4枚目のカードにしない。ツール1の中にも置かない**（2026-09-06）。
@@ -796,11 +848,11 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   <div class="section-inner">
     <p class="section-label">About</p>
     <h2 class="section-title">ドロッパー<span class="blue">とは</span></h2>
-    <p class="section-desc">「ファイルを放り込むだけで、面倒が片づく」。そんな小さな道具をドロッパーと名づけ、シリーズで作って公開しています。いまは3本あります。イベント文書から開催日・会場をGoogleカレンダーに入れて、LINE・SNSの案内文まで作るもの。年間行事予定表のように予定がたくさん並んだ1枚を、まとめて読み取るもの。会話のスクリーンショットや打ち合わせメモを、決まったこと・まだ決まっていないこと・やること・記録の4つに仕分けるもの。やり方はどれも同じ＝ドロップするだけなので、特定の団体や競技に限らず誰でも使えます。</p>
+    <p class="section-desc">「ファイルを放り込むだけで、面倒が片づく」。そんな小さな道具をドロッパーと名づけ、シリーズで作って公開しています。いまは4本あります。イベント文書から開催日・会場をGoogleカレンダーに入れて、LINE・SNSの案内文まで作るもの。年間行事予定表のように予定がたくさん並んだ1枚を、まとめて読み取るもの。会話のスクリーンショットや打ち合わせメモを、決まったこと・まだ決まっていないこと・やること・記録の4つに仕分けるもの。大会の参加申込書に、クラブの名簿から生年月日・年齢・住所を埋めるもの。大会の参加申込書に、クラブの名簿から生年月日・年齢・住所を埋めるもの。やり方はどれも同じ＝ドロップするだけなので、特定の団体や競技に限らず誰でも使えます。</p>
     <!-- ★ 出欠は段落を分ける。**「ドロップするだけ」と向きが逆**なので、
          3本と同じ文に混ぜると「4本目のドロッパー」に見えてしまう。
          シリーズのカードで棚を分けている（tools.shelf「もう一つの道具」）のと同じ扱い。 -->
-    <p class="section-desc">これに加えて、<strong>出欠システム</strong>があります。3本が1枚の紙から何かを取り出すのに対して、こちらは人から集めるほう。<strong>向きが逆なので、別の棚に置いています。</strong>メンバーは名簿から自分の名前を選んで〇・△・×を送るだけで、アプリも登録もログインも要りません。読み取った行事からそのまま立ち上げられるほか、チラシが無くても単体で使えます。道具はこれから少しずつ増えていきます。</p>
+    <p class="section-desc">これに加えて、<strong>出欠システム</strong>があります。ほかの道具が1枚の紙から何かを取り出すのに対して、こちらは人から集めるほう。<strong>向きが逆なので、別の棚に置いています。</strong>メンバーは名簿から自分の名前を選んで〇・△・×を送るだけで、アプリも登録もログインも要りません。読み取った行事からそのまま立ち上げられるほか、チラシが無くても単体で使えます。道具はこれから少しずつ増えていきます。</p>
   </div>
 </section>
 
@@ -842,6 +894,14 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         <span>
           <span class="picker-name">決めごとドロッパー</span>
           <span class="picker-line">会話やメモから決まったこと</span>
+        </span>
+      </a>
+
+      <a class="picker-item" href="https://app.dropper-tools.com/entry/" target="_blank" rel="noopener">
+        <span class="picker-emoji">📝</span>
+        <span>
+          <span class="picker-name">申込書ドロッパー</span>
+          <span class="picker-line">大会の申込書に、名簿から記入</span>
         </span>
       </a>
     </div>

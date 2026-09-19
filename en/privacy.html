@@ -262,7 +262,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
     <p class="legal-date">Effective: July 15, 2026 / Last updated: July 19, 2026</p>
   </div>
 
-  <p class="legal-lead">DROPPER runs in your browser. For Event, Schedule and Decisions we never collect, store, or transmit your data. <strong>the Attendance tool is the one exception - we hold the attendance data</strong> (see its own section).</p>
+  <p class="legal-lead">DROPPER runs in your browser. For Event, Schedule, Decisions and Entry Forms we never collect, store, or transmit your data. <strong>the Attendance tool is the one exception - we hold the attendance data</strong> (see its own section).</p>
 
   <section class="legal-sec">
     <h2>1. Operator</h2>
@@ -274,7 +274,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 
   <section class="legal-sec">
     <h2>2. Our approach</h2>
-    <p>Event, Schedule and Decisions run entirely in your browser. Nothing you read is sent to our servers; everything happens inside your own Google account. <strong>the Attendance tool is the exception - we hold that data</strong> (see its own section below).</p>
+    <p>Event, Schedule, Decisions and Entry Forms run entirely in your browser. Nothing you read is sent to our servers; everything happens inside your own Google account. <strong>the Attendance tool is the exception - we hold that data</strong> (see its own section below).</p>
   </section>
 
   <section class="legal-sec">
@@ -325,7 +325,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
     <p>Dropper uses the following mechanisms to protect your data:</p>
     <ul>
       <li>All communication takes place over an encrypted connection (HTTPS).</li>
-      <li>For the three tools other than the Attendance tool we store no data, so nothing of yours sits under our control to be breached. The data held for the Attendance tool is protected on Cloudflare's platform.</li>
+      <li>For the four tools other than the Attendance tool we store no data, so nothing of yours sits under our control to be breached. The data held for the Attendance tool is protected on Cloudflare's platform.</li>
       <li>Your Gemini API key and settings are stored only on your device (in the browser's localStorage) and are never transmitted to us or anyone else.</li>
       <li>All access to Google services and the Gemini API takes place under the authentication and authorization of your own Google account.</li>
     </ul>
@@ -333,7 +333,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 
   <section class="legal-sec">
     <h2>7. Data Retention and Deletion</h2>
-    <p>For the three tools other than the Attendance tool we store nothing, so we hold none of your Google user data. Only the following information is stored on your device (in the browser's localStorage), and we cannot access it:</p>
+    <p>For the four tools other than the Attendance tool we store nothing, so we hold none of your Google user data. Only the following information is stored on your device (in the browser's localStorage), and we cannot access it:</p>
     <ul>
       <li>Whether you chose to use the AI feature</li>
       <li>Your Gemini API key (only if you chose to use AI)</li>
@@ -380,7 +380,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
        節を分けて明記する（「サーバーを持たない」の唯一の例外） -->
   <section class="legal-sec">
     <h2>About the Attendance tool (we do hold this data)</h2>
-    <p>Of the tools in this series, <strong>only the Attendance tool stores data on our server</strong>. Attendance means several people writing from different devices and everyone seeing the same result, which cannot work inside one browser. The other three tools (Event, Schedule, Decisions) still run entirely in your browser and we receive nothing.</p>
+    <p>Of the tools in this series, <strong>only the Attendance tool stores data on our server</strong>. Attendance means several people writing from different devices and everyone seeing the same result, which cannot work inside one browser. The other four tools (Event, Schedule, Decisions, Entry Forms) still run entirely in your browser and we receive nothing.</p>
     <ul>
       <li>What we hold: the group name, the roster (names and gender), event details (title, dates, venue), the replies, and a random id used to recognise a device.</li>
       <li>What we do not hold: email addresses, phone numbers, postal addresses. People replying never log in or create an account.</li>
@@ -388,6 +388,21 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <li>Deletion: the organiser can delete the group, roster, events and replies at any time from "Delete this group" in the admin screen. Deletion cannot be undone.</li>
       <li>Retention: data for groups with no activity for a long period may be deleted after notice.</li>
       <li>Who can see what: anyone with the shared URL (the group id) can see the roster names and the counts. <strong>Who has not replied is shown only on the organiser’s screen.</strong></li>
+    </ul>
+  </section>
+
+  <!-- 申込書ドロッパーは名簿（個人情報）を扱うが、出欠と違って当方は預からない。
+       扱うものが重いので、預からないことを節を分けて明記する。 -->
+  <section class="legal-sec">
+    <h2>About the Entry Form Dropper (it handles your roster)</h2>
+    <p>The Entry Form Dropper handles a tournament entry form and your club roster, which is personal data. <strong>Both are processed only inside your browser and are never sent to our server</strong> (we have no server, so we cannot receive them). No login is required.</p>
+    <ul>
+      <li>What it handles: the entry form (an Excel file) and the roster (names, readings, dates of birth, postcodes, addresses, phone numbers). The filled-in file is also produced on your own device.</li>
+      <li>Nothing is stored: the roster is not saved in your browser. It disappears when you close the page. Please keep the roster as a file of your own.</li>
+      <li>No AI is used: which value goes in which column is decided from the wording of the form’s own headings (“Date of birth”, “Address” and so on).</li>
+      <li>There are only three network requests, and <strong>none of them send the names, addresses or phone numbers you entered.</strong></li>
+      <li>(1) Postcode to address and (2) address to postcode: the tool loads postcode data files hosted on this site (Japan Post’s public data). It loads a file; it does not send the postcode or address you typed.</li>
+      <li>(3) Importing the group name, names and sex from the attendance system: <strong>only the group ID</strong> is sent to the attendance system. The contents of your roster are never sent. What is imported is then handled inside your browser only, as above.</li>
     </ul>
   </section>
 

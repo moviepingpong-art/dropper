@@ -657,6 +657,58 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         </div>
       </article>
 
+      <!-- 申込書ドロッパー（4本目）。申込書＋名簿 → 記入済み。
+           図の要点は「空いていた欄が全部うまる」。ツール本体の #tools-modal と同じ考え方で、
+           配色だけこのサイトの青系にしてある。 -->
+      <article class="tool-card">
+        <span class="tool-status status-open">Available</span>
+        <div class="tool-icon">📝</div>
+        <h3 class="tool-name">Entry Form Dropper</h3>
+        <p class="tool-desc">Tournament entry form (Excel) drop karein aur club roster se gender, date of birth, age, address aur phone number bhar jaata hai. Roster bhi yahin bana sakte hain, postcode se address ke saath.</p>
+        <div class="tool-fig" aria-hidden="true">
+          <div class="tf-col">
+            <div class="tf-sheet wide">
+              <span class="tf-bar t"></span>
+              <div class="tf-tbl">
+                <i></i><b></b><i></i><b></b><i></i><b></b>
+              </div>
+            </div>
+            <span class="tf-cap">Entry form</span>
+          </div>
+          <span class="tf-arrow">&rarr;</span>
+          <div class="tf-col">
+            <div class="tf-chk">
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+            </div>
+            <span class="tf-cap">Roster se chunein</span>
+          </div>
+          <span class="tf-arrow">&rarr;</span>
+          <div class="tf-col">
+            <div class="tf-sheet wide">
+              <span class="tf-bar t"></span>
+              <div class="tf-tbl">
+                <i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+            </div>
+            <span class="tf-cap">Bhara hua save</span>
+          </div>
+        </div>
+        <div class="tool-tags">
+          <span class="tool-tag">Login ki zaroorat nahin</span>
+          <span class="tool-tag">Date of birth, age, address</span>
+          <span class="tool-tag">Roster bhi yahin banayein</span>
+          <span class="tool-tag">Postcode se address</span>
+          <span class="tool-tag">Form ka format nahin bigadta</span>
+        </div>
+        <p class="tool-price">Bilkul free</p>
+        <div class="tool-actions">
+          <a class="btn-sm fill" href="https://app.dropper-tools.com/entry/" target="_blank" rel="noopener">Try karein</a>
+        </div>
+      </article>
+
     </div>
 
     <!-- ★ 出欠は**4枚目のカードにしない。ツール1の中にも置かない**（2026-09-06）。
@@ -782,7 +834,7 @@ khud type karein</span>
     <!-- ★ 出欠は段落を分ける。**「ドロップするだけ」と向きが逆**なので、
          3本と同じ文に混ぜると「4本目のドロッパー」に見えてしまう。
          シリーズのカードで棚を分けている（tools.shelf「もう一つの道具」）のと同じ扱い。 -->
-    <p class="section-desc">Inke saath <strong>Attendance</strong> bhi hai. Baaki teen ek kaagaz se kuch nikaalte hain; yeh logon se jama karta hai. <strong>Direction ulti hai, isliye yeh apne alag shelf par hai.</strong> Members roster se apna naam chunte hain aur yes, maybe ya no tap karte hain — na app, na sign-up, na login. Ise padhe hue event se bhi shuru kar sakte hain, aur bina kisi document ke akele bhi. Aur tools time ke saath add honge.</p>
+    <p class="section-desc">Inke saath <strong>Attendance</strong> bhi hai. Baaki tools ek kaagaz se kuch nikaalte hain; yeh logon se jama karta hai. <strong>Direction ulti hai, isliye yeh apne alag shelf par hai.</strong> Members roster se apna naam chunte hain aur yes, maybe ya no tap karte hain — na app, na sign-up, na login. Ise padhe hue event se bhi shuru kar sakte hain, aur bina kisi document ke akele bhi. Aur tools time ke saath add honge.</p>
   </div>
 </section>
 
@@ -824,6 +876,14 @@ khud type karein</span>
         <span>
           <span class="picker-name">Decide Dropper</span>
           <span class="picker-line">Chat ya notes se jo tay hua</span>
+        </span>
+      </a>
+
+      <a class="picker-item" href="https://app.dropper-tools.com/entry/" target="_blank" rel="noopener">
+        <span class="picker-emoji">📝</span>
+        <span>
+          <span class="picker-name">Entry Form Dropper</span>
+          <span class="picker-line">Entry form, roster se bhara hua</span>
         </span>
       </a>
     </div>

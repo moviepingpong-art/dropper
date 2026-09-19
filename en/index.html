@@ -657,6 +657,58 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         </div>
       </article>
 
+      <!-- 申込書ドロッパー（4本目）。申込書＋名簿 → 記入済み。
+           図の要点は「空いていた欄が全部うまる」。ツール本体の #tools-modal と同じ考え方で、
+           配色だけこのサイトの青系にしてある。 -->
+      <article class="tool-card">
+        <span class="tool-status status-open">Available</span>
+        <div class="tool-icon">📝</div>
+        <h3 class="tool-name">Entry Form Dropper</h3>
+        <p class="tool-desc">Drop a tournament entry form (Excel) and it fills in gender, date of birth, age, address and phone number from your club roster. You can build the roster here too, with addresses filled in from the postcode. Write the names on the form first, or pick them on screen.</p>
+        <div class="tool-fig" aria-hidden="true">
+          <div class="tf-col">
+            <div class="tf-sheet wide">
+              <span class="tf-bar t"></span>
+              <div class="tf-tbl">
+                <i></i><b></b><i></i><b></b><i></i><b></b>
+              </div>
+            </div>
+            <span class="tf-cap">The entry form</span>
+          </div>
+          <span class="tf-arrow">&rarr;</span>
+          <div class="tf-col">
+            <div class="tf-chk">
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+              <div><em></em><span class="tf-bar"></span></div>
+            </div>
+            <span class="tf-cap">Pick from the roster</span>
+          </div>
+          <span class="tf-arrow">&rarr;</span>
+          <div class="tf-col">
+            <div class="tf-sheet wide">
+              <span class="tf-bar t"></span>
+              <div class="tf-tbl">
+                <i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+            </div>
+            <span class="tf-cap">Saved, filled in</span>
+          </div>
+        </div>
+        <div class="tool-tags">
+          <span class="tool-tag">No login needed</span>
+          <span class="tool-tag">Birth dates, ages, addresses</span>
+          <span class="tool-tag">Build the roster here too</span>
+          <span class="tool-tag">Addresses from the postcode</span>
+          <span class="tool-tag">Keeps the form untouched</span>
+        </div>
+        <p class="tool-price">Completely free</p>
+        <div class="tool-actions">
+          <a class="btn-sm fill" href="https://app.dropper-tools.com/entry/" target="_blank" rel="noopener">Try it</a>
+        </div>
+      </article>
+
     </div>
 
     <!-- ★ 出欠は**4枚目のカードにしない。ツール1の中にも置かない**（2026-09-06）。
@@ -782,7 +834,7 @@ type it in</span>
     <!-- ★ 出欠は段落を分ける。**「ドロップするだけ」と向きが逆**なので、
          3本と同じ文に混ぜると「4本目のドロッパー」に見えてしまう。
          シリーズのカードで棚を分けている（tools.shelf「もう一つの道具」）のと同じ扱い。 -->
-    <p class="section-desc">Alongside them there is <strong>Attendance</strong>. The other three take a sheet of paper and get something out of it; this one collects from people instead. <strong>The direction is reversed, so it sits on its own shelf.</strong> Members pick their name from the roster and tap yes, maybe or no — no app, no sign-up, no login. You can start it from an event you just read, or on its own with no document at all. More tools will be added over time.</p>
+    <p class="section-desc">Alongside them there is <strong>Attendance</strong>. The others take a sheet of paper and get something out of it; this one collects from people instead. <strong>The direction is reversed, so it sits on its own shelf.</strong> Members pick their name from the roster and tap yes, maybe or no — no app, no sign-up, no login. You can start it from an event you just read, or on its own with no document at all. More tools will be added over time.</p>
   </div>
 </section>
 
@@ -824,6 +876,14 @@ type it in</span>
         <span>
           <span class="picker-name">Decide Dropper</span>
           <span class="picker-line">What was settled, from chats and notes</span>
+        </span>
+      </a>
+
+      <a class="picker-item" href="https://app.dropper-tools.com/entry/" target="_blank" rel="noopener">
+        <span class="picker-emoji">📝</span>
+        <span>
+          <span class="picker-name">Entry Form Dropper</span>
+          <span class="picker-line">A tournament entry form, filled from your roster</span>
         </span>
       </a>
     </div>
