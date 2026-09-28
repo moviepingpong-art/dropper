@@ -664,7 +664,7 @@
   "footer.newsletter": "📮 Notes from building this",
   "tool4.status": "Available",
   "tool4.name": "Entry Form Dropper",
-  "tool4.desc": "Tournament entry form (Excel) drop karein aur club roster se gender, date of birth, age, address aur phone number bhar jaata hai. Roster bhi yahin bana sakte hain, postcode se address ke saath.",
+  "tool4.desc": "Khali tournament entry form (Excel) drop karein, club roster se players chunein, aur gender, date of birth, age, address aur phone number bhar jaata hai. Roster bhi yahin bana sakte hain, postcode se address ke saath. Japanese entry forms ke liye bana hai (tool sirf Japanese mein hai).",
   "tool4.tag1": "Login ki zaroorat nahin",
   "tool4.tag2": "Date of birth, age, address",
   "tool4.tag3": "Roster bhi yahin banayein",
@@ -684,5 +684,7 @@
   "privacy.ent3": "AI use nahin hota: kaunsi value kis column mein jaayegi, yeh form ke apne headings se tay hota hai.",
   "privacy.ent4": "Sirf teen network requests hoti hain, aur <strong>unmein se koi bhi aapke daale hue naam, address ya phone number nahin bhejti.</strong>",
   "privacy.ent5": "(1) Postcode se address aur (2) address se postcode: tool is site par rakhi postcode data files load karta hai (Japan Post ka public data). Woh file load karta hai; aapka type kiya postcode ya address nahin bhejta.",
-  "privacy.ent6": "(3) Attendance system se group ka naam, naam aur sex import karte waqt: <strong>sirf group ID</strong> bheja jaata hai. Roster ka content kabhi nahin bheja jaata."
+  "privacy.ent6": "(3) Attendance system se group ka naam, naam aur sex import karte waqt: <strong>sirf group ID</strong> bheja jaata hai. Roster ka content kabhi nahin bheja jaata.",
+  "privacy.ytTitle": "Embedded videos (YouTube)",
+  "privacy.ytBody": "Kuch guide pages mein YouTube video embed hai. Play button dabane par hi video YouTube (Google) ke privacy-enhanced mode (youtube-nocookie.com) se load hota hai; usse pehle YouTube ko kuch nahi jaata. Dabane ke baad Google ki privacy policy lagu hoti hai."
 }

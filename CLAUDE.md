@@ -6,7 +6,7 @@ GitHub Pages で公開している静的サイト。公開URL: https://dropper-t
 
 - `src/` は**配信されない材料**。`build.py` + `src/*-template.html` + `i18n/{ja,en,in}.json`
 - `python src/build.py` を実行すると、直下と `en/` `in/` にページが生成される。
-  **どのページが出るかは `build.py` の `PAGES` が正**（2026-09-13 時点で7ページ×3言語＝21）。
+  **どのページが出るかは `build.py` の `PAGES` が正**（2026-09-29 時点で7ページ×3言語＋日本語だけの `guide-entry.html`＝22）。
   ★ **ページを増やしたら、ここの枚数と `sitemap.xml` も直す。**
   ファイル名をあちこちに書き並べない（2026-09 に、増やしたのに直し忘れた箇所が出た）
 - **GitHub Actions等の自動ビルドは無い。** `src/` を直しただけでは公開ページは変わらない。

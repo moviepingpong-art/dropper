@@ -4,12 +4,19 @@
 <meta charset="UTF-8">
 {{GA}}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{privacy.metaTitle}}</title>
-<meta name="description" content="{{privacy.metaDesc}}">
+<title>{{gentry.metaTitle}}</title>
+<meta name="description" content="{{gentry.metaDesc}}">
 {{SEO}}
 {{HREFLANG}}
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 <style>
+/* ============================================================
+   ドロッパー DROPPER  -  使い方ガイド
+   ※このファイルは src/guide-entry-template.html から自動生成されています。
+     編集は src/ 側を直して build.py を実行してください。
+   スクリーンショットは /assets/guide-entry/<言語コード>/ に置きます（言語別）。
+   ============================================================ */
+
 /* ============================================================
    ドロッパー DROPPER  -  プライバシーポリシー
    ※このファイルは src/privacy-template.html から自動生成されています。
@@ -215,6 +222,99 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   .legal-table th,.legal-table td{padding:0.55rem 0.6rem;font-size:0.82rem;}
   .legal-table th{white-space:normal;}
 }
+/* ---------- 使い方ガイド ---------- */
+.guide-intro{background:var(--primary-pale);border-radius:10px;padding:1.1rem 1.3rem;margin-bottom:2.4rem;font-size:0.95rem;color:var(--text-mid);}
+.guide-toc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.4rem;margin-bottom:2.6rem;}
+.guide-toc h2{font-size:0.78rem;font-family:'Oswald',sans-serif;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:0.7rem;}
+.guide-toc ol{list-style:none;counter-reset:toc;display:grid;grid-template-columns:repeat(2,1fr);gap:0.35rem 1.2rem;}
+@media(max-width:640px){.guide-toc ol{grid-template-columns:1fr;}}
+.guide-toc li{counter-increment:toc;font-size:0.88rem;}
+.guide-toc li::before{content:counter(toc) ".";color:var(--accent);font-weight:700;margin-right:0.45em;}
+.guide-toc a{color:var(--text-mid);text-decoration:none;transition:color 0.2s;}
+.guide-toc a:hover{color:var(--primary);text-decoration:underline;}
+
+/* スクリーンショット */
+.guide-shot{margin:1.1rem 0 1.4rem;}
+.guide-shot img{
+  display:block;width:100%;height:auto;border:1px solid var(--border);border-radius:10px;
+  background:#eef0f6;min-height:120px;box-shadow:0 4px 16px rgba(10,10,46,0.08);
+}
+.guide-shot figcaption{margin-top:0.5rem;font-size:0.78rem;color:var(--text-light);text-align:center;letter-spacing:0.03em;}
+
+/* ステップ */
+.guide-step{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem 1.5rem 1.2rem;margin-bottom:1.4rem;}
+.guide-step h3{
+  display:flex;align-items:center;gap:0.7rem;font-size:1.05rem;font-weight:700;
+  color:var(--text-dark);margin-bottom:0.8rem;line-height:1.4;
+}
+.guide-step-num{
+  flex:none;width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;
+  font-family:'Oswald',sans-serif;font-size:0.95rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.guide-step p{font-size:0.93rem;color:var(--text-mid);margin-bottom:0.7rem;}
+.guide-step ul{list-style:none;margin:0.6rem 0 0.9rem;}
+.guide-step ul li{position:relative;padding-left:1.1rem;font-size:0.93rem;color:var(--text-mid);margin-bottom:0.5rem;}
+.guide-step ul li::before{content:"";position:absolute;left:0;top:0.72em;width:6px;height:6px;border-radius:50%;background:var(--accent);}
+.guide-step .guide-shot{margin-bottom:0.6rem;}
+
+/* サブ見出し */
+.guide-sub{font-size:0.98rem;font-weight:700;color:var(--text-dark);margin:1.4rem 0 0.6rem;}
+
+/* 番号付き手順 */
+.guide-ol{list-style:none;counter-reset:gol;margin:0.7rem 0 1rem;}
+.guide-ol li{counter-increment:gol;position:relative;padding-left:2rem;font-size:0.93rem;color:var(--text-mid);margin-bottom:0.55rem;}
+.guide-ol li::before{
+  content:counter(gol);position:absolute;left:0;top:0.15em;width:1.35rem;height:1.35rem;
+  border-radius:50%;background:var(--primary-pale);color:var(--primary-dark);
+  font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;
+}
+
+/* 注意ボックス */
+.guide-note{background:#fff8e6;border:1px solid var(--accent2);border-radius:10px;padding:1rem 1.2rem;margin:1rem 0;font-size:0.9rem;color:var(--text-mid);}
+.guide-safe{background:rgba(0,200,150,0.09);border:1px solid rgba(0,200,150,0.4);border-radius:10px;padding:1rem 1.2rem;margin:1rem 0;font-size:0.9rem;color:var(--text-mid);}
+
+/* FAQ */
+.guide-faq{border-top:1px solid var(--border);}
+.guide-faq dt{
+  font-size:0.95rem;font-weight:700;color:var(--text-dark);padding:1.1rem 0 0.5rem;
+  display:flex;gap:0.6rem;align-items:baseline;
+}
+.guide-faq dt::before{content:"Q";font-family:'Oswald',sans-serif;color:var(--primary);flex:none;font-size:1rem;}
+.guide-faq dd{
+  font-size:0.9rem;color:var(--text-mid);padding:0 0 1.1rem 0;border-bottom:1px solid var(--border);
+  display:flex;gap:0.6rem;align-items:baseline;
+}
+.guide-faq dd::before{content:"A";font-family:'Oswald',sans-serif;color:var(--accent);flex:none;font-size:1rem;}
+.guide-faq a{color:var(--primary);text-decoration:none;}
+.guide-faq a:hover{text-decoration:underline;}
+
+/* ---------- APIキー案内ページへの誘導 ---------- */
+.ak-link-box{
+  background:var(--primary-pale);border-radius:10px;padding:1.05rem 1.2rem;margin:1.2rem 0;
+  font-size:0.9rem;color:var(--text-mid);line-height:1.9;
+}
+.ak-link-box a{display:inline-block;margin-top:0.35rem;color:var(--primary);font-weight:700;text-decoration:none;}
+.ak-link-box a:hover{text-decoration:underline;}
+
+/* CTA */
+.guide-cta{text-align:center;margin:2.8rem 0 1rem;}
+.guide-cta .btn-sm{display:inline-block;}
+
+/* 動画（押すまで YouTube を読み込まない。押したら youtube-nocookie.com の再生画面に差し替える） */
+.guide-video{margin:1.6rem 0 2.2rem;}
+.gv-frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#0f172a;
+  box-shadow:0 6px 24px rgba(15,23,42,.12);}
+.gv-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+.gv-play{position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;cursor:pointer;background:none;}
+.gv-play img{width:100%;height:100%;object-fit:cover;display:block;}
+.gv-play .gv-btn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:84px;height:84px;border-radius:50%;
+  background:rgba(220,38,38,.92);box-shadow:0 4px 18px rgba(0,0,0,.3);}
+.gv-play .gv-btn::after{content:"";position:absolute;left:34px;top:24px;border-style:solid;border-width:18px 0 18px 28px;
+  border-color:transparent transparent transparent #fff;}
+.gv-play:hover .gv-btn,.gv-play:focus-visible .gv-btn{background:#dc2626;}
+.gv-note{font-size:.82rem;color:#64748b;margin:.6rem 0 0;line-height:1.7;}
+.gv-note a{color:inherit;}
 </style>
 </head>
 <body>
@@ -234,179 +334,139 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 <div class="legal-wrap">
 
   <div class="legal-head">
-    <h1>{{privacy.title}}</h1>
-    <p class="legal-date">{{privacy.effective}}</p>
+    <h1>{{gentry.title}}</h1>
+    <p class="legal-date">{{gentry.subtitle}}</p>
   </div>
 
-  <p class="legal-lead">{{privacy.lead}}</p>
+  <p class="guide-intro">{{gentry.lead}}</p>
 
-  <section class="legal-sec">
-    <h2>{{privacy.s1title}}</h2>
+  <!-- 動画（2分28秒）。★ 押すまで YouTube と通信しない（プライバシーポリシーの「動画の埋め込み」） -->
+  <div class="guide-video">
+    <div class="gv-frame" id="gv-frame">
+      <button type="button" class="gv-play" id="gv-play" data-id="ytIY7tLoCKI" aria-label="{{gentry.videoPlay}}">
+        <img src="/assets/guide-entry/ja/video-thumb.jpg" alt="{{gentry.videoAlt}}" width="1280" height="720">
+        <span class="gv-btn" aria-hidden="true"></span>
+      </button>
+    </div>
+    <p class="gv-note">{{gentry.videoNote}} <a href="https://www.youtube.com/watch?v=ytIY7tLoCKI" target="_blank" rel="noopener">{{gentry.videoOpen}}</a></p>
+  </div>
+
+  <!-- 目次 -->
+  <nav class="guide-toc" aria-label="{{gentry.tocLabel}}">
+    <h2>{{gentry.tocLabel}}</h2>
+    <ol>
+      <li><a href="#s1">{{gentry.s1title}}</a></li>
+      <li><a href="#s2">{{gentry.s2title}}</a></li>
+      <li><a href="#s3">{{gentry.s3title}}</a></li>
+      <li><a href="#s4">{{gentry.s4title}}</a></li>
+      <li><a href="#s5">{{gentry.s5title}}</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1. 申込書ドロッパーとは -->
+  <section class="legal-sec" id="s1">
+    <h2>{{gentry.s1title}}</h2>
+    <p>{{gentry.s1body1}}</p>
+    <p>{{gentry.s1body2}}</p>
+  </section>
+
+  <!-- 2. 使う前に：入れる申込書の約束ごと（ツールの②の案内と同じ中身。dropper-app #132・#134） -->
+  <section class="legal-sec" id="s2">
+    <h2>{{gentry.s2title}}</h2>
+    <p>{{gentry.s2body}}</p>
     <ul>
-      <li>{{privacy.s1operator}}</li>
-      <li>{{privacy.s1contact}}</li>
+      <li>{{gentry.s2li1}}</li>
+      <li>{{gentry.s2li2}}</li>
+      <li>{{gentry.s2li3}}</li>
+      <li>{{gentry.s2li4}}</li>
     </ul>
+    <div class="guide-safe">{{gentry.s2priv}}</div>
   </section>
 
-  <section class="legal-sec">
-    <h2>{{privacy.s2title}}</h2>
-    <p>{{privacy.s2body}}</p>
-  </section>
+  <!-- 3. 基本の流れ（5ステップ / 画像7枚。画像は本編の動画の撮影と同じもの。人・団体・大会はすべて架空） -->
+  <section class="legal-sec" id="s3">
+    <h2>{{gentry.s3title}}</h2>
 
-  <section class="legal-sec">
-    <h2>{{privacy.s3title}}</h2>
-    <p>{{privacy.s3body}}</p>
-    <table class="legal-table">
-      <thead>
-        <tr><th>{{privacy.s3thScope}}</th><th>{{privacy.s3thUse}}</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>{{privacy.s3r1a}}</td><td>{{privacy.s3r1b}}</td></tr>
-        <tr><td>{{privacy.s3r2a}}</td><td>{{privacy.s3r2b}}</td></tr>
-        <tr><td>{{privacy.s3r3a}}</td><td>{{privacy.s3r3b}}</td></tr>
-      </tbody>
-    </table>
-    <ul>
-      <li>{{privacy.s3n1}}</li>
-      <li>{{privacy.s3n2}}</li>
-      <li>{{privacy.s3n3}}</li>
-      <li>{{privacy.s3n4}}</li>
-    </ul>
-  </section>
+    <div class="guide-step">
+      <h3><span class="guide-step-num">1</span>{{gentry.st1title}}</h3>
+      <p>{{gentry.st1body}}</p>
+      <div class="guide-note">{{gentry.st1note}}</div>
+      <figure class="guide-shot">
+        <img src="/assets/guide-entry/ja/step1-roster.png" alt="{{gentry.shot1alt}}" loading="lazy">
+        <figcaption>{{gentry.shot1cap}}</figcaption>
+      </figure>
+      <figure class="guide-shot">
+        <img src="/assets/guide-entry/ja/step1-extra.png" alt="{{gentry.shot2alt}}" loading="lazy">
+        <figcaption>{{gentry.shot2cap}}</figcaption>
+      </figure>
+    </div>
 
-  <section class="legal-sec">
-    <h2>{{privacy.s4title}}</h2>
-    <div class="legal-note">{{privacy.s4notice}}</div>
-    <ul>
-      <li>{{privacy.s4n1}}</li>
-      <li>{{privacy.s4n2}}</li>
-      <li>{{privacy.s4n3}}</li>
-      <li>{{privacy.s4n4}}</li>
-      <li>{{privacy.s4n5}}</li>
-    </ul>
-  </section>
+    <div class="guide-step">
+      <h3><span class="guide-step-num">2</span>{{gentry.st2title}}</h3>
+      <p>{{gentry.st2body}}</p>
+      <div class="guide-note">{{gentry.st2note}}</div>
+      <figure class="guide-shot">
+        <img src="/assets/guide-entry/ja/step2-form.png" alt="{{gentry.shot3alt}}" loading="lazy">
+        <figcaption>{{gentry.shot3cap}}</figcaption>
+      </figure>
+    </div>
 
-  <section class="legal-sec">
-    <h2>{{privacy.s5title}}</h2>
-    <p>{{privacy.s5body}}</p>
-    <ul>
-      <li>{{privacy.s5n1}}</li>
-      <li>{{privacy.s5n2}}</li>
-      <li>{{privacy.s5n3}}</li>
-    </ul>
-  </section>
+    <div class="guide-step">
+      <h3><span class="guide-step-num">3</span>{{gentry.st3title}}</h3>
+      <p>{{gentry.st3body}}</p>
+      <figure class="guide-shot">
+        <img src="/assets/guide-entry/ja/step3-pick.png" alt="{{gentry.shot4alt}}" loading="lazy">
+        <figcaption>{{gentry.shot4cap}}</figcaption>
+      </figure>
+    </div>
 
-  <section class="legal-sec">
-    <h2>{{privacy.s6title}}</h2>
-    <p>{{privacy.s6body}}</p>
-    <ul>
-      <li>{{privacy.s6n1}}</li>
-      <li>{{privacy.s6n2}}</li>
-      <li>{{privacy.s6n3}}</li>
-      <li>{{privacy.s6n4}}</li>
-    </ul>
-  </section>
+    <div class="guide-step">
+      <h3><span class="guide-step-num">4</span>{{gentry.st4title}}</h3>
+      <p>{{gentry.st4body}}</p>
+      <div class="guide-note">{{gentry.st4note}}</div>
+      <figure class="guide-shot">
+        <img src="/assets/guide-entry/ja/step4-check.png" alt="{{gentry.shot5alt}}" loading="lazy">
+        <figcaption>{{gentry.shot5cap}}</figcaption>
+      </figure>
+      <figure class="guide-shot">
+        <img src="/assets/guide-entry/ja/step4-table.png" alt="{{gentry.shot6alt}}" loading="lazy">
+        <figcaption>{{gentry.shot6cap}}</figcaption>
+      </figure>
+    </div>
 
-  <section class="legal-sec">
-    <h2>{{privacy.s7title}}</h2>
-    <p>{{privacy.s7body}}</p>
-    <ul>
-      <li>{{privacy.s7store1}}</li>
-      <li>{{privacy.s7store2}}</li>
-      <li>{{privacy.s7store3}}</li>
-    </ul>
-    <p>{{privacy.s7delLead}}</p>
-    <ul>
-      <li>{{privacy.s7del1}}</li>
-      <li>{{privacy.s7del2}}</li>
-      <li>{{privacy.s7del3}}</li>
-      <li>{{privacy.s7del4}}</li>
-    </ul>
-  </section>
-
-  <section class="legal-sec">
-    <h2>{{privacy.s8title}}</h2>
-    <p>{{privacy.s8body}}</p>
-  </section>
-
-  <section class="legal-sec">
-    <h2>{{privacy.s9title}}</h2>
-    <p>{{privacy.s9body}}</p>
-  </section>
-
-  <section class="legal-sec">
-    <h2>{{privacy.s10title}}</h2>
-    <p>{{privacy.s10body}}</p>
-  </section>
-
-  <section class="legal-sec">
-    <h2>{{privacy.s11lineTitle}}</h2>
-    <p>{{privacy.s11lineBody}}</p>
-    <ul>
-      <li>{{privacy.s11line1}}</li>
-      <li>{{privacy.s11line2}}</li>
-      <li>{{privacy.s11line3}}</li>
-      <li>{{privacy.s11line4}}</li>
-      <li>{{privacy.s11line5}}</li>
-      <li>{{privacy.s11line6}}</li>
-    </ul>
-  </section>
-
-  <!-- 出欠システムだけは当方でデータを預かる。シリーズの他の3本と扱いが違うので、
-       節を分けて明記する（「サーバーを持たない」の唯一の例外） -->
-  <section class="legal-sec">
-    <h2>{{privacy.attTitle}}</h2>
-    <p>{{privacy.attBody}}</p>
-    <ul>
-      <li>{{privacy.att1}}</li>
-      <li>{{privacy.att2}}</li>
-      <li>{{privacy.att3}}</li>
-      <li>{{privacy.att4}}</li>
-      <li>{{privacy.att5}}</li>
-      <li>{{privacy.att6}}</li>
-    </ul>
-  </section>
-
-  <!-- 申込書ドロッパーは名簿（個人情報）を扱うが、出欠と違って当方は預からない。
-       扱うものが重いので、預からないことを節を分けて明記する。 -->
-  <section class="legal-sec">
-    <h2>{{privacy.entTitle}}</h2>
-    <p>{{privacy.entBody}}</p>
-    <ul>
-      <li>{{privacy.ent1}}</li>
-      <li>{{privacy.ent2}}</li>
-      <li>{{privacy.ent3}}</li>
-      <li>{{privacy.ent4}}</li>
-      <li>{{privacy.ent5}}</li>
-      <li>{{privacy.ent6}}</li>
-    </ul>
-  </section>
-
-  <section class="legal-sec">
-    <h2>{{privacy.s11analyticsTitle}}</h2>
-    <p>{{privacy.s11analyticsBody}}</p>
-    <ul>
-      <li>{{privacy.s11a1}}</li>
-      <li>{{privacy.s11a2}}</li>
-      <li>{{privacy.s11a3}}</li>
-    </ul>
-  </section>
-
-  <!-- 使い方ガイドに埋め込んだ動画（2026-09-29、申込書ドロッパーのガイド）。押すまで YouTube と通信しない -->
-  <section class="legal-sec">
-    <h2>{{privacy.ytTitle}}</h2>
-    <p>{{privacy.ytBody}}</p>
-  </section>
-
-  <section class="legal-sec">
-    <h2>{{privacy.s12title}}</h2>
-    <div class="legal-contact">
-      <p>{{privacy.s12operatorLabel}}{{privacy.s12operatorName}}</p>
-      <p>{{privacy.s12body}}</p>
+    <div class="guide-step">
+      <h3><span class="guide-step-num">5</span>{{gentry.st5title}}</h3>
+      <p>{{gentry.st5body}}</p>
+      <figure class="guide-shot">
+        <img src="/assets/guide-entry/ja/step5-save.png" alt="{{gentry.shot7alt}}" loading="lazy">
+        <figcaption>{{gentry.shot7cap}}</figcaption>
+      </figure>
     </div>
   </section>
 
-  <a href="{{NAV_PREFIX}}" class="legal-back">{{privacy.back}}</a>
+  <!-- 4. よくある質問 -->
+  <section class="legal-sec" id="s4">
+    <h2>{{gentry.s4title}}</h2>
+    <dl class="guide-faq">
+      <dt>{{gentry.s4q1}}</dt><dd>{{gentry.s4a1}}</dd>
+      <dt>{{gentry.s4q2}}</dt><dd>{{gentry.s4a2}}</dd>
+      <dt>{{gentry.s4q3}}</dt><dd>{{gentry.s4a3}}</dd>
+      <dt>{{gentry.s4q4}}</dt><dd>{{gentry.s4a4}}</dd>
+      <dt>{{gentry.s4q5}}</dt><dd>{{gentry.s4a5}}</dd>
+    </dl>
+  </section>
+
+  <!-- 5. 困ったときは -->
+  <section class="legal-sec" id="s5">
+    <h2>{{gentry.s5title}}</h2>
+    <div class="legal-contact">{{gentry.s5body}}</div>
+  </section>
+
+  <div class="guide-cta">
+    <a class="btn-sm fill" href="{{tool4.url}}" target="_blank" rel="noopener">{{gentry.ctaBtn}}</a>
+  </div>
+
+  <a href="{{NAV_PREFIX}}" class="legal-back">{{gentry.back}}</a>
 
 </div>
 
@@ -422,6 +482,16 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 const btt=document.getElementById('backToTop');
 addEventListener('scroll',()=>{btt.classList.toggle('visible',scrollY>400);});
 btt.addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
+// 動画：押したときに初めて YouTube（プライバシー強化モード）を読み込む
+const gv=document.getElementById('gv-play');
+if(gv){gv.addEventListener('click',()=>{
+  const f=document.createElement('iframe');
+  f.src='https://www.youtube-nocookie.com/embed/'+gv.dataset.id+'?autoplay=1&rel=0';
+  f.title=gv.getAttribute('aria-label');
+  f.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+  f.allowFullscreen=true;
+  document.getElementById('gv-frame').replaceChildren(f);
+});}
 </script>
 
 </body>
