@@ -164,6 +164,22 @@ PAGES = {
         "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
+    # 申込書ドロッパーの使い方ガイド。2026-09-29 新設。
+    # ★ **日本語だけ**。道具そのものが日本語のみ（dropper-app の決めごと。日本の大会の Excel 様式が相手のため）。
+    #   en / in は作らない。言語切替は押せないラベルになる（build_switcher）。
+    #   いちばん上に使い方の動画（YouTube・2分28秒）。**押すまで YouTube と通信しない**（テンプレートの script）。
+    #   画像は assets/guide-entry/ja/（動画の撮影と同じ画面。人・団体・大会はすべて架空）
+    "guide-entry": {
+        "template": "guide-entry-template.html",
+        "filename": "guide-entry.html",
+        "langs": ["ja"],
+        "switch_paths": {
+            "ja": {"ja": "./guide-entry.html", "en": "./en/", "in": "./in/"},
+        },
+        "nav_prefix": "./",
+        "privacy_path": {"ja": "./privacy.html"},
+        "guide_path": {"ja": "./guide.html"},
+    },
 }
 # =========================================================================
 
@@ -276,6 +292,19 @@ def build_tool3_guide_btn(code, strings):
     return f'\n          <a class="btn-sm line" href="{GDECIDE_PATH[code]}">{label}</a>'
 
 
+# 申込書ドロッパーのガイドへのパス（{{TOOL4_GUIDE_BTN}}）。ガイドは日本語だけ（PAGES の guide-entry）。
+GENTRY_PATH = {"ja": "./guide-entry.html"}
+
+
+def build_tool4_guide_btn(code, strings):
+    """申込書カードの「使い方ガイド」ボタン。
+    ガイドは日本語だけなので、en/in ではボタンごと出さない（出すと存在しないURLへのリンクになる）。"""
+    if code not in page_langs("guide-entry"):
+        return ""
+    label = strings.get("tool4.btn2", "")
+    return f'\n          <a class="btn-sm line" href="{GENTRY_PATH[code]}">{label}</a>'
+
+
 # 出欠システムのガイドへのパス（{{ATTEND_GUIDE_BTN}}）。
 # ガイドは各言語フォルダ内に生成されるので、どの言語も同階層の "./" でよい。
 GATTEND_PATH = {"ja": "./guide-attend.html", "en": "./guide-attend.html", "in": "./guide-attend.html"}
@@ -310,6 +339,24 @@ def build_substack_link(code, strings):
         return ""
     return ('&nbsp;&nbsp;&middot;&nbsp;&nbsp;'
             '<a href="%s" target="_blank" rel="noopener">%s</a>' % (SUBSTACK_URL, label))
+
+
+# YouTube チャンネル「ドロッパー」（使い方の動画）。2026-09-29 に作った。
+YOUTUBE_URL = "https://www.youtube.com/@dropper-tools"
+
+
+def build_youtube_link(code, strings):
+    """フッターの YouTube チャンネルへの導線。{{SUBSTACK_LINK}} の後ろに続けて出す。
+
+    ★ **日本語のページだけに出す**（ニュースレターの逆）。動画は日本語で、いまは申込書ドロッパーの2本だけ。
+    """
+    if code != "ja":
+        return ""
+    label = strings.get("footer.youtube", "")
+    if not label:
+        return ""
+    return ('&nbsp;&nbsp;&middot;&nbsp;&nbsp;'
+            '<a href="%s" target="_blank" rel="noopener">%s</a>' % (YOUTUBE_URL, label))
 
 
 def build_tool2_card(code, strings):
@@ -400,6 +447,7 @@ SEO_KEYS = {
     "guide-schedule": ("gsched.metaTitle", "gsched.metaDesc"),
     "guide-decide": ("gdecide.metaTitle", "gdecide.metaDesc"),
     "guide-attend": ("gattend.metaTitle", "gattend.metaDesc"),
+    "guide-entry": ("gentry.metaTitle", "gentry.metaDesc"),
     "apikey":  ("apikey.metaTitle", "apikey.metaDesc"),
 }
 
@@ -412,6 +460,7 @@ HOWTO_PAGES = {
     "guide-decide": ("gdecide", 5, "s3", "PT2M"),
     # 出欠は主催者の準備までを含むので所要時間が長い（名簿を貼り付ける時間）
     "guide-attend": ("gattend", 5, "s3", "PT5M"),
+    "guide-entry": ("gentry", 5, "s3", "PT3M"),
     "apikey": ("apikey", 3, "steps", "PT3M"),
 }
 
@@ -576,8 +625,9 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{GUIDE_BTN}}", build_guide_btn(page, code, strings))
     html = html.replace("{{TOOL2_CARD}}", build_tool2_card(code, strings))
     html = html.replace("{{TOOL3_GUIDE_BTN}}", build_tool3_guide_btn(code, strings))
+    html = html.replace("{{TOOL4_GUIDE_BTN}}", build_tool4_guide_btn(code, strings))
     html = html.replace("{{ATTEND_GUIDE_BTN}}", build_attend_guide_btn(code, strings))
-    html = html.replace("{{SUBSTACK_LINK}}", build_substack_link(code, strings))
+    html = html.replace("{{SUBSTACK_LINK}}", build_substack_link(code, strings) + build_youtube_link(code, strings))
     html = strip_shots(html, page, code)
     html = html.replace("{{LINE_CTA}}", build_line_cta(code, strings))
     for key, value in strings.items():

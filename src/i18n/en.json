@@ -664,7 +664,7 @@
   "footer.newsletter": "📮 Notes from building this",
   "tool4.status": "Available",
   "tool4.name": "Entry Form Dropper",
-  "tool4.desc": "Drop a tournament entry form (Excel) and it fills in gender, date of birth, age, address and phone number from your club roster. You can build the roster here too, with addresses filled in from the postcode. Write the names on the form first, or pick them on screen.",
+  "tool4.desc": "Drop a blank tournament entry form (Excel), pick the players from your club roster, and it fills in gender, date of birth, age, address and phone number. You can build the roster here too, with addresses filled in from the postcode. Made for Japanese entry forms (the tool is in Japanese only).",
   "tool4.tag1": "No login needed",
   "tool4.tag2": "Birth dates, ages, addresses",
   "tool4.tag3": "Build the roster here too",
@@ -684,5 +684,7 @@
   "privacy.ent3": "No AI is used: which value goes in which column is decided from the wording of the form’s own headings (“Date of birth”, “Address” and so on).",
   "privacy.ent4": "There are only three network requests, and <strong>none of them send the names, addresses or phone numbers you entered.</strong>",
   "privacy.ent5": "(1) Postcode to address and (2) address to postcode: the tool loads postcode data files hosted on this site (Japan Post’s public data). It loads a file; it does not send the postcode or address you typed.",
-  "privacy.ent6": "(3) Importing the group name, names and sex from the attendance system: <strong>only the group ID</strong> is sent to the attendance system. The contents of your roster are never sent. What is imported is then handled inside your browser only, as above."
+  "privacy.ent6": "(3) Importing the group name, names and sex from the attendance system: <strong>only the group ID</strong> is sent to the attendance system. The contents of your roster are never sent. What is imported is then handled inside your browser only, as above.",
+  "privacy.ytTitle": "Embedded videos (YouTube)",
+  "privacy.ytBody": "Some guide pages embed a YouTube video. The video loads from YouTube (Google) in privacy-enhanced mode (youtube-nocookie.com) only when you press the play button; nothing is sent to YouTube before that. After you press it, Google's privacy policy applies."
 }

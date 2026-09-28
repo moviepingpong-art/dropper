@@ -26,19 +26,22 @@ python3 src/build.py
 
 ## 手順2：検証
 
-### 2-1. 21ページ生成されたか（7ページ × 3言語）
+### 2-1. 22ページ生成されたか（7ページ × 3言語 ＋ 日本語だけのガイド1ページ）
 
 | 場所 | ファイル |
 |---|---|
-| 直下 | index.html / guide.html / guide-schedule.html / guide-decide.html / guide-attend.html / privacy.html / apikey.html |
-| `en/` | 同じ7ファイル |
-| `in/` | 同じ7ファイル |
+| 直下 | index.html / guide.html / guide-schedule.html / guide-decide.html / guide-attend.html / privacy.html / apikey.html / **guide-entry.html** |
+| `en/` | 同じ7ファイル（guide-entry.html は無い） |
+| `in/` | 同じ7ファイル（guide-entry.html は無い） |
 
 ページを増やすときは `build.py` の `PAGES` に足す。**ここの表と、この見出しの枚数も直す。**
 
 - `guide-decide.html` — 決めごとドロッパーのガイド（2026-08 追加）
 - `guide-attend.html` — 出欠システムの使い方（2026-09-08 追加。
   **画像は ja だけ**。`build.py` の `shot_langs` で en / in からは figure ごと落としている）
+- `guide-entry.html` — 申込書ドロッパーの使い方（2026-09-29 追加）。**ページごと ja だけ**（`langs: ["ja"]`）。
+  道具が日本語のみのため。いちばん上に YouTube の動画（**押すまで YouTube と通信しない**）。
+  確かめること：押す前の通信がページと `video-thumb.jpg` だけであること、押すと `youtube-nocookie.com` の再生画面になること
 
 ★ **2026-08-07 から 2026-09-13 まで、この節は6ページのままだった。**
 出欠ガイドを足したときに直し忘れ、下の 2-2 の grep からも漏れていた。

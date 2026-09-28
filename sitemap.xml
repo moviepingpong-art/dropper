@@ -211,4 +211,11 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <!-- 申込書ドロッパーのガイドは日本語だけ（道具が日本語のみ）。1言語なので hreflang は付けない（build_hreflang と同じ） -->
+  <url>
+    <loc>https://dropper-tools.com/guide-entry.html</loc>
+    <lastmod>2026-09-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
