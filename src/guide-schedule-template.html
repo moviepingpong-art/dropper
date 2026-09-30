@@ -300,6 +300,20 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 /* CTA */
 .guide-cta{text-align:center;margin:2.8rem 0 1rem;}
 .guide-cta .btn-sm{display:inline-block;}
+/* 動画（押すまで YouTube を読み込まない。押したら youtube-nocookie.com の再生画面に差し替える）。guide・guide-entry と同じ */
+.guide-video{margin:1.6rem 0 2.2rem;}
+.gv-frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#0f172a;
+  box-shadow:0 6px 24px rgba(15,23,42,.12);}
+.gv-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+.gv-play{position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;cursor:pointer;background:none;}
+.gv-play img{width:100%;height:100%;object-fit:cover;display:block;}
+.gv-play .gv-btn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:84px;height:84px;border-radius:50%;
+  background:rgba(220,38,38,.92);box-shadow:0 4px 18px rgba(0,0,0,.3);}
+.gv-play .gv-btn::after{content:"";position:absolute;left:34px;top:24px;border-style:solid;border-width:18px 0 18px 28px;
+  border-color:transparent transparent transparent #fff;}
+.gv-play:hover .gv-btn,.gv-play:focus-visible .gv-btn{background:#dc2626;}
+.gv-note{font-size:.82rem;color:#64748b;margin:.6rem 0 0;line-height:1.7;}
+.gv-note a{color:inherit;}
 </style>
 </head>
 <body>
@@ -324,6 +338,19 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </div>
 
   <p class="guide-intro">{{gsched.lead}}</p>
+
+  <!-- VIDEO：予定表ドロッパーの使い方の動画（1分18秒）。★ 押すまで YouTube と通信しない（プライバシーポリシーの「動画の埋め込み」）。
+       ★ 日本語だけ（動画が日本語のため）。ほかの言語では build.py の strip_video がこの枠ごと落とす -->
+  <div class="guide-video">
+    <div class="gv-frame" id="gv-frame">
+      <button type="button" class="gv-play" id="gv-play" data-id="z2t1vrtfCfQ" data-start="0" aria-label="{{gsched.videoPlay}}">
+        <img src="/assets/guide-schedule/ja/video-thumb.jpg" alt="{{gsched.videoAlt}}" width="1280" height="720">
+        <span class="gv-btn" aria-hidden="true"></span>
+      </button>
+    </div>
+    <p class="gv-note">{{gsched.videoNote}} <a href="https://www.youtube.com/watch?v=z2t1vrtfCfQ" target="_blank" rel="noopener">{{gsched.videoOpen}}</a></p>
+  </div>
+  <!-- /VIDEO -->
 
   <!-- 目次 -->
   <nav class="guide-toc" aria-label="{{gsched.tocLabel}}">
@@ -507,6 +534,16 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 <script>
 const btt=document.getElementById('backToTop');
 addEventListener('scroll',()=>{btt.classList.toggle('visible',scrollY>400);});
+// 動画：押したときに初めて YouTube（プライバシー強化モード）を読み込む。data-start 秒から再生（guide と同じ作り）
+const gv=document.getElementById('gv-play');
+if(gv){gv.addEventListener('click',()=>{
+  const f=document.createElement('iframe');
+  f.src='https://www.youtube-nocookie.com/embed/'+gv.dataset.id+'?autoplay=1&rel=0'+(+gv.dataset.start?'&start='+gv.dataset.start:'');
+  f.title=gv.getAttribute('aria-label');
+  f.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+  f.allowFullscreen=true;
+  document.getElementById('gv-frame').replaceChildren(f);
+});}
 btt.addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
 </script>
 

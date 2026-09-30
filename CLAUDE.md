@@ -41,6 +41,7 @@ git config core.hooksPath tools/hooks
 | `guide-entry.html`（ja だけのページ） | 申込書ドロッパーの本編 `ytIY7tLoCKI` | 頭から |
 | `guide.html` の ja 版 | イベントドロッパーの本編 `f6Vq6Zu60wU` | 頭から |
 | `guide-attend.html` の ja 版 | 同じ `f6Vq6Zu60wU` | 0:48（出欠システムへ渡す場面。`data-start`） |
+| `guide-schedule.html` の ja 版 | 予定表ドロッパーの本編 `z2t1vrtfCfQ` | 頭から |
 
 - **押すまで YouTube と通信しない。** 押したら `youtube-nocookie.com` の再生画面に差し替える（テンプレートの script）。
   プライバシーポリシーの「動画の埋め込み」（`privacy.ytTitle` / `ytBody`）がこの約束を書いている。**崩さないこと**
