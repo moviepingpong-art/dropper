@@ -84,6 +84,8 @@ PAGES = {
         "filename": "guide.html",
         # 3言語すべて生成（翻訳・スクショ完了済み）。画像は assets/guide/<code>/ を参照。
         "langs": ["ja", "en", "in"],
+        # 使い方の動画（YouTube・日本語）は ja だけ（strip_video）。2026-09-30
+        "video_langs": ["ja"],
         "switch_paths": {
             "ja": {"ja": "./guide.html",  "en": "./en/guide.html",  "in": "./in/guide.html"},
             "en": {"ja": "../guide.html", "en": "./guide.html",     "in": "../in/guide.html"},
@@ -155,6 +157,8 @@ PAGES = {
         "filename": "guide-attend.html",
         "langs": ["ja", "en", "in"],
         "shot_langs": ["ja"],
+        # 使い方の動画（YouTube・日本語）は ja だけ（strip_video）。出欠の場面（0:48）から再生する。2026-09-30
+        "video_langs": ["ja"],
         "switch_paths": {
             "ja": {"ja": "./guide-attend.html",  "en": "./en/guide-attend.html",  "in": "./in/guide-attend.html"},
             "en": {"ja": "../guide-attend.html", "en": "./guide-attend.html",     "in": "../in/guide-attend.html"},
@@ -607,6 +611,21 @@ def strip_shots(html, page, code):
     return out
 
 
+# 使い方の動画（YouTube）を出す言語。動画は日本語なので、ほかの言語では枠ごと落とす。
+# 省略しているページは、テンプレートに動画の枠があれば全言語で出す（guide-entry は ja だけのページなのでこれで足りる）
+def strip_video(html, page, code):
+    """<!-- VIDEO：... --> 〜 <!-- /VIDEO --> を、video_langs に無い言語から落とす（2026-09-30）。
+    strip_shots と同じ考え方。テンプレートを言語ごとに分けない"""
+    langs = PAGES[page].get("video_langs")
+    if langs is None or code in langs:
+        return html
+    import re as _re
+    out = _re.sub(r"[ \t]*<!-- VIDEO.*?<!-- /VIDEO -->\n?", "", html, flags=_re.S)
+    # ★ "gv-play" では見ないこと。CSS と script に名前が残る（正しい。script は gv が無ければ何もしない）
+    assert 'id="gv-play"' not in out, "動画の枠を落としきれていない: %s/%s" % (page, code)
+    return out
+
+
 def render(template, page, code, ja, langdict, hreflang):
     # 空欄や未定義キーは日本語にフォールバック
     strings = {k: (langdict.get(k) or ja.get(k, "")) for k in ja}
@@ -629,6 +648,7 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{ATTEND_GUIDE_BTN}}", build_attend_guide_btn(code, strings))
     html = html.replace("{{SUBSTACK_LINK}}", build_substack_link(code, strings) + build_youtube_link(code, strings))
     html = strip_shots(html, page, code)
+    html = strip_video(html, page, code)
     html = html.replace("{{LINE_CTA}}", build_line_cta(code, strings))
     for key, value in strings.items():
         html = html.replace("{{" + key + "}}", value)

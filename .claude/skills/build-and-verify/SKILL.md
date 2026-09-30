@@ -42,6 +42,12 @@ python3 src/build.py
 - `guide-entry.html` — 申込書ドロッパーの使い方（2026-09-29 追加）。**ページごと ja だけ**（`langs: ["ja"]`）。
   道具が日本語のみのため。いちばん上に YouTube の動画（**押すまで YouTube と通信しない**）。
   確かめること：押す前の通信がページと `video-thumb.jpg` だけであること、押すと `youtube-nocookie.com` の再生画面になること
+- `guide.html`・`guide-attend.html` の **ja 版**にも動画がある（2026-09-30）。**en / in 版には無いこと**も確かめる
+  （`strip_video` が落とす）。出欠のガイドは押すと `&start=48` が付くこと
+  ```
+  grep -c 'id="gv-play"' guide.html guide-attend.html en/guide.html in/guide.html en/guide-attend.html in/guide-attend.html
+  ```
+  ja の2つが 1、en / in の4つが 0
 
 ★ **2026-08-07 から 2026-09-13 まで、この節は6ページのままだった。**
 出欠ガイドを足したときに直し忘れ、下の 2-2 の grep からも漏れていた。
