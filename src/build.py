@@ -118,6 +118,8 @@ PAGES = {
         "template": "guide-schedule-template.html",
         "filename": "guide-schedule.html",
         "langs": ["ja", "en", "in"],
+        # 使い方の動画（YouTube・日本語）は ja だけ（strip_video）。2026-09-30
+        "video_langs": ["ja"],
         "switch_paths": {
             "ja": {"ja": "./guide-schedule.html",  "en": "./en/guide-schedule.html",  "in": "./in/guide-schedule.html"},
             "en": {"ja": "../guide-schedule.html", "en": "./guide-schedule.html",     "in": "../in/guide-schedule.html"},
