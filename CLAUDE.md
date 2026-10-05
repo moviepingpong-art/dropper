@@ -38,7 +38,7 @@ git config core.hooksPath tools/hooks
 
 | ページ | 動画 | 始まり |
 |---|---|---|
-| `guide-entry.html`（ja だけのページ） | 申込書ドロッパーの本編 `ytIY7tLoCKI` | 頭から |
+| `guide-entry.html`（ja だけのページ） | 申込書ドロッパーの本編 `Xnc_MCOIJsc` | 頭から |
 | `guide.html` の ja 版 | イベントドロッパーの本編 `f6Vq6Zu60wU` | 頭から |
 | `guide-attend.html` の ja 版 | 同じ `f6Vq6Zu60wU` | 0:48（出欠システムへ渡す場面。`data-start`） |
 | `guide-schedule.html` の ja 版 | 予定表ドロッパーの本編 `z2t1vrtfCfQ` | 頭から |
