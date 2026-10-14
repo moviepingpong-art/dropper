@@ -711,9 +711,8 @@
   "privacy.play1": "Kya handle hota hai: aapke drop kiye photos. Photo khud ya uska file naam card par nahin daala jaata.",
   "privacy.play2": "Kya store hota hai: aapke banaye cards (shape, stats aur chhoti picture), shaadi aur bachchon ka record, aur har device ka ek number — sirf aapke device par (browser ke IndexedDB mein). Photos store nahin hote. Hum ise dekh nahin sakte.",
   "privacy.play3": "Kaise delete karein: page par collection khaali karne wala button dabayein, ya browser settings se is site ka data delete karein.",
-  "privacy.play4": "File mein export: sirf jab aap export button dabate hain, tab cards ka record aapke device par file ke roop mein save hota hai. File kisi aur ko dene ka matlab hai unhe aapke cards ki copy dena.",
   "privacy.play5": "AI optional hai: sirf jab aap AI ko photo padhne wala option on karte hain, tab photo ki chhoti copy aapki apni API key se Google ke Gemini API ko bheji jaati hai (hamare through nahin). Off hone par photo kahin nahin bheja jaata. Free tier mein use karne par, bheja gaya content Google ki services behtar banane ke liye use ho sakta hai. <strong>Logon ke chehre ya naam wale photos use na karein.</strong>",
-  "privacy.play6": "Analytics: doosre pages ki tarah, page views Google Analytics (section 12) se gine jaate hain. Saath mein, cards paida hone, fusion, shaadi, bachche, export aur import ki <strong>sirf ginti</strong> bheji jaati hai. Photos, naam aur card ka content kabhi nahin bheja jaata.",
+  "privacy.play6": "Analytics: doosre pages ki tarah, page views Google Analytics (section 12) se gine jaate hain. Saath mein, cards paida hone, fusion, shaadi aur bachchon ki <strong>sirf ginti</strong> bheji jaati hai. Photos, naam aur card ka content kabhi nahin bheja jaata.",
   "privacy.ytTitle": "Embedded videos (YouTube)",
   "privacy.ytBody": "Kuch guide pages mein YouTube video embed hai. Play button dabane par hi video YouTube (Google) ke privacy-enhanced mode (youtube-nocookie.com) se load hota hai; usse pehle YouTube ko kuch nahi jaata. Dabane ke baad Google ki privacy policy lagu hoti hai."
 }

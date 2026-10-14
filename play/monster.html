@@ -148,12 +148,6 @@ footer a{color:var(--primary)}
   <section class="dex">
     <h3>📖 わたしの図鑑 <button class="sub hidden" id="clearDex">図鑑を空にする</button></h3>
     <p class="note" id="dexNote">カードを押すと大きく見られます。カードの中身はこの PC・スマホの中にだけ保存され、ほかの人には見えません。</p>
-    <div class="row" style="justify-content:flex-start;margin:8px 0 12px">
-      <button class="sub" id="exportDex">📤 ファイルに書き出す</button>
-      <button class="sub" id="importDex">📥 ファイルから読み込む</button>
-    </div>
-    <input type="file" id="importFile" accept=".json,application/json" class="hidden">
-    <p class="note">端末を替えるときは、書き出したファイルを新しい端末で読み込んでください（写真の枠に落としても読み込めます）。<b>ファイルを人に渡すと、あなたのカードの写しを持たれることになります。</b></p>
     <div class="grid" id="dex"></div>
     <p class="empty" id="dexEmpty">まだ1体もいません。</p>
   </section>
@@ -550,12 +544,6 @@ footer a{color:var(--primary)}
       async getAll(store) { const r = await run(store, 'readonly', s => s.getAll()); return memOnly ? [...mem[store].values()] : r || []; },
       async put(store, v, key) { if ((await open()) === null) { mem[store].set(keyOf(store, v, key), v); return; } await run(store, 'readwrite', s => key !== undefined ? s.put(v, key) : s.put(v)); },
       async clear(store) { if ((await open()) === null) { mem[store].clear(); return; } await run(store, 'readwrite', s => s.clear()); },
-      // meta は鍵が中身に入っていないので、鍵と中身を組にして返す（書き出しで使う）
-      async entries(store) {
-        if ((await open()) === null) return [...mem[store].entries()];
-        const keys = await run(store, 'readonly', s => s.getAllKeys()), vals = await run(store, 'readonly', s => s.getAll());
-        return keys.map((k, i) => [k, vals[i]]);
-      }
     };
   })();
   // 端末だけの秘密の番号。最初に1回だけ作って保存する。同じ写真でも、ほかの人と同じ子にならないために混ぜる
@@ -881,69 +869,10 @@ footer a{color:var(--primary)}
     await DB.put('cards', JSON.parse(JSON.stringify(M)));
     await renderDex();
   }
-  // 画面に文字を出すときの逃がし（読み込んだファイルの名前に、ページへの仕掛けが混ぜられていても文字として出す）
+  // 画面に文字を出すときの逃がし（図鑑に入っている名前に、ページへの仕掛けが混ぜられていても文字として出す）
   const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const safeThumb = s => (typeof s === 'string' && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(s) ? s : '');
 
-  // ---- ファイルへの書き出し・読み込み（端末の引っ越し） ----
-  const FILE_APP = 'dropper-monster', FILE_VER = 1;
-  const checkOf = body => printOf(fingerprint(enc('dropper-monster-file:' + JSON.stringify(body))));
-  async function exportDex() {
-    const cards = await DB.getAll('cards'), couples = await DB.getAll('couples');
-    if (!cards.length) { setStatus('図鑑がまだ空なので、書き出すものがありません。'); return; }
-    const meta = {}; for (const [k, v] of await DB.entries('meta')) meta[k] = v;
-    const body = { cards, couples, meta };
-    const file = { app: FILE_APP, version: FILE_VER, exportedAt: new Date().toISOString(), body, check: checkOf(body) };
-    const d = new Date(), ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(file)], { type: 'application/json' }));
-    a.download = `monster-zukan-${ymd}.json`; a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    track('monster_export');
-    setStatus(`📤 カード ${cards.length} 枚・夫婦 ${couples.length} 組をファイルに書き出しました。新しい端末では「ファイルから読み込む」を押してください。`);
-  }
-  // カード1枚の形を確かめる（足りない・おかしいものは読み込まない）
-  function validCard(c) {
-    return c && typeof c.id === 'string' && /^[0-9a-f]{32}$/.test(c.id) && Array.isArray(c.fp) && c.fp.length === 4 &&
-      c.g && c.stats && typeof c.name === 'string' && c.name.length <= 20 && TYPES[c.type] && (c.gender === 'm' || c.gender === 'f') &&
-      ['gold', 'silver', 'normal'].includes(c.rarity) && Array.isArray(c.moves) && typeof c.desc === 'string' && safeThumb(c.thumb) &&
-      Object.values(c.stats).every(Number.isFinite) && (!c.parents || (Array.isArray(c.parents) && Array.isArray(c.parentNames)));
-  }
-  async function importDex(file) {
-    let data;
-    try { data = JSON.parse(await file.text()); } catch (e) { setStatus('読み込めないファイルでした（図鑑のファイルではないようです）。'); return; }
-    if (!data || data.app !== FILE_APP || !data.body) { setStatus('モンスタードロッパーの図鑑のファイルではないようです。'); return; }
-    if (data.version !== FILE_VER) { setStatus('このファイルは、いまの画面では読めない版です。'); return; }
-    if (data.check !== checkOf(data.body)) { setStatus('⚠ ファイルの中身が書き出したときと変わっています。読み込みをやめました。'); return; }
-    const { cards = [], couples = [], meta = {} } = data.body;
-    const good = cards.filter(validCard), bad = cards.length - good.length;
-    const have = new Set((await DB.getAll('cards')).map(c => c.id));
-    const fresh = good.filter(c => !have.has(c.id));
-    const moving = have.size === 0; // カードの無い端末なら「引っ越し」：秘密の番号ごと引き継ぐ
-    const msg = `カード ${fresh.length} 枚（すでにある ${good.length - fresh.length} 枚は入れません）・夫婦 ${couples.length} 組を読み込みます。` +
-      (moving ? '\nこの端末はまだカードが無いので、書き出した端末の続きとして使えるようにします（引っ越し）。' : '\nこの端末のカードに足し合わせます。') +
-      (bad ? `\n形のおかしいカード ${bad} 枚は読み込みません。` : '') + '\nよろしいですか？';
-    if (!confirm(msg)) { setStatus('読み込みをやめました。'); return; }
-    for (const c of fresh) await DB.put('cards', c);
-    const ids = new Set([...have, ...fresh.map(c => c.id)]);
-    for (const cp of couples) {
-      if (!cp || typeof cp.id !== 'string' || !ids.has(cp.male) || !ids.has(cp.female) || !Array.isArray(cp.children)) continue;
-      const mine = await DB.get('couples', cp.id);
-      const kids = [...new Set([...(mine ? mine.children : []), ...cp.children.filter(k => typeof k === 'string')])].slice(0, 3);
-      await DB.put('couples', { id: cp.id, male: cp.male, female: cp.female, children: kids, at: mine ? mine.at : Number(cp.at) || Date.now() });
-    }
-    // 発行番号は大きいほうから続ける。写真ごとの発行回数も大きいほうを取る。秘密の番号は引っ越しのときだけ引き継ぐ
-    const serial = Math.max((await DB.get('meta', 'serial')) || 0, Number(meta.serial) || 0, ...fresh.map(c => Number(c.serial) || 0));
-    await DB.put('meta', serial, 'serial');
-    for (const [k, v] of Object.entries(meta)) {
-      if (!k.startsWith('issued:') || !Number.isFinite(v)) continue;
-      await DB.put('meta', Math.max((await DB.get('meta', k)) || 0, v), k);
-    }
-    if (moving && typeof meta.secret === 'string' && /^[0-9a-f]{32}$/.test(meta.secret)) await DB.put('meta', meta.secret, 'secret');
-    await renderDex();
-    track('monster_import');
-    setStatus(`📥 カード ${fresh.length} 枚を読み込みました。` + (moving ? 'この端末で続きを遊べます。' : ''));
-  }
 
   async function renderDex() {
     const cards = (await DB.getAll('cards')).sort((a, b) => b.serial - a.serial), g = $('dex');
@@ -1091,9 +1020,6 @@ footer a{color:var(--primary)}
   }
   // 1枚なら1体、2〜3枚なら合体。4枚目からは使わない。同じ写真は1枚に数える（写真そのものの指紋で見る）
   async function fromFiles(files) {
-    // 図鑑のファイル（.json）が落とされたら、写真ではなく読み込みとして扱う
-    const json = [...files].find(f => /\.json$/i.test(f.name) || f.type === 'application/json');
-    if (json) return importDex(json);
     const photos = [...files].filter(f => f.type.startsWith('image/'));
     if (!photos.length) { setStatus('写真（画像のファイル）をドロップしてください。'); return; }
     const notes = [];
@@ -1191,9 +1117,6 @@ footer a{color:var(--primary)}
     $('marry').scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
   $('wed').addEventListener('click', wed);
-  $('exportDex').addEventListener('click', exportDex);
-  $('importDex').addEventListener('click', () => $('importFile').click());
-  $('importFile').addEventListener('change', e => { if (e.target.files[0]) importDex(e.target.files[0]); e.target.value = ''; });
   $('unslot').addEventListener('click', () => { slots.m = slots.f = null; $('wedMsg').textContent = ''; renderSlots(); });
   $('aiOn').addEventListener('change', e => { $('aiBox').classList.toggle('hidden', !e.target.checked); showKeyState(); });
   $('saveKey').addEventListener('click', () => {
