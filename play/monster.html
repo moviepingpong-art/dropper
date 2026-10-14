@@ -1,0 +1,1191 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>モンスタードロッパー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#0057ff; --primary-pale:#e0eaff; --accent:#ff5722; --accent2:#ffca28; --green:#00c896;
+  --bg:#f4f6fb; --card:#ffffff; --text-dark:#1a1a2e; --text-mid:#4a4a6a; --text-light:#9090b0; --border:#e0e4f0;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --primary:#4d8bff; --primary-pale:#1b2747;
+    --bg:#11131c; --card:#1b1e2b; --text-dark:#eef0f8; --text-mid:#b4b8cf; --text-light:#7c809a; --border:#2c3045;
+  }
+}
+:root[data-theme="dark"]{
+  --primary:#4d8bff; --primary-pale:#1b2747;
+  --bg:#11131c; --card:#1b1e2b; --text-dark:#eef0f8; --text-mid:#b4b8cf; --text-light:#7c809a; --border:#2c3045;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text-dark);font-family:'Noto Sans JP',sans-serif;line-height:1.7}
+.wrap{max-width:720px;margin:0 auto;padding:24px 16px 48px}
+.shelf{font-family:'Oswald',sans-serif;letter-spacing:.08em;color:var(--accent);font-size:13px;font-weight:700}
+h1{margin:2px 0 4px;font-size:clamp(26px,6vw,36px);font-weight:900}
+h1 span{color:var(--primary)}
+.lead{margin:0 0 20px;color:var(--text-mid)}
+.drop{border:3px dashed var(--primary);border-radius:18px;background:var(--card);padding:36px 16px;text-align:center;cursor:pointer;transition:background .15s,transform .15s}
+.drop.over{background:var(--primary-pale);transform:scale(1.01)}
+.drop .big{font-size:44px;line-height:1}
+.drop b{display:block;font-size:18px;margin:10px 0 4px}
+.drop small{color:var(--text-light)}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer;background:var(--primary);color:#fff}
+button.sub{background:var(--card);color:var(--primary);border:2px solid var(--primary)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent2);outline-offset:2px}
+.hidden{display:none!important}
+.panel{margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+.switch{display:flex;align-items:flex-start;gap:10px;cursor:pointer}
+.switch input{width:20px;height:20px;margin-top:4px;accent-color:var(--primary)}
+.switch b{display:block}
+.switch small{color:var(--text-mid)}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 8px}
+.badges span{background:var(--primary-pale);color:var(--primary);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700}
+.keyrow{display:flex;gap:8px;flex-wrap:wrap}
+.keyrow input{flex:1 1 220px;font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text-dark)}
+.note{font-size:13px;color:var(--text-mid);margin:8px 0 0}
+.note a{color:var(--primary)}
+.warn{font-size:13px;color:var(--accent);margin:8px 0 0;font-weight:700}
+.status{text-align:center;color:var(--text-mid);margin:18px 0 0;min-height:1.7em}
+.stage{margin-top:12px;text-align:center}
+#card{width:100%;max-width:420px;height:auto;border-radius:20px;box-shadow:0 10px 30px rgba(0,30,90,.18)}
+.dex{margin-top:28px}
+.dex h3{margin:0 0 8px;font-size:17px;display:flex;justify-content:space-between;align-items:center}
+.dex h3 button{padding:4px 12px;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.grid img{width:100%;border-radius:8px;display:block;border:1px solid var(--border)}
+.empty{color:var(--text-light);font-size:14px}
+.about{margin-top:28px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;font-size:14px;color:var(--text-mid)}
+.about h3{margin:0 0 6px;font-size:15px;color:var(--text-dark)}
+.about ul{margin:0;padding-left:1.2em}
+footer{margin-top:24px;text-align:center;font-size:13px;color:var(--text-light)}
+footer a{color:var(--primary)}
+.grid .cardthumb{position:relative;cursor:pointer;border:0;padding:0;background:none;border-radius:8px}
+.grid .cardthumb:focus-visible{outline:3px solid var(--accent2)}
+.grid .tag{position:absolute;left:4px;top:4px;display:flex;gap:3px}
+.grid .tag span{background:rgba(26,26,46,.78);color:#fff;border-radius:6px;padding:0 5px;font-size:11px;font-weight:700;line-height:1.6}
+.sym{display:inline-flex;width:28px;height:28px;border-radius:50%;align-items:center;justify-content:center;color:#fff;font-weight:900;flex:0 0 auto}
+.sym.m{background:#2f6fe0}.sym.f{background:#e0459b}
+.marry h3{margin:0 0 4px;font-size:17px}
+.slots{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.slot{display:flex;align-items:center;gap:8px;border:2px dashed var(--border);border-radius:12px;padding:8px;font-size:14px;min-height:64px}
+.slot img{width:38px;border-radius:5px}
+.slot.on{border-style:solid;border-color:var(--primary)}
+.couple{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);padding:10px 0;font-size:14px}
+.couple img{width:40px;border-radius:5px}
+.couple .kids{color:var(--text-mid);margin-left:auto}
+.couple button{padding:6px 14px;font-size:14px}
+@media (max-width:480px){.slots{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="shelf">DROPPER PLAYGROUND ／ ドロッパーの遊び場</div>
+  <h1>モンスター<span>ドロッパー</span></h1>
+  <p class="lead">身の回りの写真をドロップすると、その写真からモンスターが生まれます。冷蔵庫の中、散歩の景色、机の上、なんでも。</p>
+
+  <div class="drop" id="drop" tabindex="0" role="button" aria-label="写真を選ぶ">
+    <div class="big">🥚</div>
+    <b>写真をドロップ</b>
+    <small>2〜3枚まとめて落とすと<b style="display:inline;font-size:inherit;margin:0">合体</b>します。ここを押して選ぶこともできます（JPEG・PNG・WebP）</small>
+  </div>
+  <input type="file" id="file" accept="image/*" multiple class="hidden">
+  <div class="row"><button class="sub" id="demo">写真無しで試す</button></div>
+
+  <div class="panel">
+    <label class="switch">
+      <input type="checkbox" id="aiOn">
+      <span><b>AI に写っているものを読ませる（任意）</b>
+      <small>オフのときは写真の色だけで生まれ、写真はこの端末から出ません。オンにすると、写っているものから名前・技・図鑑の説明が付き、食べ物なら料理のミッションも出ます。</small></span>
+    </label>
+    <div id="aiBox" class="hidden">
+      <div class="badges"><span>クレカ不要</span><span>無料枠内なら0円</span><span>取得は約3分</span></div>
+      <div class="keyrow">
+        <input type="password" id="key" placeholder="Gemini の API キーを貼り付け" autocomplete="off">
+        <button id="saveKey">保存</button>
+      </div>
+      <p class="note" id="keyState"></p>
+      <p class="note">キーはこの端末だけに保存し、ドロッパーのサーバーには送りません。キーの取り方は <a href="https://dropper-tools.com/apikey.html" target="_blank" rel="noopener">取得ガイド</a> へ。</p>
+      <p class="warn">⚠ オンのときは、写真を Google の Gemini に送ります。人の顔や名前が写った写真は使わないでください。</p>
+    </div>
+  </div>
+
+  <p class="status" id="status" aria-live="polite"></p>
+
+  <section class="stage hidden" id="stage">
+    <canvas id="card" width="600" height="920" aria-label="モンスターのカード"></canvas>
+    <div class="row">
+      <button id="save">カードを画像で保存</button>
+      <button class="sub" id="cand">💍 結婚相手の候補にする</button>
+      <button class="sub" id="again">別の写真で</button>
+    </div>
+  </section>
+
+  <section class="dex">
+    <h3>📖 わたしの図鑑 <button class="sub hidden" id="clearDex">図鑑を空にする</button></h3>
+    <p class="note" id="dexNote">カードを押すと大きく見られます。カードの中身はこの PC・スマホの中にだけ保存され、ほかの人には見えません。</p>
+    <div class="row" style="justify-content:flex-start;margin:8px 0 12px">
+      <button class="sub" id="exportDex">📤 ファイルに書き出す</button>
+      <button class="sub" id="importDex">📥 ファイルから読み込む</button>
+    </div>
+    <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+    <p class="note">端末を替えるときは、書き出したファイルを新しい端末で読み込んでください（写真の枠に落としても読み込めます）。<b>ファイルを人に渡すと、あなたのカードの写しを持たれることになります。</b></p>
+    <div class="grid" id="dex"></div>
+    <p class="empty" id="dexEmpty">まだ1体もいません。</p>
+  </section>
+
+  <section class="panel marry" id="marry">
+    <h3>💍 結婚と子ども</h3>
+    <p class="note">図鑑のカードを押して「結婚相手の候補にする」を選ぶと、ここに入ります。男性カード ♂ と女性カード ♀ を1枚ずつ。1組の夫婦から、子どもは3人まで生まれます。</p>
+    <div class="slots">
+      <div class="slot" id="slotM"><span class="sym m">♂</span><span>夫：まだ選んでいません</span></div>
+      <div class="slot" id="slotF"><span class="sym f">♀</span><span>妻：まだ選んでいません</span></div>
+    </div>
+    <div class="row"><button id="wed" disabled>結婚させる</button><button class="sub" id="unslot">選び直す</button></div>
+    <p class="warn" id="wedMsg"></p>
+    <div id="couples"></div>
+  </section>
+
+  <section class="about">
+    <h3>🧬 合体の法則（わかっているもの）</h3>
+    <ul>
+      <li><b>そろい</b>：同じ属性が2つで +20%、3つで +50%</li>
+      <li><b>相性</b>：組み合わせによっては +30%（炎×風「ほのおのたつまき」、水×森「めぐみの雨」など、全部で10組）</li>
+      <li><b>打ち消し</b>：炎×水・炎×森・雷×土が入ると、ほかの法則はぜんぶ効かなくなり、混ぜた中でいちばん強い子の力から1組ごとに15%ずつ削られる。<b>必ず元より弱くなる</b></li>
+      <li><b>にじ</b>：3つとも違う属性なら +10%</li>
+      <li><b>データの珍しさ</b>：🥇ゴールド（1000枚に1枚）を混ぜると1枚ごとに +25%、🥈シルバー（500枚に1枚）は +10%、⚠バグ個体は +8%。ただしバグ個体が2つ以上だと、合体した子もバグる</li>
+      <li>落とす順番は関係ありません</li>
+      <li>……ほかにも、まだ見つかっていない法則があるらしい</li>
+    </ul>
+  </section>
+
+  <section class="about">
+    <h3>どうやって生まれるの？</h3>
+    <ul>
+      <li>写真のいちばん多い色で、属性（炎・水・森…）が決まります</li>
+      <li>写真のデータから<b>発行のたびに違う部分</b>を読み取り、それで体の形・目・模様・強さ・性別を決めます。同じ写真でも、二度と同じ子は生まれません</li>
+      <li>どのカードにも、その1枚だけの<b>紋章</b>と、読み取った部分・発行番号が入ります</li>
+      <li>カードの画像に、写真そのものとファイル名は入れません</li>
+      <li>図鑑・結婚・子どもは、この PC・スマホの中にだけ残ります</li>
+    </ul>
+  </section>
+  <footer>ドロッパー <a href="https://dropper-tools.com/">dropper-tools.com</a></footer>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+
+  // ---- 指紋（cyrb128）と乱数（sfc32）。迷路ドロッパーと同じもの ----
+  function fingerprint(bytes) {
+    let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
+    for (let i = 0; i < bytes.length; i++) {
+      const k = bytes[i];
+      h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+      h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+      h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+      h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+    }
+    h1 ^= bytes.length;
+    h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+    h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+    h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+    h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+    h1 ^= (h2 ^ h3 ^ h4); h2 ^= h1; h3 ^= h1; h4 ^= h1;
+    return [h1 >>> 0, h2 >>> 0, h3 >>> 0, h4 >>> 0];
+  }
+  function sfc32(a, b, c, d) {
+    return () => {
+      a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
+      let t = (a + b) | 0;
+      a = b ^ (b >>> 9); b = (c + (c << 3)) | 0;
+      c = (c << 21) | (c >>> 11); d = (d + 1) | 0;
+      t = (t + d) | 0; c = (c + t) | 0;
+      return (t >>> 0) / 4294967296;
+    };
+  }
+
+  // ---- 属性 ----
+  const TYPES = {
+    '炎': { icon: '🔥', frame: ['#ff7a45', '#d9361b'], syl: ['ヒノ', 'ボル', 'カグ', 'フレ', 'アチ'], moves: ['ほのおのしっぽ', 'あったかハグ', 'まっかなくしゃみ', 'たきびダンス'] },
+    '水': { icon: '💧', frame: ['#4aa8ff', '#1f5fd6'], syl: ['ミズ', 'アク', 'シズ', 'ポチャ', 'ナミ'], moves: ['みずでっぽう', 'ぷくぷくあわ', 'なみのりスピン', 'あまやどり'] },
+    '森': { icon: '🌿', frame: ['#46c47a', '#1d8a4c'], syl: ['モリ', 'リーフ', 'コケ', 'ハッパ', 'ツタ'], moves: ['はっぱカッター', 'こもれびねむり', 'つるのぶらんこ', 'たねまき'] },
+    '雷': { icon: '⚡', frame: ['#ffd23a', '#e09a00'], syl: ['ピリ', 'ライ', 'ビリ', 'ゴロ', 'ボルト'], moves: ['ぴりぴりタッチ', 'いなずまダッシュ', 'ゴロゴロこえ', 'ひかるツノ'] },
+    '土': { icon: '🪨', frame: ['#c08a5a', '#7a4f2a'], syl: ['ドロ', 'イワ', 'ツチ', 'ゴツ', 'スナ'], moves: ['どろんこタックル', 'いわのよろい', 'すなけむり', 'ふかいあなほり'] },
+    '風': { icon: '🌀', frame: ['#5fd3d3', '#22928f'], syl: ['フワ', 'カゼ', 'ソヨ', 'ヒュー', 'クモ'], moves: ['つむじかぜ', 'ふわふわ浮く', 'はねのマント', 'そよかぜのうた'] },
+    '夢': { icon: '🌸', frame: ['#ff8ad1', '#c2479a'], syl: ['ユメ', 'モモ', 'ポワ', 'キラ', 'ルル'], moves: ['ゆめみるビーム', 'きらきらウインク', 'ねむりのこもりうた', 'ほしくず'] },
+    '闇': { icon: '🌙', frame: ['#7b6bd6', '#3b2f8f'], syl: ['ヤミ', 'カゲ', 'ヨル', 'ノクス', 'ズズ'], moves: ['かげぬい', 'よふかしパンチ', 'くらやみかくれんぼ', 'つきのささやき'] },
+    '光': { icon: '✨', frame: ['#ffe28a', '#f0b429'], syl: ['ヒカ', 'テラ', 'ルミ', 'アサ', 'ピカ'], moves: ['まぶしいえがお', 'ひかりのわっか', 'あさひのめざめ', 'てらすライト'] },
+    '鋼': { icon: '⚙️', frame: ['#9aa7b8', '#5b6778'], syl: ['ガチ', 'ハガ', 'ネジ', 'カネ', 'ギア'], moves: ['ネジまわし', 'かちかちガード', 'はがねのずつき', 'ギアチェンジ'] }
+  };
+  const TAIL = ['モン', 'ドン', 'ピー', 'ゴン', 'リン', 'マル', 'ッチ', 'ポン', 'ラ', 'ゾウ'];
+  const MID = ['', '', 'ポ', 'ロ', 'ン', 'ピ', 'ノ', 'ク'];
+
+  function rgb2hsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2;
+    if (mx === mn) return [0, 0, l];
+    const d = mx - mn, s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+    let h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return [h * 60, s, l];
+  }
+  function typeOfColor([r, g, b]) {
+    const [h, s, l] = rgb2hsl(r, g, b);
+    if (l < 0.16) return '闇';
+    if (s < 0.16) return l > 0.72 ? '光' : '鋼';
+    if (h < 15 || h >= 335) return '炎';
+    if (h < 45) return l < 0.42 ? '土' : '炎';
+    if (h < 70) return '雷';
+    if (h < 165) return '森';
+    if (h < 200) return '風';
+    if (h < 255) return '水';
+    if (h < 290) return '闇';
+    return '夢';
+  }
+  const css = ([r, g, b]) => `rgb(${r | 0} ${g | 0} ${b | 0})`;
+  function shade([r, g, b], k) { return k < 0 ? [r * (1 + k), g * (1 + k), b * (1 + k)] : [r + (255 - r) * k, g + (255 - g) * k, b + (255 - b) * k]; }
+  // 体に塗れる明るさにそろえる（真っ黒・真っ白のモンスターにしない）
+  function bodyColor(c) {
+    const [, , l] = rgb2hsl(...c);
+    if (l < 0.35) return shade(c, Math.min(0.6, (0.42 - l) / (1 - l)));
+    if (l > 0.8) return shade(c, -0.25);
+    return c;
+  }
+
+  // 写真を 48×48 に縮め、多い色を3つ取る。鮮やかな色ほど重く数える
+  function paletteOf(img) {
+    const c = document.createElement('canvas'); c.width = c.height = 48;
+    const x = c.getContext('2d', { willReadFrequently: true });
+    x.drawImage(img, 0, 0, 48, 48);
+    const d = x.getImageData(0, 0, 48, 48).data, buckets = new Map();
+    let sat = 0, lum = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], g = d[i + 1], b = d[i + 2];
+      const [, s, l] = rgb2hsl(r, g, b); sat += s; lum += l;
+      const k = (r >> 5) << 6 | (g >> 5) << 3 | (b >> 5);
+      const e = buckets.get(k) || { n: 0, w: 0, r: 0, g: 0, b: 0 };
+      e.n++; e.w += 1 + s * 2; e.r += r; e.g += g; e.b += b; buckets.set(k, e);
+    }
+    const list = [...buckets.values()].sort((a, b) => b.w - a.w).map(e => [e.r / e.n, e.g / e.n, e.b / e.n]);
+    const out = [];
+    for (const col of list) {
+      if (out.every(o => Math.hypot(o[0] - col[0], o[1] - col[1], o[2] - col[2]) > 70)) out.push(col);
+      if (out.length === 3) break;
+    }
+    while (out.length < 3) out.push(shade(out[0], out.length === 1 ? 0.45 : -0.35));
+    const n = d.length / 4;
+    return { colors: out, sat: sat / n, lum: lum / n };
+  }
+
+  // ---- モンスターの設計図（同じ写真なら同じ設計図） ----
+  function makeGenome(fp, pal, imgBytes) {
+    const rnd = sfc32(fp[0], fp[1], fp[2], fp[3]);
+    for (let i = 0; i < 12; i++) rnd();
+    const pick = a => a[Math.floor(rnd() * a.length)];
+    const type = typeOfColor(pal.colors[0]);
+    const T = TYPES[type];
+    const name = pick(T.syl) + pick(MID) + pick(TAIL);
+    const moves = [...T.moves].sort(() => rnd() - 0.5).slice(0, 2);
+    const stat = (bias) => Math.max(8, Math.min(99, Math.round(30 + rnd() * 50 + bias)));
+    return {
+      type, name, moves, no: (fp[3] % 999) + 1,
+      stats: {
+        'たいりょく': stat(Math.log2(imgBytes / 1024 + 1) * 1.5 - 8),
+        'こうげき': stat(pal.sat * 30 - 10),
+        'まもり': stat((0.5 - pal.lum) * 30),
+        'すばやさ': stat(pal.lum * 30 - 12)
+      },
+      main: bodyColor(pal.colors[0]), second: pal.colors[1], third: pal.colors[2],
+      rx: 0.62 + rnd() * 0.3, ry: 0.55 + rnd() * 0.3,
+      wob: { k: 3 + Math.floor(rnd() * 4), amp: rnd() * 0.07, ph: rnd() * 6.28 },
+      sq: 2 + rnd() * 1.6,
+      pattern: pick(['spots', 'spots', 'belly', 'stripes', 'none']),
+      spots: Array.from({ length: 3 + Math.floor(rnd() * 5) }, () => [rnd() * 2 - 1, rnd() * 2 - 1, 0.08 + rnd() * 0.14]),
+      top: pick(['ears', 'horns', 'antenna', 'type', 'type']),
+      eyes: pick([1, 2, 2, 2, 3]), eyeSize: 0.11 + rnd() * 0.07,
+      mouth: pick(['smile', 'fang', 'o', 'zig']),
+      arms: rnd() < 0.7, cheeks: rnd() < 0.6
+    };
+  }
+
+  // ---- 描く ----
+  function drawMonster(c, cx, cy, R, g) {
+    const rx = R * g.rx, ry = R * g.ry, main = css(g.main), dark = css(shade(g.main, -0.35)), acc = css(g.third);
+    c.save(); c.lineJoin = 'round'; c.lineCap = 'round';
+    const outline = Math.max(2, R * 0.035);
+    // 足
+    c.fillStyle = dark;
+    for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.45, cy + ry * 0.92, rx * 0.22, ry * 0.16, 0, 0, 7); c.fill(); }
+    // 腕
+    if (g.arms) for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.98, cy + ry * 0.15, rx * 0.16, ry * 0.26, s * 0.6, 0, 7); c.fill(); }
+    // 頭の上
+    drawTop(c, cx, cy - ry * 0.85, rx, ry, g, acc, dark);
+    // 体
+    const body = new Path2D();
+    for (let i = 0; i <= 90; i++) {
+      const t = i / 90 * Math.PI * 2, w = 1 + g.wob.amp * Math.sin(g.wob.k * t + g.wob.ph);
+      const co = Math.cos(t), si = Math.sin(t), p = 2 / g.sq;
+      const x = cx + Math.sign(co) * Math.pow(Math.abs(co), p) * rx * w;
+      const y = cy + Math.sign(si) * Math.pow(Math.abs(si), p) * ry * w;
+      i ? body.lineTo(x, y) : body.moveTo(x, y);
+    }
+    body.closePath();
+    const gr = c.createRadialGradient(cx - rx * 0.3, cy - ry * 0.4, R * 0.1, cx, cy, R * 1.1);
+    gr.addColorStop(0, css(shade(g.main, 0.25))); gr.addColorStop(1, main);
+    c.fillStyle = gr; c.fill(body);
+    // 模様（体の中だけ）
+    c.save(); c.clip(body); c.fillStyle = css(g.second); c.globalAlpha = 0.85;
+    if (g.pattern === 'spots') for (const [x, y, r] of g.spots) { c.beginPath(); c.arc(cx + x * rx * 0.8, cy + y * ry * 0.4 + ry * 0.35, r * R, 0, 7); c.fill(); }
+    if (g.pattern === 'belly') { c.fillStyle = css(shade(g.second, 0.35)); c.beginPath(); c.ellipse(cx, cy + ry * 0.45, rx * 0.55, ry * 0.5, 0, 0, 7); c.fill(); }
+    if (g.pattern === 'stripes') for (let i = -3; i <= 3; i++) { c.fillRect(cx + i * rx * 0.32 - rx * 0.06, cy - ry, rx * 0.12, ry * 2); }
+    c.restore();
+    c.lineWidth = outline; c.strokeStyle = dark; c.stroke(body);
+    // 顔
+    const ey = cy - ry * 0.18, es = R * g.eyeSize;
+    const xs = g.eyes === 1 ? [0] : g.eyes === 2 ? [-0.36, 0.36] : [-0.45, 0, 0.45];
+    xs.forEach((ex, i) => {
+      const x = cx + ex * rx, y = ey - (g.eyes === 3 && i === 1 ? es * 0.9 : 0);
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(x, y, es, 0, 7); c.fill(); c.lineWidth = outline * 0.8; c.stroke();
+      c.fillStyle = '#1a1a2e'; c.beginPath(); c.arc(x + es * 0.15, y + es * 0.1, es * 0.55, 0, 7); c.fill();
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(x + es * 0.32, y - es * 0.15, es * 0.2, 0, 7); c.fill();
+    });
+    if (g.cheeks) { c.fillStyle = 'rgba(255,110,150,.45)'; for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.6, ey + es * 1.6, es * 0.8, es * 0.45, 0, 0, 7); c.fill(); } }
+    const my = ey + es * 2.1, mw = rx * 0.28;
+    c.strokeStyle = '#1a1a2e'; c.lineWidth = outline;
+    c.beginPath();
+    if (g.mouth === 'smile' || g.mouth === 'fang') { c.arc(cx, my - mw * 0.5, mw, 0.2 * Math.PI, 0.8 * Math.PI); c.stroke(); }
+    if (g.mouth === 'fang') { c.fillStyle = '#fff'; c.beginPath(); c.moveTo(cx + mw * 0.3, my + mw * 0.38); c.lineTo(cx + mw * 0.5, my + mw * 0.75); c.lineTo(cx + mw * 0.65, my + mw * 0.3); c.fill(); }
+    if (g.mouth === 'o') { c.fillStyle = '#7a1f2b'; c.ellipse(cx, my + mw * 0.2, mw * 0.32, mw * 0.4, 0, 0, 7); c.fill(); }
+    if (g.mouth === 'zig') { for (let i = 0; i <= 4; i++) c.lineTo(cx - mw + i * mw / 2, my + (i % 2 ? mw * 0.25 : 0)); c.stroke(); }
+    c.restore();
+  }
+  function drawTop(c, x, y, rx, ry, g, acc, dark) {
+    c.fillStyle = acc; c.strokeStyle = dark; c.lineWidth = Math.max(2, rx * 0.05);
+    const kind = g.top === 'type' ? g.type : g.top;
+    const tri = (pts) => { c.beginPath(); pts.forEach(([a, b], i) => i ? c.lineTo(a, b) : c.moveTo(a, b)); c.closePath(); c.fill(); c.stroke(); };
+    if (kind === 'ears' || kind === '鋼' || kind === '土') for (const s of [-1, 1]) tri([[x + s * rx * 0.25, y + ry * 0.3], [x + s * rx * 0.6, y - ry * 0.45], [x + s * rx * 0.75, y + ry * 0.35]]);
+    else if (kind === 'horns' || kind === '闇') for (const s of [-1, 1]) { c.beginPath(); c.moveTo(x + s * rx * 0.3, y + ry * 0.25); c.quadraticCurveTo(x + s * rx * 0.7, y - ry * 0.1, x + s * rx * 0.55, y - ry * 0.55); c.quadraticCurveTo(x + s * rx * 0.5, y, x + s * rx * 0.15, y + ry * 0.3); c.fill(); c.stroke(); }
+    else if (kind === 'antenna' || kind === '風') for (const s of [-1, 1]) { c.beginPath(); c.moveTo(x + s * rx * 0.2, y + ry * 0.3); c.lineTo(x + s * rx * 0.35, y - ry * 0.4); c.stroke(); c.beginPath(); c.arc(x + s * rx * 0.35, y - ry * 0.45, rx * 0.1, 0, 7); c.fill(); c.stroke(); }
+    else if (kind === '炎') { c.fillStyle = '#ff9a3c'; tri([[x - rx * 0.3, y + ry * 0.3], [x - rx * 0.15, y - ry * 0.35], [x, y], [x + rx * 0.1, y - ry * 0.6], [x + rx * 0.2, y - ry * 0.05], [x + rx * 0.35, y - ry * 0.3], [x + rx * 0.35, y + ry * 0.3]]); }
+    else if (kind === '森') { c.fillStyle = '#3fbf6a'; c.beginPath(); c.moveTo(x, y + ry * 0.3); c.quadraticCurveTo(x - rx * 0.45, y - ry * 0.3, x + rx * 0.05, y - ry * 0.6); c.quadraticCurveTo(x + rx * 0.4, y - ry * 0.2, x, y + ry * 0.3); c.fill(); c.stroke(); }
+    else if (kind === '雷') { c.fillStyle = '#ffd23a'; tri([[x - rx * 0.05, y + ry * 0.3], [x - rx * 0.2, y - ry * 0.15], [x, y - ry * 0.12], [x - rx * 0.08, y - ry * 0.6], [x + rx * 0.2, y - ry * 0.05], [x + rx * 0.02, y - ry * 0.08], [x + rx * 0.12, y + ry * 0.3]]); }
+    else if (kind === '水') { c.fillStyle = '#7cc4ff'; c.beginPath(); c.moveTo(x, y - ry * 0.55); c.quadraticCurveTo(x + rx * 0.3, y, x, y + ry * 0.25); c.quadraticCurveTo(x - rx * 0.3, y, x, y - ry * 0.55); c.fill(); c.stroke(); }
+    else if (kind === '光') { c.strokeStyle = '#ffcf33'; c.lineWidth = rx * 0.08; c.beginPath(); c.ellipse(x, y - ry * 0.25, rx * 0.45, ry * 0.12, 0, 0, 7); c.stroke(); }
+    else if (kind === '夢') { c.fillStyle = '#ffe14d'; c.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? rx * 0.12 : rx * 0.28; c.lineTo(x + Math.cos(a) * r, y - ry * 0.25 + Math.sin(a) * r); } c.closePath(); c.fill(); c.stroke(); }
+  }
+
+  function roundRect(c, x, y, w, h, r) { c.beginPath(); c.roundRect(x, y, w, h, r); }
+  function wrap(c, text, x, y, maxW, lh, maxLines) {
+    let line = '', lines = [];
+    // 句読点や閉じかっこは行の頭に置かない（前の行にぶら下げる）
+    for (const ch of text) { if (c.measureText(line + ch).width > maxW && !'。、！？」）'.includes(ch)) { lines.push(line); line = ch; } else line += ch; }
+    if (line) lines.push(line);
+    lines = lines.slice(0, maxLines);
+    lines.forEach((l, i) => c.fillText(l, x, y + i * lh));
+    return lines.length * lh;
+  }
+
+  // ---- わずかに化ける（同じ写真なら同じ所が化ける） ----
+  // 絵の細い横帯を2〜3本ずらし、赤だけ少し横へずらしてにじませる。小さなかけらも数個
+  // strong（バグ個体）のときは、帯を増やして大きくずらし、残像と色の反転も足す
+  function glitchArt(c, x, y, w, h, rnd, strong) {
+    if (strong) {
+      // 残像：絵をうすく横にずらして重ねる（絵の枠の中だけ）
+      c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip();
+      c.globalAlpha = 0.3; c.drawImage(c.canvas, x, y, w, h, x + (rnd() < 0.5 ? -1 : 1) * (14 + rnd() * 20), y, w, h);
+      c.restore();
+    }
+    const bands = strong ? 7 + Math.floor(rnd() * 4) : 2 + Math.floor(rnd() * 2);
+    const shift = strong ? 10 : 4;
+    for (let i = 0; i < bands; i++) {
+      // 背景の上でずらしても見えないので、モンスターのいる高さ（絵の 25〜80%）に入れる
+      const bh = strong ? 3 + Math.floor(rnd() * 15) : 2 + Math.floor(rnd() * 6);
+      const by = strong ? y + Math.floor(h * 0.05 + rnd() * (h * 0.9 - bh)) : y + Math.floor(h * 0.25 + rnd() * (h * 0.55 - bh));
+      const dx = (rnd() < 0.5 ? -1 : 1) * (strong ? 12 + Math.floor(rnd() * 40) : 6 + Math.floor(rnd() * 12));
+      const img = c.getImageData(x, by, w, bh), d = img.data, src = new Uint8ClampedArray(d);
+      for (let r = 0; r < bh; r++) for (let px = 0; px < w; px++) {
+        const j = (r * w + px) * 4, k = (r * w + Math.min(w - 1, px + shift)) * 4;
+        d[j] = src[k]; // 赤だけ横へずらす
+      }
+      c.putImageData(img, x + dx, by);
+    }
+    if (strong) {
+      // 色の反転：小さな四角を1〜2個
+      for (let i = 0, n = 1 + Math.floor(rnd() * 2); i < n; i++) {
+        const bw = 40 + Math.floor(rnd() * 90), bh = 10 + Math.floor(rnd() * 30);
+        const bx = x + Math.floor(rnd() * (w - bw)), by = y + Math.floor(h * 0.2 + rnd() * (h * 0.6 - bh));
+        const img = c.getImageData(bx, by, bw, bh), d = img.data;
+        for (let j = 0; j < d.length; j += 4) { d[j] = 255 - d[j]; d[j + 1] = 255 - d[j + 1]; d[j + 2] = 255 - d[j + 2]; }
+        c.putImageData(img, bx, by);
+      }
+    }
+    const bits = strong ? 12 + Math.floor(rnd() * 9) : 3 + Math.floor(rnd() * 4);
+    for (let i = 0; i < bits; i++) {
+      const px = x + Math.floor(rnd() * w), py = y + Math.floor(rnd() * h);
+      const p = c.getImageData(Math.min(x + w - 1, px + 30), py, 1, 1).data;
+      c.fillStyle = `rgb(${p[0]} ${p[1]} ${p[2]})`;
+      c.fillRect(px, py, 4 + Math.floor(rnd() * 10), 2 + Math.floor(rnd() * 3));
+    }
+  }
+  // 説明の1〜2文字を、文字化けでよく見る字に入れ替える（最初の3文字と句読点は残す）
+  const MOJIBAKE = '縺繧繝蜷荳譁鬮莉�';
+  // n を渡すとその数だけ、from から後ろを化けさせる（バグ個体の名前・技・説明に使う）
+  function garble(text, rnd, n, from) {
+    const chars = [...text];
+    if (n === undefined) { n = 1 + Math.floor(rnd() * 2); from = 3; if (chars.length <= 6) return text; }
+    for (let i = 0; i < n && chars.length > from; i++) {
+      const at = from + Math.floor(rnd() * (chars.length - from));
+      if (!'。、！？ '.includes(chars[at])) chars[at] = MOJIBAKE[Math.floor(rnd() * MOJIBAKE.length)];
+    }
+    return chars.join('');
+  }
+  const BUG_MSG = '⚠ バグ個体が生まれた！（16匹に1匹）';
+
+  // ---- カードの珍しさ ----
+  // 指紋の3つ目を1000で割った余りで決める。0 ならゴールド（1000枚に1枚）、1・2 ならシルバー（500枚に1枚）。
+  // バグ個体は指紋の1つ目で別に決めるので、重なることもある（バグったゴールド＝1万6千枚に1枚）
+  const RARITY = {
+    gold:   { mult: 1.3,  fuse: 0.25, label: 'GOLD',   msg: '🥇 ゴールドカード！（1000枚に1枚）' },
+    silver: { mult: 1.15, fuse: 0.10, label: 'SILVER', msg: '🥈 シルバーカード！（500枚に1枚）' },
+    normal: { mult: 1,    fuse: 0 }
+  };
+  function rarityOf(fp) {
+    const r = fp[2] % 1000;
+    return r === 0 ? 'gold' : r <= 2 ? 'silver' : 'normal';
+  }
+  const isBugPrint = fp => (fp[0] >>> 4) % 16 === 0;
+
+  // ---- 合体の法則（2〜3枚） ----
+  // 画面の「合体の法則」に載せるのは、そろい・相性・打ち消し・にじ・レア度。隠しの2つ（完全バグ・はじまりの夜）は載せない
+  const PAIRS = [
+    ['炎', '風', 'ほのおのたつまき'], ['水', '森', 'めぐみの雨'], ['雷', '水', 'でんきうなぎ'], ['土', '森', 'だいちのちから'],
+    ['光', '闇', 'たそがれ'], ['夢', '光', 'ほしぞら'], ['鋼', '雷', 'でんじしゃく'], ['闇', '夢', 'よるのゆめ'],
+    ['土', '炎', 'マグマ'], ['風', '水', 'あらし']
+  ];
+  const CLASH = [['炎', '水'], ['炎', '森'], ['雷', '土']];
+  const isPair = (a, b, x, y) => (a === x && b === y) || (a === y && b === x);
+  function fusionRules(parts) {
+    const types = parts.map(p => p.type), rules = [];
+    const count = {}; types.forEach(t => { count[t] = (count[t] || 0) + 1; });
+    const maxSame = Math.max(...Object.values(count));
+    if (maxSame === 3) rules.push(['そろい3', 0.5]); else if (maxSame === 2) rules.push(['そろい2', 0.2]);
+    for (let i = 0; i < types.length; i++) for (let j = i + 1; j < types.length; j++) {
+      for (const [x, y, nm] of PAIRS) if (isPair(types[i], types[j], x, y)) rules.push([`相性「${nm}」`, 0.3]);
+      for (const [x, y] of CLASH) if (isPair(types[i], types[j], x, y)) rules.push([`打ち消し（${x}×${y}）`, -0.15]);
+    }
+    if (types.length === 3 && maxSame === 1) rules.push(['にじ', 0.1]);
+    if (types.length === 3 && ['光', '闇', '夢'].every(t => types.includes(t))) rules.push(['★はじまりの夜', 0.8]);
+    for (const r of ['gold', 'silver']) {
+      const n = parts.filter(p => p.rarity === r).length;
+      if (n) rules.push([`${RARITY[r].label}×${n}`, RARITY[r].fuse * n]);
+    }
+    const bugs = parts.filter(p => p.bug).length;
+    if (bugs) rules.push([`不安定なデータ×${bugs}`, 0.08 * bugs]);
+    return rules;
+  }
+  const pct = v => (v >= 0 ? '+' : '−') + Math.round(Math.abs(v) * 100) + '%';
+  const powerOf = stats => Object.values(stats).reduce((a, b) => a + b, 0);
+  const printOf = fp => fp.map(v => v.toString(16).padStart(8, '0')).join('');
+
+  // ---- 保存（この PC・スマホの中だけ。IndexedDB） ----
+  // cards：カードの中身と小さな絵。couples：夫婦と子ども。meta：端末の秘密の番号・発行番号・写真ごとの発行回数。
+  // IndexedDB が使えない画面（プライベートブラウズなど）では、その画面を閉じるまでだけ覚える
+  const DB = (() => {
+    let dbp = null, memOnly = false;
+    const mem = { cards: new Map(), couples: new Map(), meta: new Map() };
+    function open() {
+      if (!dbp) dbp = new Promise((ok, ng) => {
+        try {
+          const rq = indexedDB.open('dropper-monster', 1);
+          rq.onupgradeneeded = () => {
+            const d = rq.result;
+            d.createObjectStore('cards', { keyPath: 'id' });
+            d.createObjectStore('couples', { keyPath: 'id' });
+            d.createObjectStore('meta');
+          };
+          rq.onsuccess = () => ok(rq.result);
+          rq.onerror = () => ng(rq.error);
+        } catch (e) { ng(e); }
+      }).catch(e => { memOnly = true; return null; });
+      return dbp;
+    }
+    async function run(store, mode, fn) {
+      const d = await open();
+      if (!d) return null;
+      return new Promise((ok, ng) => {
+        const t = d.transaction(store, mode), rq = fn(t.objectStore(store));
+        t.oncomplete = () => ok(rq ? rq.result : null);
+        t.onerror = () => ng(t.error);
+      });
+    }
+    const keyOf = (store, v, k) => k !== undefined ? k : v.id;
+    return {
+      get memOnly() { return memOnly; },
+      async get(store, key) { const r = await run(store, 'readonly', s => s.get(key)); return memOnly ? mem[store].get(key) : r; },
+      async getAll(store) { const r = await run(store, 'readonly', s => s.getAll()); return memOnly ? [...mem[store].values()] : r || []; },
+      async put(store, v, key) { if ((await open()) === null) { mem[store].set(keyOf(store, v, key), v); return; } await run(store, 'readwrite', s => key !== undefined ? s.put(v, key) : s.put(v)); },
+      async clear(store) { if ((await open()) === null) { mem[store].clear(); return; } await run(store, 'readwrite', s => s.clear()); },
+      // meta は鍵が中身に入っていないので、鍵と中身を組にして返す（書き出しで使う）
+      async entries(store) {
+        if ((await open()) === null) return [...mem[store].entries()];
+        const keys = await run(store, 'readonly', s => s.getAllKeys()), vals = await run(store, 'readonly', s => s.getAll());
+        return keys.map((k, i) => [k, vals[i]]);
+      }
+    };
+  })();
+  // 端末だけの秘密の番号。最初に1回だけ作って保存する。同じ写真でも、ほかの人と同じ子にならないために混ぜる
+  async function deviceSecret() {
+    let s = await DB.get('meta', 'secret');
+    if (!s) {
+      const a = new Uint32Array(4); crypto.getRandomValues(a);
+      s = [...a].map(v => v.toString(16).padStart(8, '0')).join('');
+      await DB.put('meta', s, 'secret');
+    }
+    return s;
+  }
+  async function nextSerial() { const n = ((await DB.get('meta', 'serial')) || 0) + 1; await DB.put('meta', n, 'serial'); return n; }
+  const enc = s => new TextEncoder().encode(s);
+
+  // ---- 唯一の1枚：発行のたびに、写真のデータの違う部分を読む ----
+  // どこから読み始めて何バイトおきに読むかを、端末の秘密の番号・写真・その写真の何回目の発行かで決める。
+  // 読んだ断片に、その鍵そのものも足して指紋を取る（断片がたまたま同じでも、鍵が違えば別の子になる）
+  function issueSample(bytes, photoPrint, n, secret) {
+    const key = fingerprint(enc(`issue:${secret}:${photoPrint}:${n}`));
+    const r = sfc32(key[0], key[1], key[2], key[3]);
+    const stride = 2 + Math.floor(r() * 30);
+    const start = Math.floor(r() * Math.max(1, Math.min(bytes.length - 1, 4096)));
+    const len = Math.max(0, Math.ceil((bytes.length - start) / stride));
+    const out = new Uint8Array(len + 16);
+    for (let i = 0; i < len; i++) out[i] = bytes[start + i * stride];
+    key.forEach((v, i) => { out[len + i * 4] = v >>> 24; out[len + i * 4 + 1] = v >>> 16; out[len + i * 4 + 2] = v >>> 8; out[len + i * 4 + 3] = v; });
+    return { sample: out, start, stride };
+  }
+  const genderOf = fp => ((fp[1] >>> 7) & 1) ? 'f' : 'm';
+
+  // 紋章：指紋の 128 ビットから描く、左右対称の 7×7 の図柄。地の色・図柄の色・マスの並びで数百億通り
+  function drawCrest(c, x, y, size, fp) {
+    const r = sfc32(fp[3] ^ 0x9e3779b9, fp[0], fp[2] ^ 0x85ebca6b, fp[1]);
+    const hue = Math.floor(r() * 360), hue2 = (hue + 120 + Math.floor(r() * 120)) % 360, cs = size / 7;
+    c.save();
+    c.fillStyle = `hsl(${hue2} 40% 96%)`; roundRect(c, x - 4, y - 4, size + 8, size + 8, 8); c.fill();
+    c.strokeStyle = `hsl(${hue} 50% 35%)`; c.lineWidth = 2; c.stroke();
+    for (let row = 0; row < 7; row++) for (let col = 0; col < 4; col++) {
+      if (r() < 0.5) continue;
+      c.fillStyle = r() < 0.75 ? `hsl(${hue} 60% 38%)` : `hsl(${hue2} 70% 50%)`;
+      c.fillRect(x + col * cs, y + row * cs, cs + 0.3, cs + 0.3);
+      c.fillRect(x + (6 - col) * cs, y + row * cs, cs + 0.3, cs + 0.3);
+    }
+    c.restore();
+  }
+
+  // ---- 結婚と子ども ----
+  // 結婚できるか：男性×女性、どちらもまだ結婚していない、親子・兄弟姉妹ではない
+  function whyCannotMarry(a, b, couples) {
+    if (!a || !b) return '男性カードと女性カードを1枚ずつ選んでください。';
+    if (a.id === b.id) return '同じカードどうしは結婚できません。';
+    if (a.gender === b.gender) return '男性カードと女性カードの組でないと結婚できません。';
+    const married = new Set(couples.flatMap(cp => [cp.male, cp.female]));
+    if (married.has(a.id)) return `${a.name} はもう結婚しています。`;
+    if (married.has(b.id)) return `${b.name} はもう結婚しています。`;
+    const pa = a.parents || [], pb = b.parents || [];
+    if (pa.includes(b.id) || pb.includes(a.id)) return '親子どうしは結婚できません。';
+    if (pa.some(p => pb.includes(p))) return '兄弟姉妹どうしは結婚できません。';
+    return '';
+  }
+  const mixColor = (a, b, t) => a.map((v, i) => v * (1 - t) + b[i] * t);
+  // 子ども：形・目・模様・頭の飾りは父か母のどちらかから。色は混ぜる。強さは両親の平均にぶれ。まれに突然変異。
+  // 鍵は端末の秘密の番号・両親・何人目かで決まるので、兄弟姉妹は毎回違う子になる
+  function makeChild(father, mother, idx, secret) {
+    const fp = fingerprint(enc(`child:${secret}:${father.id}:${mother.id}:${idx}`));
+    const r = sfc32(fp[0], fp[1], fp[2], fp[3]);
+    for (let i = 0; i < 12; i++) r();
+    const one = (a, b) => (r() < 0.5 ? a : b);
+    const F = father.g, Mo = mother.g;
+    const g = {};
+    for (const k of ['rx', 'ry', 'wob', 'sq', 'pattern', 'spots', 'top', 'eyes', 'eyeSize', 'mouth', 'arms', 'cheeks', 'second', 'third']) g[k] = one(F[k], Mo[k]);
+    g.main = mixColor(F.main, Mo.main, 0.3 + r() * 0.4);
+    let type = one(father.type, mother.type), mutation = '';
+    if (r() < 1 / 12) {
+      const what = Math.floor(r() * 4);
+      if (what === 0) { g.eyes = [1, 2, 3].find(e => e !== F.eyes && e !== Mo.eyes) || 3; mutation = '目の数'; }
+      if (what === 1) { g.top = ['ears', 'horns', 'antenna', 'type'].find(t => t !== F.top && t !== Mo.top) || 'horns'; mutation = '頭の飾り'; }
+      if (what === 2) { g.pattern = ['spots', 'belly', 'stripes', 'none'].find(t => t !== F.pattern && t !== Mo.pattern) || 'stripes'; mutation = '模様'; }
+      if (what === 3) { const ks = Object.keys(TYPES).filter(t => t !== father.type && t !== mother.type); type = ks[Math.floor(r() * ks.length)]; mutation = '属性'; }
+    }
+    g.type = type;
+    const base = {};
+    for (const k of Object.keys(F.stats)) base[k] = Math.max(8, Math.round((F.stats[k] + Mo.stats[k]) / 2 * (0.9 + r() * 0.3)));
+    g.stats = base;
+    // 珍しさの受け継ぎ：親にゴールドが1人いれば10倍、シルバーは1人ごとに5倍。バグ個体の親がいれば4分の1でバグる
+    const golds = [father, mother].filter(p => p.rarity === 'gold').length, silvers = [father, mother].filter(p => p.rarity === 'silver').length;
+    const roll = r();
+    const rarity =
+      roll < 0.001 * (1 + 9 * golds) ? 'gold' : roll < 0.001 * (1 + 9 * golds) + 0.002 * (1 + 4 * silvers) ? 'silver' : 'normal';
+    const bug = r() < (father.bug || mother.bug ? 0.25 : 1 / 16);
+    const stats = {};
+    for (const [k, v] of Object.entries(base)) stats[k] = Math.round(v * RARITY[rarity].mult);
+    let bugStat = null;
+    if (bug) { bugStat = Object.keys(stats)[Math.floor(r() * 4)]; stats[bugStat] = 255; }
+    const ch = s => [...s];
+    // 名前：片方の親の頭（1〜2字）＋ときどき間の字＋もう片方の親のおしり（1〜2字）。
+    // つなぎ目で小さい字や「ン」が重なる・頭に来るのは直す（「ハッ」＋「ッチ」が「ハッッチ」になっていた）
+    const [A, B] = r() < 0.5 ? [father.name, mother.name] : [mother.name, father.name];
+    let name = ch(A).slice(0, 1 + Math.floor(r() * 2)).join('') + (r() < 0.4 ? MID[2 + Math.floor(r() * (MID.length - 2))] : '') + ch(B).slice(-1 - Math.floor(r() * 2)).join('');
+    name = name.replace(/([ッャュョァィゥェォーン])\1+/g, '$1').replace(/^[ッャュョァィゥェォーン]+/, '');
+    if ([...name].length < 3) name += TAIL[Math.floor(r() * TAIL.length)];
+    return {
+      g, fp, type, name, stats, power: powerOf(stats), rarity, bug, bugStat, fusion: 0,
+      gender: r() < 0.5 ? 'm' : 'f', gen: Math.max(father.gen || 1, mother.gen || 1) + 1,
+      parents: [father.id, mother.id], parentNames: [father.name, mother.name], childNo: idx + 1,
+      no: (fp[3] % 999) + 1, motif: '', mission: '',
+      moves: [one(father.moves[0], father.moves[1]), one(mother.moves[0], mother.moves[1])],
+      desc: `${father.name}と${mother.name}の${idx + 1}人目の子。` + (mutation ? `★突然変異：${mutation}が両親のどちらとも違う。` : 'ふたりの特徴を半分ずつ受け継いだ。'),
+      id: printOf(fp), print: printOf(fp).slice(0, 12).toUpperCase()
+    };
+  }
+
+  // 合体：同じ写真の組なら、落とす順に関係なく同じ子になる（指紋を並べ替えてから混ぜる）
+  function fuse(parts) {
+    // ★ 先に指紋の順に並べる。落とした順のままだと、強さは同じでも「炎＋風＋水」や法則の並びが変わり、カードが別物になる
+    parts = [...parts].sort((a, b) => (printOf(a.fp) < printOf(b.fp) ? -1 : 1));
+    const fp = fingerprint(new TextEncoder().encode('fuse:' + parts.map(p => printOf(p.fp)).sort().join('+')));
+    const byPower = [...parts].sort((a, b) => b.power - a.power || (printOf(a.fp) < printOf(b.fp) ? -1 : 1));
+    const [lead, second, third] = byPower;
+    const count = {}; parts.forEach(p => { count[p.type] = (count[p.type] || 0) + 1; });
+    const top = Math.max(...Object.values(count));
+    const type = count[lead.type] === top ? lead.type : Object.keys(count).find(t => count[t] === top);
+    // 見た目：体は一番強い子、頭の飾りと模様は2番目、目は3番目（2体なら2番目）から
+    const g = Object.assign({}, lead.g, {
+      type, second: second.g.main, third: (third || lead).g.main,
+      top: second.g.top, pattern: second.g.pattern, spots: second.g.spots,
+      eyes: (third || second).g.eyes, eyeSize: (third || second).g.eyeSize
+    });
+    const rules = fusionRules(parts);
+    const bugs = parts.filter(p => p.bug).length;
+    const clashes = rules.filter(r => r[0].startsWith('打ち消し')).length;
+    const stats = {};
+    let tail;
+    if (clashes) {
+      // ★ 打ち消しが1組でも入ったら、必ず元のいちばん強い子より弱くする（本人の指示、2026-10-14）。
+      //   ほかの法則（相性・そろい・レア度・完全バグの2倍）は効かせず、いちばん強い1体の強さだけを残して、1組ごとに15%削る。
+      //   項目ごとに別の子の高い値を拾うと、85%にしても元のどの子より強くなることがあるので、1体の強さをそのまま使う
+      const keep = Math.max(0.1, 1 - 0.15 * clashes);
+      for (const [k, v] of Object.entries(lead.stats)) stats[k] = Math.round(v * keep);
+      if (bugs === 3) rules.push(['★完全バグ（打ち消しで力が出ない）', 0]);
+      tail = `　→ 打ち消しで、ほかの法則は効かず、いちばん強い子の ${Math.round(keep * 100)}% だけ残った`;
+    } else {
+      let mult = Math.max(0.5, 1 + rules.reduce((a, r) => a + r[1], 0));
+      if (bugs === 3) { rules.push(['★完全バグ', 1]); mult *= 2; }
+      // 強さ：項目ごとに「いちばん高い値＋ほかの値の3割」に、法則の倍率を掛ける
+      for (const k of Object.keys(lead.stats)) {
+        const vs = parts.map(p => p.stats[k]), mx = Math.max(...vs), sum = vs.reduce((a, b) => a + b, 0);
+        stats[k] = Math.round((mx + 0.3 * (sum - mx)) * mult);
+      }
+      const total = rules.filter(r => !r[0].startsWith('★完全バグ')).reduce((a, r) => a + r[1], 0);
+      tail = `　→ 合計 ${pct(total)}` + (bugs === 3 ? '・×2' : '');
+    }
+    const ch = s => [...s];
+    const name = bugs === 3 ? '？？？？'
+      : ch(lead.name).slice(0, 2).join('') + (third ? ch(third.name)[1] || '' : '') + ch(second.name).slice(-2).join('');
+    return {
+      g: Object.assign(g, { stats: lead.g.stats }), fp, type, name, stats, power: powerOf(stats), fusion: parts.length, rarity: 'normal', bug: bugs >= 2,
+      gender: genderOf(fp), gen: 1, parents: null, id: printOf(fp), bugStat: bugs >= 2 ? Object.keys(stats).reduce((a, k) => stats[k] > stats[a] ? k : a) : null,
+      parts: parts.map(p => p.type), no: (fp[3] % 999) + 1, motif: '', mission: '',
+      moves: [lead.moves[0], second.moves[0]],
+      // 打ち消しのときは、効かなかった法則まで並べると3行に収まらず結びが切れるので、打ち消しと完全バグだけ書く
+      desc: rules.filter(r => !clashes || r[0].startsWith('打ち消し') || r[0].startsWith('★完全バグ'))
+        .map(r => r[0] === '★完全バグ' ? '★完全バグ ×2' : r[0].startsWith('★完全バグ') ? r[0] : `${r[0]} ${pct(r[1])}`).join('／') + tail,
+      print: printOf(fp).slice(0, 12).toUpperCase()
+    };
+  }
+
+  // カードは1枚の canvas に描く（画面と保存で同じものを使う）
+  function drawCard(cv, M) {
+    // 化けさせるときに画素を読むので、最初から CPU で描く（途中で描き方が切り替わると、同じ写真でも色が1目盛りずれる）
+    const c = cv.getContext('2d', { willReadFrequently: true }), W = cv.width, H = cv.height, T = TYPES[M.type];
+    c.clearRect(0, 0, W, H);
+    // バグ個体は、ふつうの化け方とは別の並びの乱数で狂わせる（描く順が同じなら、同じ写真で同じ狂い方）
+    const bugR = M.bug ? sfc32(M.fp[1], M.fp[3], M.fp[0], M.fp[2]) : null;
+    const typeKeys = Object.keys(TYPES);
+    const METAL = { gold: ['#fff6c2', '#e0a800', '#fff1a1', '#b8860b'], silver: ['#ffffff', '#a9b3c2', '#f4f6fa', '#7d8796'] };
+    const metal = METAL[M.rarity];
+    const frame = bugR && !metal ? [TYPES[typeKeys[Math.floor(bugR() * 10)]].frame[0], TYPES[typeKeys[Math.floor(bugR() * 10)]].frame[1]] : T.frame;
+    const fr = c.createLinearGradient(0, 0, W, H);
+    if (metal) metal.forEach((col, i) => fr.addColorStop(i / 3, col)); else { fr.addColorStop(0, frame[0]); fr.addColorStop(1, frame[1]); }
+    c.fillStyle = fr; roundRect(c, 0, 0, W, H, 34); c.fill();
+    if (metal) { // 光の筋（枠の上だけ。中の白地で隠れる）
+      c.save(); c.globalAlpha = 0.45; c.fillStyle = '#fff';
+      for (const sx of [-80, 140, 420]) { c.beginPath(); c.moveTo(sx, H); c.lineTo(sx + 60, H); c.lineTo(sx + 360, 0); c.lineTo(sx + 300, 0); c.closePath(); c.fill(); }
+      c.restore();
+    }
+    if (bugR) for (let i = 0; i < 7; i++) { // 枠に走るノイズの線
+      c.fillStyle = TYPES[typeKeys[Math.floor(bugR() * 10)]].frame[Math.floor(bugR() * 2)];
+      c.fillRect(0, Math.floor(bugR() * H), W, 2 + Math.floor(bugR() * 5));
+    }
+    if (M.fusion) { // 合体の子は、枠の内側に虹の輪
+      const rb = c.createLinearGradient(0, 0, W, 0);
+      ['#ff5a5a', '#ffb13b', '#ffe14d', '#46c47a', '#4aa8ff', '#9b6bff'].forEach((col, i) => rb.addColorStop(i / 5, col));
+      c.strokeStyle = rb; c.lineWidth = 8; roundRect(c, 14, 14, W - 28, H - 28, 28); c.stroke();
+    }
+    c.fillStyle = M.rarity === 'gold' ? '#fffbea' : M.rarity === 'silver' ? '#f8fafd' : '#fffdf6';
+    roundRect(c, 22, 22, W - 44, H - 44, 22); c.fill();
+    // 名前の帯
+    let no = String(M.no).padStart(3, '0'), name = M.name, badge = T.icon + ' ' + M.type + 'タイプ';
+    if (bugR) {
+      const at = Math.floor(bugR() * 3); no = no.slice(0, at) + '?' + no.slice(at + 1);
+      name = garble(name, bugR, 1 + Math.floor(bugR() * 2), 1);
+      badge = '❓ ？？？タイプ';
+    }
+    c.fillStyle = '#1a1a2e'; c.font = '700 22px Oswald, sans-serif'; c.textBaseline = 'alphabetic';
+    c.fillText('No.' + no, 46, 66);
+    c.font = '900 40px "Noto Sans JP", sans-serif'; c.fillText(name, 46, 112);
+    if (M.gender) { // 名前のすぐ右に ♂ ♀ の丸
+      const gx = 46 + c.measureText(name).width + 24;
+      c.fillStyle = M.gender === 'm' ? '#2f6fe0' : '#e0459b'; c.beginPath(); c.arc(gx, 98, 16, 0, 7); c.fill();
+      c.fillStyle = '#fff'; c.font = '900 22px "Noto Sans JP", sans-serif'; c.textAlign = 'center';
+      c.fillText(M.gender === 'm' ? '♂' : '♀', gx, 106); c.textAlign = 'left';
+    }
+    c.font = '700 22px "Noto Sans JP", sans-serif';
+    const tw = c.measureText(badge).width + 28;
+    c.fillStyle = bugR ? '#1a1a2e' : metal ? metal[3] : T.frame[1]; roundRect(c, W - 46 - tw, 44, tw, 40, 20); c.fill();
+    c.fillStyle = '#fff'; c.fillText(badge, W - 46 - tw + 14, 72);
+    // 絵
+    const ax = 46, ay = 132, aw = W - 92, ah = 330;
+    const bg = c.createRadialGradient(W / 2, ay + ah * 0.45, 20, W / 2, ay + ah / 2, aw * 0.7);
+    bg.addColorStop(0, '#ffffff'); bg.addColorStop(1, css(shade(M.g.second, 0.7)));
+    c.fillStyle = bg; roundRect(c, ax, ay, aw, ah, 16); c.fill();
+    c.fillStyle = 'rgba(0,0,0,.08)'; c.beginPath(); c.ellipse(W / 2, ay + ah - 34, 120, 16, 0, 0, 7); c.fill();
+    drawMonster(c, W / 2, ay + ah / 2 + 14, 150, M.g);
+    const bug = sfc32(M.fp[3], M.fp[2], M.fp[1], M.fp[0]); // 体の形とは別の並びで化け方を決める
+    glitchArt(c, ax, ay, aw, ah, bug, false);
+    drawCrest(c, ax + aw - 66, ay + ah - 66, 56, M.fp); // 紋章は化けさせない（その1枚の証なので）
+    if (bugR) {
+      glitchArt(c, ax, ay, aw, ah, bugR, true);
+      // 判：絵の右上に、少し傾けて押す
+      c.save(); c.translate(ax + aw - 92, ay + 40); c.rotate(-0.2);
+      c.fillStyle = 'rgba(255,45,85,.92)'; roundRect(c, -78, -22, 156, 44, 10); c.fill();
+      c.strokeStyle = '#fff'; c.lineWidth = 3; roundRect(c, -72, -16, 144, 32, 7); c.stroke();
+      c.fillStyle = '#fff'; c.font = '900 22px "Noto Sans JP", sans-serif'; c.textAlign = 'center';
+      c.fillText('⚠ バグ個体', 0, 8); c.restore(); c.textAlign = 'left';
+    }
+    if (metal) {
+      // きらめき（絵の上に小さな十字の光）と、左上の帯
+      const sp = sfc32(M.fp[2], M.fp[0], M.fp[1], M.fp[3]);
+      c.save(); c.fillStyle = '#fff'; c.globalAlpha = 0.9;
+      for (let i = 0; i < 9; i++) {
+        const sx = ax + 20 + sp() * (aw - 40), sy = ay + 20 + sp() * (ah - 40), r = 5 + sp() * 9;
+        c.beginPath(); c.moveTo(sx, sy - r); c.lineTo(sx + r * 0.25, sy - r * 0.25); c.lineTo(sx + r, sy); c.lineTo(sx + r * 0.25, sy + r * 0.25);
+        c.lineTo(sx, sy + r); c.lineTo(sx - r * 0.25, sy + r * 0.25); c.lineTo(sx - r, sy); c.lineTo(sx - r * 0.25, sy - r * 0.25); c.closePath(); c.fill();
+      }
+      c.restore();
+      c.save(); c.translate(ax + 70, ay + 34); c.rotate(-0.12);
+      const rb = c.createLinearGradient(-70, 0, 70, 0); metal.forEach((col, i) => rb.addColorStop(i / 3, col));
+      c.fillStyle = rb; roundRect(c, -66, -19, 132, 38, 8); c.fill();
+      c.strokeStyle = metal[3]; c.lineWidth = 3; c.stroke();
+      c.fillStyle = M.rarity === 'gold' ? '#6b4a00' : '#3d4654'; c.font = '700 24px Oswald, sans-serif'; c.textAlign = 'center';
+      c.fillText(RARITY[M.rarity].label, 0, 9); c.restore(); c.textAlign = 'left';
+    }
+    // 生まれ（合体の子は、混ぜた属性）と、右にパワー
+    c.fillStyle = '#4a4a6a'; c.font = '500 18px "Noto Sans JP", sans-serif';
+    const origin = M.parents ? `第${M.gen}世代　父 ${M.parentNames[0]} × 母 ${M.parentNames[1]}`
+      : M.fusion ? `合体 ×${M.fusion}：${M.parts.join('＋')}` : M.motif ? `生まれた写真：${M.motif}` : '写真の色から生まれた';
+    if (M.parents) c.font = '700 16px "Noto Sans JP", sans-serif';
+    c.fillText(origin, 46, ay + ah + 34);
+    c.textAlign = 'right'; c.fillStyle = '#9090b0'; c.font = '700 16px "Noto Sans JP", sans-serif';
+    const pw = String(M.power); c.font = '700 28px Oswald, sans-serif'; const pwW = c.measureText(pw).width;
+    c.fillStyle = metal ? metal[3] : M.fusion ? '#9b3bd6' : T.frame[1]; c.fillText(pw, W - 46, ay + ah + 37);
+    c.fillStyle = '#9090b0'; c.font = '700 15px "Noto Sans JP", sans-serif'; c.fillText('パワー', W - 52 - pwW, ay + ah + 34);
+    c.textAlign = 'left';
+    // 強さ（100を超えたら棒はいっぱいで数字に色。バグ個体の 255 は棒がカードの外まで突き抜ける）
+    let y = ay + ah + 62;
+    for (const [k, v] of Object.entries(M.stats)) {
+      c.fillStyle = '#1a1a2e'; c.font = '700 17px "Noto Sans JP", sans-serif'; c.fillText(k, 46, y + 14);
+      c.fillStyle = '#e8eaf2'; roundRect(c, 160, y, 330, 16, 8); c.fill();
+      if (k === M.bugStat) {
+        c.fillStyle = '#ff2d55'; c.fillRect(160, y, W - 160, 16);
+        c.font = '700 18px Oswald, sans-serif'; c.lineWidth = 4; c.strokeStyle = '#1a1a2e'; c.strokeText(String(v), 502, y + 15);
+        c.fillStyle = '#fff'; c.fillText(String(v), 502, y + 15);
+      } else {
+        c.fillStyle = metal ? metal[1] : T.frame[1]; roundRect(c, 160, y, 330 * Math.min(1, v / 100), 16, 8); c.fill();
+        c.fillStyle = v > 99 ? '#d9361b' : '#1a1a2e'; c.font = '700 18px Oswald, sans-serif'; c.fillText(String(v), 502, y + 15);
+      }
+      y += 28;
+    }
+    // 技（バグ個体は2つ目の技が半分ほど化ける）
+    y += 8; c.font = '700 18px "Noto Sans JP", sans-serif'; let x = 46;
+    const moves = bugR ? [M.moves[0], garble(M.moves[1], bugR, Math.ceil([...M.moves[1]].length / 2), 0)] : M.moves;
+    for (const mv of moves) {
+      const w = c.measureText(mv).width + 30;
+      c.fillStyle = css(shade(TYPES[M.type].frame[0].match(/\w\w/g).map(h => parseInt(h, 16)), 0.75)); roundRect(c, x, y, w, 36, 18); c.fill();
+      c.fillStyle = '#1a1a2e'; c.fillText(mv, x + 15, y + 25); x += w + 10;
+    }
+    // 説明
+    y += 64; c.fillStyle = '#4a4a6a'; c.font = '500 18px "Noto Sans JP", sans-serif';
+    let desc = garble(M.desc, bug);
+    if (bugR) desc = garble(desc, bugR, 5 + Math.floor(bugR() * 4), 0);
+    y += wrap(c, desc, 46, y, W - 92, 28, 3);
+    if (M.mission) {
+      y += 6; c.fillStyle = '#fff3e0'; roundRect(c, 40, y - 4, W - 80, 64, 12); c.fill();
+      c.fillStyle = '#d9361b'; c.font = '700 17px "Noto Sans JP", sans-serif';
+      c.fillText('★ 料理ミッション', 54, y + 20);
+      c.fillStyle = '#1a1a2e'; c.font = '500 16px "Noto Sans JP", sans-serif';
+      wrap(c, M.mission, 54, y + 46, W - 108, 22, 1);
+    }
+    // 下の帯：1行目に、その1枚だけの記録（発行番号と、読み取った部分・両親・合体）
+    const birth = M.parents ? `${M.parentNames[0]}と${M.parentNames[1]}の${M.childNo}人目`
+      : M.fusion ? `${M.fusion}枚の合体` : M.frag ? `断片 #${M.frag.n}：${M.frag.start}バイト目から${M.frag.stride}ごと` : '';
+    c.fillStyle = '#9090b0'; c.font = '500 14px "Noto Sans JP", sans-serif'; c.textAlign = 'left';
+    c.fillText(`発行 #${String(M.serial || 0).padStart(6, '0')}　${birth}`, 46, H - 66);
+    c.fillStyle = '#0057ff'; c.font = '700 17px "Noto Sans JP", sans-serif';
+    c.fillText('モンスタードロッパー  dropper-tools.com', 46, H - 40);
+    c.fillStyle = '#9090b0'; c.textAlign = 'right'; c.font = '500 15px Oswald, sans-serif';
+    c.fillText('ID ' + M.print, W - 46, H - 40); c.textAlign = 'left';
+  }
+
+  // ---- 図鑑（この PC・スマホの中だけ。カードの中身ごと保存する。結婚に親の中身が要るため） ----
+  function thumbOf() {
+    const t = document.createElement('canvas'); t.width = 180; t.height = 276;
+    t.getContext('2d').drawImage($('card'), 0, 0, 180, 276);
+    return t.toDataURL('image/jpeg', 0.75);
+  }
+  async function saveCard(M) {
+    M.thumb = thumbOf();
+    await DB.put('cards', JSON.parse(JSON.stringify(M)));
+    await renderDex();
+  }
+  // 画面に文字を出すときの逃がし（読み込んだファイルの名前に、ページへの仕掛けが混ぜられていても文字として出す）
+  const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  const safeThumb = s => (typeof s === 'string' && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(s) ? s : '');
+
+  // ---- ファイルへの書き出し・読み込み（端末の引っ越し） ----
+  const FILE_APP = 'dropper-monster', FILE_VER = 1;
+  const checkOf = body => printOf(fingerprint(enc('dropper-monster-file:' + JSON.stringify(body))));
+  async function exportDex() {
+    const cards = await DB.getAll('cards'), couples = await DB.getAll('couples');
+    if (!cards.length) { setStatus('図鑑がまだ空なので、書き出すものがありません。'); return; }
+    const meta = {}; for (const [k, v] of await DB.entries('meta')) meta[k] = v;
+    const body = { cards, couples, meta };
+    const file = { app: FILE_APP, version: FILE_VER, exportedAt: new Date().toISOString(), body, check: checkOf(body) };
+    const d = new Date(), ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(file)], { type: 'application/json' }));
+    a.download = `monster-zukan-${ymd}.json`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    setStatus(`📤 カード ${cards.length} 枚・夫婦 ${couples.length} 組をファイルに書き出しました。新しい端末では「ファイルから読み込む」を押してください。`);
+  }
+  // カード1枚の形を確かめる（足りない・おかしいものは読み込まない）
+  function validCard(c) {
+    return c && typeof c.id === 'string' && /^[0-9a-f]{32}$/.test(c.id) && Array.isArray(c.fp) && c.fp.length === 4 &&
+      c.g && c.stats && typeof c.name === 'string' && c.name.length <= 20 && TYPES[c.type] && (c.gender === 'm' || c.gender === 'f') &&
+      ['gold', 'silver', 'normal'].includes(c.rarity) && Array.isArray(c.moves) && typeof c.desc === 'string' && safeThumb(c.thumb) &&
+      Object.values(c.stats).every(Number.isFinite) && (!c.parents || (Array.isArray(c.parents) && Array.isArray(c.parentNames)));
+  }
+  async function importDex(file) {
+    let data;
+    try { data = JSON.parse(await file.text()); } catch (e) { setStatus('読み込めないファイルでした（図鑑のファイルではないようです）。'); return; }
+    if (!data || data.app !== FILE_APP || !data.body) { setStatus('モンスタードロッパーの図鑑のファイルではないようです。'); return; }
+    if (data.version !== FILE_VER) { setStatus('このファイルは、いまの画面では読めない版です。'); return; }
+    if (data.check !== checkOf(data.body)) { setStatus('⚠ ファイルの中身が書き出したときと変わっています。読み込みをやめました。'); return; }
+    const { cards = [], couples = [], meta = {} } = data.body;
+    const good = cards.filter(validCard), bad = cards.length - good.length;
+    const have = new Set((await DB.getAll('cards')).map(c => c.id));
+    const fresh = good.filter(c => !have.has(c.id));
+    const moving = have.size === 0; // カードの無い端末なら「引っ越し」：秘密の番号ごと引き継ぐ
+    const msg = `カード ${fresh.length} 枚（すでにある ${good.length - fresh.length} 枚は入れません）・夫婦 ${couples.length} 組を読み込みます。` +
+      (moving ? '\nこの端末はまだカードが無いので、書き出した端末の続きとして使えるようにします（引っ越し）。' : '\nこの端末のカードに足し合わせます。') +
+      (bad ? `\n形のおかしいカード ${bad} 枚は読み込みません。` : '') + '\nよろしいですか？';
+    if (!confirm(msg)) { setStatus('読み込みをやめました。'); return; }
+    for (const c of fresh) await DB.put('cards', c);
+    const ids = new Set([...have, ...fresh.map(c => c.id)]);
+    for (const cp of couples) {
+      if (!cp || typeof cp.id !== 'string' || !ids.has(cp.male) || !ids.has(cp.female) || !Array.isArray(cp.children)) continue;
+      const mine = await DB.get('couples', cp.id);
+      const kids = [...new Set([...(mine ? mine.children : []), ...cp.children.filter(k => typeof k === 'string')])].slice(0, 3);
+      await DB.put('couples', { id: cp.id, male: cp.male, female: cp.female, children: kids, at: mine ? mine.at : Number(cp.at) || Date.now() });
+    }
+    // 発行番号は大きいほうから続ける。写真ごとの発行回数も大きいほうを取る。秘密の番号は引っ越しのときだけ引き継ぐ
+    const serial = Math.max((await DB.get('meta', 'serial')) || 0, Number(meta.serial) || 0, ...fresh.map(c => Number(c.serial) || 0));
+    await DB.put('meta', serial, 'serial');
+    for (const [k, v] of Object.entries(meta)) {
+      if (!k.startsWith('issued:') || !Number.isFinite(v)) continue;
+      await DB.put('meta', Math.max((await DB.get('meta', k)) || 0, v), k);
+    }
+    if (moving && typeof meta.secret === 'string' && /^[0-9a-f]{32}$/.test(meta.secret)) await DB.put('meta', meta.secret, 'secret');
+    await renderDex();
+    setStatus(`📥 カード ${fresh.length} 枚を読み込みました。` + (moving ? 'この端末で続きを遊べます。' : ''));
+  }
+
+  async function renderDex() {
+    const cards = (await DB.getAll('cards')).sort((a, b) => b.serial - a.serial), g = $('dex');
+    g.innerHTML = '';
+    for (const m of cards) {
+      const b = document.createElement('button'); b.className = 'cardthumb'; b.type = 'button';
+      b.title = `No.${m.no} ${m.name}`;
+      const i = new Image(); i.src = m.thumb; i.alt = `${m.name}（${m.gender === 'm' ? '男性' : '女性'}・第${m.gen}世代）`; b.appendChild(i);
+      const tag = document.createElement('span'); tag.className = 'tag';
+      tag.innerHTML = `<span>${m.gender === 'm' ? '♂' : '♀'}</span>` + (Number(m.gen) > 1 ? `<span>第${Number(m.gen)}世代</span>` : '');
+      b.appendChild(tag);
+      b.addEventListener('click', () => display(m, '図鑑から開きました。'));
+      g.appendChild(b);
+    }
+    $('dexEmpty').classList.toggle('hidden', cards.length > 0);
+    $('clearDex').classList.toggle('hidden', cards.length === 0);
+    if (DB.memOnly) $('dexNote').textContent = '⚠ この画面ではカードを保存できません（プライベートブラウズなど）。閉じると消えます。';
+    await renderCouples();
+  }
+
+  // ---- AI（任意） ----
+  const AI_MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest'];
+  const AI_KEY_STORE = 'dropper_ai_key';
+  const getKey = () => { try { return localStorage.getItem(AI_KEY_STORE) || ''; } catch (e) { return ''; } };
+  function showKeyState() { $('keyState').textContent = getKey() ? '✅ キーは保存済みです（入れ直すときは貼り付けて保存）' : 'キーがまだありません。'; }
+  function jpegOf(img) {
+    const s = Math.min(1, 512 / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * s); c.height = Math.round(img.naturalHeight * s);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', 0.8).split(',')[1];
+  }
+  const PROMPT = `この写真をもとに、ゲームのモンスターを1体考えてください。JSONだけで答えてください。
+{"motif":"写っている主なもの（12字以内）","name":"モンスターの名前（カタカナ3〜7字）","type":"炎・水・森・雷・土・風・夢・闇・光・鋼 のどれか1つ","moves":["技の名前（9字以内）","技の名前（9字以内）"],"desc":"図鑑の説明（子どもにも分かる言葉で60字以内）","mission":"食べ物・食材・冷蔵庫の中が写っていれば、写っている材料で作れる料理を『〜を作ってたおせ！』の形で30字以内。そうでなければ null"}
+人が写っていても、その人の顔・見た目・名前・持ち物の文字には触れず、物や景色だけをもとにしてください。`;
+  async function askAI(img) {
+    const key = getKey();
+    const body = JSON.stringify({
+      contents: [{ parts: [{ text: PROMPT }, { inline_data: { mime_type: 'image/jpeg', data: jpegOf(img) } }] }],
+      generationConfig: { temperature: 0.4, responseMimeType: 'application/json' }
+    });
+    let resp;
+    for (const model of AI_MODELS) {
+      resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+      if (![500, 502, 503, 504].includes(resp.status)) break; // 混んでいるときだけ次のモデルへ
+    }
+    if (resp.status === 429) throw new Error('今日の無料枠を使い切りました。明日また試してください（色だけで生まれたモンスターは残ります）。');
+    if ([500, 502, 503, 504].includes(resp.status)) throw new Error('AI が混み合っています。少しおいてから試してください。');
+    if (!resp.ok) {
+      const t = await resp.text();
+      if (resp.status === 400 && /API key not valid|API_KEY_INVALID/i.test(t)) { try { localStorage.removeItem(AI_KEY_STORE); } catch (e) {} showKeyState(); throw new Error('キーが正しくないようです。貼り直してください。'); }
+      throw new Error('AI がうまく答えませんでした（' + resp.status + '）。');
+    }
+    const data = await resp.json();
+    const txt = (((data.candidates || [])[0] || {}).content || {}).parts?.map(p => p.text || '').join('').replace(/^```(?:json)?|```$/g, '').trim();
+    return JSON.parse(txt);
+  }
+  const clip = (s, n) => (typeof s === 'string' ? s.trim() : '').slice(0, n);
+
+  // ---- 生まれる ----
+  let current = null;
+  function setStatus(t) { $('status').textContent = t; }
+  // canvas は字体の読み込みを待たない。しかも Google Fonts の日本語は字のまとまりごとに後から届くので、
+  // カードに描く字（文字化けの字も）をぜんぶ渡して、届いてから描く。そうしないと最初の1枚だけ別の字体になる
+  async function loadFontsFor(M) {
+    const text = 'No.0123456789?' + M.name + M.desc + M.moves.join('') + M.motif + M.mission + MOJIBAKE +
+      Object.keys(M.stats).join('') + Object.keys(TYPES).join('') + 'タイプ？⚠❓★バグ個体生まれた写真の色から料理ミッションモンスタードロッパー指紋 dropper-tools.com' +
+      'パワー合体×＋：GOLDSILVER♂♀発行断片バイト目からごと第世代父母人目の枚ID#' + (M.parentNames || []).join('');
+    const fonts = ['900 40px "Noto Sans JP"', '900 22px "Noto Sans JP"', '700 18px "Noto Sans JP"', '700 16px "Noto Sans JP"', '500 18px "Noto Sans JP"', '500 14px "Noto Sans JP"', '700 15px "Noto Sans JP"', '700 22px Oswald', '700 28px Oswald', '500 15px Oswald'];
+    try { await Promise.all(fonts.map(f => document.fonts.load(f, text))); } catch (e) { /* 読めなければ代わりの字体で描く */ }
+  }
+  // 1枚の写真から1体を作る（まだ描かない）。発行のたびに写真の違う部分を読むので、同じ写真でも毎回違う子になる。
+  // 珍しさの倍率と、バグ個体の 255 はここで強さに入れる
+  async function build(bytes, img, photoPrint) {
+    photoPrint = photoPrint || printOf(fingerprint(bytes));
+    const n = ((await DB.get('meta', 'issued:' + photoPrint)) || 0) + 1;
+    await DB.put('meta', n, 'issued:' + photoPrint);
+    const s = issueSample(bytes, photoPrint, n, await deviceSecret());
+    const fp = fingerprint(s.sample), pal = paletteOf(img), g = makeGenome(fp, pal, bytes.length);
+    const rarity = rarityOf(fp), bug = isBugPrint(fp), stats = {};
+    for (const [k, v] of Object.entries(g.stats)) stats[k] = Math.round(v * RARITY[rarity].mult);
+    // バグ個体は1項目だけ 255 になる。どの項目かを bugStat に覚え、その棒だけカードの外まで突き抜けさせる
+    // （数字で見分けると、合体で 255 を超えたふつうの強さまで突き抜けてしまう）
+    let bugStat = null;
+    if (bug) { const r = sfc32(fp[2], fp[0], fp[3], fp[1]); bugStat = Object.keys(stats)[Math.floor(r() * 4)]; stats[bugStat] = 255; }
+    return {
+      g, fp, rarity, bug, bugStat, stats, power: powerOf(stats), fusion: 0,
+      gender: genderOf(fp), gen: 1, parents: null, frag: { n, start: s.start, stride: s.stride },
+      no: g.no, name: g.name, type: g.type, moves: g.moves, motif: '', mission: '',
+      desc: `${TYPES[g.type].icon} ${g.type}タイプ。写真のいちばん多い色から生まれた。読み取った部分が違えば、別の子になる。`,
+      id: printOf(fp), print: printOf(fp).slice(0, 12).toUpperCase()
+    };
+  }
+  function statusOf(M) {
+    const s = [];
+    if (M.parents) s.push(`👶 ${M.parentNames[0]}と${M.parentNames[1]}に、${M.childNo}人目の子どもが生まれた！`);
+    if (M.fusion) s.push(`🧬 ${M.fusion}つのデータが合体！ パワー ${M.power}`);
+    if (M.rarity !== 'normal') s.push(RARITY[M.rarity].msg);
+    if (M.bug) s.push(M.fusion ? '⚠ バグ個体が混ざって、合体した子もバグった！' : BUG_MSG);
+    return s.join('　');
+  }
+  // 描くだけ（図鑑から開いたとき）
+  async function display(M, note) {
+    current = M;
+    await loadFontsFor(M);
+    if (current !== M) return false;
+    drawCard($('card'), M);
+    $('stage').classList.remove('hidden');
+    $('stage').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (note !== undefined) setStatus(note);
+    return true;
+  }
+  // 新しく生まれた子：発行番号を付けて描き、図鑑に入れる
+  async function show(M, img, note) {
+    M.serial = await nextSerial();
+    if (!(await display(M))) return;
+    const done = () => (note ? note + '　' : '') + statusOf(M);
+    if (M.fusion && $('aiOn').checked) { setStatus('合体のときは AI を使いません（写真を何枚も送らないため）。　' + done()); return saveCard(M); }
+    if ($('aiOn').checked && img && img.__fromFile) {
+      if (!getKey()) { setStatus('AI を使うには、上の欄に API キーを保存してください。いまは色だけで生まれています。'); return saveCard(M); }
+      setStatus('🔍 AI が写真を見ています…');
+      try {
+        const a = await askAI(img);
+        if (TYPES[a.type]) M.type = a.type;
+        M.name = clip(a.name, 8) || M.name;
+        M.motif = clip(a.motif, 14);
+        if (Array.isArray(a.moves) && a.moves.length >= 2) M.moves = a.moves.slice(0, 2).map(m => clip(m, 10));
+        M.desc = clip(a.desc, 70) || M.desc;
+        M.mission = a.mission ? clip(a.mission, 34) : '';
+        if (current === M) { await loadFontsFor(M); drawCard($('card'), M); setStatus(done()); }
+      } catch (e) { setStatus(e.message || 'AI がうまく答えませんでした。'); }
+    } else setStatus(done());
+    // 待っている間に別のカードを開いていたら、この子の絵をいったん描き直してから図鑑に入れる
+    if (current !== M) { const back = current; await display(M); await saveCard(M); return display(back); }
+    return saveCard(M);
+  }
+  function loadPhoto(file) {
+    return new Promise(async (ok, ng) => {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onload = () => { img.__fromFile = true; URL.revokeObjectURL(url); ok({ bytes, img }); };
+      img.onerror = () => { URL.revokeObjectURL(url); ng(new Error('読めない写真がありました（HEIC は JPEG に変えてから試してください）。')); };
+      img.src = url;
+    });
+  }
+  // 1枚なら1体、2〜3枚なら合体。4枚目からは使わない。同じ写真は1枚に数える（写真そのものの指紋で見る）
+  async function fromFiles(files) {
+    // 図鑑のファイル（.json）が落とされたら、写真ではなく読み込みとして扱う
+    const json = [...files].find(f => /\.json$/i.test(f.name) || f.type === 'application/json');
+    if (json) return importDex(json);
+    const photos = [...files].filter(f => f.type.startsWith('image/'));
+    if (!photos.length) { setStatus('写真（画像のファイル）をドロップしてください。'); return; }
+    const notes = [];
+    if (photos.length > 3) notes.push(`合体できるのは3枚までなので、最初の3枚を使いました。`);
+    setStatus(photos.length > 1 ? '🧬 合体しています…' : '🥚 たまごが動いています…');
+    let loaded;
+    try { loaded = await Promise.all(photos.slice(0, 3).map(loadPhoto)); } catch (e) { setStatus(e.message); return; }
+    const parts = [], seen = new Set();
+    for (const l of loaded) {
+      const pp = printOf(fingerprint(l.bytes));
+      if (seen.has(pp)) { notes.push('同じ写真は1枚に数えました。'); continue; }
+      seen.add(pp); parts.push({ M: await build(l.bytes, l.img, pp), img: l.img });
+    }
+    if (parts.length === 1) return show(parts[0].M, parts[0].img, notes.join(''));
+    return show(fuse(parts.map(p => p.M)), null, notes.join(''));
+  }
+  async function hatch(bytes, img) { return show(await build(bytes, img), img); }
+  function demo() {
+    // 写真無しで試す：その場で描いた絵から生まれる（発行のたびに読む部分が変わるので、毎回違う子）
+    const c = document.createElement('canvas'); c.width = c.height = 120; const x = c.getContext('2d');
+    x.fillStyle = '#2f8f5b'; x.fillRect(0, 0, 120, 120); x.fillStyle = '#f2c94c'; x.beginPath(); x.arc(80, 40, 22, 0, 7); x.fill();
+    x.fillStyle = '#5a8fd8'; x.fillRect(0, 85, 120, 35);
+    const img = new Image();
+    img.onload = () => hatch(enc('ドロッパーの遊び場のたまご'), img);
+    img.src = c.toDataURL('image/png');
+  }
+
+  // ---- 結婚の操作 ----
+  const slots = { m: null, f: null };
+  function renderSlots() {
+    for (const [k, el, label] of [['m', $('slotM'), '夫'], ['f', $('slotF'), '妻']]) {
+      const c = slots[k];
+      el.classList.toggle('on', !!c);
+      el.innerHTML = `<span class="sym ${k}">${k === 'm' ? '♂' : '♀'}</span>` + (c ? `<img src="${safeThumb(c.thumb)}" alt=""><span>${label}：${esc(c.name)}</span>` : `<span>${label}：まだ選んでいません</span>`);
+    }
+    $('wed').disabled = !(slots.m && slots.f);
+  }
+  async function renderCouples() {
+    const couples = (await DB.getAll('couples')).sort((a, b) => b.at - a.at);
+    const cards = new Map((await DB.getAll('cards')).map(c => [c.id, c]));
+    const box = $('couples'); box.innerHTML = '';
+    for (const cp of couples) {
+      const m = cards.get(cp.male), f = cards.get(cp.female);
+      if (!m || !f) continue;
+      const row = document.createElement('div'); row.className = 'couple';
+      row.innerHTML = `<img src="${safeThumb(m.thumb)}" alt="${esc(m.name)}"><span>${esc(m.name)} ♂</span><span>💍</span><img src="${safeThumb(f.thumb)}" alt="${esc(f.name)}"><span>${esc(f.name)} ♀</span><span class="kids">子ども ${Number(cp.children.length)}/3</span>`;
+      const b = document.createElement('button'); b.type = 'button';
+      b.textContent = cp.children.length >= 3 ? '子どもは3人まで' : '👶 子どもを授かる';
+      b.disabled = cp.children.length >= 3;
+      b.addEventListener('click', () => haveChild(cp.id));
+      row.appendChild(b); box.appendChild(row);
+    }
+  }
+  async function wed() {
+    const couples = await DB.getAll('couples');
+    const why = whyCannotMarry(slots.m, slots.f, couples);
+    if (why) { $('wedMsg').textContent = why; return; }
+    await DB.put('couples', { id: slots.m.id + '|' + slots.f.id, male: slots.m.id, female: slots.f.id, children: [], at: Date.now() });
+    $('wedMsg').textContent = '';
+    setStatus(`💍 ${slots.m.name} と ${slots.f.name} が結婚しました！`);
+    slots.m = slots.f = null; renderSlots(); await renderCouples();
+  }
+  async function haveChild(coupleId) {
+    const cp = await DB.get('couples', coupleId);
+    if (!cp || cp.children.length >= 3) return;
+    const father = await DB.get('cards', cp.male), mother = await DB.get('cards', cp.female);
+    const child = makeChild(father, mother, cp.children.length, await deviceSecret());
+    cp.children.push(child.id);
+    await DB.put('couples', cp);
+    await show(child, null);
+  }
+
+  // ---- 入力 ----
+  const drop = $('drop');
+  drop.addEventListener('click', () => $('file').click());
+  drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('file').click(); } });
+  $('file').addEventListener('change', e => { if (e.target.files.length) fromFiles(e.target.files); e.target.value = ''; });
+  ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => { if (e.dataTransfer.files.length) fromFiles(e.dataTransfer.files); });
+  window.addEventListener('dragover', e => e.preventDefault());
+  window.addEventListener('drop', e => { e.preventDefault(); if (e.target !== drop && e.dataTransfer.files.length) fromFiles(e.dataTransfer.files); });
+  $('demo').addEventListener('click', demo);
+  $('again').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  $('save').addEventListener('click', () => {
+    $('card').toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `monster-${current.print}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }, 'image/png');
+  });
+  $('cand').addEventListener('click', async () => {
+    if (!current) return;
+    const saved = await DB.get('cards', current.id); // 図鑑に入った子だけ（中身がそろっている）
+    if (!saved) { setStatus('このカードはまだ図鑑に入っていません。'); return; }
+    slots[saved.gender] = saved; renderSlots();
+    $('wedMsg').textContent = whyCannotMarry(slots.m, slots.f, await DB.getAll('couples')) && slots.m && slots.f ? whyCannotMarry(slots.m, slots.f, await DB.getAll('couples')) : '';
+    $('marry').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+  $('wed').addEventListener('click', wed);
+  $('exportDex').addEventListener('click', exportDex);
+  $('importDex').addEventListener('click', () => $('importFile').click());
+  $('importFile').addEventListener('change', e => { if (e.target.files[0]) importDex(e.target.files[0]); e.target.value = ''; });
+  $('unslot').addEventListener('click', () => { slots.m = slots.f = null; $('wedMsg').textContent = ''; renderSlots(); });
+  $('aiOn').addEventListener('change', e => { $('aiBox').classList.toggle('hidden', !e.target.checked); showKeyState(); });
+  $('saveKey').addEventListener('click', () => {
+    const k = $('key').value.trim(); if (!k) return;
+    try { localStorage.setItem(AI_KEY_STORE, k); } catch (e) {}
+    $('key').value = ''; showKeyState();
+  });
+  $('clearDex').addEventListener('click', async () => {
+    if (!confirm('図鑑のカードと、結婚・子どもの記録をぜんぶ消します。元に戻せません。よろしいですか？')) return;
+    await DB.clear('cards'); await DB.clear('couples');
+    slots.m = slots.f = null; renderSlots(); await renderDex();
+  });
+  renderSlots();
+  renderDex();
+
+})();
+</script>
+</body>
+</html>
