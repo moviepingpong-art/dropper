@@ -711,9 +711,8 @@
   "privacy.play1": "What it handles: the photos you drop. Neither the photo itself nor its file name is put on a card.",
   "privacy.play2": "What is stored: the cards you make (shape, stats and a small picture), the records of marriages and children, and a per-device number are stored only on your device (in your browser's IndexedDB). Photos are not stored. We cannot see any of this.",
   "privacy.play3": "How to delete: press the button that clears the collection on the page, or delete this site's data in your browser settings.",
-  "privacy.play4": "Exporting to a file: only when you press the export button is the record of your cards saved as a file on your device. Giving the file to someone else means giving them copies of your cards.",
   "privacy.play5": "AI is optional: only when you turn on the option that lets the AI read what is in the photo is a reduced copy of the photo sent to Google's Gemini API using your own API key (it does not go through us). When it is off, photos are never sent anywhere. When used within the free tier, the content sent may be used to improve Google's services. <strong>Please do not use photos showing people's faces or names.</strong>",
-  "privacy.play6": "Analytics: as on other pages, page views are counted with Google Analytics (section 12). In addition, <strong>only the counts</strong> of cards born, fusions, marriages, children, exports and imports are sent. Photos, names and card contents are never sent.",
+  "privacy.play6": "Analytics: as on other pages, page views are counted with Google Analytics (section 12). In addition, <strong>only the counts</strong> of cards born, fusions, marriages and children are sent. Photos, names and card contents are never sent.",
   "privacy.ytTitle": "Embedded videos (YouTube)",
   "privacy.ytBody": "Some guide pages embed a YouTube video. The video loads from YouTube (Google) in privacy-enhanced mode (youtube-nocookie.com) only when you press the play button; nothing is sent to YouTube before that. After you press it, Google's privacy policy applies."
 }
