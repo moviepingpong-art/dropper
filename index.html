@@ -359,6 +359,19 @@ section{padding:6rem 1.5rem;}
 .ak-band-badge{font-size:0.76rem;font-weight:700;color:#00936e;background:rgba(0,200,150,0.14);border-radius:50px;padding:0.35em 0.95em;white-space:nowrap;}
 @media(max-width:640px){.ak-band{padding:1.5rem 1.2rem;}}
 
+/* ---------- 遊び場（モンスタードロッパー）の帯。日本語のトップだけに出る（build_play_band） ---------- */
+/* 道具の4本とは別の棚に見えるよう、青ではなくオレンジ系にする */
+#play-band{background:linear-gradient(180deg,#fff6ec 0%,#ffffff 100%);}
+.play-card{
+  background:var(--card);border:2px solid rgba(255,87,34,0.28);border-radius:16px;
+  padding:1.9rem 1.8rem;box-shadow:0 6px 24px rgba(255,87,34,0.10);
+}
+.play-catch{font-size:clamp(1.05rem,3.2vw,1.35rem);font-weight:900;color:var(--text-dark);line-height:1.6;margin-bottom:0.7rem;}
+.play-card p{font-size:0.9rem;color:var(--text-mid);line-height:1.95;}
+.play-tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin:1.1rem 0 1.3rem;}
+.play-tag{font-size:0.76rem;font-weight:700;color:#c2410c;background:rgba(255,87,34,0.12);border-radius:50px;padding:0.35em 0.95em;white-space:nowrap;}
+@media(max-width:640px){.play-card{padding:1.5rem 1.2rem;}}
+
 /* hero直下のAI無料枠の帯。トップで最初に目に入る大きなキャッチなので、
    下の #apikey-band より一段大きく見せる。改行は辞書側の <br> で入る。 */
 #idle-band{background:linear-gradient(180deg,#effcf6 0%,#ffffff 100%);padding:3rem 0 1rem;}
@@ -796,6 +809,20 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
     <div class="tool-actions shelf-actions">
       <a class="btn-sm fill" href="https://app.dropper-tools.com/calendar/?go=attend" target="_blank" rel="noopener">使ってみる</a>
       <a class="btn-sm line" href="./guide-attend.html">使い方ガイド</a>
+    </div>
+  </div>
+</section>
+
+<!-- 遊び場：道具の4本とは別の棚。文言は play.band* -->
+<section id="play-band">
+  <div class="section-inner">
+    <p class="section-label">PLAYGROUND</p>
+    <h2 class="section-title">🎮 ドロッパーの遊び場</h2>
+    <div class="play-card">
+      <p class="play-catch">写真をドロップすると、モンスターのカードが生まれます。</p>
+      <p>冷蔵庫の中、散歩の景色、机の上。身の回りの写真から、世界に1枚だけのカードが生まれます。2〜3枚まとめて落とすと合体。男性カードと女性カードを結婚させると、子どもも生まれます。道具ではなく、遊びです。</p>
+      <div class="play-tags"><span class="play-tag">1000枚に1枚のゴールド</span><span class="play-tag">合体</span><span class="play-tag">結婚・子ども</span><span class="play-tag">ログイン不要</span></div>
+      <a class="btn-sm fill" href="./play/monster.html">モンスタードロッパーで遊ぶ</a>
     </div>
   </div>
 </section>

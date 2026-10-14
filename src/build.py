@@ -311,6 +311,36 @@ def build_tool4_guide_btn(code, strings):
     return f'\n          <a class="btn-sm line" href="{GENTRY_PATH[code]}">{label}</a>'
 
 
+# 遊び場（モンスタードロッパー）の帯（{{PLAY_BAND}}）。2026-10-14。
+# ゲームの中身（名前・技・説明・文字化け）が日本語前提なので、トップの ja だけに出す。
+# ページ本体 play/monster.html は build.py の外にある、1枚で完結した静的ページ（CLAUDE.md「遊び場」）。
+PLAY_PATH = {"ja": "./play/monster.html"}
+
+
+def build_play_band(page, code, strings):
+    """トップの「ドロッパーの遊び場」の帯。道具の4本とは別の棚に置く。
+    en/in では帯ごと出さない（遊び場のページが日本語だけのため）。"""
+    if page != "index" or code not in PLAY_PATH:
+        return ""
+    t = lambda k: strings.get(k, "")
+    tags = "".join(f'<span class="play-tag">{t(f"play.bandTag{i}")}</span>' for i in range(1, 5))
+    return f"""
+<!-- 遊び場：道具の4本とは別の棚。文言は play.band* -->
+<section id="play-band">
+  <div class="section-inner">
+    <p class="section-label">{t("play.bandLabel")}</p>
+    <h2 class="section-title">{t("play.bandTitle")}</h2>
+    <div class="play-card">
+      <p class="play-catch">{t("play.bandCatch")}</p>
+      <p>{t("play.bandDesc")}</p>
+      <div class="play-tags">{tags}</div>
+      <a class="btn-sm fill" href="{PLAY_PATH[code]}">{t("play.bandBtn")}</a>
+    </div>
+  </div>
+</section>
+"""
+
+
 # 出欠システムのガイドへのパス（{{ATTEND_GUIDE_BTN}}）。
 # ガイドは各言語フォルダ内に生成されるので、どの言語も同階層の "./" でよい。
 GATTEND_PATH = {"ja": "./guide-attend.html", "en": "./guide-attend.html", "in": "./guide-attend.html"}
@@ -648,6 +678,7 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{TOOL3_GUIDE_BTN}}", build_tool3_guide_btn(code, strings))
     html = html.replace("{{TOOL4_GUIDE_BTN}}", build_tool4_guide_btn(code, strings))
     html = html.replace("{{ATTEND_GUIDE_BTN}}", build_attend_guide_btn(code, strings))
+    html = html.replace("{{PLAY_BAND}}", build_play_band(page, code, strings))
     html = html.replace("{{SUBSTACK_LINK}}", build_substack_link(code, strings) + build_youtube_link(code, strings))
     html = strip_shots(html, page, code)
     html = strip_video(html, page, code)

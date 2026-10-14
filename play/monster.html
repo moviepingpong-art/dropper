@@ -3,8 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
-<title>モンスタードロッパー</title>
+<title>モンスタードロッパー｜写真からモンスターのカードが生まれる｜ドロッパーの遊び場</title>
+<meta name="description" content="写真をドロップすると、世界に1枚だけのモンスターのカードが生まれる遊び。2〜3枚で合体、男性カードと女性カードで結婚と子ども。1000枚に1枚のゴールドも。写真はブラウザの中だけで処理し、ログインも不要です。">
+<link rel="canonical" href="https://dropper-tools.com/play/monster.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ドロッパー">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="モンスタードロッパー｜ドロッパーの遊び場">
+<meta property="og:description" content="写真をドロップすると、世界に1枚だけのモンスターのカードが生まれる。合体・結婚・子ども。1000枚に1枚のゴールドも。">
+<meta property="og:url" content="https://dropper-tools.com/play/monster.html">
+<meta property="og:image" content="https://dropper-tools.com/assets/og/og-ja.png">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Google Analytics (GA4)。測定IDはほかのページと同じ（build.py の GA_TAG）。
+     イベントは回数だけを送る（track()）。写真・名前・カードの中身は送らない（プライバシーポリシー「遊び場」の節） -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PQPKYYYXKG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PQPKYYYXKG');
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
@@ -175,7 +193,7 @@ footer a{color:var(--primary)}
       <li>図鑑・結婚・子どもは、この PC・スマホの中にだけ残ります</li>
     </ul>
   </section>
-  <footer>ドロッパー <a href="https://dropper-tools.com/">dropper-tools.com</a></footer>
+  <footer>ドロッパー <a href="https://dropper-tools.com/">dropper-tools.com</a>　｜　<a href="/privacy.html#play">プライバシーポリシー（遊び場）</a></footer>
 </div>
 
 <script>
@@ -855,7 +873,10 @@ footer a{color:var(--primary)}
     t.getContext('2d').drawImage($('card'), 0, 0, 180, 276);
     return t.toDataURL('image/jpeg', 0.75);
   }
+  // アクセス解析のイベント。回数だけを送り、写真・名前・カードの中身は送らない（プライバシーポリシーに書いた約束）
+  function track(name) { try { if (typeof gtag === 'function') gtag('event', name); } catch (e) { /* 計測が止められていても遊べる */ } }
   async function saveCard(M) {
+    track(M.parents ? 'monster_child' : M.fusion ? 'monster_fuse' : 'monster_born');
     M.thumb = thumbOf();
     await DB.put('cards', JSON.parse(JSON.stringify(M)));
     await renderDex();
@@ -878,6 +899,7 @@ footer a{color:var(--primary)}
     a.href = URL.createObjectURL(new Blob([JSON.stringify(file)], { type: 'application/json' }));
     a.download = `monster-zukan-${ymd}.json`; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    track('monster_export');
     setStatus(`📤 カード ${cards.length} 枚・夫婦 ${couples.length} 組をファイルに書き出しました。新しい端末では「ファイルから読み込む」を押してください。`);
   }
   // カード1枚の形を確かめる（足りない・おかしいものは読み込まない）
@@ -919,6 +941,7 @@ footer a{color:var(--primary)}
     }
     if (moving && typeof meta.secret === 'string' && /^[0-9a-f]{32}$/.test(meta.secret)) await DB.put('meta', meta.secret, 'secret');
     await renderDex();
+    track('monster_import');
     setStatus(`📥 カード ${fresh.length} 枚を読み込みました。` + (moving ? 'この端末で続きを遊べます。' : ''));
   }
 
@@ -1130,6 +1153,7 @@ footer a{color:var(--primary)}
     if (why) { $('wedMsg').textContent = why; return; }
     await DB.put('couples', { id: slots.m.id + '|' + slots.f.id, male: slots.m.id, female: slots.f.id, children: [], at: Date.now() });
     $('wedMsg').textContent = '';
+    track('monster_marry');
     setStatus(`💍 ${slots.m.name} と ${slots.f.name} が結婚しました！`);
     slots.m = slots.f = null; renderSlots(); await renderCouples();
   }
