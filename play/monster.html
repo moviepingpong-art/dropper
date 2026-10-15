@@ -114,7 +114,6 @@ footer a{color:var(--primary)}
     <small>2〜3枚まとめて落とすと<b style="display:inline;font-size:inherit;margin:0">合体</b>します。ここを押して選ぶこともできます（JPEG・PNG・WebP）</small>
   </div>
   <input type="file" id="file" accept="image/*" multiple class="hidden">
-  <div class="row"><button class="sub" id="demo">写真無しで試す</button></div>
 
   <div class="panel">
     <label class="switch">
@@ -1036,17 +1035,6 @@ footer a{color:var(--primary)}
     if (parts.length === 1) return show(parts[0].M, parts[0].img, notes.join(''));
     return show(fuse(parts.map(p => p.M)), null, notes.join(''));
   }
-  async function hatch(bytes, img) { return show(await build(bytes, img), img); }
-  function demo() {
-    // 写真無しで試す：その場で描いた絵から生まれる（発行のたびに読む部分が変わるので、毎回違う子）
-    const c = document.createElement('canvas'); c.width = c.height = 120; const x = c.getContext('2d');
-    x.fillStyle = '#2f8f5b'; x.fillRect(0, 0, 120, 120); x.fillStyle = '#f2c94c'; x.beginPath(); x.arc(80, 40, 22, 0, 7); x.fill();
-    x.fillStyle = '#5a8fd8'; x.fillRect(0, 85, 120, 35);
-    const img = new Image();
-    img.onload = () => hatch(enc('ドロッパーの遊び場のたまご'), img);
-    img.src = c.toDataURL('image/png');
-  }
-
   // ---- 結婚の操作 ----
   const slots = { m: null, f: null };
   function renderSlots() {
@@ -1103,7 +1091,6 @@ footer a{color:var(--primary)}
   drop.addEventListener('drop', e => { if (e.dataTransfer.files.length) fromFiles(e.dataTransfer.files); });
   window.addEventListener('dragover', e => e.preventDefault());
   window.addEventListener('drop', e => { e.preventDefault(); if (e.target !== drop && e.dataTransfer.files.length) fromFiles(e.dataTransfer.files); });
-  $('demo').addEventListener('click', demo);
   $('again').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
   $('save').addEventListener('click', () => {
     $('card').toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `monster-${current.print}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }, 'image/png');
