@@ -391,7 +391,67 @@ footer a{color:var(--primary)}
   // 顔の高さ（体の形によって、顔を置く場所が違う）
   const FACE_Y = { food: 0.45, plant: 0.12, building: 0.12, sky: 0.15, paper: -0.1 };
 
+  // 頭の下に胴体と手足を付ける形。丸い体のキャラと、けもの（犬・猫・うさぎ・くま・その他）だけ。
+  // 魚・鳥・虫・は虫類は体の形そのものが動物らしさなので、今までどおり1つの体で描く
+  let WITH_BODY = false;
+  function hasBody(g) {
+    const shape = shapeOf(g);
+    if (['monster', 'drawing', 'screen'].includes(shape)) return true;
+    return shape === 'animal' && !['鳥', '魚', '虫', 'は虫類'].includes(g.animal);
+  }
   function drawMonster(c, cx, cy, R, g) {
+    if (!hasBody(g)) return drawHead(c, cx, cy, R, g);
+    const shape = shapeOf(g), HS = 0.66, hy = cy - R * 0.22;
+    const main = css(g.main), dark = css(shade(g.main, -0.35)), outline = Math.max(2, R * HS * 0.035);
+    const ty = cy + R * 0.42, trx = R * (0.26 + g.rx * 0.16), tr = R * 0.29;
+    c.save(); c.lineJoin = 'round'; c.lineCap = 'round'; c.strokeStyle = dark; c.lineWidth = outline;
+    const limb = (x1, y1, x2, y2, w, fill) => { // 丸い先の太い線を、ふちどりしてから塗る
+      c.strokeStyle = dark; c.lineWidth = w + outline * 2; c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+      c.strokeStyle = fill; c.lineWidth = w; c.stroke();
+    };
+    // 足（胴のうしろから出す）
+    for (const s of [-1, 1]) {
+      const x = cx + s * trx * 0.45;
+      limb(x, ty + tr * 0.4, x + s * R * 0.02, cy + R * 0.74, R * 0.13, main);
+      c.fillStyle = dark; c.beginPath(); c.ellipse(x + s * R * 0.04, cy + R * 0.79, R * 0.1, R * 0.05, 0, 0, 7); c.fill();
+    }
+    // しっぽ（けものだけ）
+    if (shape === 'animal') {
+      const a = g.animal, x0 = cx + trx * 0.8, y0 = ty + tr * 0.3;
+      c.strokeStyle = dark; c.lineWidth = outline;
+      if (a === '犬') { limb(x0, y0, x0 + R * 0.22, y0 - R * 0.25, R * 0.07, main); }
+      else if (a === '猫') { c.strokeStyle = main; c.lineWidth = R * 0.06; c.beginPath(); c.moveTo(x0, y0 + R * 0.1); c.bezierCurveTo(x0 + R * 0.4, y0 + R * 0.1, x0 + R * 0.1, y0 - R * 0.35, x0 + R * 0.35, y0 - R * 0.45); c.stroke(); }
+      else if (a === 'うさぎ') { c.fillStyle = '#fff'; c.beginPath(); c.arc(x0 + R * 0.04, y0 + R * 0.08, R * 0.09, 0, 7); c.fill(); c.stroke(); }
+      else { c.fillStyle = main; c.beginPath(); c.arc(x0 + R * 0.03, y0 + R * 0.08, R * 0.07, 0, 7); c.fill(); c.stroke(); }
+    }
+    // 胴
+    const body = new Path2D(); body.ellipse(cx, ty, trx, tr, 0, 0, 7);
+    const gr = c.createRadialGradient(cx - trx * 0.3, ty - tr * 0.4, R * 0.05, cx, ty, R * 0.5);
+    gr.addColorStop(0, css(shade(g.main, 0.25))); gr.addColorStop(1, main);
+    c.fillStyle = shape === 'drawing' ? main : gr; c.fill(body);
+    c.save(); c.clip(body);
+    if (shape === 'animal') animalTexture(c, cx, ty, trx, tr, R * HS, g);
+    // おなか：明るい色のだ円（けものは白っぽく）
+    c.fillStyle = shape === 'animal' ? 'rgba(255,255,255,.55)' : css(shade(g.second, 0.45));
+    c.beginPath(); c.ellipse(cx, ty + tr * 0.25, trx * 0.58, tr * 0.7, 0, 0, 7); c.fill();
+    c.restore();
+    if (shape === 'drawing') { c.strokeStyle = '#222'; c.lineWidth = outline * 1.6; } else { c.strokeStyle = dark; c.lineWidth = outline; }
+    c.stroke(body);
+    // 腕：腕のある子は片手を上げてあいさつ、ない子は短い腕をおろす
+    for (const s of [-1, 1]) {
+      const x = cx + s * trx * 0.85, y = ty - tr * 0.35, up = g.arms && s > 0;
+      const ex = x + s * R * (up ? 0.2 : 0.14), ey = up ? y - R * 0.24 : y + R * 0.2;
+      limb(x, y, ex, ey, R * 0.1, main);
+      c.fillStyle = css(shade(g.main, 0.2)); c.strokeStyle = dark; c.lineWidth = outline;
+      c.beginPath(); c.arc(ex, ey, R * 0.065, 0, 7); c.fill(); c.stroke();
+    }
+    // 頭
+    WITH_BODY = true;
+    try { drawHead(c, cx, hy, R * HS, g); } finally { WITH_BODY = false; }
+    if (shape === 'screen') pixelate(c, cx - R * 1.3, cy - R * 1.3, R * 2.6, R * 2.6, Math.max(4, Math.round(R * 0.07)));
+    c.restore();
+  }
+  function drawHead(c, cx, cy, R, g) {
     const shape = shapeOf(g);
     const prop = shape === 'animal' ? (ANIMAL_PROP[g.animal] || [1, 1]) : [1, 1];
     const rx = R * g.rx * prop[0], ry = R * g.ry * prop[1], main = css(g.main), dark = css(shade(g.main, -0.35)), acc = css(g.third);
@@ -428,7 +488,7 @@ footer a{color:var(--primary)}
       for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.4, cy + ry * 1.0, rx * 0.16, ry * 0.08, 0, 0, 7); c.fill(); }
       if (g.arms) for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.85, cy + ry * 0.2, rx * 0.12, ry * 0.2, s * 0.6, 0, 7); c.fill(); }
     } else {
-      if (shape !== 'animal') {
+      if (shape !== 'animal' && !WITH_BODY) {
         for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.45, cy + ry * 0.92, rx * 0.22, ry * 0.16, 0, 0, 7); c.fill(); }
         if (g.arms) for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.98, cy + ry * 0.15, rx * 0.16, ry * 0.26, s * 0.6, 0, 7); c.fill(); }
       }
@@ -502,7 +562,7 @@ footer a{color:var(--primary)}
     if (g.mouth === 'zig') { for (let i = 0; i <= 4; i++) c.lineTo(cx - mw + i * mw / 2, my + (i % 2 ? mw * 0.25 : 0)); c.stroke(); }
     c.restore();
     // 画面のキャラは、描いたあとで粗いマス目（ドット絵）にする
-    if (shape === 'screen') pixelate(c, cx - R * 1.3, cy - R * 1.3, R * 2.6, R * 2.6, Math.max(4, Math.round(R * 0.07)));
+    if (shape === 'screen' && !WITH_BODY) pixelate(c, cx - R * 1.3, cy - R * 1.3, R * 2.6, R * 2.6, Math.max(4, Math.round(R * 0.07)));
   }
   // ---- 動物（AI が何の動物かを答えたとき）。毛並み・目・鼻を、なるべく本物らしく描く ----
   const ANIMAL_PROP = { '鳥': [0.85, 1.05], '魚': [1.15, 0.72], '虫': [0.8, 0.85], 'は虫類': [1.1, 0.75], 'うさぎ': [0.9, 0.95] };
@@ -510,10 +570,10 @@ footer a{color:var(--primary)}
   function animalBack(c, cx, cy, rx, ry, R, g, main, dark, outline) {
     const a = g.animal, light = css(shade(g.main, 0.25)), inner = '#f2a7b5';
     c.fillStyle = dark; c.strokeStyle = dark; c.lineWidth = outline;
-    const paws = () => { for (const s of [-1, 1]) { c.fillStyle = dark; c.beginPath(); c.ellipse(cx + s * rx * 0.42, cy + ry * 0.93, rx * 0.2, ry * 0.13, 0, 0, 7); c.fill(); } };
+    const paws = () => { if (!WITH_BODY) for (const s of [-1, 1]) { c.fillStyle = dark; c.beginPath(); c.ellipse(cx + s * rx * 0.42, cy + ry * 0.93, rx * 0.2, ry * 0.13, 0, 0, 7); c.fill(); } };
     if (a === '犬') {
       paws();
-      c.strokeStyle = main; c.lineWidth = rx * 0.13; c.beginPath(); c.moveTo(cx + rx * 0.8, cy + ry * 0.35); c.quadraticCurveTo(cx + rx * 1.3, cy + ry * 0.1, cx + rx * 1.25, cy - ry * 0.35); c.stroke();
+      if (!WITH_BODY) { c.strokeStyle = main; c.lineWidth = rx * 0.13; c.beginPath(); c.moveTo(cx + rx * 0.8, cy + ry * 0.35); c.quadraticCurveTo(cx + rx * 1.3, cy + ry * 0.1, cx + rx * 1.25, cy - ry * 0.35); c.stroke(); }
     } else if (a === '猫') {
       paws();
       for (const s of [-1, 1]) {
@@ -521,7 +581,7 @@ footer a{color:var(--primary)}
         c.beginPath(); c.moveTo(cx + s * rx * 0.25, cy - ry * 0.75); c.lineTo(cx + s * rx * 0.62, cy - ry * 1.32); c.lineTo(cx + s * rx * 0.85, cy - ry * 0.5); c.closePath(); c.fill(); c.stroke();
         c.fillStyle = inner; c.beginPath(); c.moveTo(cx + s * rx * 0.38, cy - ry * 0.75); c.lineTo(cx + s * rx * 0.6, cy - ry * 1.15); c.lineTo(cx + s * rx * 0.74, cy - ry * 0.62); c.closePath(); c.fill();
       }
-      c.strokeStyle = main; c.lineWidth = rx * 0.11; c.beginPath(); c.moveTo(cx + rx * 0.8, cy + ry * 0.6); c.bezierCurveTo(cx + rx * 1.5, cy + ry * 0.6, cx + rx * 1.1, cy - ry * 0.3, cx + rx * 1.45, cy - ry * 0.55); c.stroke();
+      if (!WITH_BODY) { c.strokeStyle = main; c.lineWidth = rx * 0.11; c.beginPath(); c.moveTo(cx + rx * 0.8, cy + ry * 0.6); c.bezierCurveTo(cx + rx * 1.5, cy + ry * 0.6, cx + rx * 1.1, cy - ry * 0.3, cx + rx * 1.45, cy - ry * 0.55); c.stroke(); }
     } else if (a === 'うさぎ') {
       paws();
       for (const s of [-1, 1]) {
@@ -529,7 +589,7 @@ footer a{color:var(--primary)}
         c.beginPath(); c.ellipse(cx + s * rx * 0.32, cy - ry * 1.35, rx * 0.17, ry * 0.62, s * 0.15, 0, 7); c.fill(); c.stroke();
         c.fillStyle = inner; c.beginPath(); c.ellipse(cx + s * rx * 0.32, cy - ry * 1.3, rx * 0.08, ry * 0.45, s * 0.15, 0, 7); c.fill();
       }
-      c.fillStyle = '#fff'; c.beginPath(); c.arc(cx + rx * 0.9, cy + ry * 0.55, rx * 0.17, 0, 7); c.fill();
+      if (!WITH_BODY) { c.fillStyle = '#fff'; c.beginPath(); c.arc(cx + rx * 0.9, cy + ry * 0.55, rx * 0.17, 0, 7); c.fill(); }
     } else if (a === '鳥') {
       c.strokeStyle = '#e09a2b'; c.lineWidth = outline * 1.2;
       for (const s of [-1, 1]) { const x = cx + s * rx * 0.3; c.beginPath(); c.moveTo(x, cy + ry * 0.85); c.lineTo(x, cy + ry * 1.12); c.moveTo(x, cy + ry * 1.12); c.lineTo(x - rx * 0.12, cy + ry * 1.2); c.moveTo(x, cy + ry * 1.12); c.lineTo(x + rx * 0.12, cy + ry * 1.2); c.stroke(); }
