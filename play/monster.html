@@ -845,6 +845,34 @@ footer a{color:var(--primary)}
     key.forEach((v, i) => { out[len + i * 4] = v >>> 24; out[len + i * 4 + 1] = v >>> 16; out[len + i * 4 + 2] = v >>> 8; out[len + i * 4 + 3] = v; });
     return { sample: out, start, stride };
   }
+  // 背景に薄く並べる、読んだ断片の値（16進数）。飛び飛びに拾った数十バイトだけなので、元のファイルには戻せない
+  const HEX_LEN = 64;
+  const hexOf = b => Array.from(b, v => v.toString(16).padStart(2, '0')).join('');
+  // 子ども・合体は、親の断片を1バイトずつ交互に編む（どちらかが古いカードで断片を持たなければ、持っているほうだけ）
+  function mixHex(list) {
+    const hs = list.filter(Boolean);
+    if (!hs.length) return '';
+    let out = '';
+    for (let i = 0; out.length < HEX_LEN * 2 && i < HEX_LEN; i++) for (const h of hs) if (h.length > i * 2) out += h.substr(i * 2, 2);
+    return out.slice(0, HEX_LEN * 2);
+  }
+  function drawHex(c, x, y, w, h, M) {
+    if (!M.hex) return;
+    const bytes = M.hex.toUpperCase().match(/../g);
+    c.save(); roundRect(c, x, y, w, h, 16); c.clip();
+    c.font = '600 15px ui-monospace, Menlo, Consolas, monospace'; c.textBaseline = 'top';
+    c.fillStyle = css(shade(M.g.second, -0.45)); c.globalAlpha = 0.16;
+    const cw = c.measureText('00 ').width, per = Math.max(1, Math.floor((w - 24) / cw));
+    let k = 0;
+    for (let yy = y + 12; yy < y + h - (M.frag ? 46 : 26); yy += 21) {
+      let line = '';
+      for (let i = 0; i < per; i++) line += bytes[k++ % bytes.length] + ' ';
+      c.fillText(line, x + 12, yy);
+    }
+    // 左上に、読み始めた場所（何バイト目か）を少し濃く
+    if (M.frag) { c.globalAlpha = 0.32; c.fillText('@' + M.frag.start + ' +' + M.frag.stride, x + 12, y + h - 26); }
+    c.restore();
+  }
   const genderOf = fp => ((fp[1] >>> 7) & 1) ? 'f' : 'm';
 
   // 紋章：指紋の 128 ビットから描く、左右対称の 7×7 の図柄。地の色・図柄の色・マスの並びで数百億通り
@@ -924,6 +952,7 @@ footer a{color:var(--primary)}
       g, fp, type, name, stats, power: powerOf(stats), rarity, bug, bugStat, fusion: 0,
       gender: r() < 0.5 ? 'm' : 'f', gen: Math.max(father.gen || 1, mother.gen || 1) + 1,
       parents: [father.id, mother.id], parentNames: [father.name, mother.name], childNo: idx + 1,
+      hex: mixHex([father.hex, mother.hex]),
       no: (fp[3] % 999) + 1, motif: '', mission: '',
       moves: [one(father.moves[0], father.moves[1]), one(mother.moves[0], mother.moves[1])],
       desc: `${father.name}と${mother.name}の${idx + 1}人目の子。` + (mutation ? `★突然変異：${mutation}が両親のどちらとも違う。` : 'ふたりの特徴を半分ずつ受け継いだ。'),
@@ -977,7 +1006,7 @@ footer a{color:var(--primary)}
     return {
       g: Object.assign(g, { stats: lead.g.stats }), fp, type, name, stats, power: powerOf(stats), fusion: parts.length, rarity: 'normal', bug: bugs >= 2,
       gender: genderOf(fp), gen: 1, parents: null, id: printOf(fp), bugStat: bugs >= 2 ? Object.keys(stats).reduce((a, k) => stats[k] > stats[a] ? k : a) : null,
-      parts: parts.map(p => p.type), no: (fp[3] % 999) + 1, motif: '', mission: '',
+      parts: parts.map(p => p.type), no: (fp[3] % 999) + 1, motif: '', mission: '', hex: mixHex(parts.map(p => p.hex)),
       moves: [lead.moves[0], second.moves[0]],
       // 打ち消しのときは、効かなかった法則まで並べると3行に収まらず結びが切れるので、打ち消しと完全バグだけ書く
       desc: rules.filter(r => !clashes || r[0].startsWith('打ち消し') || r[0].startsWith('★完全バグ'))
@@ -1041,6 +1070,7 @@ footer a{color:var(--primary)}
     const bg = c.createRadialGradient(W / 2, ay + ah * 0.45, 20, W / 2, ay + ah / 2, aw * 0.7);
     bg.addColorStop(0, '#ffffff'); bg.addColorStop(1, css(shade(M.g.second, 0.7)));
     c.fillStyle = bg; roundRect(c, ax, ay, aw, ah, 16); c.fill();
+    drawHex(c, ax, ay, aw, ah, M);
     c.fillStyle = 'rgba(0,0,0,.08)'; c.beginPath(); c.ellipse(W / 2, ay + ah - 34, 120, 16, 0, 0, 7); c.fill();
     drawMonster(c, W / 2, ay + ah / 2 + 14, 150, M.g);
     const bug = sfc32(M.fp[3], M.fp[2], M.fp[1], M.fp[0]); // 体の形とは別の並びで化け方を決める
@@ -1238,7 +1268,7 @@ footer a{color:var(--primary)}
     if (bug) { const r = sfc32(fp[2], fp[0], fp[3], fp[1]); bugStat = Object.keys(stats)[Math.floor(r() * 4)]; stats[bugStat] = 255; }
     return {
       g, fp, rarity, bug, bugStat, stats, power: powerOf(stats), fusion: 0,
-      gender: genderOf(fp), gen: 1, parents: null, frag: { n, start: s.start, stride: s.stride },
+      gender: genderOf(fp), gen: 1, parents: null, frag: { n, start: s.start, stride: s.stride }, hex: hexOf(s.sample.subarray(0, HEX_LEN)),
       no: g.no, name: g.name, type: g.type, moves: g.moves, motif: '', mission: '',
       source: data ? data.kind : undefined,
       desc: data ? `${TYPES[g.type].icon} ${g.type}タイプ。${SOURCES[data.kind].desc}読み取った部分が違えば、別の子になる。`
