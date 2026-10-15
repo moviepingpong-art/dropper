@@ -106,20 +106,20 @@ footer a{color:var(--primary)}
 <div class="wrap">
   <div class="shelf">DROPPER PLAYGROUND ／ ドロッパーの遊び場</div>
   <h1>モンスター<span>ドロッパー</span></h1>
-  <p class="lead">身の回りの写真をドロップすると、その写真からモンスターが生まれます。冷蔵庫の中、散歩の景色、机の上、なんでも。</p>
+  <p class="lead">身の回りの写真をドロップすると、その写真からモンスターが生まれます。冷蔵庫の中、散歩の景色、机の上、なんでも。文章のファイルや音声のファイルからも生まれます。</p>
 
-  <div class="drop" id="drop" tabindex="0" role="button" aria-label="写真を選ぶ">
+  <div class="drop" id="drop" tabindex="0" role="button" aria-label="写真・文章・音声のファイルを選ぶ">
     <div class="big">🥚</div>
-    <b>写真をドロップ</b>
-    <small>2〜3枚まとめて落とすと<b style="display:inline;font-size:inherit;margin:0">合体</b>します。ここを押して選ぶこともできます（JPEG・PNG・WebP）</small>
+    <b>写真・文章・音声をドロップ</b>
+    <small>2〜3枚まとめて落とすと<b style="display:inline;font-size:inherit;margin:0">合体</b>します。ここを押して選ぶこともできます（写真＝JPEG・PNG・WebP、文章＝.txt・.md、音声＝.mp3・.m4a・.wav・.ogg）</small>
   </div>
-  <input type="file" id="file" accept="image/*" multiple class="hidden">
+  <input type="file" id="file" accept="image/*,text/plain,text/markdown,.txt,.md,audio/*,.mp3,.m4a,.wav,.ogg" multiple class="hidden">
 
   <div class="panel">
     <label class="switch">
       <input type="checkbox" id="aiOn">
       <span><b>AI に写っているものを読ませる（任意）</b>
-      <small>オフのときは写真の色だけで生まれ、写真はこの端末から出ません。オンにすると、写っているものから名前・技・図鑑の説明が付き、食べ物なら料理のミッションも出ます。</small></span>
+      <small>オフのときは写真の色だけで生まれ、写真はこの端末から出ません。オンにすると、写っているものから名前・技・図鑑の説明が付き、食べ物なら料理のミッションも出ます。文章・音声のファイルは、いまは AI に送らず、中身を数えた値だけで生まれます。</small></span>
     </label>
     <div id="aiBox" class="hidden">
       <div class="badges"><span>クレカ不要</span><span>無料枠内なら0円</span><span>取得は約3分</span></div>
@@ -140,7 +140,7 @@ footer a{color:var(--primary)}
     <div class="row">
       <button id="save">カードを画像で保存</button>
       <button class="sub" id="cand">💍 結婚相手の候補にする</button>
-      <button class="sub" id="again">別の写真で</button>
+      <button class="sub" id="again">別のファイルで</button>
     </div>
   </section>
 
@@ -180,9 +180,10 @@ footer a{color:var(--primary)}
     <h3>どうやって生まれるの？</h3>
     <ul>
       <li>写真のいちばん多い色で、属性（炎・水・森…）が決まります</li>
+      <li>文章は、長さ・「！」や「？」の多さ・漢字の割合・1文の短さ・改行の多さで、強さと体の形が決まります。音声は、長さ・音の大きさ・低い音と高い音の多さで決まります</li>
       <li>写真のデータから<b>発行のたびに違う部分</b>を読み取り、それで体の形・目・模様・強さ・性別を決めます。同じ写真でも、二度と同じ子は生まれません</li>
       <li>どのカードにも、その1枚だけの<b>紋章</b>と、読み取った部分・発行番号が入ります</li>
-      <li>カードの画像に、写真そのものとファイル名は入れません</li>
+      <li>カードの画像に、写真・文章・音声の中身とファイル名は入れません</li>
       <li>図鑑・結婚・子どもは、この PC・スマホの中にだけ残ります</li>
     </ul>
   </section>
@@ -296,7 +297,8 @@ footer a{color:var(--primary)}
   }
 
   // ---- モンスターの設計図（同じ写真なら同じ設計図） ----
-  function makeGenome(fp, pal, imgBytes) {
+  // bias を渡すと、強さのかたよりをそれで決める（文章・音声。中身を数えた値から作る）
+  function makeGenome(fp, pal, imgBytes, bias) {
     const rnd = sfc32(fp[0], fp[1], fp[2], fp[3]);
     for (let i = 0; i < 12; i++) rnd();
     const pick = a => a[Math.floor(rnd() * a.length)];
@@ -308,10 +310,10 @@ footer a{color:var(--primary)}
     return {
       type, name, moves, no: (fp[3] % 999) + 1,
       stats: {
-        'たいりょく': stat(Math.log2(imgBytes / 1024 + 1) * 1.5 - 8),
-        'こうげき': stat(pal.sat * 30 - 10),
-        'まもり': stat((0.5 - pal.lum) * 30),
-        'すばやさ': stat(pal.lum * 30 - 12)
+        'たいりょく': stat(bias ? bias.hp : Math.log2(imgBytes / 1024 + 1) * 1.5 - 8),
+        'こうげき': stat(bias ? bias.atk : pal.sat * 30 - 10),
+        'まもり': stat(bias ? bias.def : (0.5 - pal.lum) * 30),
+        'すばやさ': stat(bias ? bias.spd : pal.lum * 30 - 12)
       },
       main: bodyColor(pal.colors[0]), second: pal.colors[1], third: pal.colors[2],
       rx: 0.62 + rnd() * 0.3, ry: 0.55 + rnd() * 0.3,
@@ -800,7 +802,7 @@ footer a{color:var(--primary)}
     // 生まれ（合体の子は、混ぜた属性）と、右にパワー
     c.fillStyle = '#4a4a6a'; c.font = '500 18px "Noto Sans JP", sans-serif';
     const origin = M.parents ? `第${M.gen}世代　父 ${M.parentNames[0]} × 母 ${M.parentNames[1]}`
-      : M.fusion ? `合体 ×${M.fusion}：${M.parts.join('＋')}` : M.motif ? `生まれた写真：${M.motif}` : '写真の色から生まれた';
+      : M.fusion ? `合体 ×${M.fusion}：${M.parts.join('＋')}` : M.motif ? `生まれた写真：${M.motif}` : M.source ? SOURCES[M.source].origin : '写真の色から生まれた';
     if (M.parents) c.font = '700 16px "Noto Sans JP", sans-serif';
     c.fillText(origin, 46, ay + ah + 34);
     c.textAlign = 'right'; c.fillStyle = '#9090b0'; c.font = '700 16px "Noto Sans JP", sans-serif';
@@ -938,19 +940,23 @@ footer a{color:var(--primary)}
   // カードに描く字（文字化けの字も）をぜんぶ渡して、届いてから描く。そうしないと最初の1枚だけ別の字体になる
   async function loadFontsFor(M) {
     const text = 'No.0123456789?' + M.name + M.desc + M.moves.join('') + M.motif + M.mission + MOJIBAKE +
-      Object.keys(M.stats).join('') + Object.keys(TYPES).join('') + 'タイプ？⚠❓★バグ個体生まれた写真の色から料理ミッションモンスタードロッパー指紋 dropper-tools.com' +
+      Object.keys(M.stats).join('') + Object.keys(TYPES).join('') + 'タイプ？⚠❓★バグ個体生まれた写真の色から文章音声の中身数えた料理ミッションモンスタードロッパー指紋 dropper-tools.com' +
       'パワー合体×＋：GOLDSILVER♂♀発行断片バイト目からごと第世代父母人目の枚ID#' + (M.parentNames || []).join('');
     const fonts = ['900 40px "Noto Sans JP"', '900 22px "Noto Sans JP"', '700 18px "Noto Sans JP"', '700 16px "Noto Sans JP"', '500 18px "Noto Sans JP"', '500 14px "Noto Sans JP"', '700 15px "Noto Sans JP"', '700 22px Oswald', '700 28px Oswald', '500 15px Oswald'];
     try { await Promise.all(fonts.map(f => document.fonts.load(f, text))); } catch (e) { /* 読めなければ代わりの字体で描く */ }
   }
   // 1枚の写真から1体を作る（まだ描かない）。発行のたびに写真の違う部分を読むので、同じ写真でも毎回違う子になる。
   // 珍しさの倍率と、バグ個体の 255 はここで強さに入れる
-  async function build(bytes, img, photoPrint) {
+  // data（文章・音声）のときは img の代わりに、中身を数えた値 data.meas を使う
+  async function build(bytes, img, photoPrint, data) {
     photoPrint = photoPrint || printOf(fingerprint(bytes));
     const n = ((await DB.get('meta', 'issued:' + photoPrint)) || 0) + 1;
     await DB.put('meta', n, 'issued:' + photoPrint);
     const s = issueSample(bytes, photoPrint, n, await deviceSecret());
-    const fp = fingerprint(s.sample), pal = paletteOf(img), g = makeGenome(fp, pal, bytes.length);
+    const fp = fingerprint(s.sample);
+    const pal = data ? paletteOfData(fingerprint(bytes), data.meas) : paletteOf(img);
+    const g = makeGenome(fp, pal, bytes.length, data ? data.meas.bias : null);
+    if (data) shapeByData(g, data.meas);
     const rarity = rarityOf(fp), bug = isBugPrint(fp), stats = {};
     for (const [k, v] of Object.entries(g.stats)) stats[k] = Math.round(v * RARITY[rarity].mult);
     // バグ個体は1項目だけ 255 になる。どの項目かを bugStat に覚え、その棒だけカードの外まで突き抜けさせる
@@ -961,7 +967,9 @@ footer a{color:var(--primary)}
       g, fp, rarity, bug, bugStat, stats, power: powerOf(stats), fusion: 0,
       gender: genderOf(fp), gen: 1, parents: null, frag: { n, start: s.start, stride: s.stride },
       no: g.no, name: g.name, type: g.type, moves: g.moves, motif: '', mission: '',
-      desc: `${TYPES[g.type].icon} ${g.type}タイプ。写真のいちばん多い色から生まれた。読み取った部分が違えば、別の子になる。`,
+      source: data ? data.kind : undefined,
+      desc: data ? `${TYPES[g.type].icon} ${g.type}タイプ。${SOURCES[data.kind].desc}読み取った部分が違えば、別の子になる。`
+        : `${TYPES[g.type].icon} ${g.type}タイプ。写真のいちばん多い色から生まれた。読み取った部分が違えば、別の子になる。`,
       id: printOf(fp), print: printOf(fp).slice(0, 12).toUpperCase()
     };
   }
@@ -989,6 +997,7 @@ footer a{color:var(--primary)}
     M.serial = await nextSerial();
     if (!(await display(M))) return;
     const done = () => (note ? note + '　' : '') + statusOf(M);
+    if (M.source && $('aiOn').checked) { setStatus('文章・音声のファイルは、いまは AI に送りません。中身を数えた値だけで生まれました。　' + done()); return saveCard(M); }
     if (M.fusion && $('aiOn').checked) { setStatus('合体のときは AI を使いません（写真を何枚も送らないため）。　' + done()); return saveCard(M); }
     if ($('aiOn').checked && img && img.__fromFile) {
       if (!getKey()) { setStatus('AI を使うには、上の欄に API キーを保存してください。いまは色だけで生まれています。'); return saveCard(M); }
@@ -1017,20 +1026,109 @@ footer a{color:var(--primary)}
       img.src = url;
     });
   }
-  // 1枚なら1体、2〜3枚なら合体。4枚目からは使わない。同じ写真は1枚に数える（写真そのものの指紋で見る）
+  // ---- 写真以外のデータ（文章・音声）----
+  // 中身はこの端末の中で数えるだけ。カードに入れるのは、数えた値から決めた強さと形だけ
+  const SOURCES = {
+    text: { label: '文章', origin: '文章から生まれた', desc: '文章の長さや書きぶりから生まれた。', max: 5 * 1024 * 1024 },
+    audio: { label: '音声', origin: '音から生まれた', desc: '音の大きさや高さから生まれた。', max: 30 * 1024 * 1024 }
+  };
+  function kindOf(f) {
+    const ext = (f.name.split('.').pop() || '').toLowerCase();
+    if (f.type.startsWith('image/')) return 'photo';
+    if (f.type.startsWith('audio/') || ['mp3', 'm4a', 'wav', 'ogg'].includes(ext)) return 'audio';
+    if (f.type === 'text/plain' || f.type === 'text/markdown' || ['txt', 'md'].includes(ext)) return 'text';
+    return null;
+  }
+  const clamp01 = v => Math.max(0, Math.min(1, v));
+  // 強さのかたよりは、どれも -10〜+20 のあいだ（写真のときと同じくらいの幅）
+  const toBias = v => clamp01(v) * 30 - 10;
+  function measureText(bytes) {
+    const t = new TextDecoder('utf-8').decode(bytes.subarray(0, 1024 * 1024));
+    const chars = [...t.replace(/\s/g, '')].length;
+    if (!chars) throw new Error('文字の入っていない文章のファイルでした。');
+    const sentences = Math.max(1, t.split(/[。．.!?！？\n]+/).filter(x => x.trim()).length);
+    const marks = (t.match(/[!?！？]/g) || []).length;
+    const kanji = (t.match(/\p{Script=Han}/gu) || []).length;
+    const lines = Math.max(1, t.split('\n').length);
+    return {
+      bias: {
+        hp: toBias(Math.min(chars, 2000) / 2000),
+        atk: toBias(marks / sentences),
+        def: toBias(kanji / chars / 0.5),
+        spd: toBias((40 - chars / sentences) / 35)
+      },
+      tall: clamp01((lines / chars) * 15), // 改行が多いほど縦長
+      lively: clamp01(marks / sentences)
+    };
+  }
+  async function measureAudio(bytes) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) throw new Error('このブラウザでは音声を読めませんでした。');
+    const ac = new AC();
+    let buf;
+    try { buf = await ac.decodeAudioData(bytes.slice().buffer); }
+    catch (e) { throw new Error('読めない音声のファイルでした（mp3・m4a・wav・ogg で試してください）。'); }
+    finally { try { ac.close(); } catch (e) {} }
+    const d = buf.getChannelData(0), rate = buf.sampleRate, n = Math.min(d.length, rate * 180);
+    // 50ミリ秒ごとに、音の大きさ・低い音の強さ・波の向きの変わる回数を数える
+    const win = Math.max(1, Math.floor(rate * 0.05));
+    let sum = 0, low = 0, cross = 0, quiet = 0, wins = 0, lp = 0;
+    for (let i = 0; i + win <= n; i += win) {
+      let e = 0, el = 0;
+      for (let j = i; j < i + win; j++) {
+        const v = d[j]; lp += (v - lp) * 0.02; e += v * v; el += lp * lp;
+        if (j > i && (v >= 0) !== (d[j - 1] >= 0)) cross++;
+      }
+      const rms = Math.sqrt(e / win); sum += rms; low += e ? el / e : 0; if (rms < 0.02) quiet++; wins++;
+    }
+    if (!wins) throw new Error('短すぎる音声でした。');
+    const rms = sum / wins, lowR = low / wins, zcr = cross / (wins * win);
+    return {
+      bias: { hp: toBias(buf.duration / 180), atk: toBias(rms / 0.2), def: toBias(lowR), spd: toBias(zcr / 0.15) },
+      wide: clamp01(lowR), tall: clamp01(zcr / 0.15), lively: clamp01(rms / 0.2), quiet: quiet / wins
+    };
+  }
+  // 写真の色の代わり：ファイルそのものの指紋で色合いを決め、にぎやかさで鮮やかさを決める（同じファイルなら同じ色）
+  function paletteOfData(filePrint, meas) {
+    const r = sfc32(filePrint[0], filePrint[1], filePrint[2], filePrint[3]);
+    const hue = Math.floor(r() * 360), sat = 0.35 + meas.lively * 0.5, lum = 0.5;
+    const col = (h, l) => hsl2rgb(h % 360, sat, l);
+    return { colors: [col(hue, 0.5), col(hue + 40, 0.65), col(hue + 180, 0.4)], sat, lum };
+  }
+  function hsl2rgb(h, s, l) {
+    const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+    const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    return [f(0) * 255, f(8) * 255, f(4) * 255];
+  }
+  // 体の形：指紋で決めた形と、数えた値から決めた形を半分ずつ混ぜる（同じ中身でも、発行ごとの差は残す）
+  function shapeByData(g, meas) {
+    if (meas.tall !== undefined) g.ry = (g.ry + 0.55 + meas.tall * 0.3) / 2;
+    if (meas.wide !== undefined) g.rx = (g.rx + 0.62 + meas.wide * 0.3) / 2;
+  }
+  async function loadData(file, kind) {
+    if (file.size > SOURCES[kind].max) throw new Error(`${SOURCES[kind].label}のファイルが大きすぎます（${Math.round(SOURCES[kind].max / 1024 / 1024)}MB まで）。`);
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const meas = kind === 'text' ? measureText(bytes) : await measureAudio(bytes);
+    return { bytes, data: { kind, meas } };
+  }
+
+  // 1枚なら1体、2〜3枚なら合体。4枚目からは使わない。同じファイルは1枚に数える（ファイルそのものの指紋で見る）
+  // 合体は、いまは同じ種類（写真どうし・文章どうし・音声どうし）だけ
   async function fromFiles(files) {
-    const photos = [...files].filter(f => f.type.startsWith('image/'));
-    if (!photos.length) { setStatus('写真（画像のファイル）をドロップしてください。'); return; }
-    const notes = [];
-    if (photos.length > 3) notes.push(`合体できるのは3枚までなので、最初の3枚を使いました。`);
-    setStatus(photos.length > 1 ? '🧬 合体しています…' : '🥚 たまごが動いています…');
+    const all = [...files].map(f => ({ f, kind: kindOf(f) })).filter(x => x.kind);
+    if (!all.length) { setStatus('写真・文章（.txt・.md）・音声（.mp3 など）のファイルをドロップしてください。'); return; }
+    const notes = [], kind = all[0].kind;
+    const same = all.filter(x => x.kind === kind);
+    if (same.length < all.length) notes.push('合体できるのは同じ種類のファイルどうしなので、最初のファイルと同じ種類だけを使いました。');
+    if (same.length > 3) notes.push(`合体できるのは3枚までなので、最初の3枚を使いました。`);
+    setStatus(same.length > 1 ? '🧬 合体しています…' : '🥚 たまごが動いています…');
     let loaded;
-    try { loaded = await Promise.all(photos.slice(0, 3).map(loadPhoto)); } catch (e) { setStatus(e.message); return; }
+    try { loaded = await Promise.all(same.slice(0, 3).map(x => kind === 'photo' ? loadPhoto(x.f) : loadData(x.f, kind))); } catch (e) { setStatus(e.message); return; }
     const parts = [], seen = new Set();
     for (const l of loaded) {
       const pp = printOf(fingerprint(l.bytes));
-      if (seen.has(pp)) { notes.push('同じ写真は1枚に数えました。'); continue; }
-      seen.add(pp); parts.push({ M: await build(l.bytes, l.img, pp), img: l.img });
+      if (seen.has(pp)) { notes.push('同じファイルは1枚に数えました。'); continue; }
+      seen.add(pp); parts.push({ M: await build(l.bytes, l.img || null, pp, l.data), img: l.img || null });
     }
     if (parts.length === 1) return show(parts[0].M, parts[0].img, notes.join(''));
     return show(fuse(parts.map(p => p.M)), null, notes.join(''));
