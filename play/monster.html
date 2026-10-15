@@ -344,6 +344,12 @@ footer a{color:var(--primary)}
     '画面': { shape: 'screen', chara: 'ドットの子' }
   };
   const shapeOf = g => (KINDS[g.kind] || {}).shape || 'monster';
+  // 動物は、さらに何の動物かで姿を描き分ける（AI が答える）
+  const ANIMALS = {
+    '犬': { chara: '犬のけもの' }, '猫': { chara: '猫のけもの' }, 'うさぎ': { chara: 'うさぎのけもの' }, 'くま': { chara: 'くまのけもの' },
+    '鳥': { chara: '鳥のけもの' }, '魚': { chara: '魚のけもの' }, '虫': { chara: '虫のけもの' }, 'は虫類': { chara: 'は虫類のけもの' }
+  };
+  const charaOf = g => (g.kind === '動物' && ANIMALS[g.animal]) ? ANIMALS[g.animal].chara : (KINDS[g.kind] || {}).chara;
   // 体の輪かく。種類ごとに形が違う
   function bodyPath(shape, cx, cy, rx, ry, R, g) {
     const p = new Path2D();
@@ -386,7 +392,8 @@ footer a{color:var(--primary)}
 
   function drawMonster(c, cx, cy, R, g) {
     const shape = shapeOf(g);
-    const rx = R * g.rx, ry = R * g.ry, main = css(g.main), dark = css(shade(g.main, -0.35)), acc = css(g.third);
+    const prop = shape === 'animal' ? (ANIMAL_PROP[g.animal] || [1, 1]) : [1, 1];
+    const rx = R * g.rx * prop[0], ry = R * g.ry * prop[1], main = css(g.main), dark = css(shade(g.main, -0.35)), acc = css(g.third);
     c.save(); c.lineJoin = 'round'; c.lineCap = 'round';
     const outline = Math.max(2, R * 0.035);
     const blob = ['monster', 'animal', 'drawing', 'screen'].includes(shape);
@@ -420,13 +427,12 @@ footer a{color:var(--primary)}
       for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.4, cy + ry * 1.0, rx * 0.16, ry * 0.08, 0, 0, 7); c.fill(); }
       if (g.arms) for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.85, cy + ry * 0.2, rx * 0.12, ry * 0.2, s * 0.6, 0, 7); c.fill(); }
     } else {
-      for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.45, cy + ry * 0.92, rx * 0.22, ry * 0.16, 0, 0, 7); c.fill(); }
-      if (g.arms) for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.98, cy + ry * 0.15, rx * 0.16, ry * 0.26, s * 0.6, 0, 7); c.fill(); }
+      if (shape !== 'animal') {
+        for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.45, cy + ry * 0.92, rx * 0.22, ry * 0.16, 0, 0, 7); c.fill(); }
+        if (g.arms) for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.98, cy + ry * 0.15, rx * 0.16, ry * 0.26, s * 0.6, 0, 7); c.fill(); }
+      }
       if (shape === 'animal') {
-        // 丸い大きな耳と、くるっとしたしっぽ
-        for (const s of [-1, 1]) { c.fillStyle = main; c.beginPath(); c.arc(cx + s * rx * 0.62, cy - ry * 0.8, rx * 0.3, 0, 7); c.fill(); c.stroke(); c.fillStyle = css(shade(g.second, 0.3)); c.beginPath(); c.arc(cx + s * rx * 0.62, cy - ry * 0.8, rx * 0.16, 0, 7); c.fill(); }
-        c.strokeStyle = main; c.lineWidth = rx * 0.14; c.beginPath(); c.moveTo(cx + rx * 0.8, cy + ry * 0.5); c.quadraticCurveTo(cx + rx * 1.35, cy + ry * 0.4, cx + rx * 1.15, cy); c.stroke();
-        c.strokeStyle = dark; c.lineWidth = outline;
+        animalBack(c, cx, cy, rx, ry, R, g, main, dark, outline);
       } else drawTop(c, cx, cy - ry * 0.85, rx, ry, g, acc, dark);
     }
     // ---- 体 ----
@@ -443,6 +449,7 @@ footer a{color:var(--primary)}
     if (shape === 'paper') { c.fillStyle = 'rgba(40,40,70,.25)'; for (let i = 0; i < 4; i++) c.fillRect(cx - rx * 0.6, cy + ry * (0.35 + i * 0.13), rx * (i === 3 ? 0.7 : 1.2), ry * 0.04); }
     else if (shape === 'robot') { c.fillStyle = 'rgba(0,0,0,.12)'; c.fillRect(cx - rx * 0.9, cy + ry * 0.35, rx * 1.8, ry * 0.06); }
     else if (shape !== 'food' && shape !== 'building') {
+      if (shape === 'animal') { animalTexture(c, cx, cy, rx, ry, R, g); c.fillStyle = css(g.second); c.globalAlpha = 0.22; }
       if (g.pattern === 'spots') for (const [x, y, r] of g.spots) { c.beginPath(); c.arc(cx + x * rx * 0.8, cy + y * ry * 0.4 + ry * 0.35, r * R, 0, 7); c.fill(); }
       if (g.pattern === 'belly') { c.fillStyle = css(shade(g.second, 0.35)); c.beginPath(); c.ellipse(cx, cy + ry * 0.45, rx * 0.55, ry * 0.5, 0, 0, 7); c.fill(); }
       if (g.pattern === 'stripes') for (let i = -3; i <= 3; i++) { c.fillRect(cx + i * rx * 0.32 - rx * 0.06, cy - ry, rx * 0.12, ry * 2); }
@@ -466,10 +473,10 @@ footer a{color:var(--primary)}
       c.fillStyle = '#ffe14d';
       for (const [x, y, r] of [[-1.15, 0.3, 0.07], [1.15, -0.5, 0.09], [1.0, 0.75, 0.06], [-0.95, -0.25, 0.05]]) { c.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, k = i % 2 ? r * 0.35 : r; c.lineTo(cx + x * rx + Math.cos(a) * k * R, cy + y * ry + Math.sin(a) * k * R); } c.closePath(); c.fill(); }
     } else if (shape === 'animal') {
-      c.fillStyle = css(shade(g.main, 0.45)); c.beginPath(); c.ellipse(cx, cy + ry * 0.22, rx * 0.3, ry * 0.2, 0, 0, 7); c.fill();
-      c.fillStyle = '#1a1a2e'; c.beginPath(); c.ellipse(cx, cy + ry * 0.12, rx * 0.07, ry * 0.05, 0, 0, 7); c.fill();
+      animalFront(c, cx, cy, rx, ry, R, g, main, dark, outline);
     }
     // ---- 顔 ----
+    if (shape === 'animal') { animalFace(c, cx, cy, rx, ry, R, g, outline); c.restore(); return; }
     const ey = cy + ry * ((FACE_Y[shape] || 0) - 0.18), es = R * g.eyeSize;
     const xs = g.eyes === 1 ? [0] : g.eyes === 2 ? [-0.36, 0.36] : [-0.45, 0, 0.45];
     c.strokeStyle = dark;
@@ -496,6 +503,141 @@ footer a{color:var(--primary)}
     // 画面のキャラは、描いたあとで粗いマス目（ドット絵）にする
     if (shape === 'screen') pixelate(c, cx - R * 1.3, cy - R * 1.3, R * 2.6, R * 2.6, Math.max(4, Math.round(R * 0.07)));
   }
+  // ---- 動物（AI が何の動物かを答えたとき）。毛並み・目・鼻を、なるべく本物らしく描く ----
+  const ANIMAL_PROP = { '鳥': [0.85, 1.05], '魚': [1.15, 0.72], '虫': [0.8, 0.85], 'は虫類': [1.1, 0.75], 'うさぎ': [0.9, 0.95] };
+  const rndOf = g => sfc32(Math.floor(g.wob.ph * 1e6), Math.floor(g.rx * 1e6), Math.floor(g.ry * 1e6), Math.floor(g.eyeSize * 1e6));
+  function animalBack(c, cx, cy, rx, ry, R, g, main, dark, outline) {
+    const a = g.animal, light = css(shade(g.main, 0.25)), inner = '#f2a7b5';
+    c.fillStyle = dark; c.strokeStyle = dark; c.lineWidth = outline;
+    const paws = () => { for (const s of [-1, 1]) { c.fillStyle = dark; c.beginPath(); c.ellipse(cx + s * rx * 0.42, cy + ry * 0.93, rx * 0.2, ry * 0.13, 0, 0, 7); c.fill(); } };
+    if (a === '犬') {
+      paws();
+      c.strokeStyle = main; c.lineWidth = rx * 0.13; c.beginPath(); c.moveTo(cx + rx * 0.8, cy + ry * 0.35); c.quadraticCurveTo(cx + rx * 1.3, cy + ry * 0.1, cx + rx * 1.25, cy - ry * 0.35); c.stroke();
+    } else if (a === '猫') {
+      paws();
+      for (const s of [-1, 1]) {
+        c.fillStyle = main; c.strokeStyle = dark; c.lineWidth = outline;
+        c.beginPath(); c.moveTo(cx + s * rx * 0.25, cy - ry * 0.75); c.lineTo(cx + s * rx * 0.62, cy - ry * 1.32); c.lineTo(cx + s * rx * 0.85, cy - ry * 0.5); c.closePath(); c.fill(); c.stroke();
+        c.fillStyle = inner; c.beginPath(); c.moveTo(cx + s * rx * 0.38, cy - ry * 0.75); c.lineTo(cx + s * rx * 0.6, cy - ry * 1.15); c.lineTo(cx + s * rx * 0.74, cy - ry * 0.62); c.closePath(); c.fill();
+      }
+      c.strokeStyle = main; c.lineWidth = rx * 0.11; c.beginPath(); c.moveTo(cx + rx * 0.8, cy + ry * 0.6); c.bezierCurveTo(cx + rx * 1.5, cy + ry * 0.6, cx + rx * 1.1, cy - ry * 0.3, cx + rx * 1.45, cy - ry * 0.55); c.stroke();
+    } else if (a === 'うさぎ') {
+      paws();
+      for (const s of [-1, 1]) {
+        c.fillStyle = main; c.strokeStyle = dark; c.lineWidth = outline;
+        c.beginPath(); c.ellipse(cx + s * rx * 0.32, cy - ry * 1.35, rx * 0.17, ry * 0.62, s * 0.15, 0, 7); c.fill(); c.stroke();
+        c.fillStyle = inner; c.beginPath(); c.ellipse(cx + s * rx * 0.32, cy - ry * 1.3, rx * 0.08, ry * 0.45, s * 0.15, 0, 7); c.fill();
+      }
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(cx + rx * 0.9, cy + ry * 0.55, rx * 0.17, 0, 7); c.fill();
+    } else if (a === '鳥') {
+      c.strokeStyle = '#e09a2b'; c.lineWidth = outline * 1.2;
+      for (const s of [-1, 1]) { const x = cx + s * rx * 0.3; c.beginPath(); c.moveTo(x, cy + ry * 0.85); c.lineTo(x, cy + ry * 1.12); c.moveTo(x, cy + ry * 1.12); c.lineTo(x - rx * 0.12, cy + ry * 1.2); c.moveTo(x, cy + ry * 1.12); c.lineTo(x + rx * 0.12, cy + ry * 1.2); c.stroke(); }
+      c.fillStyle = dark; for (const d of [-0.15, 0, 0.15]) { c.beginPath(); c.ellipse(cx + d * rx, cy - ry * 1.02, rx * 0.06, ry * 0.18, d * 2, 0, 7); c.fill(); }
+      c.beginPath(); c.moveTo(cx + rx * 0.7, cy + ry * 0.4); c.lineTo(cx + rx * 1.25, cy + ry * 0.75); c.lineTo(cx + rx * 1.15, cy + ry * 0.45); c.lineTo(cx + rx * 1.3, cy + ry * 0.35); c.closePath(); c.fill();
+    } else if (a === '魚') {
+      c.fillStyle = css(g.second); c.strokeStyle = dark; c.lineWidth = outline;
+      c.beginPath(); c.moveTo(cx + rx * 0.85, cy); c.lineTo(cx + rx * 1.4, cy - ry * 0.6); c.quadraticCurveTo(cx + rx * 1.2, cy, cx + rx * 1.4, cy + ry * 0.6); c.closePath(); c.fill(); c.stroke();
+      c.beginPath(); c.moveTo(cx - rx * 0.3, cy - ry * 0.85); c.quadraticCurveTo(cx + rx * 0.1, cy - ry * 1.5, cx + rx * 0.45, cy - ry * 0.8); c.closePath(); c.fill(); c.stroke();
+      c.strokeStyle = 'rgba(120,180,230,.7)'; c.lineWidth = outline * 0.7;
+      for (const [x, y, r] of [[-1.2, -0.6, 0.08], [-1.35, -0.95, 0.05], [-1.1, -1.2, 0.035]]) { c.beginPath(); c.arc(cx + x * rx, cy + y * ry, r * R, 0, 7); c.stroke(); }
+    } else if (a === '虫') {
+      c.fillStyle = 'rgba(210,235,255,.65)'; c.strokeStyle = 'rgba(80,110,150,.6)'; c.lineWidth = outline * 0.6;
+      for (const s of [-1, 1]) for (const [dy, sc] of [[-0.35, 1], [0.05, 0.75]]) { c.beginPath(); c.ellipse(cx + s * rx * 0.85, cy + ry * dy, rx * 0.55 * sc, ry * 0.3 * sc, s * -0.5, 0, 7); c.fill(); c.stroke(); }
+      c.strokeStyle = dark; c.lineWidth = outline * 0.9;
+      for (const s of [-1, 1]) for (const k of [0, 1, 2]) { const y = cy + ry * (0.25 + k * 0.25); c.beginPath(); c.moveTo(cx + s * rx * 0.7, y); c.lineTo(cx + s * rx * 1.05, y + ry * 0.12); c.lineTo(cx + s * rx * 1.15, y + ry * 0.35); c.stroke(); }
+      for (const s of [-1, 1]) { c.beginPath(); c.moveTo(cx + s * rx * 0.2, cy - ry * 0.85); c.quadraticCurveTo(cx + s * rx * 0.3, cy - ry * 1.4, cx + s * rx * 0.6, cy - ry * 1.45); c.stroke(); c.fillStyle = dark; c.beginPath(); c.arc(cx + s * rx * 0.6, cy - ry * 1.45, rx * 0.06, 0, 7); c.fill(); }
+    } else if (a === 'は虫類') {
+      c.fillStyle = main; c.strokeStyle = dark; c.lineWidth = outline;
+      c.beginPath(); c.moveTo(cx + rx * 0.7, cy + ry * 0.1); c.quadraticCurveTo(cx + rx * 1.5, cy + ry * 0.3, cx + rx * 1.55, cy + ry * 0.95); c.quadraticCurveTo(cx + rx * 1.2, cy + ry * 0.6, cx + rx * 0.7, cy + ry * 0.6); c.closePath(); c.fill(); c.stroke();
+      c.fillStyle = dark; for (const s of [-1, 1]) for (const dy of [0.05, 0.75]) { c.beginPath(); c.ellipse(cx + s * rx * 0.85, cy + ry * dy, rx * 0.2, ry * 0.12, s * 0.6, 0, 7); c.fill(); }
+      c.fillStyle = css(g.second); for (let i = -3; i <= 3; i++) { const x = cx + i * rx * 0.22, y = cy - ry * Math.sqrt(Math.max(0, 1 - Math.pow(i * 0.22, 2))) * 0.97; c.beginPath(); c.moveTo(x - rx * 0.08, y + ry * 0.05); c.lineTo(x, y - ry * 0.22); c.lineTo(x + rx * 0.08, y + ry * 0.05); c.closePath(); c.fill(); c.stroke(); }
+    } else { // くま・その他：丸い耳と短いしっぽ
+      paws();
+      for (const s of [-1, 1]) { c.fillStyle = main; c.beginPath(); c.arc(cx + s * rx * 0.62, cy - ry * 0.8, rx * 0.26, 0, 7); c.fill(); c.stroke(); c.fillStyle = css(shade(g.main, -0.15)); c.beginPath(); c.arc(cx + s * rx * 0.62, cy - ry * 0.8, rx * 0.14, 0, 7); c.fill(); }
+    }
+    c.fillStyle = dark; c.strokeStyle = dark; c.lineWidth = outline;
+  }
+  // 毛・羽・うろこの手ざわり（体の中に、細かい線を何百本も描く）
+  function animalTexture(c, cx, cy, rx, ry, R, g) {
+    const a = g.animal, r = rndOf(g);
+    c.save(); c.globalAlpha = 1;
+    // 下に向かってだんだん暗く（体の丸み）
+    const lg = c.createLinearGradient(0, cy - ry, 0, cy + ry); lg.addColorStop(0, 'rgba(255,255,255,.18)'); lg.addColorStop(0.55, 'rgba(0,0,0,0)'); lg.addColorStop(1, 'rgba(0,0,0,.28)');
+    c.fillStyle = lg; c.fillRect(cx - rx * 1.2, cy - ry * 1.2, rx * 2.4, ry * 2.4);
+    if (a === '魚' || a === 'は虫類') { // うろこ
+      c.strokeStyle = 'rgba(0,0,0,.18)'; c.lineWidth = 1.2; const sz = R * 0.09;
+      for (let y = cy - ry; y < cy + ry; y += sz * 0.7) for (let x = cx - rx; x < cx + rx; x += sz) { const o = (Math.round((y - cy) / (sz * 0.7)) % 2) * sz / 2; c.beginPath(); c.arc(x + o, y, sz / 2, 0, Math.PI); c.stroke(); }
+    } else if (a === '鳥') { // 羽
+      c.strokeStyle = 'rgba(0,0,0,.14)'; c.lineWidth = 1.4;
+      for (let i = 0; i < 60; i++) { const x = cx + (r() * 2 - 1) * rx, y = cy + (r() * 1.6 - 0.4) * ry, w = R * (0.06 + r() * 0.05); c.beginPath(); c.arc(x, y, w, 0.1 * Math.PI, 0.9 * Math.PI); c.stroke(); }
+    } else if (a === '虫') { // 節（しま）とつや
+      c.fillStyle = 'rgba(0,0,0,.18)'; for (let k = 0; k < 4; k++) c.fillRect(cx - rx, cy + ry * (0.05 + k * 0.22), rx * 2, ry * 0.07);
+      c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.ellipse(cx - rx * 0.35, cy - ry * 0.45, rx * 0.18, ry * 0.08, -0.5, 0, 7); c.fill();
+    } else { // 毛並み：外へ向かって流れる短い毛
+      for (let i = 0; i < 420; i++) {
+        const t = r() * Math.PI * 2, d = Math.sqrt(r()), x = cx + Math.cos(t) * rx * d, y = cy + Math.sin(t) * ry * d;
+        const len = R * (0.035 + r() * 0.04), ang = t + (r() - 0.5) * 0.6;
+        c.strokeStyle = r() < 0.5 ? 'rgba(0,0,0,.16)' : 'rgba(255,255,255,.22)'; c.lineWidth = 1 + r();
+        c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.cos(ang) * len, y + Math.sin(ang) * len); c.stroke();
+      }
+    }
+    c.restore();
+  }
+  function animalFront(c, cx, cy, rx, ry, R, g, main, dark, outline) {
+    const a = g.animal;
+    c.strokeStyle = dark; c.lineWidth = outline;
+    if (a === '犬') { // たれた耳
+      for (const s of [-1, 1]) { c.fillStyle = css(shade(g.main, -0.3)); c.beginPath(); c.ellipse(cx + s * rx * 0.78, cy - ry * 0.25, rx * 0.2, ry * 0.45, s * -0.35, 0, 7); c.fill(); c.stroke(); }
+    }
+    if (a === '鳥') { // つばさ
+      for (const s of [-1, 1]) { c.fillStyle = css(shade(g.main, -0.2)); c.beginPath(); c.ellipse(cx + s * rx * 0.82, cy + ry * 0.2, rx * 0.22, ry * 0.42, s * -0.3, 0, 7); c.fill(); c.stroke();
+        c.strokeStyle = 'rgba(0,0,0,.25)'; for (const k of [-0.15, 0, 0.15]) { c.beginPath(); c.moveTo(cx + s * rx * 0.82, cy + ry * (0.0 + k)); c.lineTo(cx + s * rx * 0.9, cy + ry * (0.45 + k)); c.stroke(); } c.strokeStyle = dark; }
+    }
+    if (a === '魚') { c.fillStyle = css(g.second); c.beginPath(); c.ellipse(cx + rx * 0.15, cy + ry * 0.45, rx * 0.22, ry * 0.12, 0.5, 0, 7); c.fill(); c.stroke(); }
+    // 口のまわり（犬・くま・その他の毛の動物）
+    if (['犬', 'くま', undefined, 'その他'].includes(a) || !ANIMALS[a]) { c.fillStyle = css(shade(g.main, 0.45)); c.beginPath(); c.ellipse(cx, cy + ry * 0.24, rx * 0.32, ry * 0.22, 0, 0, 7); c.fill(); }
+  }
+  // 本物らしい目（色のついた虹彩・瞳・光）と、鼻・口・ひげ
+  function animalFace(c, cx, cy, rx, ry, R, g, outline) {
+    const a = g.animal, ey = cy - ry * 0.18, es = R * g.eyeSize * 0.85;
+    const iris = { '猫': '#9ccf3a', '犬': '#6b3f1f', 'くま': '#3b2410', '鳥': '#1a1a1a', '魚': '#d9c04a', '虫': '#111', 'は虫類': '#e0b020', 'うさぎ': '#7a1f2b' }[a] || '#6b4a2a';
+    const xs = a === '魚' || a === 'は虫類' ? [-0.45, 0.45] : [-0.32, 0.32];
+    for (const ex of xs) {
+      const x = cx + ex * rx;
+      if (a === '虫') { c.fillStyle = '#111'; c.beginPath(); c.ellipse(x, ey, es * 1.15, es * 1.3, 0, 0, 7); c.fill(); c.fillStyle = 'rgba(255,255,255,.5)'; c.beginPath(); c.arc(x - es * 0.35, ey - es * 0.45, es * 0.25, 0, 7); c.fill(); continue; }
+      c.fillStyle = '#fbfbf5'; c.beginPath(); c.ellipse(x, ey, es * 1.05, es, 0, 0, 7); c.fill();
+      const ig = c.createRadialGradient(x, ey, es * 0.1, x, ey, es * 0.85); ig.addColorStop(0, css(shade(hex2rgb(iris), 0.35))); ig.addColorStop(1, iris);
+      c.fillStyle = ig; c.beginPath(); c.arc(x, ey, es * 0.82, 0, 7); c.fill();
+      c.fillStyle = '#0d0d12'; c.beginPath();
+      if (a === '猫' || a === 'は虫類') c.ellipse(x, ey, es * 0.16, es * 0.7, 0, 0, 7); else c.arc(x, ey, es * 0.42, 0, 7);
+      c.fill();
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(x - es * 0.28, ey - es * 0.3, es * 0.2, 0, 7); c.fill();
+      c.beginPath(); c.arc(x + es * 0.25, ey + es * 0.25, es * 0.08, 0, 7); c.fill();
+      c.strokeStyle = 'rgba(0,0,0,.55)'; c.lineWidth = outline * 0.7; c.beginPath(); c.ellipse(x, ey, es * 1.05, es, 0, 0, 7); c.stroke();
+    }
+    const ny = cy + ry * 0.12;
+    c.strokeStyle = '#1a1a2e'; c.lineWidth = outline * 0.9;
+    if (a === '鳥') { c.fillStyle = '#f0a43a'; c.beginPath(); c.moveTo(cx - rx * 0.13, ny - ry * 0.05); c.lineTo(cx + rx * 0.13, ny - ry * 0.05); c.lineTo(cx, ny + ry * 0.2); c.closePath(); c.fill(); c.stroke(); return; }
+    if (a === '魚') { c.beginPath(); c.ellipse(cx, ny + ry * 0.12, rx * 0.08, ry * 0.07, 0, 0, 7); c.stroke(); return; }
+    if (a === '虫') { for (const s of [-1, 1]) { c.beginPath(); c.moveTo(cx + s * rx * 0.08, ny + ry * 0.05); c.quadraticCurveTo(cx + s * rx * 0.2, ny + ry * 0.2, cx + s * rx * 0.05, ny + ry * 0.28); c.stroke(); } return; }
+    if (a === 'は虫類') { c.fillStyle = '#1a1a2e'; for (const s of [-1, 1]) { c.beginPath(); c.arc(cx + s * rx * 0.08, ny, rx * 0.025, 0, 7); c.fill(); } c.beginPath(); c.moveTo(cx - rx * 0.4, ny + ry * 0.18); c.quadraticCurveTo(cx, ny + ry * 0.28, cx + rx * 0.4, ny + ry * 0.18); c.stroke(); return; }
+    // 鼻（犬・くま・その他は黒くてつやつや、猫・うさぎは小さなピンク）
+    const pink = a === '猫' || a === 'うさぎ';
+    c.fillStyle = pink ? '#e8879a' : '#1a1a1e';
+    c.beginPath(); c.moveTo(cx - rx * 0.11, ny - ry * 0.04); c.quadraticCurveTo(cx, ny - ry * 0.09, cx + rx * 0.11, ny - ry * 0.04); c.quadraticCurveTo(cx, ny + ry * 0.12, cx - rx * 0.11, ny - ry * 0.04);
+    if (pink) c.scale(1, 1); c.fill();
+    if (!pink) { c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.ellipse(cx - rx * 0.04, ny - ry * 0.035, rx * 0.035, ry * 0.015, 0, 0, 7); c.fill(); }
+    // 口（ω の形）
+    c.beginPath(); c.moveTo(cx, ny + ry * 0.07); c.lineTo(cx, ny + ry * 0.12);
+    c.moveTo(cx - rx * 0.14, ny + ry * 0.12); c.quadraticCurveTo(cx - rx * 0.07, ny + ry * 0.2, cx, ny + ry * 0.12); c.quadraticCurveTo(cx + rx * 0.07, ny + ry * 0.2, cx + rx * 0.14, ny + ry * 0.12); c.stroke();
+    if (g.mouth === 'fang' || a === '犬') { c.fillStyle = '#e06a7a'; c.beginPath(); c.ellipse(cx, ny + ry * 0.2, rx * 0.06, ry * 0.07, 0, 0, Math.PI); c.fill(); }
+    if (pink) { // ひげ
+      c.strokeStyle = 'rgba(40,40,40,.6)'; c.lineWidth = 1.4;
+      for (const s of [-1, 1]) for (const k of [-1, 0, 1]) { c.beginPath(); c.moveTo(cx + s * rx * 0.2, ny + ry * 0.05 + k * ry * 0.04); c.lineTo(cx + s * rx * 0.75, ny + k * ry * 0.1); c.stroke(); }
+    }
+    if (g.cheeks) { c.fillStyle = 'rgba(255,110,150,.25)'; for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.55, ny + ry * 0.05, es * 0.8, es * 0.45, 0, 0, 7); c.fill(); } }
+  }
+  const hex2rgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
   function pixelate(c, x, y, w, h, b) {
     x = Math.max(0, Math.floor(x)); y = Math.max(0, Math.floor(y));
     w = Math.min(c.canvas.width - x, Math.ceil(w)); h = Math.min(c.canvas.height - y, Math.ceil(h));
@@ -747,7 +889,8 @@ footer a{color:var(--primary)}
     const g = {};
     for (const k of ['rx', 'ry', 'wob', 'sq', 'pattern', 'spots', 'top', 'eyes', 'eyeSize', 'mouth', 'arms', 'cheeks', 'second', 'third']) g[k] = one(F[k], Mo[k]);
     g.main = mixColor(F.main, Mo.main, 0.3 + r() * 0.4);
-    g.kind = (fp[0] & 1 ? F.kind || Mo.kind : Mo.kind || F.kind); // 種類はどちらかの親から（乱数は使わない）
+    const kp = (fp[0] & 1 ? (F.kind ? F : Mo) : (Mo.kind ? Mo : F)); // 種類はどちらかの親から（乱数は使わない）
+    g.kind = kp.kind; g.animal = kp.animal;
     let type = one(father.type, mother.type), mutation = '';
     if (r() < 1 / 12) {
       const what = Math.floor(r() * 4);
@@ -932,7 +1075,7 @@ footer a{color:var(--primary)}
     // 生まれ（合体の子は、混ぜた属性）と、右にパワー
     c.fillStyle = '#4a4a6a'; c.font = '500 18px "Noto Sans JP", sans-serif';
     const origin = M.parents ? `第${M.gen}世代　父 ${M.parentNames[0]} × 母 ${M.parentNames[1]}`
-      : M.fusion ? `合体 ×${M.fusion}：${M.parts.join('＋')}` : M.motif ? (KINDS[M.g.kind] ? `${KINDS[M.g.kind].chara}　` : '') + `生まれた写真：${M.motif}` : M.source ? SOURCES[M.source].origin : '写真の色から生まれた';
+      : M.fusion ? `合体 ×${M.fusion}：${M.parts.join('＋')}` : M.motif ? (charaOf(M.g) ? `${charaOf(M.g)}　` : '') + `生まれた写真：${M.motif}` : M.source ? SOURCES[M.source].origin : '写真の色から生まれた';
     if (M.parents) c.font = '700 16px "Noto Sans JP", sans-serif';
     c.fillText(origin, 46, ay + ah + 34);
     c.textAlign = 'right'; c.fillStyle = '#9090b0'; c.font = '700 16px "Noto Sans JP", sans-serif';
@@ -1036,7 +1179,7 @@ footer a{color:var(--primary)}
     return c.toDataURL('image/jpeg', 0.8).split(',')[1];
   }
   const PROMPT = `この写真をもとに、ゲームのモンスターを1体考えてください。JSONだけで答えてください。
-{"kind":"写っているものの種類。料理・動物・植物・乗り物・建物・空・書類・絵・画面・その他 のどれか1つ（料理＝食べ物・食材・飲み物、乗り物＝乗り物や機械、空＝空・星・月・夜景、書類＝書類・本・文字、絵＝手描きの絵、画面＝パソコンやゲームの画面）","motif":"写っている主なもの（12字以内）","name":"モンスターの名前（カタカナ3〜7字）","type":"炎・水・森・雷・土・風・夢・闇・光・鋼 のどれか1つ","moves":["技の名前（9字以内）","技の名前（9字以内）"],"desc":"図鑑の説明（子どもにも分かる言葉で60字以内）","mission":"食べ物・食材・冷蔵庫の中が写っていれば、写っている材料で作れる料理を『〜を作ってたおせ！』の形で30字以内。そうでなければ null"}
+{"kind":"写っているものの種類。料理・動物・植物・乗り物・建物・空・書類・絵・画面・その他 のどれか1つ（料理＝食べ物・食材・飲み物、乗り物＝乗り物や機械、空＝空・星・月・夜景、書類＝書類・本・文字、絵＝手描きの絵、画面＝パソコンやゲームの画面）","animal":"kind が動物のときだけ、犬・猫・うさぎ・くま・鳥・魚・虫・は虫類・その他 のどれか1つ（たぬき・きつねは犬、ライオン・とらは猫、ハムスターはうさぎ、かえるは は虫類 にまとめる）。動物でなければ null","motif":"写っている主なもの（12字以内）","name":"モンスターの名前（カタカナ3〜7字）","type":"炎・水・森・雷・土・風・夢・闇・光・鋼 のどれか1つ","moves":["技の名前（9字以内）","技の名前（9字以内）"],"desc":"図鑑の説明（子どもにも分かる言葉で60字以内）","mission":"食べ物・食材・冷蔵庫の中が写っていれば、写っている材料で作れる料理を『〜を作ってたおせ！』の形で30字以内。そうでなければ null"}
 人が写っていても、その人の顔・見た目・名前・持ち物の文字には触れず、物や景色だけをもとにしてください。`;
   async function askAI(img) {
     const key = getKey();
@@ -1070,7 +1213,7 @@ footer a{color:var(--primary)}
   // カードに描く字（文字化けの字も）をぜんぶ渡して、届いてから描く。そうしないと最初の1枚だけ別の字体になる
   async function loadFontsFor(M) {
     const text = 'No.0123456789?' + M.name + M.desc + M.moves.join('') + M.motif + M.mission + MOJIBAKE +
-      Object.keys(M.stats).join('') + Object.keys(TYPES).join('') + Object.values(KINDS).map(k => k.chara).join('') + 'タイプ？⚠❓★バグ個体生まれた写真の色から文章音声の中身数えた料理ミッションモンスタードロッパー指紋 dropper-tools.com' +
+      Object.keys(M.stats).join('') + Object.keys(TYPES).join('') + Object.values(KINDS).map(k => k.chara).join('') + Object.values(ANIMALS).map(k => k.chara).join('') + 'タイプ？⚠❓★バグ個体生まれた写真の色から文章音声の中身数えた料理ミッションモンスタードロッパー指紋 dropper-tools.com' +
       'パワー合体×＋：GOLDSILVER♂♀発行断片バイト目からごと第世代父母人目の枚ID#' + (M.parentNames || []).join('');
     const fonts = ['900 40px "Noto Sans JP"', '900 22px "Noto Sans JP"', '700 18px "Noto Sans JP"', '700 16px "Noto Sans JP"', '500 18px "Noto Sans JP"', '500 14px "Noto Sans JP"', '700 15px "Noto Sans JP"', '700 22px Oswald', '700 28px Oswald', '500 15px Oswald'];
     try { await Promise.all(fonts.map(f => document.fonts.load(f, text))); } catch (e) { /* 読めなければ代わりの字体で描く */ }
@@ -1136,6 +1279,7 @@ footer a{color:var(--primary)}
         const a = await askAI(img);
         if (TYPES[a.type]) M.type = a.type;
         if (KINDS[a.kind]) M.g.kind = a.kind; // 体の形がこの種類に変わる（図鑑にも残る）
+        if (a.kind === '動物' && ANIMALS[a.animal]) M.g.animal = a.animal;
         M.name = clip(a.name, 8) || M.name;
         M.motif = clip(a.motif, 14);
         if (Array.isArray(a.moves) && a.moves.length >= 2) M.moves = a.moves.slice(0, 2).map(m => clip(m, 10));
