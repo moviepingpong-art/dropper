@@ -153,14 +153,14 @@
     const moves = [0, 1, 2, 3].sort(() => rnd() - 0.5).slice(0, 2).map(i => ({ d: 'moves', p: [type, i] }));
     const pick = a => a[pickI(a)];
     const stat = (bias) => Math.max(8, Math.min(99, Math.round(30 + rnd() * 50 + bias)));
+    const capOf = b => Math.max(8, Math.min(99, Math.round(80 + b)));
+    const bs = bias ? [bias.hp, bias.atk, bias.def, bias.spd]
+      : [Math.log2(imgBytes / 1024 + 1) * 1.5 - 8, pal.sat * 30 - 10, (0.5 - pal.lum) * 30, pal.lum * 30 - 12];
     return {
       type, name, moves, no: (fp[3] % 999) + 1,
-      stats: {
-        'たいりょく': stat(bias ? bias.hp : Math.log2(imgBytes / 1024 + 1) * 1.5 - 8),
-        'こうげき': stat(bias ? bias.atk : pal.sat * 30 - 10),
-        'まもり': stat(bias ? bias.def : (0.5 - pal.lum) * 30),
-        'すばやさ': stat(bias ? bias.spd : pal.lum * 30 - 12)
-      },
+      stats: { 'たいりょく': stat(bs[0]), 'こうげき': stat(bs[1]), 'まもり': stat(bs[2]), 'すばやさ': stat(bs[3]) },
+      // AI を使わないときに出うるいちばん上の値（乱数がいちばん大きいとき）。AI で読めた子はこれより上になる
+      cap: { 'たいりょく': capOf(bs[0]), 'こうげき': capOf(bs[1]), 'まもり': capOf(bs[2]), 'すばやさ': capOf(bs[3]) },
       main: vivid(pal.colors[0], 0, type), second: vivid(pal.colors[1], 40, type), third: vivid(pal.colors[2], 200, type),
       rx: 0.62 + rnd() * 0.3, ry: 0.55 + rnd() * 0.3,
       wob: { k: 3 + Math.floor(rnd() * 4), amp: rnd() * 0.07, ph: rnd() * 6.28 },
@@ -1584,12 +1584,16 @@
       id: printOf(fp), print: printOf(fp).slice(0, 12).toUpperCase()
     };
   }
-  // AI が中身まで読み取れた子は、強さが AI_BOOST 倍（バグ個体の 255 はそのまま）。頼み直しても重ねがけしない
-  const AI_BOOST = 1.2;
+  // AI が中身まで読み取れた子は、同じファイルを AI なしで生んだどの子よりも強くする。
+  // AI なしで出うるいちばん上の値（g.cap）の 1.1〜1.2 倍に、レア度の倍率をかける。バグ個体の 255 はそのまま。頼み直しても重ねがけしない
   function boostAI(M) {
-    if (M.aiBoost) return;
-    for (const k of Object.keys(M.stats)) if (k !== M.bugStat) M.stats[k] = Math.round(M.stats[k] * AI_BOOST);
-    M.power = powerOf(M.stats); M.aiBoost = AI_BOOST;
+    if (M.aiBoost || !M.g.cap) return;
+    Object.keys(M.stats).forEach((k, i) => {
+      if (k === M.bugStat) return;
+      const f = 1.1 + (((M.fp[1] >>> (i * 8)) & 255) / 255) * 0.1;
+      M.stats[k] = Math.max(M.stats[k], Math.round(M.g.cap[k] * f * RARITY[M.rarity].mult));
+    });
+    M.power = powerOf(M.stats); M.aiBoost = true;
   }
   function statusOf(M) {
     const s = [];
