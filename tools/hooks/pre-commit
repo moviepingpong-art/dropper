@@ -46,4 +46,15 @@ if ! git diff --quiet -- '*.html' ':!src'; then
   exit 1
 fi
 
+# モンスタードロッパーの英語版・インド版（en/play/・in/play/）が、日本語版から作り直した物と同じか
+if ! "$PY" tools/make-monster-langs.py --check >&2; then
+  echo "" >&2
+  echo "pre-commit: モンスタードロッパーの英語版・インド版が、日本語版（play/）と合っていません（上のファイル）。" >&2
+  echo "  play/ を直したら、次を実行して一緒にコミットしてください：" >&2
+  echo "    $PY tools/make-monster-langs.py" >&2
+  echo "    git add en/play in/play" >&2
+  echo "" >&2
+  exit 1
+fi
+
 exit 0

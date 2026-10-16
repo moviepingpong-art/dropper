@@ -44,6 +44,19 @@ LANGS = {
         'ogimage': '<meta property="og:image" content="https://dropper-tools.com/assets/og/og-en.png">',
         'langjs': "<script>window.LANG = 'en';</script>",
     },
+    'in': {
+        'lang': '<html lang="en-IN">',
+        'title': '<title>Monster Dropper | Photo se monster card paida hota hai | Dropper Playground</title>',
+        'desc': '<meta name="description" content="Photo drop karo aur ek anokha monster card paida hota hai. 2-3 ek saath drop karo to fusion, male aur female card ki shaadi karao to bachche, aur 1,000 mein 1 gold card bhi. Photos sirf aapke browser mein process hoti hain. Login nahin chahiye.">',
+        'canonical': '<link rel="canonical" href="https://dropper-tools.com/in/play/monster.html">',
+        'site': '<meta property="og:site_name" content="Dropper">',
+        'locale': '<meta property="og:locale" content="en_IN">',
+        'ogtitle': '<meta property="og:title" content="Monster Dropper | Dropper Playground">',
+        'ogdesc': '<meta property="og:description" content="Photo drop karo aur ek anokha monster card paida hota hai. Fusion, shaadi aur bachche. 1,000 mein 1 gold card.">',
+        'ogurl': '<meta property="og:url" content="https://dropper-tools.com/in/play/monster.html">',
+        'ogimage': '<meta property="og:image" content="https://dropper-tools.com/assets/og/og-in.png">',
+        'langjs': "<script>window.LANG = 'in';</script>",
+    },
 }
 
 

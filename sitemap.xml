@@ -218,10 +218,34 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-  <!-- 遊び場（モンスタードロッパー）は日本語だけ。build.py の外にある1枚のページなので、ここも手で足した（2026-10-14） -->
+  <!-- 遊び場（モンスタードロッパー）。build.py の外にあるページなので、ここも手で足した（2026-10-14。3言語は 2026-10-17） -->
   <url>
     <loc>https://dropper-tools.com/play/monster.html</loc>
-    <lastmod>2026-10-14</lastmod>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/monster.html"/>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://dropper-tools.com/en/play/monster.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/monster.html"/>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://dropper-tools.com/in/play/monster.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/monster.html"/>
+    <lastmod>2026-10-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

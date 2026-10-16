@@ -312,14 +312,15 @@ def build_tool4_guide_btn(code, strings):
 
 
 # 遊び場（モンスタードロッパー）の帯（{{PLAY_BAND}}）。2026-10-14。
-# ゲームの中身（名前・技・説明・文字化け）が日本語前提なので、トップの ja だけに出す。
-# ページ本体 play/monster.html は build.py の外にある、1枚で完結した静的ページ（CLAUDE.md「遊び場」）。
-PLAY_PATH = {"ja": "./play/monster.html"}
+# 2026-10-17 から3言語（en/play/・in/play/ は tools/make-monster-langs.py が日本語版から作る）。
+# どの言語も、トップと同じフォルダの play/ を指す。
+# ページ本体 play/monster.html は build.py の外にある静的ページ（CLAUDE.md「遊び場」）。
+PLAY_PATH = {"ja": "./play/monster.html", "en": "./play/monster.html", "in": "./play/monster.html"}
 
 
 def build_play_band(page, code, strings):
     """トップの「ドロッパーの遊び場」の帯。道具の4本とは別の棚に置く。
-    en/in では帯ごと出さない（遊び場のページが日本語だけのため）。"""
+    PLAY_PATH に無い言語では帯ごと出さない。"""
     if page != "index" or code not in PLAY_PATH:
         return ""
     t = lambda k: strings.get(k, "")
