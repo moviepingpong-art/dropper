@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monster Dropper | A monster card is born from your photo | Dropper Playground</title>
+<meta name="description" content="Drop a photo and a one-of-a-kind monster card is born. Fuse 2 or 3 at once, marry a male and a female card to have children, and look for 1-in-1,000 gold cards. Photos are processed only inside your browser. No sign-in needed.">
+<link rel="canonical" href="https://dropper-tools.com/en/play/monster.html">
+<link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/monster.html">
+<link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/monster.html">
+<link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/monster.html">
+<link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/monster.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dropper">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Monster Dropper | Dropper Playground">
+<meta property="og:description" content="Drop a photo and a one-of-a-kind monster card is born. Fusion, marriage and children. 1-in-1,000 gold cards.">
+<meta property="og:url" content="https://dropper-tools.com/en/play/monster.html">
+<meta property="og:image" content="https://dropper-tools.com/assets/og/og-en.png">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Google Analytics (GA4)。測定IDはほかのページと同じ（build.py の GA_TAG）。
+     イベントは回数だけを送る（track()）。写真・名前・カードの中身は送らない（プライバシーポリシー「遊び場」の節） -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PQPKYYYXKG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PQPKYYYXKG');
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#0057ff; --primary-pale:#e0eaff; --accent:#ff5722; --accent2:#ffca28; --green:#00c896;
+  --bg:#f4f6fb; --card:#ffffff; --text-dark:#1a1a2e; --text-mid:#4a4a6a; --text-light:#9090b0; --border:#e0e4f0;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --primary:#4d8bff; --primary-pale:#1b2747;
+    --bg:#11131c; --card:#1b1e2b; --text-dark:#eef0f8; --text-mid:#b4b8cf; --text-light:#7c809a; --border:#2c3045;
+  }
+}
+:root[data-theme="dark"]{
+  --primary:#4d8bff; --primary-pale:#1b2747;
+  --bg:#11131c; --card:#1b1e2b; --text-dark:#eef0f8; --text-mid:#b4b8cf; --text-light:#7c809a; --border:#2c3045;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text-dark);font-family:'Noto Sans JP',sans-serif;line-height:1.7}
+.wrap{max-width:720px;margin:0 auto;padding:24px 16px 48px}
+/* 日本語以外のページは、辞書で言葉を入れ替えるまで隠す（一瞬だけ日本語が見えないように） */
+html:not([lang="ja"]):not(.i18n-ready) .wrap{visibility:hidden}
+.langs{text-align:right;font-size:12px;font-weight:700;letter-spacing:.03em;margin:-12px 0 2px}
+.langs a{color:var(--text-light);text-decoration:none}
+.langs a.active{color:var(--primary)}
+.langs .sep{color:var(--border);margin:0 .3em}
+.shelf{font-family:'Oswald',sans-serif;letter-spacing:.08em;color:var(--accent);font-size:13px;font-weight:700}
+h1{margin:2px 0 4px;font-size:clamp(26px,6vw,36px);font-weight:900}
+h1 span+span{color:var(--primary)}
+.lead{margin:0 0 20px;color:var(--text-mid)}
+.drop{border:3px dashed var(--primary);border-radius:18px;background:var(--card);padding:36px 16px;text-align:center;cursor:pointer;transition:background .15s,transform .15s}
+.drop.over{background:var(--primary-pale);transform:scale(1.01)}
+.drop .big{font-size:44px;line-height:1}
+.drop b{display:block;font-size:18px;margin:10px 0 4px}
+.drop small{color:var(--text-light)}
+.drop small b,.switch small b{display:inline;font-size:inherit;margin:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer;background:var(--primary);color:#fff}
+button.sub{background:var(--card);color:var(--primary);border:2px solid var(--primary)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent2);outline-offset:2px}
+.hidden{display:none!important}
+.panel{margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+.switch{display:flex;align-items:flex-start;gap:10px;cursor:pointer}
+.switch input{width:20px;height:20px;margin-top:4px;accent-color:var(--primary)}
+.switch b{display:block}
+.switch small{color:var(--text-mid)}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 8px}
+.badges span{background:var(--primary-pale);color:var(--primary);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700}
+.keyrow{display:flex;gap:8px;flex-wrap:wrap}
+.keyrow input{flex:1 1 220px;font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text-dark)}
+.note{font-size:13px;color:var(--text-mid);margin:8px 0 0}
+.note a{color:var(--primary)}
+.warn{font-size:13px;color:var(--accent);margin:8px 0 0;font-weight:700}
+.status{text-align:center;color:var(--text-mid);margin:18px 0 0;min-height:1.7em}
+.stage{margin-top:12px;text-align:center}
+/* AI のようす（動いている・終わった・うまくいかなかった）。カードの真上に出す */
+.ai-state{display:flex;gap:8px 12px;align-items:center;justify-content:center;flex-wrap:wrap;max-width:600px;margin:0 auto 10px;padding:10px 14px;border-radius:12px;font-weight:700;line-height:1.5;text-align:left}
+.ai-state.work{background:#eef3ff;color:#2b4bb5}
+.ai-state.ok{background:#e8f7ed;color:#1d7a3e}
+.ai-state.ng{background:#fff0ea;color:#b2401c}
+.ai-state.info{background:#f1f1f5;color:#55556a;font-weight:500}
+#aiMsg{flex:1 1 220px;min-width:0}
+.ai-state.ok #aiMsg,.ai-state.info #aiMsg{flex:0 1 auto}
+.ai-state small{display:block;font-weight:500;opacity:.85}
+.ai-spin{width:16px;height:16px;flex:none;border:3px solid currentColor;border-right-color:transparent;border-radius:50%;animation:aispin .8s linear infinite}
+.ai-state:not(.work) .ai-spin{display:none}
+.ai-state button{font:inherit;font-size:.92em;padding:6px 14px;border-radius:999px;border:2px solid currentColor;background:#fff;color:inherit;cursor:pointer}
+@keyframes aispin{to{transform:rotate(360deg)}}
+.stage.ai-busy canvas{animation:aibusy 1.4s ease-in-out infinite}
+@keyframes aibusy{50%{filter:brightness(.88) saturate(.7)}}
+@media (prefers-reduced-motion:reduce){.ai-spin,.stage.ai-busy canvas{animation:none}}
+#card{width:100%;max-width:420px;height:auto;border-radius:20px;box-shadow:0 10px 30px rgba(0,30,90,.18)}
+.dex{margin-top:28px}
+.dex h3{margin:0 0 8px;font-size:17px;display:flex;justify-content:space-between;align-items:center}
+.dex h3 button{padding:4px 12px;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.grid img{width:100%;border-radius:8px;display:block;border:1px solid var(--border)}
+.empty{color:var(--text-light);font-size:14px}
+.about{margin-top:28px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;font-size:14px;color:var(--text-mid)}
+.about h3{margin:0 0 6px;font-size:15px;color:var(--text-dark)}
+.about ul{margin:0;padding-left:1.2em}
+footer{margin-top:24px;text-align:center;font-size:13px;color:var(--text-light)}
+footer a{color:var(--primary)}
+.grid .cardthumb{position:relative;cursor:pointer;border:0;padding:0;background:none;border-radius:8px}
+.grid .cardthumb:focus-visible{outline:3px solid var(--accent2)}
+.grid .tag{position:absolute;left:4px;top:4px;display:flex;gap:3px}
+.grid .tag span{background:rgba(26,26,46,.78);color:#fff;border-radius:6px;padding:0 5px;font-size:11px;font-weight:700;line-height:1.6}
+.sym{display:inline-flex;width:28px;height:28px;border-radius:50%;align-items:center;justify-content:center;color:#fff;font-weight:900;flex:0 0 auto}
+.sym.m{background:#2f6fe0}.sym.f{background:#e0459b}
+.marry h3{margin:0 0 4px;font-size:17px}
+.slots{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.slot{display:flex;align-items:center;gap:8px;border:2px dashed var(--border);border-radius:12px;padding:8px;font-size:14px;min-height:64px}
+.slot img{width:38px;border-radius:5px}
+.slot.on{border-style:solid;border-color:var(--primary)}
+.couple{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);padding:10px 0;font-size:14px}
+.couple img{width:40px;border-radius:5px}
+.couple .kids{color:var(--text-mid);margin-left:auto}
+.couple button{padding:6px 14px;font-size:14px}
+@media (max-width:480px){.slots{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="langs" aria-label="Language"><a href="/play/monster.html" hreflang="ja" data-lang="ja">日本語</a><span class="sep">/</span><a href="/en/play/monster.html" hreflang="en" data-lang="en">English</a><span class="sep">/</span><a href="/in/play/monster.html" hreflang="en-IN" data-lang="in">Hinglish</a></nav>
+  <div class="shelf" data-i18n="shelf">DROPPER PLAYGROUND ／ ドロッパーの遊び場</div>
+  <h1><span data-i18n="h1a">モンスター</span><span data-i18n="h1b">ドロッパー</span></h1>
+  <p class="lead" data-i18n="lead">身の回りの写真をドロップすると、その写真からモンスターが生まれます。冷蔵庫の中、散歩の景色、机の上、なんでも。文章のファイルや音声のファイルからも生まれます。</p>
+
+  <div class="drop" id="drop" tabindex="0" role="button" aria-label="写真・文章・音声のファイルを選ぶ" data-i18n="dropAria" data-i18n-attr="aria-label">
+    <div class="big">🥚</div>
+    <b data-i18n="dropTitle">写真・文章・音声をドロップ</b>
+    <small data-i18n="dropHint" data-i18n-html>2〜3枚まとめて落とすと<b>合体</b>します。ここを押して選ぶこともできます（写真＝JPEG・PNG・WebP、文章＝.txt・.md、音声＝.mp3・.m4a・.wav・.ogg）</small>
+  </div>
+  <input type="file" id="file" accept="image/*,text/plain,text/markdown,.txt,.md,audio/*,.mp3,.m4a,.wav,.ogg" multiple class="hidden">
+
+  <div class="panel">
+    <label class="switch">
+      <input type="checkbox" id="aiOn">
+      <span><b data-i18n="aiSwitch">AI に写っているものを読ませる（任意）</b>
+      <small data-i18n="aiSwitchHint" data-i18n-html>オフのときは写真の色だけで生まれ、写真はこの端末から出ません。オンにすると、写っているものから<b>キャラの種類</b>（料理の妖精・けもの・森の精霊・ロボット・街の番人・星の使い・紙の学者・絵から出た子・ドットの子）と、名前・技・図鑑の説明が決まり、食べ物なら料理のミッションも出ます。文章・音声のファイルは、いまは AI に送らず、中身を数えた値だけで生まれます。</small></span>
+    </label>
+    <div id="aiBox" class="hidden">
+      <div class="badges"><span data-i18n="badge1">クレカ不要</span><span data-i18n="badge2">無料枠内なら0円</span><span data-i18n="badge3">取得は約3分</span></div>
+      <div class="keyrow">
+        <input type="password" id="key" placeholder="Gemini の API キーを貼り付け" data-i18n="keyPlaceholder" data-i18n-attr="placeholder" autocomplete="off">
+        <button id="saveKey" data-i18n="saveKey">保存</button>
+      </div>
+      <p class="note" id="keyState"></p>
+      <p class="note"><span data-i18n="keyNote1">キーはこの端末だけに保存し、ドロッパーのサーバーには送りません。キーの取り方は </span><a id="keyMoreLink" href="https://dropper-tools.com/apikey.html" target="_blank" rel="noopener" data-i18n="keyNoteLink">取得ガイド</a><span data-i18n="keyNote2"> へ。</span></p>
+      <p class="warn" data-i18n="aiWarn">⚠ オンのときは、写真を Google の Gemini に送ります。人の顔や名前が写った写真は使わないでください。</p>
+    </div>
+  </div>
+
+  <p class="status" id="status" aria-live="polite"></p>
+
+  <section class="stage hidden" id="stage">
+    <div class="ai-state hidden" id="aiState" role="status" aria-live="polite"><span class="ai-spin"></span><span id="aiMsg"></span><button id="aiRetry" class="hidden" data-i18n="aiRetry">もう一度試す</button></div>
+    <canvas id="card" width="600" height="920" aria-label="モンスターのカード" data-i18n="cardAria" data-i18n-attr="aria-label"></canvas>
+    <div class="row">
+      <button id="save" data-i18n="save">カードを画像で保存</button>
+      <button class="sub" id="cand" data-i18n="cand">💍 結婚相手の候補にする</button>
+      <button class="sub" id="again" data-i18n="again">別のファイルで</button>
+    </div>
+  </section>
+
+  <section class="dex">
+    <h3><span data-i18n="dexTitle">📖 わたしの図鑑</span> <button class="sub hidden" id="clearDex" data-i18n="clearDex">図鑑を空にする</button></h3>
+    <p class="note" id="dexNote" data-i18n="dexNote">カードを押すと大きく見られます。カードの中身はこの PC・スマホの中にだけ保存され、ほかの人には見えません。</p>
+    <div class="grid" id="dex"></div>
+    <p class="empty" id="dexEmpty" data-i18n="dexEmpty">まだ1体もいません。</p>
+  </section>
+
+  <section class="panel marry" id="marry">
+    <h3 data-i18n="marryTitle">💍 結婚と子ども</h3>
+    <p class="note" data-i18n="marryNote">図鑑のカードを押して「結婚相手の候補にする」を選ぶと、ここに入ります。男性カード ♂ と女性カード ♀ を1枚ずつ。1組の夫婦から、子どもは3人まで生まれます。</p>
+    <div class="slots">
+      <div class="slot" id="slotM"><span class="sym m">♂</span><span>夫：まだ選んでいません</span></div>
+      <div class="slot" id="slotF"><span class="sym f">♀</span><span>妻：まだ選んでいません</span></div>
+    </div>
+    <div class="row"><button id="wed" disabled data-i18n="wed">結婚させる</button><button class="sub" id="unslot" data-i18n="unslot">選び直す</button></div>
+    <p class="warn" id="wedMsg"></p>
+    <div id="couples"></div>
+  </section>
+
+  <section class="about">
+    <h3 data-i18n="rulesTitle">🧬 合体の法則（わかっているもの）</h3>
+    <ul>
+      <li data-i18n="rule1" data-i18n-html><b>そろい</b>：同じ属性が2つで +20%、3つで +50%</li>
+      <li data-i18n="rule2" data-i18n-html><b>相性</b>：組み合わせによっては +30%（炎×風「ほのおのたつまき」、水×森「めぐみの雨」など、全部で10組）</li>
+      <li data-i18n="rule3" data-i18n-html><b>打ち消し</b>：炎×水・炎×森・雷×土が入ると、ほかの法則はぜんぶ効かなくなり、混ぜた中でいちばん強い子の力から1組ごとに15%ずつ削られる。<b>必ず元より弱くなる</b></li>
+      <li data-i18n="rule4" data-i18n-html><b>にじ</b>：3つとも違う属性なら +10%</li>
+      <li data-i18n="rule5" data-i18n-html><b>データの珍しさ</b>：🥇ゴールド（1000枚に1枚）を混ぜると1枚ごとに +25%、🥈シルバー（500枚に1枚）は +10%、⚠バグ個体は +8%。ただしバグ個体が2つ以上だと、合体した子もバグる</li>
+      <li data-i18n="rule6">落とす順番は関係ありません</li>
+      <li data-i18n="rule7">……ほかにも、まだ見つかっていない法則があるらしい</li>
+    </ul>
+  </section>
+
+  <section class="about">
+    <h3 data-i18n="howTitle">どうやって生まれるの？</h3>
+    <ul>
+      <li data-i18n="how1">写真のいちばん多い色で、属性（炎・水・森…）が決まります</li>
+      <li data-i18n="how2" data-i18n-html>AI をオンにすると、写っているものの種類で<b>キャラの種類と体の形</b>が変わります（食べ物なら器の形の料理の妖精、乗り物ならロボット、建物なら家の形の街の番人…）</li>
+      <li data-i18n="how3">文章は、長さ・「！」や「？」の多さ・漢字の割合・1文の短さ・改行の多さで、強さと体の形が決まります。音声は、長さ・音の大きさ・低い音と高い音の多さで決まります</li>
+      <li data-i18n="how4" data-i18n-html>写真のデータから<b>発行のたびに違う部分</b>を読み取り、それで体の形・目・模様・強さ・性別を決めます。同じ写真でも、二度と同じ子は生まれません</li>
+      <li data-i18n="how5" data-i18n-html>どのカードにも、その1枚だけの<b>紋章</b>と、読み取った部分・発行番号が入ります</li>
+      <li data-i18n="how6">カードの画像に、写真・文章・音声の中身とファイル名は入れません</li>
+      <li data-i18n="how7">図鑑・結婚・子どもは、この PC・スマホの中にだけ残ります</li>
+    </ul>
+  </section>
+  <footer><span data-i18n="footerBrand">ドロッパー</span> <a id="homeLink" href="https://dropper-tools.com/">dropper-tools.com</a>　｜　<a id="policyLink" href="/privacy.html#play" data-i18n="footerPolicy">プライバシーポリシー（遊び場）</a></footer>
+</div>
+<script>window.LANG = 'en';</script>
+<script src="monster-i18n.js?v=1"></script>
+<script src="monster-app.js?v=1"></script>
+</body>
+</html>
