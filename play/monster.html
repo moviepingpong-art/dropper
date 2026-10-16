@@ -1162,21 +1162,21 @@ footer a{color:var(--primary)}
       const shift = r() < 0.18 ? Math.floor(r() * 7) - 3 : 0; // ときどき行ごと横にずれる
       for (let xx = 0; xx < SHARD; xx++) {
         const s = (yy * SHARD + ((xx + shift + SHARD) % SHARD)) * 3, i = (yy * SHARD + xx) * 4;
-        const noise = (r() - 0.5) * 60;
+        const noise = (r() - 0.5) * 36;
         im.data[i] = px[(s + 3) % px.length] + noise; // 赤だけ1マス先から取る（色のずれ）
         im.data[i + 1] = px[s + 1] + noise; im.data[i + 2] = px[s + 2] + noise; im.data[i + 3] = 255;
       }
     }
     sx.putImageData(im, 0, 0);
     c.save(); roundRect(c, x, y, w, h, 16); c.clip();
-    c.imageSmoothingEnabled = false; c.globalAlpha = 0.68;
+    c.imageSmoothingEnabled = false; c.globalAlpha = 1;
     const side = Math.max(w, h); c.drawImage(cv, x + (w - side) / 2, y + (h - side) / 2, side, side);
-    c.globalAlpha = 0.12; c.fillStyle = '#000'; for (let yy = y; yy < y + h; yy += 4) c.fillRect(x, yy, w, 1); // 走査線
+    c.globalAlpha = 0.08; c.fillStyle = '#000'; for (let yy = y; yy < y + h; yy += 4) c.fillRect(x, yy, w, 1); // 走査線
     // まん中は白くぼかして、キャラが読めるようにする
-    const g = c.createRadialGradient(x + w / 2, y + h * 0.5, 20, x + w / 2, y + h * 0.5, w * 0.6);
-    g.addColorStop(0, 'rgba(255,255,255,.6)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    const g = c.createRadialGradient(x + w / 2, y + h * 0.5, 20, x + w / 2, y + h * 0.5, w * 0.42);
+    g.addColorStop(0, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(255,255,255,0)');
     c.globalAlpha = 1; c.fillStyle = g; c.fillRect(x, y, w, h);
-    if (M.frag) { c.font = '600 15px ui-monospace, Menlo, Consolas, monospace'; c.fillStyle = 'rgba(20,20,40,.55)'; c.fillText('@' + M.frag.start + ' +' + M.frag.stride, x + 12, y + h - 14); }
+    if (M.frag) { c.font = '600 15px ui-monospace, Menlo, Consolas, monospace'; c.fillStyle = 'rgba(255,255,255,.85)'; c.fillRect(x + 6, y + h - 32, 120, 24); c.fillStyle = 'rgba(20,20,40,.75)'; c.fillText('@' + M.frag.start + ' +' + M.frag.stride, x + 12, y + h - 14); }
     c.restore();
   }
   const genderOf = fp => ((fp[1] >>> 7) & 1) ? 'f' : 'm';
