@@ -1481,21 +1481,29 @@
   async function askAI(src, prompt = PROMPT, size = 512) {
     const key = getKey();
     const media = src.wav ? { mime_type: 'audio/wav', data: src.wav } : { mime_type: 'image/jpeg', data: jpegOf(src, size) };
-    const body = JSON.stringify({
+    // 考える時間（thinking）を切る。flash の新しい版は、切らないと写真1枚に1分近く考え込むことがある
+    const mk = think => JSON.stringify({
       contents: [{ parts: [{ text: prompt }, { inline_data: media }] }],
-      generationConfig: { temperature: 0.4, responseMimeType: 'application/json' }
+      generationConfig: Object.assign({ temperature: 0.4, responseMimeType: 'application/json' }, think ? {} : { thinkingConfig: { thinkingBudget: 0 } })
     });
-    let resp;
-    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 45000); // 45秒で返事が無ければあきらめる
-    try {
-      for (const model of AI_MODELS) {
-        resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,
-          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal: ctl.signal });
-        if (![500, 502, 503, 504].includes(resp.status)) break; // 混んでいるときだけ次のモデルへ
-      }
-    } catch (e) {
-      throw aiErr(e.name === 'AbortError' ? 'slow' : 'net');
-    } finally { clearTimeout(timer); }
+    // モデルごとに待つ時間を区切る。1つめが遅ければ、軽いほうへ回す（全体で最大 20＋25 秒）
+    const WAIT = [20000, 25000];
+    let resp, slow = false;
+    for (let i = 0; i < AI_MODELS.length; i++) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODELS[i]}:generateContent?key=${encodeURIComponent(key)}`;
+      const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), WAIT[i]);
+      try {
+        resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: mk(false), signal: ctl.signal });
+        // 考える時間を切れないモデルなら、切らずに頼み直す
+        if (resp.status === 400 && /thinking/i.test(await resp.clone().text()))
+          resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: mk(true), signal: ctl.signal });
+      } catch (e) {
+        if (e.name !== 'AbortError') throw aiErr('net');
+        slow = true; resp = null; continue; // 遅すぎた → 次のモデルへ
+      } finally { clearTimeout(timer); }
+      if (![500, 502, 503, 504].includes(resp.status)) break; // 混んでいるときも次のモデルへ
+    }
+    if (!resp) throw aiErr(slow ? 'slow' : 'net');
     if (resp.status === 429) throw aiErr('quota');
     if ([500, 502, 503, 504].includes(resp.status)) throw aiErr('busy');
     if (!resp.ok) {
