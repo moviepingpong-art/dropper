@@ -159,6 +159,7 @@
       fuseTail: '　→ 合計 {total}',
       fuseTailX2: '・×2',
       // 人生の記録（AI が読んだ値から、説明をここで作る）
+      ldType: '{icon} {type}タイプ。',
       ldMain: '{inCountry}{age}年を生きた{asJob}',
       ldIn: '{country}で',
       ldJob: '{job}。',
