@@ -37,6 +37,8 @@
     return '';
   }
   const nameOf = M => txt(M.name);
+  // カードに描く字体。言語ごとに辞書で（韓国語・繁体字・ベトナム語は、日本語の字体に無い字があるため）
+  const FF = D('canvasFont') || '"Noto Sans JP", sans-serif';
 
   // ---- 指紋（cyrb128）と乱数（sfc32）。迷路ドロッパーと同じもの ----
   function fingerprint(bytes) {
@@ -736,7 +738,7 @@
     // 亡くなったあとの道は、平らな薄い地面
     c.fillStyle = 'rgba(120,110,160,.35)'; c.fillRect(X(end), base - amp * 0.15, x + w - X(end), h);
     // 年の目もり（10年ごと）
-    c.font = '700 15px "Noto Sans JP", sans-serif'; c.textAlign = 'center'; c.fillStyle = 'rgba(40,40,60,.55)';
+    c.font = `700 15px ${FF}`; c.textAlign = 'center'; c.fillStyle = 'rgba(40,40,60,.55)';
     for (let yr = 10; yr < end; yr += 10) { c.fillRect(X(yr) - 0.5, base + 2, 1, 5); }
     const on = (yr) => gy(Math.max(0, Math.min(end - 1, yr)));
     // 平均寿命の旗
@@ -779,7 +781,7 @@
           c.beginPath(); c.arc(px, py - 12, 3.4, 0, 7); c.fill(); c.stroke();
           roundRect(c, px - 3.4, py - 8, 6.8, 10, 3); c.fill(); c.stroke();
         }
-        c.fillStyle = 'rgba(40,40,60,.8)'; c.font = '700 11px "Noto Sans JP", sans-serif'; c.fillText(tr('lifeKids', { n: ev.kids }), bx, by - 10);
+        c.fillStyle = 'rgba(40,40,60,.8)'; c.font = `700 11px ${FF}`; c.fillText(tr('lifeKids', { n: ev.kids }), bx, by - 10);
       });
       if (M.g.item && end > 25) bubble(x + w * 0.84, y + h * 0.16, 22, Math.min(45, end - 6), (bx, by) => { // 仕事の道具
         drawItem(c, bx + 2, by - 6, 40, M.g.item, '#4a4560', 1.5, bx, by - 8, 32);
@@ -1089,7 +1091,7 @@
       }
     } else if (M.shardText) { // 文章：紙の地に、読み取った文字をそのまま並べる（ところどころ文字化け）
       c.fillStyle = '#f7f3e8'; c.fillRect(x, y, w, h);
-      c.font = '500 22px "Noto Sans JP", sans-serif'; c.fillStyle = '#3a3a5a'; c.globalAlpha = 0.55; c.textBaseline = 'top';
+      c.font = `500 22px ${FF}`; c.fillStyle = '#3a3a5a'; c.globalAlpha = 0.55; c.textBaseline = 'top';
       const chars = [...M.shardText]; let k = 0;
       for (let yy = y + 14; yy < y + h - 10; yy += 32) {
         let line = '', off = r() < 0.15 ? (r() - 0.5) * 30 : 0;
@@ -1303,16 +1305,16 @@
     c.fillStyle = '#1a1a2e'; c.font = '700 22px Oswald, sans-serif'; c.textBaseline = 'alphabetic';
     c.fillText('No.' + no, 46, 66);
     // 長い名前（人生の記録の名前など）は、タイプの札にかからないように字を小さくする
-    let nfs = 40; c.font = `900 ${nfs}px "Noto Sans JP", sans-serif`;
-    while (nfs > 22 && c.measureText(name).width > W - 46 - 250) { nfs -= 2; c.font = `900 ${nfs}px "Noto Sans JP", sans-serif`; }
+    let nfs = 40; c.font = `900 ${nfs}px ${FF}`;
+    while (nfs > 22 && c.measureText(name).width > W - 46 - 250) { nfs -= 2; c.font = `900 ${nfs}px ${FF}`; }
     c.fillText(name, 46, 112);
     if (M.gender) { // 名前のすぐ右に ♂ ♀ の丸
       const gx = 46 + c.measureText(name).width + 24;
       c.fillStyle = M.gender === 'm' ? '#2f6fe0' : '#e0459b'; c.beginPath(); c.arc(gx, 98, 16, 0, 7); c.fill();
-      c.fillStyle = '#fff'; c.font = '900 22px "Noto Sans JP", sans-serif'; c.textAlign = 'center';
+      c.fillStyle = '#fff'; c.font = `900 22px ${FF}`; c.textAlign = 'center';
       c.fillText(M.gender === 'm' ? '♂' : '♀', gx, 106); c.textAlign = 'left';
     }
-    c.font = '700 22px "Noto Sans JP", sans-serif';
+    c.font = `700 22px ${FF}`;
     const tw = c.measureText(badge).width + 28;
     c.fillStyle = bugR ? '#1a1a2e' : metal ? metal[3] : T.frame[1]; roundRect(c, W - 46 - tw, 44, tw, 40, 20); c.fill();
     c.fillStyle = '#fff'; c.fillText(badge, W - 46 - tw + 14, 72);
@@ -1329,7 +1331,7 @@
     if (bugR) glitchArt(c, ax, ay, aw, ah, bug, false);
     drawCrest(c, ax + aw - 66, ay + ah - 66, 56, M.fp); // 紋章は化けさせない（その1枚の証なので）
     if (M.longLife) { // 平均寿命より長く生きた人のしるし（絵の左下）
-      c.font = '700 18px "Noto Sans JP", sans-serif'; const lw = c.measureText(tr('longLife')).width + 24;
+      c.font = `700 18px ${FF}`; const lw = c.measureText(tr('longLife')).width + 24;
       c.fillStyle = 'rgba(255,255,255,.9)'; roundRect(c, ax + 14, ay + ah - 52, lw, 36, 18); c.fill();
       c.strokeStyle = '#e0a800'; c.lineWidth = 2; c.stroke();
       c.fillStyle = '#7a5a00'; c.fillText(tr('longLife'), ax + 26, ay + ah - 28);
@@ -1340,7 +1342,7 @@
       c.save(); c.translate(ax + aw - 92, ay + 40); c.rotate(-0.2);
       c.fillStyle = 'rgba(255,45,85,.92)'; roundRect(c, -78, -22, 156, 44, 10); c.fill();
       c.strokeStyle = '#fff'; c.lineWidth = 3; roundRect(c, -72, -16, 144, 32, 7); c.stroke();
-      c.fillStyle = '#fff'; c.font = '900 22px "Noto Sans JP", sans-serif'; c.textAlign = 'center';
+      c.fillStyle = '#fff'; c.font = `900 22px ${FF}`; c.textAlign = 'center';
       c.fillText(tr('bugStamp'), 0, 8); c.restore(); c.textAlign = 'left';
     }
     if (metal) {
@@ -1361,20 +1363,20 @@
       c.fillText(RARITY[M.rarity].label, 0, 9); c.restore(); c.textAlign = 'left';
     }
     // 生まれ（合体の子は、混ぜた属性）と、右にパワー
-    c.fillStyle = '#4a4a6a'; c.font = '500 18px "Noto Sans JP", sans-serif';
+    c.fillStyle = '#4a4a6a'; c.font = `500 18px ${FF}`;
     const origin = M.parents ? tr('originChild', { gen: M.gen, f: txt(M.parentNames[0]), m: txt(M.parentNames[1]) })
       : M.fusion ? tr('originFuse', { n: M.fusion, parts: M.parts.map(p => txt({ ty: p })).join(tr('partsSep')) }) : M.g.kind === '人間' ? (txt(M.motif) || tr(SOURCES.life.origin)) : M.motif ? (charaOf(M.g) ? charaOf(M.g) + tr('charaSep') : '') + tr('originPhoto', { motif: txt(M.motif) }) : M.source ? tr(SOURCES[M.source].origin) : tr('originColor');
-    if (M.parents) c.font = '700 16px "Noto Sans JP", sans-serif';
+    if (M.parents) c.font = `700 16px ${FF}`;
     c.fillText(origin, 46, ay + ah + 34);
-    c.textAlign = 'right'; c.fillStyle = '#9090b0'; c.font = '700 16px "Noto Sans JP", sans-serif';
+    c.textAlign = 'right'; c.fillStyle = '#9090b0'; c.font = `700 16px ${FF}`;
     const pw = String(M.power); c.font = '700 28px Oswald, sans-serif'; const pwW = c.measureText(pw).width;
     c.fillStyle = metal ? metal[3] : M.fusion ? '#9b3bd6' : T.frame[1]; c.fillText(pw, W - 46, ay + ah + 37);
-    c.fillStyle = '#9090b0'; c.font = '700 15px "Noto Sans JP", sans-serif'; c.fillText(tr('power'), W - 52 - pwW, ay + ah + 34);
+    c.fillStyle = '#9090b0'; c.font = `700 15px ${FF}`; c.fillText(tr('power'), W - 52 - pwW, ay + ah + 34);
     c.textAlign = 'left';
     // 強さ（100を超えたら棒はいっぱいで数字に色。バグ個体の 255 は棒がカードの外まで突き抜ける）
     let y = ay + ah + 62;
     for (const [k, v] of Object.entries(M.stats)) {
-      c.fillStyle = '#1a1a2e'; c.font = '700 17px "Noto Sans JP", sans-serif'; c.fillText(D('stats')[k] || k, 46, y + 14);
+      c.fillStyle = '#1a1a2e'; c.font = `700 17px ${FF}`; c.fillText(D('stats')[k] || k, 46, y + 14);
       c.fillStyle = '#e8eaf2'; roundRect(c, 160, y, 330, 16, 8); c.fill();
       if (k === M.bugStat) {
         c.fillStyle = '#ff2d55'; c.fillRect(160, y, W - 160, 16);
@@ -1387,7 +1389,7 @@
       y += 28;
     }
     // 技（バグ個体は2つ目の技が半分ほど化ける）
-    y += 8; c.font = '700 18px "Noto Sans JP", sans-serif'; let x = 46;
+    y += 8; c.font = `700 18px ${FF}`; let x = 46;
     const mv0 = M.moves.map(txt);
     const moves = bugR ? [mv0[0], garble(mv0[1], bugR, Math.ceil([...mv0[1]].length / 2), 0)] : mv0;
     for (const mv of moves) {
@@ -1396,23 +1398,23 @@
       c.fillStyle = '#1a1a2e'; c.fillText(mv, x + 15, y + 25); x += w + 10;
     }
     // 説明
-    y += 64; c.fillStyle = '#4a4a6a'; c.font = '500 18px "Noto Sans JP", sans-serif';
+    y += 64; c.fillStyle = '#4a4a6a'; c.font = `500 18px ${FF}`;
     let desc = garble(txt(M.desc), bug);
     if (bugR) desc = garble(desc, bugR, 5 + Math.floor(bugR() * 4), 0);
     y += wrap(c, desc, 46, y, W - 92, 28, 3);
     if (M.mission) {
       y += 6; c.fillStyle = '#fff3e0'; roundRect(c, 40, y - 4, W - 80, 64, 12); c.fill();
-      c.fillStyle = '#d9361b'; c.font = '700 17px "Noto Sans JP", sans-serif';
+      c.fillStyle = '#d9361b'; c.font = `700 17px ${FF}`;
       c.fillText(tr('mission'), 54, y + 20);
-      c.fillStyle = '#1a1a2e'; c.font = '500 16px "Noto Sans JP", sans-serif';
+      c.fillStyle = '#1a1a2e'; c.font = `500 16px ${FF}`;
       wrap(c, txt(M.mission), 54, y + 46, W - 108, 22, 1);
     }
     // 下の帯：1行目に、その1枚だけの記録（発行番号と、読み取った部分・両親・合体）
     const birth = M.parents ? tr('birthChild', { f: txt(M.parentNames[0]), m: txt(M.parentNames[1]), n: M.childNo })
       : M.fusion ? tr('birthFuse', { n: M.fusion }) : M.frag ? tr('birthFrag', { n: M.frag.n, start: M.frag.start, stride: M.frag.stride }) : '';
-    c.fillStyle = '#9090b0'; c.font = '500 14px "Noto Sans JP", sans-serif'; c.textAlign = 'left';
+    c.fillStyle = '#9090b0'; c.font = `500 14px ${FF}`; c.textAlign = 'left';
     c.fillText(tr('issued', { serial: String(M.serial || 0).padStart(6, '0'), birth }), 46, H - 66);
-    c.fillStyle = '#0057ff'; c.font = '700 17px "Noto Sans JP", sans-serif';
+    c.fillStyle = '#0057ff'; c.font = `700 17px ${FF}`;
     c.fillText(tr('brand'), 46, H - 40);
     c.fillStyle = '#9090b0'; c.textAlign = 'right'; c.font = '500 15px Oswald, sans-serif';
     c.fillText('ID ' + M.print, W - 46, H - 40); c.textAlign = 'left';
@@ -1527,7 +1529,7 @@
       .map(v => typeof v === 'string' ? v : JSON.stringify(v)).join('');
     const text = 'No.0123456789?' + nameOf(M) + txt(M.desc) + M.moves.map(txt).join('') + txt(M.motif) + txt(M.mission) + MOJIBAKE +
       words + 'GOLDSILVER♂♀ID#' + (M.parentNames || []).map(txt).join('') + (M.shardText || '');
-    const fonts = ['900 40px "Noto Sans JP"', '900 22px "Noto Sans JP"', '700 18px "Noto Sans JP"', '700 16px "Noto Sans JP"', '500 18px "Noto Sans JP"', '500 14px "Noto Sans JP"', '700 15px "Noto Sans JP"', '700 22px Oswald', '700 28px Oswald', '500 15px Oswald'];
+    const fonts = [`900 40px ${FF}`, `900 22px ${FF}`, `700 18px ${FF}`, `700 16px ${FF}`, `500 18px ${FF}`, `500 14px ${FF}`, `700 15px ${FF}`, '700 22px Oswald', '700 28px Oswald', '500 15px Oswald'];
     try { await Promise.all(fonts.map(f => document.fonts.load(f, text))); } catch (e) { /* 読めなければ代わりの字体で描く */ }
   }
   // 1枚の写真から1体を作る（まだ描かない）。発行のたびに写真の違う部分を読むので、同じ写真でも毎回違う子になる。

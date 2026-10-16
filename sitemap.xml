@@ -218,12 +218,15 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-  <!-- 遊び場（モンスタードロッパー）。build.py の外にあるページなので、ここも手で足した（2026-10-14。3言語は 2026-10-17） -->
+  <!-- 遊び場（モンスタードロッパー）。build.py の外にあるページなので、ここも手で足した（2026-10-14。3言語は 2026-10-17、6言語も 2026-10-17） -->
   <url>
     <loc>https://dropper-tools.com/play/monster.html</loc>
     <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/monster.html"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/monster.html"/>
     <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/monster.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/monster.html"/>
     <lastmod>2026-10-17</lastmod>
     <changefreq>monthly</changefreq>
@@ -234,6 +237,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/monster.html"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/monster.html"/>
     <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/monster.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/monster.html"/>
     <lastmod>2026-10-17</lastmod>
     <changefreq>monthly</changefreq>
@@ -244,6 +250,48 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/monster.html"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/monster.html"/>
     <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/monster.html"/>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://dropper-tools.com/ko/play/monster.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/monster.html"/>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://dropper-tools.com/zh-hant/play/monster.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/monster.html"/>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://dropper-tools.com/vi/play/monster.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/monster.html"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/monster.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/monster.html"/>
     <lastmod>2026-10-17</lastmod>
     <changefreq>monthly</changefreq>
