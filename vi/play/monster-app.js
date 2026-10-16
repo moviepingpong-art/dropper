@@ -153,14 +153,14 @@
     const moves = [0, 1, 2, 3].sort(() => rnd() - 0.5).slice(0, 2).map(i => ({ d: 'moves', p: [type, i] }));
     const pick = a => a[pickI(a)];
     const stat = (bias) => Math.max(8, Math.min(99, Math.round(30 + rnd() * 50 + bias)));
+    const capOf = b => Math.max(8, Math.min(99, Math.round(80 + b)));
+    const bs = bias ? [bias.hp, bias.atk, bias.def, bias.spd]
+      : [Math.log2(imgBytes / 1024 + 1) * 1.5 - 8, pal.sat * 30 - 10, (0.5 - pal.lum) * 30, pal.lum * 30 - 12];
     return {
       type, name, moves, no: (fp[3] % 999) + 1,
-      stats: {
-        'たいりょく': stat(bias ? bias.hp : Math.log2(imgBytes / 1024 + 1) * 1.5 - 8),
-        'こうげき': stat(bias ? bias.atk : pal.sat * 30 - 10),
-        'まもり': stat(bias ? bias.def : (0.5 - pal.lum) * 30),
-        'すばやさ': stat(bias ? bias.spd : pal.lum * 30 - 12)
-      },
+      stats: { 'たいりょく': stat(bs[0]), 'こうげき': stat(bs[1]), 'まもり': stat(bs[2]), 'すばやさ': stat(bs[3]) },
+      // AI を使わないときに出うるいちばん上の値（乱数がいちばん大きいとき）。AI で読めた子はこれより上になる
+      cap: { 'たいりょく': capOf(bs[0]), 'こうげき': capOf(bs[1]), 'まもり': capOf(bs[2]), 'すばやさ': capOf(bs[3]) },
       main: vivid(pal.colors[0], 0, type), second: vivid(pal.colors[1], 40, type), third: vivid(pal.colors[2], 200, type),
       rx: 0.62 + rnd() * 0.3, ry: 0.55 + rnd() * 0.3,
       wob: { k: 3 + Math.floor(rnd() * 4), amp: rnd() * 0.07, ph: rnd() * 6.28 },
@@ -1371,7 +1371,7 @@
     c.textAlign = 'right'; c.fillStyle = '#9090b0'; c.font = `700 16px ${FF}`;
     const pw = String(M.power); c.font = '700 28px Oswald, sans-serif'; const pwW = c.measureText(pw).width;
     c.fillStyle = metal ? metal[3] : M.fusion ? '#9b3bd6' : T.frame[1]; c.fillText(pw, W - 46, ay + ah + 37);
-    c.fillStyle = '#9090b0'; c.font = `700 15px ${FF}`; c.fillText(tr('power'), W - 52 - pwW, ay + ah + 34);
+    c.fillStyle = '#9090b0'; c.font = `700 15px ${FF}`; c.fillText(tr(M.strong ? 'powerStrong' : M.aiBoost ? 'powerAi' : 'power'), W - 52 - pwW, ay + ah + 34);
     c.textAlign = 'left';
     // 強さ（100を超えたら棒はいっぱいで数字に色。バグ個体の 255 は棒がカードの外まで突き抜ける）
     let y = ay + ah + 62;
@@ -1569,8 +1569,11 @@
     // （数字で見分けると、合体で 255 を超えたふつうの強さまで突き抜けてしまう）
     let bugStat = null;
     if (bug) { const r = sfc32(fp[2], fp[0], fp[3], fp[1]); bugStat = Object.keys(stats)[Math.floor(r() * 4)]; stats[bugStat] = 255; }
+    // 力の強いデータ（ファイルの中身で決まる。20個に1個）は、AI なしでも AI で読めた子と同じ強さで生まれる
+    const strong = isStrongData(photoPrint);
+    if (strong) powerUp(stats, g.cap, fp, rarity, bugStat);
     return {
-      g, fp, rarity, bug, bugStat, stats, power: powerOf(stats), fusion: 0,
+      g, fp, rarity, bug, bugStat, stats, power: powerOf(stats), fusion: 0, strong,
       gender: genderOf(fp), gen: 1, parents: null, frag: { n, start: s.start, stride: s.stride },
       shard: !life && img ? shardOfImage(img, fp) : undefined,
       shardText: data && data.kind === 'text' ? textShard(bytes, s.start) : undefined,
@@ -1584,11 +1587,30 @@
       id: printOf(fp), print: printOf(fp).slice(0, 12).toUpperCase()
     };
   }
+  // AI が中身まで読み取れた子は、同じファイルを AI なしで生んだどの子よりも強くする。
+  // AI なしで出うるいちばん上の値（g.cap）の 1.1〜1.2 倍に、レア度の倍率をかける。バグ個体の 255 はそのまま
+  function powerUp(stats, cap, fp, rarity, bugStat) {
+    Object.keys(stats).forEach((k, i) => {
+      if (k === bugStat) return;
+      const f = 1.1 + (((fp[1] >>> (i * 8)) & 255) / 255) * 0.1;
+      stats[k] = Math.max(stats[k], Math.round(cap[k] * f * RARITY[rarity].mult));
+    });
+  }
+  // 力の強いデータかどうか。ファイルそのものの指紋で決めるので、何回生んでも・どの端末でも・AI があってもなくても同じ
+  const isStrongData = photoPrint => parseInt(String(photoPrint).slice(0, 4), 16) % 20 === 0;
+  // 力の強いデータは、もう強いので AI では変えない。頼み直しても重ねがけしない
+  function boostAI(M) {
+    if (M.aiBoost || M.strong || !M.g.cap) return;
+    powerUp(M.stats, M.g.cap, M.fp, M.rarity, M.bugStat);
+    M.power = powerOf(M.stats); M.aiBoost = true;
+  }
   function statusOf(M) {
     const s = [];
     if (M.parents) s.push(tr('stChild', { f: txt(M.parentNames[0]), m: txt(M.parentNames[1]), n: M.childNo }));
     if (M.fusion) s.push(tr('stFuse', { n: M.fusion, power: M.power }));
     if (M.rarity !== 'normal') s.push(tr(RARITY[M.rarity].msg));
+    if (M.strong) s.push(tr('stStrong'));
+    if (M.aiBoost) s.push(tr('stAi'));
     if (M.bug) s.push(tr(M.fusion ? 'stFuseBug' : 'bugMsg'));
     return s.join(tr('statusSep'));
   }
@@ -1657,11 +1679,12 @@
         M.mission = a.mission && !snd ? clip(a.mission, D('clipMission')) : '';
       }
       clearInterval(iv);
+      boostAI(M);
       const sec = Math.max(1, Math.round((Date.now() - t0) / 1000));
       // 何のファイルと判断して、何をもとに、どんな子として生まれたかを見せる
       const kind = life ? 'Life' : !snd ? 'Photo' : heard === 'music' ? 'Music' : heard === 'sound' ? 'Sound' : 'Speech';
       const type = txt({ ty: M.type }), chara = charaOf(M.g), as = chara ? tr('aiAs', { chara, type }) : tr('aiAsType', { type });
-      aiShow(M, 'ok', tr('aiDone' + kind, { sec }), life ? tr('aiDoneLifeHint') : tr(M.motif ? 'aiResult' + kind : 'aiResultPlain', { motif: txt(M.motif), as }));
+      aiShow(M, 'ok', tr('aiDone' + kind, { sec }), (life ? tr('aiDoneLifeHint') : tr(M.motif ? 'aiResult' + kind : 'aiResultPlain', { motif: txt(M.motif), as })) + tr(M.strong ? 'aiStrong' : 'aiBoost', { power: M.power }));
       if (current === M) { await loadFontsFor(M); drawCard($('card'), M); setStatus(done()); }
       return true;
     } catch (e) {
