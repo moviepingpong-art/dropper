@@ -1371,7 +1371,7 @@
     c.textAlign = 'right'; c.fillStyle = '#9090b0'; c.font = `700 16px ${FF}`;
     const pw = String(M.power); c.font = '700 28px Oswald, sans-serif'; const pwW = c.measureText(pw).width;
     c.fillStyle = metal ? metal[3] : M.fusion ? '#9b3bd6' : T.frame[1]; c.fillText(pw, W - 46, ay + ah + 37);
-    c.fillStyle = '#9090b0'; c.font = `700 15px ${FF}`; c.fillText(tr('power'), W - 52 - pwW, ay + ah + 34);
+    c.fillStyle = '#9090b0'; c.font = `700 15px ${FF}`; c.fillText(tr(M.aiBoost ? 'powerAi' : 'power'), W - 52 - pwW, ay + ah + 34);
     c.textAlign = 'left';
     // 強さ（100を超えたら棒はいっぱいで数字に色。バグ個体の 255 は棒がカードの外まで突き抜ける）
     let y = ay + ah + 62;
@@ -1584,11 +1584,19 @@
       id: printOf(fp), print: printOf(fp).slice(0, 12).toUpperCase()
     };
   }
+  // AI が中身まで読み取れた子は、強さが AI_BOOST 倍（バグ個体の 255 はそのまま）。頼み直しても重ねがけしない
+  const AI_BOOST = 1.2;
+  function boostAI(M) {
+    if (M.aiBoost) return;
+    for (const k of Object.keys(M.stats)) if (k !== M.bugStat) M.stats[k] = Math.round(M.stats[k] * AI_BOOST);
+    M.power = powerOf(M.stats); M.aiBoost = AI_BOOST;
+  }
   function statusOf(M) {
     const s = [];
     if (M.parents) s.push(tr('stChild', { f: txt(M.parentNames[0]), m: txt(M.parentNames[1]), n: M.childNo }));
     if (M.fusion) s.push(tr('stFuse', { n: M.fusion, power: M.power }));
     if (M.rarity !== 'normal') s.push(tr(RARITY[M.rarity].msg));
+    if (M.aiBoost) s.push(tr('stAi'));
     if (M.bug) s.push(tr(M.fusion ? 'stFuseBug' : 'bugMsg'));
     return s.join(tr('statusSep'));
   }
@@ -1657,11 +1665,12 @@
         M.mission = a.mission && !snd ? clip(a.mission, D('clipMission')) : '';
       }
       clearInterval(iv);
+      boostAI(M);
       const sec = Math.max(1, Math.round((Date.now() - t0) / 1000));
       // 何のファイルと判断して、何をもとに、どんな子として生まれたかを見せる
       const kind = life ? 'Life' : !snd ? 'Photo' : heard === 'music' ? 'Music' : heard === 'sound' ? 'Sound' : 'Speech';
       const type = txt({ ty: M.type }), chara = charaOf(M.g), as = chara ? tr('aiAs', { chara, type }) : tr('aiAsType', { type });
-      aiShow(M, 'ok', tr('aiDone' + kind, { sec }), life ? tr('aiDoneLifeHint') : tr(M.motif ? 'aiResult' + kind : 'aiResultPlain', { motif: txt(M.motif), as }));
+      aiShow(M, 'ok', tr('aiDone' + kind, { sec }), (life ? tr('aiDoneLifeHint') : tr(M.motif ? 'aiResult' + kind : 'aiResultPlain', { motif: txt(M.motif), as })) + tr('aiBoost', { power: M.power }));
       if (current === M) { await loadFontsFor(M); drawCard($('card'), M); setStatus(done()); }
       return true;
     } catch (e) {
