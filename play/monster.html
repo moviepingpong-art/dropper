@@ -868,19 +868,88 @@ footer a{color:var(--primary)}
     'その他': { type: '風', moves: ['はたらく手', 'ありがとうの力'] }
   };
   const ITEMS = ['ノートPC', '本', 'くわ', '聴診器', 'フライパン', '工具', '筆', 'マイク', 'ボール'];
+  // 人間のカードの背景：その人の一生を左（生まれた朝）から右（日が沈む）へたどる風景。
+  // 丘の高さ＝その年の幸せの濃さ。旗＝平均寿命、ろうそく＝亡くなった年。AIオンなら学校・子ども・仕事の道具を丘に置く
   function drawLife(c, x, y, w, h, M) {
     const joy = [...M.life.joy].map(Number), age = M.life.age, avg = M.life.avg;
-    const n = Math.max(joy.length + (age !== null ? 1 : 0), avg !== null ? avg + 1 : 0), rows = Math.max(1, Math.ceil(n / 10));
-    const p = Math.min((w - 24) / 10, (h - 24) / rows), gx = x + (w - p * 10) / 2, gy = y + (h - p * rows) / 2;
+    const n = Math.max(joy.length, age || 0, avg !== null ? avg + 3 : 0) + 2;
+    const X = (yr) => x + 14 + (w - 28) * yr / n;
+    const base = y + h - 14, amp = h * 0.32;
+    const J = (i) => { // 前後の年とならした幸せ（0〜1）
+      let s = 0, k = 0;
+      for (let d = -2; d <= 2; d++) if (joy[i + d] !== undefined) { s += joy[i + d] * (3 - Math.abs(d)); k += 3 - Math.abs(d); }
+      return k ? s / k / 9 : 0;
+    };
+    const end = joy.length;
     c.save(); roundRect(c, x, y, w, h, 16); c.clip();
-    const col = css(shade(M.g.main, -0.3));
-    for (let i = 0; i < rows * 10; i++) {
-      const cx = gx + (i % 10) * p + 2, cy = gy + Math.floor(i / 10) * p + 2;
-      if (i < joy.length) { c.fillStyle = col; c.globalAlpha = 0.05 + joy[i] / 9 * 0.16; }
-      else if (i === joy.length && age !== null) { c.fillStyle = '#1a1a2e'; c.globalAlpha = 0.35; }
-      else { c.fillStyle = '#9090b0'; c.globalAlpha = 0.08; }
-      c.fillRect(cx, cy, p - 4, p - 4);
-      if (i === avg) { c.globalAlpha = 0.45; c.strokeStyle = '#1a1a2e'; c.lineWidth = 2; c.strokeRect(cx, cy, p - 4, p - 4); }
+    // 空：朝 → 昼 → 夕方（亡くなった年で日が沈む）→ その先は夜
+    const sky = c.createLinearGradient(x, 0, x + w, 0), t = (yr) => Math.max(0, Math.min(1, (X(yr) - x) / w));
+    sky.addColorStop(0, '#ffe3c2'); sky.addColorStop(t(end * 0.3), '#d4efff'); sky.addColorStop(t(end * 0.75), '#cfe6ff');
+    sky.addColorStop(t(end), '#ffc49a'); sky.addColorStop(Math.min(1, t(end) + 0.06), '#b9b1dd'); sky.addColorStop(1, '#a9a3cf');
+    c.fillStyle = sky; c.fillRect(x, y, w, h);
+    // 夕日（亡くなった年の地平に沈みかけ）と、生まれた朝の日
+    const sun = (sx, sy, r, col) => { const g = c.createRadialGradient(sx, sy, 0, sx, sy, r * 3); g.addColorStop(0, col); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.beginPath(); c.arc(sx, sy, r * 3, 0, 7); c.fill(); c.fillStyle = col; c.beginPath(); c.arc(sx, sy, r, 0, 7); c.fill(); };
+    sun(X(0) + 8, base - amp * 1.25, 10, 'rgba(255,214,140,.9)');
+    if (age !== null) sun(X(end), base - amp * 0.55, 16, 'rgba(255,140,90,.85)');
+    // 幸せの丘（その年の濃さで高さと色が変わる）
+    const gy = (i) => base - amp * (0.15 + J(i) * 0.85);
+    const hill = c.createLinearGradient(X(0), 0, X(end), 0);
+    for (let i = 0; i < end; i++) { const v = J(i); hill.addColorStop((i + 0.5) / Math.max(1, end), `hsl(${30 + v * 105},${22 + v * 58}%,${46 + v * 12}%)`); }
+    c.beginPath(); c.moveTo(x, base + 20); c.lineTo(x, gy(0));
+    for (let i = 0; i < end; i++) { const mx = (X(i) + X(i + 1)) / 2; c.quadraticCurveTo(X(i), gy(i), mx, (gy(i) + gy(Math.min(end - 1, i + 1))) / 2); }
+    c.lineTo(X(end), gy(end - 1)); c.lineTo(X(end), base + 20); c.closePath();
+    c.fillStyle = end ? hill : '#9fc98a'; c.globalAlpha = 0.85; c.fill(); c.globalAlpha = 1;
+    // 亡くなったあとの道は、平らな薄い地面
+    c.fillStyle = 'rgba(120,110,160,.35)'; c.fillRect(X(end), base - amp * 0.15, x + w - X(end), h);
+    // 年の目もり（10年ごと）
+    c.font = '700 15px "Noto Sans JP", sans-serif'; c.textAlign = 'center'; c.fillStyle = 'rgba(40,40,60,.55)';
+    for (let yr = 10; yr < end; yr += 10) { c.fillRect(X(yr) - 0.5, base + 2, 1, 5); }
+    const on = (yr) => gy(Math.max(0, Math.min(end - 1, yr)));
+    // 平均寿命の旗
+    if (avg !== null) {
+      const fx = X(avg), fy = avg < end ? on(avg) : base - amp * 0.15;
+      c.strokeStyle = '#4a4560'; c.lineWidth = 2; c.beginPath(); c.moveTo(fx, fy); c.lineTo(fx, fy - 34); c.stroke();
+      c.fillStyle = '#ffffff'; c.beginPath(); c.moveTo(fx, fy - 34); c.lineTo(fx + 18, fy - 28); c.lineTo(fx, fy - 22); c.closePath(); c.fill(); c.stroke();
+      c.fillStyle = 'rgba(40,40,60,.6)'; c.fillText('平均' + avg, fx, fy - 40);
+    }
+    // 亡くなった年のろうそく
+    if (age !== null) {
+      const cx = X(end) - 2, cy = on(end - 1);
+      c.fillStyle = '#fff6e0'; c.strokeStyle = '#4a4560'; c.lineWidth = 1.5; c.fillRect(cx - 4, cy - 20, 8, 20); c.strokeRect(cx - 4, cy - 20, 8, 20);
+      c.fillStyle = '#ff9a3c'; c.beginPath(); c.ellipse(cx, cy - 27, 3.5, 6, 0, 0, 7); c.fill();
+      c.fillStyle = 'rgba(40,40,60,.75)'; c.fillText(age + '歳', cx, cy - 38);
+    }
+    // AIで読んだ人生の出来事（学校・子ども・仕事）。人物の陰に隠れないよう、空に浮かべた吹き出しから、その年の丘へ点線を下ろす
+    const ev = M.lifeEv;
+    const bubble = (bx, by, r, yr, draw) => {
+      const hx = X(yr), hy = on(Math.round(yr));
+      c.strokeStyle = 'rgba(74,69,96,.5)'; c.lineWidth = 1.5; c.setLineDash([3, 4]);
+      c.beginPath(); c.moveTo(bx, by + r); c.lineTo(hx, hy - 2); c.stroke(); c.setLineDash([]);
+      c.fillStyle = '#4a4560'; c.beginPath(); c.arc(hx, hy - 2, 3, 0, 7); c.fill();
+      c.fillStyle = 'rgba(255,255,255,.88)'; c.strokeStyle = 'rgba(74,69,96,.6)'; c.lineWidth = 1.5;
+      c.beginPath(); c.arc(bx, by, r, 0, 7); c.fill(); c.stroke();
+      draw(bx, by);
+    };
+    if (ev && end) {
+      if (ev.edu) bubble(x + w * 0.11, y + h * 0.36, 20, Math.min(12, end - 1), (bx, by) => { // 学校
+        c.fillStyle = '#fff'; c.strokeStyle = '#4a4560'; c.lineWidth = 1.5;
+        c.fillRect(bx - 10, by - 4, 20, 13); c.strokeRect(bx - 10, by - 4, 20, 13);
+        c.fillStyle = '#e8584f'; c.beginPath(); c.moveTo(bx - 13, by - 4); c.lineTo(bx, by - 14); c.lineTo(bx + 13, by - 4); c.closePath(); c.fill(); c.stroke();
+        c.fillStyle = '#6fb6ff'; c.fillRect(bx - 3, by + 2, 6, 7);
+      });
+      if (ev.kids) bubble(x + w * 0.2, y + h * 0.13, 24, Math.min(30, end - 1), (bx, by) => { // 子ども（4人まで描いて、人数を添える）
+        const k = Math.min(4, ev.kids);
+        for (let i = 0; i < k; i++) {
+          const px = bx + (i - (k - 1) / 2) * 9, py = by + 8;
+          c.fillStyle = `hsl(${(i * 67 + 10) % 360},80%,60%)`; c.strokeStyle = '#4a4560'; c.lineWidth = 1.2;
+          c.beginPath(); c.arc(px, py - 12, 3.4, 0, 7); c.fill(); c.stroke();
+          roundRect(c, px - 3.4, py - 8, 6.8, 10, 3); c.fill(); c.stroke();
+        }
+        c.fillStyle = 'rgba(40,40,60,.8)'; c.font = '700 11px "Noto Sans JP", sans-serif'; c.fillText(ev.kids + '人', bx, by - 10);
+      });
+      if (M.g.item && end > 25) bubble(x + w * 0.84, y + h * 0.16, 22, Math.min(45, end - 6), (bx, by) => { // 仕事の道具
+        drawItem(c, bx + 2, by - 6, 40, M.g.item, '#4a4560', 1.5, bx, by - 8, 32);
+      });
     }
     c.restore();
   }
@@ -1703,6 +1772,7 @@ footer a{color:var(--primary)}
     const job = clip(a.job, 12), country = clip(a.country, 10), edu = clip(a.edu, 8), kids = Math.max(0, Math.min(20, parseInt(a.kids, 10) || 0));
     M.type = f.type; M.moves = f.moves.slice();
     M.g.item = ITEMS.includes(a.item) ? a.item : null;
+    M.lifeEv = { edu: !!edu && !/なし|無/.test(edu), kids }; // 背景の風景に置く出来事
     M.motif = [job, country].filter(Boolean).join('・');
     M.desc = `${TYPES[M.type].icon} ${M.type}タイプ。` + (country ? `${country}で` : '') + `${L.age}年を生きた` + (job ? `${job}。` : '人。') +
       (edu ? `最終学歴は${edu}。` : '') + (kids ? `子ども${kids}人。` : '') + (M.longLife ? '平均寿命より長く生きた。' : '');
