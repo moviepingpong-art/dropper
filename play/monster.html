@@ -1104,7 +1104,7 @@ footer a{color:var(--primary)}
   }
   function drawHex(c, x, y, w, h, M) {
     if (M.life) return drawLife(c, x, y, w, h, M);
-    if (M.shard) return drawShard(c, x, y, w, h, M);
+    if (M.shard || M.shardText || M.shardWave) return drawShard(c, x, y, w, h, M);
     if (!M.hex) return;
     const bytes = M.hex.toUpperCase().match(/../g);
     c.save(); roundRect(c, x, y, w, h, 16); c.clip();
@@ -1121,14 +1121,14 @@ footer a{color:var(--primary)}
     if (M.frag) { c.globalAlpha = 0.32; c.fillText('@' + M.frag.start + ' +' + M.frag.stride, x + 12, y + h - 26); }
     c.restore();
   }
-  // ---- 背景の欠片：元のデータの一部を、ごく粗いモザイク（24×24マス）にして持たせる ----
-  // 写真は、読み取った位置から決めた四角い一部分を縮めたもの。文章・音声は、読んだ断片のバイトをそのまま色にしたもの。
-  // 24×24 まで粗くするので、写っている人や書かれた文字は分からない
-  const SHARD = 24;
-  const b64 = u8 => { let t = ''; for (const v of u8) t += String.fromCharCode(v); return btoa(t); };
+  // ---- 背景の欠片：元のデータの一部を、元のデータだと分かる形で持たせる（2026-10-16 本人の指示） ----
+  // 写真＝読み取った位置から決めた四角い一部分（96×96）、文章＝読み取った位置からの数十文字、音声＝読み取った位置からの波形。
+  // ノイズは軽くかけるだけなので、写真の一部や文章の一部はそのまま分かる（ポリシーの play1 に注意書きあり）
+  const SHARD = 96;
+  const b64 = u8 => { let t = ''; for (let i = 0; i < u8.length; i += 8192) t += String.fromCharCode(...u8.subarray(i, i + 8192)); return btoa(t); };
   const unb64 = s => Uint8Array.from(atob(s), ch => ch.charCodeAt(0));
   function shardOfImage(img, fp) {
-    const w = img.naturalWidth, h = img.naturalHeight, side = Math.max(1, Math.round(Math.min(w, h) * 0.35));
+    const w = img.naturalWidth, h = img.naturalHeight, side = Math.max(1, Math.round(Math.min(w, h) * 0.45));
     const sx = (fp[0] >>> 0) % Math.max(1, w - side), sy = (fp[1] >>> 0) % Math.max(1, h - side);
     const cv = document.createElement('canvas'); cv.width = cv.height = SHARD;
     const x = cv.getContext('2d', { willReadFrequently: true }); x.drawImage(img, sx, sy, side, side, 0, 0, SHARD, SHARD);
@@ -1136,45 +1136,74 @@ footer a{color:var(--primary)}
     for (let i = 0; i < SHARD * SHARD; i++) { out[i * 3] = d[i * 4]; out[i * 3 + 1] = d[i * 4 + 1]; out[i * 3 + 2] = d[i * 4 + 2]; }
     return b64(out);
   }
-  function shardOfBytes(sample) {
-    const out = new Uint8Array(SHARD * SHARD * 3), n = Math.max(1, sample.length);
-    for (let i = 0; i < out.length; i++) out[i] = sample[i % n];
-    return b64(out);
+  // 文章：読み取った位置から、空白をつめて 160 字まで（文字の途中から始まったら、その字は飛ばす）
+  function textShard(bytes, start) {
+    let st = start; while (st < bytes.length && (bytes[st] & 0xc0) === 0x80) st++;
+    const t = new TextDecoder('utf-8').decode(bytes.subarray(st, st + 1200)).replace(/\s+/g, ' ').trim();
+    return [...t].slice(0, 160).join('') || undefined;
   }
-  // 子ども・合体：親の欠片を1行ずつ交互に（合体は縦の帯ごとに）
+  // 音声：50ミリ秒ごとの音の大きさを、読み取った位置から 160 個（8秒ぶん）。0〜35 を1字で
+  function waveShard(peaks, ratio) {
+    if (!peaks || !peaks.length) return undefined;
+    const from = Math.min(Math.max(0, peaks.length - 160), Math.floor(ratio * peaks.length));
+    const seg = peaks.slice(from, from + 160), mx = Math.max(1e-6, ...seg); // いちばん大きい音を高さいっぱいにそろえる
+    return Array.from(seg, v => Math.min(35, Math.round(v / mx * 35)).toString(36)).join('');
+  }
+  // 子ども・合体：写真の欠片は親の欠片を数行ずつ交互に（合体は縦の帯ごとに）。文章・音声はどちらかの親のもの
   function mixShard(list, byColumn) {
-    const ss = list.filter(Boolean).map(unb64);
+    const ss = list.filter(Boolean).map(unb64).filter(u => u.length === SHARD * SHARD * 3);
     if (!ss.length) return undefined;
     const out = new Uint8Array(SHARD * SHARD * 3);
     for (let y = 0; y < SHARD; y++) for (let x = 0; x < SHARD; x++) {
-      const src = ss[(byColumn ? Math.floor(x / (SHARD / ss.length)) : y) % ss.length], i = (y * SHARD + x) * 3;
+      const src = ss[(byColumn ? Math.floor(x / (SHARD / ss.length)) : Math.floor(y / 6)) % ss.length], i = (y * SHARD + x) * 3;
       out[i] = src[i]; out[i + 1] = src[i + 1]; out[i + 2] = src[i + 2];
     }
     return b64(out);
   }
-  // 欠片を絵の背景いっぱいに敷き、ノイズ（行のずれ・色のずれ・走査線・ざらつき）をかける。
+  // 欠片を絵の背景いっぱいに敷き、軽いノイズ（ときどき行がずれる・色が少しずれる・走査線）をかける。
   // ノイズの入り方は指紋で決まるので、同じカードはいつも同じ見え方
   function drawShard(c, x, y, w, h, M) {
-    const px = unb64(M.shard), r = sfc32(M.fp[2], M.fp[3], M.fp[0], M.fp[1]);
-    const cv = document.createElement('canvas'); cv.width = cv.height = SHARD;
-    const sx = cv.getContext('2d'), im = sx.createImageData(SHARD, SHARD);
-    for (let yy = 0; yy < SHARD; yy++) {
-      const shift = r() < 0.18 ? Math.floor(r() * 7) - 3 : 0; // ときどき行ごと横にずれる
-      for (let xx = 0; xx < SHARD; xx++) {
-        const s = (yy * SHARD + ((xx + shift + SHARD) % SHARD)) * 3, i = (yy * SHARD + xx) * 4;
-        const noise = (r() - 0.5) * 36;
-        im.data[i] = px[(s + 3) % px.length] + noise; // 赤だけ1マス先から取る（色のずれ）
-        im.data[i + 1] = px[s + 1] + noise; im.data[i + 2] = px[s + 2] + noise; im.data[i + 3] = 255;
-      }
-    }
-    sx.putImageData(im, 0, 0);
+    const r = sfc32(M.fp[2], M.fp[3], M.fp[0], M.fp[1]);
     c.save(); roundRect(c, x, y, w, h, 16); c.clip();
-    c.imageSmoothingEnabled = false; c.globalAlpha = 1;
-    const side = Math.max(w, h); c.drawImage(cv, x + (w - side) / 2, y + (h - side) / 2, side, side);
-    c.globalAlpha = 0.08; c.fillStyle = '#000'; for (let yy = y; yy < y + h; yy += 4) c.fillRect(x, yy, w, 1); // 走査線
-    // まん中は白くぼかして、キャラが読めるようにする
-    const g = c.createRadialGradient(x + w / 2, y + h * 0.5, 20, x + w / 2, y + h * 0.5, w * 0.42);
-    g.addColorStop(0, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    if (M.shard) {
+      const px = unb64(M.shard);
+      if (px.length === SHARD * SHARD * 3) {
+        const cv = document.createElement('canvas'); cv.width = cv.height = SHARD;
+        const sx = cv.getContext('2d'), im = sx.createImageData(SHARD, SHARD);
+        let shift = 0;
+        for (let yy = 0; yy < SHARD; yy++) {
+          if (r() < 0.05) shift = Math.floor(r() * 13) - 6; else if (r() < 0.3) shift = 0; // ずれた行は数行つづく
+          for (let xx = 0; xx < SHARD; xx++) {
+            const s = (yy * SHARD + Math.min(SHARD - 1, Math.max(0, xx + shift))) * 3, i = (yy * SHARD + xx) * 4, noise = (r() - 0.5) * 18;
+            im.data[i] = px[Math.min(px.length - 3, s + 3)] + noise; // 赤だけ1画素先から取る（色のずれ）
+            im.data[i + 1] = px[s + 1] + noise; im.data[i + 2] = px[s + 2] + noise; im.data[i + 3] = 255;
+          }
+        }
+        sx.putImageData(im, 0, 0);
+        c.imageSmoothingEnabled = true;
+        const side = Math.max(w, h); c.drawImage(cv, x + (w - side) / 2, y + (h - side) / 2, side, side);
+      }
+    } else if (M.shardText) { // 文章：紙の地に、読み取った文字をそのまま並べる（ところどころ文字化け）
+      c.fillStyle = '#f7f3e8'; c.fillRect(x, y, w, h);
+      c.font = '500 22px "Noto Sans JP", sans-serif'; c.fillStyle = '#3a3a5a'; c.globalAlpha = 0.55; c.textBaseline = 'top';
+      const chars = [...M.shardText]; let k = 0;
+      for (let yy = y + 14; yy < y + h - 10; yy += 32) {
+        let line = '', off = r() < 0.15 ? (r() - 0.5) * 30 : 0;
+        while (c.measureText(line).width < w - 30) { const ch = chars[k++ % chars.length]; line += r() < 0.06 ? MOJIBAKE[Math.floor(r() * MOJIBAKE.length)] : ch; }
+        c.fillText(line, x + 14 + off, yy);
+      }
+      c.textBaseline = 'alphabetic';
+    } else if (M.shardWave) { // 音声：読み取った位置からの波形
+      c.fillStyle = '#eef0f8'; c.fillRect(x, y, w, h);
+      const vs = [...M.shardWave].map(ch => parseInt(ch, 36) / 35), bw = w / vs.length, mid = y + h / 2;
+      c.fillStyle = css(shade(M.g.main, -0.35)); c.globalAlpha = 0.6;
+      vs.forEach((v, i) => { const bh = Math.max(2, v * h * 0.9), dy = r() < 0.05 ? (r() - 0.5) * 20 : 0; c.fillRect(x + i * bw, mid - bh / 2 + dy, Math.max(1, bw - 1), bh); });
+      c.globalAlpha = 0.25; c.fillRect(x, mid, w, 1);
+    }
+    c.globalAlpha = 0.06; c.fillStyle = '#000'; for (let yy = y; yy < y + h; yy += 4) c.fillRect(x, yy, w, 1); // 走査線
+    // まん中は少し白くぼかして、キャラが読めるようにする
+    const g = c.createRadialGradient(x + w / 2, y + h * 0.5, 20, x + w / 2, y + h * 0.5, w * 0.4);
+    g.addColorStop(0, 'rgba(255,255,255,.3)'); g.addColorStop(1, 'rgba(255,255,255,0)');
     c.globalAlpha = 1; c.fillStyle = g; c.fillRect(x, y, w, h);
     if (M.frag) { c.font = '600 15px ui-monospace, Menlo, Consolas, monospace'; c.fillStyle = 'rgba(255,255,255,.85)'; c.fillRect(x + 6, y + h - 32, 120, 24); c.fillStyle = 'rgba(20,20,40,.75)'; c.fillText('@' + M.frag.start + ' +' + M.frag.stride, x + 12, y + h - 14); }
     c.restore();
@@ -1264,7 +1293,8 @@ footer a{color:var(--primary)}
       g, fp, type, name, stats, power: powerOf(stats), rarity, bug, bugStat, fusion: 0,
       gender: r() < 0.5 ? 'm' : 'f', gen: Math.max(father.gen || 1, mother.gen || 1) + 1,
       parents: [father.id, mother.id], parentNames: [father.name, mother.name], childNo: idx + 1,
-      hex: mixHex([father.hex, mother.hex]), shard: mixShard([father.shard, mother.shard], false), life: mixLife([father.life, mother.life]),
+      hex: mixHex([father.hex, mother.hex]), shard: mixShard([father.shard, mother.shard], false), shardText: (fp[2] & 1 ? father : mother).shardText || father.shardText || mother.shardText,
+      shardWave: (fp[2] & 1 ? father : mother).shardWave || father.shardWave || mother.shardWave, life: mixLife([father.life, mother.life]),
       no: (fp[3] % 999) + 1, motif: '', mission: '',
       moves: [one(father.moves[0], father.moves[1]), one(mother.moves[0], mother.moves[1])],
       desc: `${father.name}と${mother.name}の${idx + 1}人目の子。` + (mutation ? `★突然変異：${mutation}が両親のどちらとも違う。` : 'ふたりの特徴を半分ずつ受け継いだ。'),
@@ -1318,7 +1348,7 @@ footer a{color:var(--primary)}
     return {
       g: Object.assign(g, { stats: lead.g.stats }), fp, type, name, stats, power: powerOf(stats), fusion: parts.length, rarity: 'normal', bug: bugs >= 2,
       gender: genderOf(fp), gen: 1, parents: null, id: printOf(fp), bugStat: bugs >= 2 ? Object.keys(stats).reduce((a, k) => stats[k] > stats[a] ? k : a) : null,
-      parts: parts.map(p => p.type), no: (fp[3] % 999) + 1, motif: '', mission: '', hex: mixHex(parts.map(p => p.hex)), shard: mixShard(parts.map(p => p.shard), true), life: mixLife(parts.map(p => p.life)),
+      parts: parts.map(p => p.type), no: (fp[3] % 999) + 1, motif: '', mission: '', hex: mixHex(parts.map(p => p.hex)), shard: mixShard(parts.map(p => p.shard), true), shardText: (parts.find(p => p.shardText) || {}).shardText, shardWave: (parts.find(p => p.shardWave) || {}).shardWave, life: mixLife(parts.map(p => p.life)),
       moves: [lead.moves[0], second.moves[0]],
       // 打ち消しのときは、効かなかった法則まで並べると3行に収まらず結びが切れるので、打ち消しと完全バグだけ書く
       desc: rules.filter(r => !clashes || r[0].startsWith('打ち消し') || r[0].startsWith('★完全バグ'))
@@ -1570,7 +1600,7 @@ footer a{color:var(--primary)}
   async function loadFontsFor(M) {
     const text = 'No.0123456789?' + M.name + M.desc + M.moves.join('') + M.motif + M.mission + MOJIBAKE +
       Object.keys(M.stats).join('') + Object.keys(TYPES).join('') + Object.values(KINDS).map(k => k.chara).join('') + Object.values(ANIMALS).map(k => k.chara).join('') + 'タイプ？⚠❓★バグ個体生まれた写真の色から文章音声の中身数えた料理ミッションモンスタードロッパー指紋 dropper-tools.com人生の記録長生きの証' +
-      'パワー合体×＋：GOLDSILVER♂♀発行断片バイト目からごと第世代父母人目の枚ID#' + (M.parentNames || []).join('');
+      'パワー合体×＋：GOLDSILVER♂♀発行断片バイト目からごと第世代父母人目の枚ID#' + (M.parentNames || []).join('') + (M.shardText || '');
     const fonts = ['900 40px "Noto Sans JP"', '900 22px "Noto Sans JP"', '700 18px "Noto Sans JP"', '700 16px "Noto Sans JP"', '500 18px "Noto Sans JP"', '500 14px "Noto Sans JP"', '700 15px "Noto Sans JP"', '700 22px Oswald', '700 28px Oswald', '500 15px Oswald'];
     try { await Promise.all(fonts.map(f => document.fonts.load(f, text))); } catch (e) { /* 読めなければ代わりの字体で描く */ }
   }
@@ -1604,7 +1634,9 @@ footer a{color:var(--primary)}
     return {
       g, fp, rarity, bug, bugStat, stats, power: powerOf(stats), fusion: 0,
       gender: genderOf(fp), gen: 1, parents: null, frag: { n, start: s.start, stride: s.stride },
-      shard: life ? undefined : img ? shardOfImage(img, fp) : shardOfBytes(s.sample),
+      shard: !life && img ? shardOfImage(img, fp) : undefined,
+      shardText: data && data.kind === 'text' ? textShard(bytes, s.start) : undefined,
+      shardWave: data && data.kind === 'audio' ? waveShard(data.meas.peaks, s.start / bytes.length) : undefined,
       no: g.no, name: g.name, type: g.type, moves: g.moves, motif: '', mission: '',
       source: data ? data.kind : undefined,
       life: life ? { age: life.age, avg: life.avg, joy: life.joy } : undefined, longLife: !!(life && life.avg !== null && life.age > life.avg),
@@ -1731,20 +1763,20 @@ footer a{color:var(--primary)}
     const d = buf.getChannelData(0), rate = buf.sampleRate, n = Math.min(d.length, rate * 180);
     // 50ミリ秒ごとに、音の大きさ・低い音の強さ・波の向きの変わる回数を数える
     const win = Math.max(1, Math.floor(rate * 0.05));
-    let sum = 0, low = 0, cross = 0, quiet = 0, wins = 0, lp = 0;
+    let sum = 0, low = 0, cross = 0, quiet = 0, wins = 0, lp = 0; const peaks = [];
     for (let i = 0; i + win <= n; i += win) {
       let e = 0, el = 0;
       for (let j = i; j < i + win; j++) {
         const v = d[j]; lp += (v - lp) * 0.02; e += v * v; el += lp * lp;
         if (j > i && (v >= 0) !== (d[j - 1] >= 0)) cross++;
       }
-      const rms = Math.sqrt(e / win); sum += rms; low += e ? el / e : 0; if (rms < 0.02) quiet++; wins++;
+      const rms = Math.sqrt(e / win); peaks.push(rms); sum += rms; low += e ? el / e : 0; if (rms < 0.02) quiet++; wins++;
     }
     if (!wins) throw new Error('短すぎる音声でした。');
     const rms = sum / wins, lowR = low / wins, zcr = cross / (wins * win);
     return {
       bias: { hp: toBias(buf.duration / 180), atk: toBias(rms / 0.2), def: toBias(lowR), spd: toBias(zcr / 0.15) },
-      wide: clamp01(lowR), tall: clamp01(zcr / 0.15), lively: clamp01(rms / 0.2), quiet: quiet / wins
+      wide: clamp01(lowR), tall: clamp01(zcr / 0.15), lively: clamp01(rms / 0.2), quiet: quiet / wins, peaks
     };
   }
   // 写真の色の代わり：ファイルそのものの指紋で色合いを決め、にぎやかさで鮮やかさを決める（同じファイルなら同じ色）
