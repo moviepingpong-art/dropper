@@ -6,6 +6,9 @@
 <title>モンスタードロッパー｜写真からモンスターのカードが生まれる｜ドロッパーの遊び場</title>
 <meta name="description" content="写真をドロップすると、世界に1枚だけのモンスターのカードが生まれる遊び。2〜3枚で合体、男性カードと女性カードで結婚と子ども。1000枚に1枚のゴールドも。写真はブラウザの中だけで処理し、ログインも不要です。">
 <link rel="canonical" href="https://dropper-tools.com/play/monster.html">
+<link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/monster.html">
+<link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/monster.html">
+<link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/monster.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ドロッパー">
 <meta property="og:locale" content="ja_JP">
@@ -44,6 +47,12 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text-dark);font-family:'Noto Sans JP',sans-serif;line-height:1.7}
 .wrap{max-width:720px;margin:0 auto;padding:24px 16px 48px}
+/* 日本語以外のページは、辞書で言葉を入れ替えるまで隠す（一瞬だけ日本語が見えないように） */
+html:not([lang="ja"]):not(.i18n-ready) .wrap{visibility:hidden}
+.langs{float:right;font-size:12px;font-weight:700;letter-spacing:.03em}
+.langs a{color:var(--text-light);text-decoration:none}
+.langs a.active{color:var(--primary)}
+.langs .sep{color:var(--border);margin:0 .3em}
 .shelf{font-family:'Oswald',sans-serif;letter-spacing:.08em;color:var(--accent);font-size:13px;font-weight:700}
 h1{margin:2px 0 4px;font-size:clamp(26px,6vw,36px);font-weight:900}
 h1 span+span{color:var(--primary)}
@@ -121,6 +130,7 @@ footer a{color:var(--primary)}
 </head>
 <body>
 <div class="wrap">
+  <nav class="langs" aria-label="Language"><a href="/play/monster.html" hreflang="ja" data-lang="ja">日本語</a><span class="sep">/</span><a href="/en/play/monster.html" hreflang="en" data-lang="en">English</a></nav>
   <div class="shelf" data-i18n="shelf">DROPPER PLAYGROUND ／ ドロッパーの遊び場</div>
   <h1><span data-i18n="h1a">モンスター</span><span data-i18n="h1b">ドロッパー</span></h1>
   <p class="lead" data-i18n="lead">身の回りの写真をドロップすると、その写真からモンスターが生まれます。冷蔵庫の中、散歩の景色、机の上、なんでも。文章のファイルや音声のファイルからも生まれます。</p>

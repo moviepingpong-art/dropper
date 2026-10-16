@@ -12,9 +12,9 @@
   //   {k, v}            … 辞書の文言 k に v を差し込む（v の中身も文の仕様）
   //   {d, p}            … 辞書の表 d を p の順にたどった言葉（名前の音・技など）
   //   {cat: [...]}      … つなげる
-  //   {sl, from, to}    … 文字を切り出す（子・合体の名前）
+  //   {sl, from, to}    … 文字を切り出す（子・合体の名前。幅は辞書の sliceUnit 倍）
   //   {ty}              … 属性の名前
-  //   {nm, tail}        … 名前のつなぎ目を直し、2字以下ならおしりを足す（子の名前）
+  //   {nm, tail}        … 名前のつなぎ目を直し、辞書の minName 字に満たなければおしりを足す（子の名前）
   const LANG = window.LANG || 'ja';
   const tr = (k, v) => window.t(k, v), D = k => window.tdata(k);
   function txt(s) {
@@ -25,10 +25,13 @@
     if (s.k) { const v = {}; for (const key in (s.v || {})) v[key] = txt(s.v[key]); return tr(s.k, v); }
     if (s.d) { let x = D(s.d); for (const i of s.p) x = x === undefined ? undefined : x[i]; return x === undefined ? '' : String(x); }
     if (s.ty) return (D('types') || {})[s.ty] || s.ty;
-    if (s.sl !== undefined) { const ch = [...txt(s.sl)]; return (s.to === undefined ? ch.slice(s.from) : ch.slice(s.from, s.to)).join(''); }
+    if (s.sl !== undefined) { // 切る幅は言語ごと（英語は1字だと短すぎるので2字ずつ）
+      const ch = [...txt(s.sl)], u = D('sliceUnit') || 1;
+      return (s.to === undefined ? ch.slice(s.from * u) : ch.slice(s.from * u, s.to * u)).join('');
+    }
     if (s.nm !== undefined) {
       let n = txt(s.nm).replace(/([ッャュョァィゥェォーン])\1+/g, '$1').replace(/^[ッャュョァィゥェォーン]+/, '');
-      if ([...n].length < 3) n += D('tail')[s.tail || 0];
+      if ([...n].length < (D('minName') || 3)) n += D('tail')[s.tail || 0];
       return n;
     }
     return '';
@@ -1190,7 +1193,8 @@
     const MID = D('mid'), TAIL = D('tail');
     const na = 1 + Math.floor(r() * 2), mid = r() < 0.4 ? { d: 'mid', p: [2 + Math.floor(r() * (MID.length - 2))] } : '', nb = 1 + Math.floor(r() * 2);
     const name = { nm: { cat: [{ sl: A, from: 0, to: na }, mid, { sl: B, from: -nb }] }, tail: 0 };
-    if ([...txt(name)].length < 3 || [...txt(name.nm).replace(/([ッャュョァィゥェォーン])\1+/g, '$1').replace(/^[ッャュョァィゥェォーン]+/, '')].length < 3) name.tail = Math.floor(r() * TAIL.length);
+    const minName = D('minName') || 3;
+    if ([...txt(name)].length < minName || [...txt(name.nm).replace(/([ッャュョァィゥェォーン])\1+/g, '$1').replace(/^[ッャュョァィゥェォーン]+/, '')].length < minName) name.tail = Math.floor(r() * TAIL.length);
     return {
       g, fp, type, name, stats, power: powerOf(stats), rarity, bug, bugStat, fusion: 0,
       gender: r() < 0.5 ? 'm' : 'f', gen: Math.max(father.gen || 1, mother.gen || 1) + 1,
