@@ -1616,11 +1616,12 @@
   // AI に名前や姿を書いてもらう。うまくいったら true。カードはその前に色だけで生まれているので、失敗してもカードは残る
   async function runAI(M, img, done) {
     const life = M.source === 'life', snd = !!(img && img.wav), t0 = Date.now();
+    let heard = '';
     const what = tr(life ? 'aiWhatLife' : snd ? 'aiWhatAudio' : 'aiWhatPhoto');
     if (!getKey()) { const f = AI_FAIL.nokey; aiShow(M, 'ng', tr('aiNgNoKey', { msg: tr(f.msg) }), tr(f.hint), true); aiView.redo = { img, done }; setStatus(done()); return false; }
     const tick = () => {
       const sec = Math.floor((Date.now() - t0) / 1000);
-      aiShow(M, 'work', tr('aiWork', { what, sec }), tr(sec >= 12 ? 'aiWorkSlow' : 'aiWorkHint'));
+      aiShow(M, 'work', tr('aiWork', { what, sec }), tr(sec >= 12 ? 'aiWorkSlow' : life ? 'aiWorkHintLife' : snd ? 'aiWorkHintAudio' : 'aiWorkHint'));
     };
     tick(); const iv = setInterval(tick, 1000);
     setStatus(tr(life ? 'aiReadingLife' : snd ? 'aiReadingAudio' : 'aiReadingPhoto'));
@@ -1628,6 +1629,7 @@
       if (life) applyLife(M, await askAI(img, LIFE_PROMPT, 1080));
       else {
         const a = await askAI(img, snd ? AUDIO_PROMPT : PROMPT);
+        heard = String(a.heard || '').toLowerCase();
         // 音声で、言葉も音楽も何の音かも分からなかったときは、今までどおり音の値だけの子のまま
         if (snd && String(a.heard || '').toLowerCase() === 'none') {
           clearInterval(iv);
@@ -1648,7 +1650,10 @@
       }
       clearInterval(iv);
       const sec = Math.max(1, Math.round((Date.now() - t0) / 1000));
-      aiShow(M, 'ok', tr(life ? 'aiDoneLife' : snd ? 'aiDoneAudio' : 'aiDonePhoto', { sec }), tr(life ? 'aiDoneLifeHint' : snd ? 'aiDoneAudioHint' : 'aiDonePhotoHint'));
+      // 何のファイルと判断して、何をもとに、どんな子として生まれたかを見せる
+      const kind = life ? 'Life' : !snd ? 'Photo' : heard === 'music' ? 'Music' : heard === 'sound' ? 'Sound' : 'Speech';
+      const type = txt({ ty: M.type }), chara = charaOf(M.g), as = chara ? tr('aiAs', { chara, type }) : tr('aiAsType', { type });
+      aiShow(M, 'ok', tr('aiDone' + kind, { sec }), life ? tr('aiDoneLifeHint') : tr(M.motif ? 'aiResult' + kind : 'aiResultPlain', { motif: txt(M.motif), as }));
       if (current === M) { await loadFontsFor(M); drawCard($('card'), M); setStatus(done()); }
       return true;
     } catch (e) {
