@@ -1181,13 +1181,15 @@
     // 珍しさの受け継ぎ：親にゴールドが1人いれば10倍、シルバーは1人ごとに5倍。バグ個体の親がいれば4分の1でバグる
     const golds = [father, mother].filter(p => p.rarity === 'gold').length, silvers = [father, mother].filter(p => p.rarity === 'silver').length;
     const roll = r();
-    const rarity =
+    let rarity =
       roll < 0.001 * (1 + 9 * golds) ? 'gold' : roll < 0.001 * (1 + 9 * golds) + 0.002 * (1 + 4 * silvers) ? 'silver' : 'normal';
-    const bug = r() < (father.bug || mother.bug ? 0.25 : 1 / 16);
-    const stats = {};
+    let bug = r() < (father.bug || mother.bug ? 0.25 : 1 / 16);
+    let stats = {};
     for (const [k, v] of Object.entries(base)) stats[k] = Math.round(v * RARITY[rarity].mult);
     let bugStat = null;
     if (bug) { bugStat = Object.keys(stats)[Math.floor(r() * 4)]; stats[bugStat] = 255; }
+    // 人間の子も、強さ・珍しさ・バグはつけない（乱数は引いたあとで捨てるので、ほかの子の並びは変わらない）
+    if (g.kind === '人間') { rarity = 'normal'; bug = false; bugStat = null; stats = lifeStats(); g.stats = lifeStats(); }
     // 名前：片方の親の頭（1〜2字）＋ときどき間の字＋もう片方の親のおしり（1〜2字）。
     // つなぎ目で小さい字や「ン」が重なる・頭に来るのは直す（「ハッ」＋「ッチ」が「ハッッチ」になっていた）
     // 組み立て方（文の仕様）で持つので、見るページの言語の親の名前から組み直される
@@ -1369,13 +1371,26 @@
     if (M.parents) c.font = `700 16px ${FF}`;
     c.fillText(origin, 46, ay + ah + 34);
     c.textAlign = 'right'; c.fillStyle = '#9090b0'; c.font = `700 16px ${FF}`;
-    const pw = String(M.power); c.font = '700 28px Oswald, sans-serif'; const pwW = c.measureText(pw).width;
-    c.fillStyle = metal ? metal[3] : M.fusion ? '#9b3bd6' : T.frame[1]; c.fillText(pw, W - 46, ay + ah + 37);
-    c.fillStyle = '#9090b0'; c.font = `700 15px ${FF}`; c.fillText(tr(M.strong ? 'powerStrong' : M.aiBoost ? 'powerAi' : 'power'), W - 52 - pwW, ay + ah + 34);
+    const human = isHuman(M);
+    if (!human) {
+      const pw = String(M.power); c.font = '700 28px Oswald, sans-serif'; const pwW = c.measureText(pw).width;
+      c.fillStyle = metal ? metal[3] : M.fusion ? '#9b3bd6' : T.frame[1]; c.fillText(pw, W - 46, ay + ah + 37);
+      c.fillStyle = '#9090b0'; c.font = `700 15px ${FF}`; c.fillText(tr(M.strong ? 'powerStrong' : M.aiBoost ? 'powerAi' : 'power'), W - 52 - pwW, ay + ah + 34);
+    } else { c.fillStyle = '#7a5a00'; c.font = `700 18px ${FF}`; c.fillText(tr('guardian'), W - 46, ay + ah + 34); }
     c.textAlign = 'left';
     // 強さ（100を超えたら棒はいっぱいで数字に色。バグ個体の 255 は棒がカードの外まで突き抜ける）
     let y = ay + ah + 62;
-    for (const [k, v] of Object.entries(M.stats)) {
+    // 人間のカードは、強さの棒の代わりに、享年・平均寿命と「強さをつけない」ことを書く（同じ高さ＝4行分）
+    if (human) {
+      const L = M.life || {};
+      const rows = [[tr('lifeAgeLabel'), L.age ? tr('lifeYears', { n: L.age }) : '—'], [tr('lifeAvgLabel'), L.avg ? tr('lifeYears', { n: L.avg }) : '—']];
+      for (const [label, val] of rows) {
+        c.fillStyle = '#1a1a2e'; c.font = `700 17px ${FF}`; c.fillText(label, 46, y + 14);
+        c.font = `700 18px ${FF}`; c.fillText(val, 160, y + 15); y += 28;
+      }
+      c.fillStyle = '#4a4a6a'; c.font = `500 16px ${FF}`; wrap(c, tr('lifeNoScore'), 46, y + 14, W - 92, 24, 2); y += 56;
+    }
+    for (const [k, v] of human ? [] : Object.entries(M.stats)) {
       c.fillStyle = '#1a1a2e'; c.font = `700 17px ${FF}`; c.fillText(D('stats')[k] || k, 46, y + 14);
       c.fillStyle = '#e8eaf2'; roundRect(c, 160, y, 330, 16, 8); c.fill();
       if (k === M.bugStat) {
@@ -1561,16 +1576,18 @@
       g.type = m >= 0.7 ? '光' : m >= 0.55 ? '森' : m >= 0.4 ? '風' : '水';
       g.moves = [{ d: 'humanMoves', p: [fp[3] % 8] }, { d: 'humanMoves', p: [(fp[3] % 8 + 1 + (fp[3] >>> 8) % 7) % 8] }];
     }
-    let rarity = rarityOf(fp);
-    if (life && life.age >= 100 && rarity === 'normal') rarity = 'silver'; // 100歳を超えて生きた人は、必ずシルバー以上
-    const bug = isBugPrint(fp), stats = {};
+    // 人間のカード（人生の記録）には、強さ・珍しさ・バグをつけない。どの人生も同じ値（「80億分の1」の運営の方のお願い、2026-10-17）
+    const rarity = life ? 'normal' : rarityOf(fp);
+    const bug = !life && isBugPrint(fp);
+    let stats = {};
     for (const [k, v] of Object.entries(g.stats)) stats[k] = Math.round(v * RARITY[rarity].mult);
+    if (life) { stats = lifeStats(); g.stats = lifeStats(); }
     // バグ個体は1項目だけ 255 になる。どの項目かを bugStat に覚え、その棒だけカードの外まで突き抜けさせる
     // （数字で見分けると、合体で 255 を超えたふつうの強さまで突き抜けてしまう）
     let bugStat = null;
     if (bug) { const r = sfc32(fp[2], fp[0], fp[3], fp[1]); bugStat = Object.keys(stats)[Math.floor(r() * 4)]; stats[bugStat] = 255; }
     // 力の強いデータ（ファイルの中身で決まる。20個に1個）は、AI なしでも AI で読めた子と同じ強さで生まれる
-    const strong = isStrongData(photoPrint);
+    const strong = !life && isStrongData(photoPrint);
     if (strong) powerUp(stats, g.cap, fp, rarity, bugStat);
     return {
       g, fp, rarity, bug, bugStat, stats, power: powerOf(stats), fusion: 0, strong,
@@ -1599,8 +1616,11 @@
   // 力の強いデータかどうか。ファイルそのものの指紋で決めるので、何回生んでも・どの端末でも・AI があってもなくても同じ
   const isStrongData = photoPrint => parseInt(String(photoPrint).slice(0, 4), 16) % 20 === 0;
   // 力の強いデータは、もう強いので AI では変えない。頼み直しても重ねがけしない
+  // 人間のカードは、どの人生も同じ強さ（画面には出さない）
+  const lifeStats = () => ({ 'たいりょく': 50, 'こうげき': 50, 'まもり': 50, 'すばやさ': 50 });
+  const isHuman = M => !!(M.g && M.g.kind === '人間');
   function boostAI(M) {
-    if (M.aiBoost || M.strong || !M.g.cap) return;
+    if (M.aiBoost || M.strong || isHuman(M) || !M.g.cap) return;
     powerUp(M.stats, M.g.cap, M.fp, M.rarity, M.bugStat);
     M.power = powerOf(M.stats); M.aiBoost = true;
   }
@@ -1684,7 +1704,7 @@
       // 何のファイルと判断して、何をもとに、どんな子として生まれたかを見せる
       const kind = life ? 'Life' : !snd ? 'Photo' : heard === 'music' ? 'Music' : heard === 'sound' ? 'Sound' : 'Speech';
       const type = txt({ ty: M.type }), chara = charaOf(M.g), as = chara ? tr('aiAs', { chara, type }) : tr('aiAsType', { type });
-      aiShow(M, 'ok', tr('aiDone' + kind, { sec }), (life ? tr('aiDoneLifeHint') : tr(M.motif ? 'aiResult' + kind : 'aiResultPlain', { motif: txt(M.motif), as })) + tr(M.strong ? 'aiStrong' : 'aiBoost', { power: M.power }));
+      aiShow(M, 'ok', tr('aiDone' + kind, { sec }), (life ? tr('aiDoneLifeHint') : tr(M.motif ? 'aiResult' + kind : 'aiResultPlain', { motif: txt(M.motif), as }) + tr(M.strong ? 'aiStrong' : 'aiBoost', { power: M.power })));
       if (current === M) { await loadFontsFor(M); drawCard($('card'), M); setStatus(done()); }
       return true;
     } catch (e) {
@@ -1862,6 +1882,8 @@
       if (seen.has(pp)) { notes.push(tr('noteSameFile')); continue; }
       seen.add(pp); parts.push({ M: await build(l.bytes, l.img || null, pp, l.data), img: l.img || null, snd: l.snd || null });
     }
+    // 人生の記録は合体させない（人生どうしを強さで比べないため）。1枚目だけが生まれる
+    if (parts.length > 1 && isHuman(parts[0].M)) { notes.push(tr('noteHumanNoFuse')); parts.length = 1; }
     if (parts.length === 1) return show(parts[0].M, parts[0].img, notes.join(tr('noteSep')), parts[0].snd);
     return show(fuse(parts.map(p => p.M)), null, notes.join(tr('noteSep')));
   }
