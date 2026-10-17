@@ -1516,7 +1516,7 @@
         if (e.name !== 'AbortError') throw aiErr('net');
         slow = true; resp = null; continue; // 遅すぎた → 次のモデルへ
       } finally { clearTimeout(timer); }
-      if (![500, 502, 503, 504].includes(resp.status)) break; // 混んでいるときも次のモデルへ
+      if (![429, 500, 502, 503, 504].includes(resp.status)) break; // 混んでいるときも、無料枠の回数切れのときも次のモデルへ（軽いほうは1日の回数が多い）
     }
     if (!resp) throw aiErr(slow ? 'slow' : 'net');
     if (resp.status === 429) throw aiErr('quota');
