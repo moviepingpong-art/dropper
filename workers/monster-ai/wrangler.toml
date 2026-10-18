@@ -13,7 +13,7 @@ crons = ["5 0 * * *"]
 [[d1_databases]]
 binding = "DB"
 database_name = "monster-ai"
-database_id = "ここに wrangler d1 create の結果の id を入れる"
+database_id = "223f7719-2547-4c3e-ba91-ccae72b5a91e"
 
 [vars]
 # 無料枠の組（小さいモデルの組）に入っている、日付つきの名前そのものにすること
