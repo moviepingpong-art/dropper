@@ -1,0 +1,27 @@
+# モンスタードロッパーの AI 中継（重吉さんの OpenAI キーをここにだけ置く）
+# 出し方は README.md。キー（OPENAI_API_KEY）と IP_SALT は `wrangler secret put` で登録し、ここには書かない
+name = "monster-ai"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+
+routes = [{ pattern = "ai.dropper-tools.com", custom_domain = true }]
+
+# 前日までの数を毎日消す（UTC 0:05）
+[triggers]
+crons = ["5 0 * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "monster-ai"
+database_id = "223f7719-2547-4c3e-ba91-ccae72b5a91e"
+
+[vars]
+# 無料枠の組（小さいモデルの組）に入っている、日付つきの名前そのものにすること
+OPENAI_MODEL = "gpt-5.4-mini-2026-03-17"
+# その日に使ってよいトークン。無料枠（250万）の8割。段階が上がって1000万になったら上げてよい
+DAILY_TOKEN_LIMIT = "2000000"
+# 1回で使い得る最大の見込み。残りがこれより少なければ、枠をまたがないよう止める
+RESERVE_TOKENS = "20000"
+# 接続元1つあたり、1日に読ませてよい枚数
+PER_IP_DAILY = "20"
+ALLOWED_ORIGINS = "https://dropper-tools.com"

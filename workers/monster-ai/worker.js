@@ -1,0 +1,87 @@
+// モンスタードロッパーの AI 中継。
+// ページから「写真か人生の記録か・言語・縮めた画像」だけを受け取り、頼み文はここで付けて OpenAI に渡す。
+// ページから頼み文を受け取らないのは、この中継を「何でも聞ける無料の AI」として使わせないため。
+// 画像も答えも保存しない・記録に残さない（console.log に中身を出さないこと）。
+// 費用は OpenAI の「データ提供と引き換えの毎日の無料トークン」の中だけで済むよう、その日の使用量を数えて手前で止める。
+import './shim.js';
+import '../../play/monster-i18n.js'; // 頼み文の出どころ。ページの辞書と同じ物を使う（直したら出し直す）
+
+const I18N = globalThis.I18N;
+const MAX_IMAGE = 2000000; // base64 の文字数（約1.5MB）
+const WAIT = 40000;
+
+export default {
+  async fetch(req, env) {
+    const origin = req.headers.get('Origin') || '';
+    const allowed = env.ALLOWED_ORIGINS.split(',').map(s => s.trim());
+    if (!allowed.includes(origin)) return new Response('forbidden', { status: 403 });
+    const cors = { 'Access-Control-Allow-Origin': origin, 'Vary': 'Origin' };
+    if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: { ...cors, 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '86400' } });
+    const out = (body, status = 200) => Response.json(body, { status, headers: cors });
+    if (req.method !== 'POST' || new URL(req.url).pathname !== '/monster') return out({ error: 'bad' }, 404);
+
+    let q;
+    try { q = await req.json(); } catch (e) { return out({ error: 'bad' }, 400); }
+    const kind = q && q.kind, lang = q && q.lang, image = q && q.image;
+    if (!['photo', 'life'].includes(kind) || !I18N[lang] || typeof image !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(image)) return out({ error: 'bad' }, 400);
+    if (image.length > MAX_IMAGE) return out({ error: 'size' }, 413);
+
+    const day = new Date().toISOString().slice(0, 10);
+    const used = await env.DB.prepare("SELECT n FROM counts WHERE day = ? AND k = 'tokens'").bind(day).first('n') || 0;
+    if (used + Number(env.RESERVE_TOKENS) > Number(env.DAILY_TOKEN_LIMIT)) return out({ error: 'quota' }, 429);
+    // 接続元はそのまま残さない。日ごとに変わる塩と混ぜて切り詰めた印だけで数え、翌日に消す
+    const who = 'ip:' + (await sha256(env.IP_SALT + day + (req.headers.get('CF-Connecting-IP') || ''))).slice(0, 16);
+    if (await add(env, day, who, 1) > Number(env.PER_IP_DAILY)) return out({ error: 'limit' }, 429);
+
+    const prompt = kind === 'life' ? I18N[lang].lifePrompt : I18N[lang].prompt;
+    let a;
+    try { a = await ask(env, prompt, image, kind === 'life' ? 'high' : 'low'); }
+    catch (e) { await add(env, day, who, -1); return out({ error: e.kind || 'busy' }, e.kind === 'bad' ? 502 : 503); }
+    await add(env, day, 'tokens', a.tokens);
+    return out({ answer: a.answer });
+  },
+  async scheduled(ev, env) {
+    await env.DB.prepare('DELETE FROM counts WHERE day < ?').bind(new Date().toISOString().slice(0, 10)).run();
+  }
+};
+
+async function add(env, day, k, n) {
+  return env.DB.prepare('INSERT INTO counts (day, k, n) VALUES (?, ?, ?) ON CONFLICT (day, k) DO UPDATE SET n = n + excluded.n RETURNING n')
+    .bind(day, k, n).first('n');
+}
+
+async function sha256(s) {
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
+// detail：写真は 'low'（小さく読ませて安く）、人生の記録は文字を読むので 'high'
+async function ask(env, prompt, image, detail) {
+  const mk = effort => JSON.stringify(Object.assign({
+    model: env.OPENAI_MODEL,
+    messages: [{ role: 'user', content: [{ type: 'text', text: prompt }, { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + image, detail } }] }],
+    response_format: { type: 'json_object' },
+    max_completion_tokens: 4000
+  }, effort ? { reasoning_effort: 'minimal' } : {}));
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), WAIT);
+  const call = body => fetch(env.OPENAI_URL || 'https://api.openai.com/v1/chat/completions', { // OPENAI_URL は手元で試すときだけ
+    method: 'POST', signal: ctl.signal,
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + env.OPENAI_API_KEY },
+    body
+  });
+  let resp;
+  try {
+    resp = await call(mk(true));
+    // 考える量を指定できないモデルなら、指定せずに頼み直す
+    if (resp.status === 400 && /reasoning_effort/i.test(await resp.clone().text())) resp = await call(mk(false));
+  } catch (e) { throw fail(e.name === 'AbortError' ? 'slow' : 'busy'); }
+  finally { clearTimeout(timer); }
+  if (resp.status === 429 || resp.status >= 500) throw fail('busy');
+  if (!resp.ok) throw fail('bad');
+  const data = await resp.json();
+  const txt = ((((data.choices || [])[0] || {}).message || {}).content || '').trim();
+  let answer;
+  try { answer = JSON.parse(txt); } catch (e) { throw fail('bad'); }
+  return { answer, tokens: (data.usage && data.usage.total_tokens) || Number(env.RESERVE_TOKENS) };
+}
+function fail(kind) { const e = new Error(kind); e.kind = kind; return e; }
