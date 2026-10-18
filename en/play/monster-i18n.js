@@ -703,8 +703,7 @@
       powerStrong: 'Data Power',
       aiAs: '{chara} ({type} type)',
       aiAsType: '{type} type ka monster',
-      originSound: 'Awaaz se paida hua: {motif}',
-      aiOffFuse: 'Fusion mein AI use nahin hota, taaki kai photos na bheji jaayein.'
+      originSound: 'Awaaz se paida hua: {motif}'
     }
   };
   I18N['in'] = Object.assign({}, I18N.en, I18N['in']);
