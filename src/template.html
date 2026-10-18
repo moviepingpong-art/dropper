@@ -311,19 +311,6 @@ section{padding:6rem 1.5rem;}
 .btn-sm.line:hover{border-color:var(--primary);}
 .btn-sm.disabled{background:#eef0f6;color:var(--text-light);cursor:default;}
 
-/* ---------- AIモード（APIキー案内への誘導帯） ---------- */
-/* APIキー入力を「怖い作業」に見せないため、トップでも先に
-   「クレカ不要・0円・キーは端末内だけ」を言い切る。詳細は apikey.html へ。 */
-#apikey-band{background:linear-gradient(180deg,#f0f5ff 0%,#ffffff 100%);}
-.ak-band{
-  background:var(--card);border:1px solid var(--border);border-left:6px solid var(--accent);
-  border-radius:12px;padding:1.9rem 1.8rem;box-shadow:0 4px 18px rgba(10,10,46,0.06);
-}
-.ak-band-catch{font-size:clamp(1.05rem,3.2vw,1.35rem);font-weight:900;color:var(--text-dark);line-height:1.6;margin-bottom:0.7rem;}
-.ak-band p{font-size:0.9rem;color:var(--text-mid);line-height:1.95;}
-.ak-band-badges{display:flex;flex-wrap:wrap;gap:0.5rem;margin:1.1rem 0 1.3rem;}
-.ak-band-badge{font-size:0.76rem;font-weight:700;color:#00936e;background:rgba(0,200,150,0.14);border-radius:50px;padding:0.35em 0.95em;white-space:nowrap;}
-@media(max-width:640px){.ak-band{padding:1.5rem 1.2rem;}}
 
 /* ---------- 遊び場（モンスタードロッパー）の帯。日本語のトップだけに出る（build_play_band） ---------- */
 /* 道具の3本とは別の棚に見えるよう、青ではなくオレンジ系にする */
@@ -609,24 +596,6 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </div>
 </section>
 {{PLAY_BAND}}
-<!-- AIモード：APIキー案内ページへの誘導。文言は apikey.band* -->
-<section id="apikey-band">
-  <div class="section-inner">
-    <p class="section-label">{{apikey.bandLabel}}</p>
-    <h2 class="section-title">{{apikey.bandTitle}}</h2>
-    <div class="ak-band">
-      <p class="ak-band-catch">{{apikey.catchMain}}</p>
-      <p>{{apikey.bandDesc}}</p>
-      <div class="ak-band-badges">
-        <span class="ak-band-badge">{{apikey.badge1}}</span>
-        <span class="ak-band-badge">{{apikey.badge2}}</span>
-        <span class="ak-band-badge">{{apikey.bandB3}}</span>
-      </div>
-      <a class="btn-sm fill" href="{{APIKEY_PATH}}">{{apikey.bandBtn}}</a>
-    </div>
-  </div>
-</section>
-
 <!-- ご利用にあたって -->
 <section id="policy">
   <div class="section-inner">
