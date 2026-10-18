@@ -232,8 +232,10 @@
       // ---- AI のようす ----
       aiBusy: 'AI が混み合っていて、答えられませんでした。',
       aiBusyHint: 'すぐにもう一度試すと通ることがあります。何度か続くときは、数分おいてから試してください。',
-      aiQuota: 'AI の無料枠の上限に当たりました。',
-      aiQuotaHint: '1分ほどおいてから試してください。それでも通らないときは、今日の分を使い切っています。明日また試してください。',
+      aiQuota: 'AI の今日の分が終わりました。',
+      aiQuotaHint: 'みんなで使える1日の分を使い切りました。日本時間の朝9時にまた使えるようになります。',
+      aiLimit: '今日あなたが使える AI の分が終わりました。',
+      aiLimitHint: '1日20枚まで AI で読めます。日本時間の朝9時にまた使えるようになります。',
       aiSlow: 'AI の返事が遅すぎたので、待つのをやめました。',
       aiSlowHint: '混んでいるようです。もう一度試すか、少しおいてから試してください。',
       aiNet: 'AI と通信できませんでした。',
@@ -259,6 +261,7 @@
       aiNgNoKey: '⚠ {msg}いまは色だけで生まれています。',
       aiOffTitle: 'ℹ AI は使っていません',
       aiOffData: '文章のファイルのようです。文章は AI に送らず、中身を数えた値だけで生まれます。',
+      aiOffAudio: '音声のファイルのようです。音声は AI に送らず、音の大きさ・高さだけで生まれます。',
       aiWorkHintAudio: '話の中身・曲の雰囲気・何の音かに合わせて、キャラの種類・名前・技・説明が決まります。終わるとカードが描き変わります。',
       aiWorkHintLife: '記録に書かれた名前・国・仕事・家族をカードに入れます。終わるとカードが描き変わります。',
       aiDoneSpeech: '✅ 話し声と判断しました（{sec}秒）',
@@ -531,8 +534,10 @@
       // ---- AI のようす ----
       aiBusy: 'The AI is busy and couldn\'t answer.',
       aiBusyHint: 'Trying again right away often works. If it keeps happening, wait a few minutes and try again.',
-      aiQuota: 'You hit the AI\'s free-tier limit.',
-      aiQuotaHint: 'Wait about a minute and try again. If it still fails, today\'s allowance is used up. Please try again tomorrow.',
+      aiQuota: 'Today\'s AI allowance is used up.',
+      aiQuotaHint: 'The daily allowance everyone shares has run out. It will be available again after 00:00 UTC.',
+      aiLimit: 'You have used up your AI allowance for today.',
+      aiLimitHint: 'The AI can read up to 20 cards a day for each person. It will be available again after 00:00 UTC.',
       aiSlow: 'The AI took too long to answer, so we stopped waiting.',
       aiSlowHint: 'It seems busy. Try again, or wait a little and try again.',
       aiNet: 'Couldn\'t reach the AI.',
@@ -558,6 +563,7 @@
       aiNgNoKey: '⚠ {msg} For now it was born from colors only.',
       aiOffTitle: 'ℹ The AI is not used',
       aiOffData: 'This looks like a text file. Text is not sent to the AI; it is born only from values counted from its contents.',
+      aiOffAudio: 'This looks like an audio file. Audio is not sent to the AI; it is born only from the sound\'s loudness and pitch.',
       aiWorkHintAudio: 'What is said, the mood of the music or what the sound is decides the kind of creature, name, moves and description. The card will be redrawn when done.',
       aiWorkHintLife: 'The name, country, job and family written on the record go onto the card. The card will be redrawn when done.',
       aiDoneSpeech: '✅ Identified as speech ({sec}s)',
@@ -729,8 +735,10 @@
       // ---- AI のようす ----
       aiBusy: 'AI busy hai, jawab nahin de saka.',
       aiBusyHint: 'Turant phir try karne se aksar chal jaata hai. Baar-baar ho to kuch minute ruk kar try karo.',
-      aiQuota: 'AI ki free limit poori ho gayi.',
-      aiQuotaHint: 'Ek minute ruk kar try karo. Phir bhi na chale to aaj ka hissa khatam ho gaya hai. Kal phir try karo.',
+      aiQuota: 'Aaj ka AI ka hissa khatam ho gaya.',
+      aiQuotaHint: 'Sab ke liye roz ka hissa khatam ho gaya. 00:00 UTC ke baad phir milega.',
+      aiLimit: 'Aapka aaj ka AI ka hissa khatam ho gaya.',
+      aiLimitHint: 'Har insaan ke liye din mein 20 cards tak AI padh sakta hai. 00:00 UTC ke baad phir milega.',
       aiSlow: 'AI ne bahut der lagayi, isliye intezaar band kar diya.',
       aiSlowHint: 'Lagta hai busy hai. Phir try karo, ya thoda ruk kar.',
       aiNet: 'AI se connect nahin ho saka.',
@@ -754,6 +762,7 @@
       aiNgNoKey: '⚠ {msg} Abhi sirf rangon se paida hua hai.',
       aiOffTitle: 'ℹ AI use nahin hua',
       aiOffData: 'Yeh text file lagti hai. Text AI ko nahin bheja jaata; woh sirf content gin kar nikle values se banta hai.',
+      aiOffAudio: 'Yeh audio file lagti hai. Audio AI ko nahin bheja jaata; woh sirf awaaz ki loudness aur pitch se banta hai.',
       aiOffFuse: 'Fusion mein AI use nahin hota, taaki kai files na bheji jaayein.',
       aiWorkHintAudio: 'Jo bola gaya, music ka mood ya kis cheez ki awaaz hai, usse creature ki kism, naam, moves aur description tay hote hain. Khatam hone par card dobara banega.',
       aiWorkHintLife: 'Record par likha naam, desh, kaam aur parivaar card par aayega. Khatam hone par card dobara banega.',
@@ -784,7 +793,7 @@
   I18N['in'] = Object.assign({}, I18N.en, I18N['in']);
   // ---- 韓国語・繁体字・ベトナム語（2026-10-17）----
   // en の上に重ねる（無い言葉は en のまま）。AI の選択肢の言葉（aiTypes など）は en の英語のまま。
-  // サイトの案内（API キーの取り方・プライバシーポリシー）は英語版へ送る（applyDom の SITE_PRE）
+  // サイトの案内（トップ・プライバシーポリシー）は英語版へ送る（applyDom の SITE_PRE）
   I18N.ko = {
     pageTitle: '몬스터 드로퍼 | 사진에서 몬스터 카드가 태어난다 | 드로퍼 놀이터',
     shelf: 'DROPPER PLAYGROUND ／ 드로퍼 놀이터',
@@ -984,8 +993,10 @@
 
     aiBusy: 'AI가 붐벼서 대답하지 못했습니다.',
     aiBusyHint: '바로 다시 시도하면 될 때가 있습니다. 여러 번 계속되면 몇 분 뒤에 시도해 주세요.',
-    aiQuota: 'AI 무료 범위의 한도에 걸렸습니다.',
-    aiQuotaHint: '1분쯤 뒤에 시도해 주세요. 그래도 안 되면 오늘 분량을 다 썼습니다. 내일 다시 시도해 주세요.',
+    aiQuota: '오늘의 AI 분량이 끝났습니다.',
+    aiQuotaHint: '모두가 함께 쓰는 하루 분량을 다 썼습니다. 한국 시간 오전 9시에 다시 쓸 수 있습니다.',
+    aiLimit: '오늘 쓸 수 있는 AI 분량이 끝났습니다.',
+    aiLimitHint: '한 사람당 하루 20장까지 AI로 읽을 수 있습니다. 한국 시간 오전 9시에 다시 쓸 수 있습니다.',
     aiSlow: 'AI의 대답이 너무 늦어서 기다리기를 그만두었습니다.',
     aiSlowHint: '붐비는 것 같습니다. 다시 시도하거나, 조금 뒤에 시도해 주세요.',
     aiNet: 'AI와 통신하지 못했습니다.',
@@ -1010,6 +1021,7 @@
     aiNgNoKey: '⚠ {msg} 지금은 색만으로 태어났습니다.',
     aiOffTitle: 'ℹ AI는 쓰지 않았습니다',
     aiOffData: '글 파일인 것 같습니다. 글은 AI에 보내지 않고, 내용을 센 값만으로 태어납니다.',
+    aiOffAudio: '소리 파일인 것 같습니다. 소리는 AI에 보내지 않고, 소리의 크기와 높이만으로 태어납니다.',
     aiWorkHintAudio: '말의 내용·곡의 분위기·무슨 소리인지에 맞춰 캐릭터의 종류·이름·기술·설명이 정해집니다. 끝나면 카드가 다시 그려집니다.',
     aiWorkHintLife: '기록에 쓰인 이름·나라·직업·가족을 카드에 넣습니다. 끝나면 카드가 다시 그려집니다.',
     aiDoneSpeech: '✅ 말소리로 판단했습니다 ({sec}초)',
@@ -1255,8 +1267,10 @@
 
     aiBusy: 'AI 太忙，沒能回答。',
     aiBusyHint: '馬上再試一次常常就會成功。一直這樣的話，請過幾分鐘再試。',
-    aiQuota: '碰到了 AI 免費額度的上限。',
-    aiQuotaHint: '請等一分鐘左右再試。還是不行的話，今天的額度已經用完了。請明天再試。',
+    aiQuota: '今天的 AI 額度用完了。',
+    aiQuotaHint: '大家共用的一天額度已經用完。台灣時間早上 8 點後可以再用。',
+    aiLimit: '你今天可用的 AI 額度用完了。',
+    aiLimitHint: '每人每天最多可以用 AI 讀 20 張。台灣時間早上 8 點後可以再用。',
     aiSlow: 'AI 回答太慢，所以不等了。',
     aiSlowHint: '好像很忙。請再試一次，或稍等一下再試。',
     aiNet: '無法和 AI 連線。',
@@ -1282,6 +1296,7 @@
     aiNgNoKey: '⚠ {msg}目前只用顏色誕生。',
     aiOffTitle: 'ℹ 沒有使用 AI',
     aiOffData: '這似乎是文字檔。文字不會送給 AI，只用計算內容得到的數值誕生。',
+    aiOffAudio: '這似乎是聲音檔。聲音不會送給 AI，只用聲音的大小和高低誕生。',
     aiWorkHintAudio: '依說話內容、曲子的氣氛或是什麼聲音，決定角色種類、名字、招式和說明。完成後卡片會重畫。',
     aiWorkHintLife: '會把紀錄上寫的名字、國家、工作和家人放進卡片。完成後卡片會重畫。',
     aiDoneSpeech: '✅ 判斷為說話聲（{sec}秒）',
@@ -1507,8 +1522,10 @@
 
     aiBusy: 'AI đang bận nên không trả lời được.',
     aiBusyHint: 'Thử lại ngay thường sẽ được. Nếu cứ lặp lại, hãy đợi vài phút rồi thử.',
-    aiQuota: 'Đã chạm giới hạn miễn phí của AI.',
-    aiQuotaHint: 'Hãy đợi khoảng một phút rồi thử. Nếu vẫn không được, hạn mức hôm nay đã hết. Hãy thử lại vào ngày mai.',
+    aiQuota: 'Phần AI của hôm nay đã hết.',
+    aiQuotaHint: 'Phần dùng chung trong ngày đã hết. Sẽ dùng lại được sau 7 giờ sáng giờ Việt Nam.',
+    aiLimit: 'Bạn đã dùng hết phần AI của hôm nay.',
+    aiLimitHint: 'Mỗi người được AI đọc tối đa 20 thẻ mỗi ngày. Sẽ dùng lại được sau 7 giờ sáng giờ Việt Nam.',
     aiSlow: 'AI trả lời quá lâu nên đã ngừng chờ.',
     aiSlowHint: 'Có vẻ đang bận. Hãy thử lại, hoặc đợi một chút rồi thử.',
     aiNet: 'Không kết nối được với AI.',
@@ -1532,6 +1549,7 @@
     aiNgNoKey: '⚠ {msg} Hiện tại chỉ ra đời từ màu sắc.',
     aiOffTitle: 'ℹ Không dùng AI',
     aiOffData: 'Có vẻ đây là tệp văn bản. Văn bản không được gửi cho AI; nó chỉ ra đời từ các giá trị đếm được trong nội dung.',
+    aiOffAudio: 'Có vẻ đây là tệp âm thanh. Âm thanh không được gửi cho AI; quái vật chỉ sinh ra từ độ to và cao độ của âm thanh.',
     aiWorkHintAudio: 'Nội dung lời nói, không khí bản nhạc hoặc đó là âm thanh gì sẽ quyết định loại nhân vật, tên, chiêu thức và mô tả. Xong thì thẻ sẽ được vẽ lại.',
     aiWorkHintLife: 'Tên, quốc gia, nghề nghiệp và gia đình ghi trên hồ sơ sẽ được đưa vào thẻ. Xong thì thẻ sẽ được vẽ lại.',
     aiDoneSpeech: '✅ Nhận ra đây là lời nói ({sec}s)',
@@ -1605,8 +1623,6 @@
     }
     // 周知サイトの同じ言語の版へ送る（en の人を ja のページへ飛ばさない）
     var pre = SITE_PRE[global.LANG] || '/en/';
-    var km = document.getElementById('keyMoreLink');
-    if (km) km.href = 'https://dropper-tools.com' + pre + 'apikey.html';
     var home = document.getElementById('homeLink');
     if (home) home.href = 'https://dropper-tools.com' + pre;
     var pol = document.getElementById('policyLink');

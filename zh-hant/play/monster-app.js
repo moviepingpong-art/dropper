@@ -1474,70 +1474,47 @@
   }
 
   // ---- AI（任意） ----
-  const AI_MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest'];
-  const AI_KEY_STORE = 'dropper_ai_key';
-  const getKey = () => { try { return localStorage.getItem(AI_KEY_STORE) || ''; } catch (e) { return ''; } };
-  function showKeyState() { $('keyState').textContent = getKey() ? tr('keyOk') : tr('keyNone'); }
+  // AI は当方の中継（workers/monster-ai）を通して OpenAI に読ませる。キーは中継にだけあり、ページは持たない
+  const AI_URL = 'https://ai.dropper-tools.com/monster';
+  // 前は利用者の Gemini キーを端末に保存していた。もう使わないので消しておく
+  try { localStorage.removeItem('dropper_ai_key'); } catch (e) {}
   function jpegOf(img, max = 512) {
     const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
     const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * s); c.height = Math.round(img.naturalHeight * s);
     c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
     return c.toDataURL('image/jpeg', 0.8).split(',')[1];
   }
-  // AI へのお願いは辞書に（答えの言葉もページの言語）。人生の記録では、死因と家庭の暮らしぶりは読ませない
-  const PROMPT = D('prompt'), LIFE_PROMPT = D('lifePrompt'), AUDIO_PROMPT = D('audioPrompt');
   // AI が答えた選択肢の言葉 → カードの中の鍵（日本語）。見つからなければ null
   function aiKey(table, v) {
     const s = String(v === undefined || v === null ? '' : v).trim().toLowerCase(), m = D(table) || {};
     for (const k in m) if (k.toLowerCase() === s || String(m[k]).toLowerCase() === s) return k;
     return null;
   }
-  // src は写真（Image）か、音声の最初の30秒（{ wav }。16kHz・1チャンネルの WAV を base64 にしたもの）
-  async function askAI(src, prompt = PROMPT, size = 512) {
-    const key = getKey();
-    const media = src.wav ? { mime_type: 'audio/wav', data: src.wav } : { mime_type: 'image/jpeg', data: jpegOf(src, size) };
-    // 考える時間（thinking）を切る。flash の新しい版は、切らないと写真1枚に1分近く考え込むことがある
-    const mk = think => JSON.stringify({
-      contents: [{ parts: [{ text: prompt }, { inline_data: media }] }],
-      generationConfig: Object.assign({ temperature: 0.4, responseMimeType: 'application/json' }, think ? {} : { thinkingConfig: { thinkingBudget: 0 } })
-    });
-    // モデルごとに待つ時間を区切る。1つめが遅ければ、軽いほうへ回す（全体で最大 20＋25 秒）
-    const WAIT = [20000, 25000];
-    let resp, slow = false;
-    for (let i = 0; i < AI_MODELS.length; i++) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODELS[i]}:generateContent?key=${encodeURIComponent(key)}`;
-      const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), WAIT[i]);
-      try {
-        resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: mk(false), signal: ctl.signal });
-        // 考える時間を切れないモデルなら、切らずに頼み直す
-        if (resp.status === 400 && /thinking/i.test(await resp.clone().text()))
-          resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: mk(true), signal: ctl.signal });
-      } catch (e) {
-        if (e.name !== 'AbortError') throw aiErr('net');
-        slow = true; resp = null; continue; // 遅すぎた → 次のモデルへ
-      } finally { clearTimeout(timer); }
-      if (![500, 502, 503, 504].includes(resp.status)) break; // 混んでいるときも次のモデルへ
+  // AI へのお願い（頼み文）は中継が辞書から付ける（答えの言葉もページの言語）。人生の記録では、死因と家庭の暮らしぶりは読ませない
+  // 人生の記録は文字を読むので大きめに縮める
+  async function askAI(img, kind) {
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 45000);
+    let resp;
+    try {
+      resp = await fetch(AI_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctl.signal,
+        body: JSON.stringify({ kind, lang: LANG, image: jpegOf(img, kind === 'life' ? 1080 : 512) }) });
+    } catch (e) { throw aiErr(e.name === 'AbortError' ? 'slow' : 'net'); }
+    finally { clearTimeout(timer); }
+    let data = {};
+    try { data = await resp.json(); } catch (e) {}
+    if (!resp.ok || !data.answer) {
+      const kind = AI_FAIL[data.error] ? data.error : 'bad';
+      throw aiErr(kind, kind === 'bad' && !resp.ok ? resp.status : 0);
     }
-    if (!resp) throw aiErr(slow ? 'slow' : 'net');
-    if (resp.status === 429) throw aiErr('quota');
-    if ([500, 502, 503, 504].includes(resp.status)) throw aiErr('busy');
-    if (!resp.ok) {
-      const t = await resp.text();
-      if (resp.status === 400 && /API key not valid|API_KEY_INVALID/i.test(t)) { try { localStorage.removeItem(AI_KEY_STORE); } catch (e) {} showKeyState(); throw aiErr('key'); }
-      throw aiErr('bad', resp.status);
-    }
-    const data = await resp.json();
-    const txt = (((data.candidates || [])[0] || {}).content || {}).parts?.map(p => p.text || '').join('').replace(/^```(?:json)?|```$/g, '').trim();
-    try { return JSON.parse(txt); } catch (e) { throw aiErr('bad'); }
+    return data.answer;
   }
   // うまくいかなかったわけ。retry＝「もう一度試す」を出すか
   const AI_FAIL = {
     busy: { msg: 'aiBusy', hint: 'aiBusyHint', retry: true },
-    quota: { msg: 'aiQuota', hint: 'aiQuotaHint', retry: true },
+    quota: { msg: 'aiQuota', hint: 'aiQuotaHint', retry: false },
+    limit: { msg: 'aiLimit', hint: 'aiLimitHint', retry: false },
     slow: { msg: 'aiSlow', hint: 'aiSlowHint', retry: true },
     net: { msg: 'aiNet', hint: 'aiNetHint', retry: true },
-    key: { msg: 'aiKey', hint: 'aiKeyHint', retry: true },
-    nokey: { msg: 'aiNoKey', hint: 'aiNoKeyHint', retry: true },
     bad: { msg: 'aiBad', hint: 'aiBadHint', retry: true }
   };
   function aiErr(kind, code) { const e = new Error(tr(AI_FAIL[kind].msg) + (code ? tr('aiCode', { code }) : '')); e.kind = kind; return e; }
@@ -1665,28 +1642,18 @@
   }
   // AI に名前や姿を書いてもらう。うまくいったら true。カードはその前に色だけで生まれているので、失敗してもカードは残る
   async function runAI(M, img, done) {
-    const life = M.source === 'life', snd = !!(img && img.wav), t0 = Date.now();
-    let heard = '';
-    const what = tr(life ? 'aiWhatLife' : snd ? 'aiWhatAudio' : 'aiWhatPhoto');
-    if (!getKey()) { const f = AI_FAIL.nokey; aiShow(M, 'ng', tr('aiNgNoKey', { msg: tr(f.msg) }), tr(f.hint), true); aiView.redo = { img, done }; setStatus(done()); return false; }
+    const life = M.source === 'life', t0 = Date.now();
+    const what = tr(life ? 'aiWhatLife' : 'aiWhatPhoto');
     const tick = () => {
       const sec = Math.floor((Date.now() - t0) / 1000);
-      aiShow(M, 'work', tr('aiWork', { what, sec }), tr(sec >= 12 ? 'aiWorkSlow' : life ? 'aiWorkHintLife' : snd ? 'aiWorkHintAudio' : 'aiWorkHint'));
+      aiShow(M, 'work', tr('aiWork', { what, sec }), tr(sec >= 12 ? 'aiWorkSlow' : life ? 'aiWorkHintLife' : 'aiWorkHint'));
     };
     tick(); const iv = setInterval(tick, 1000);
-    setStatus(tr(life ? 'aiReadingLife' : snd ? 'aiReadingAudio' : 'aiReadingPhoto'));
+    setStatus(tr(life ? 'aiReadingLife' : 'aiReadingPhoto'));
     try {
-      if (life) applyLife(M, await askAI(img, LIFE_PROMPT, 1080));
+      if (life) applyLife(M, await askAI(img, 'life'));
       else {
-        const a = await askAI(img, snd ? AUDIO_PROMPT : PROMPT);
-        heard = String(a.heard || '').toLowerCase();
-        // 音声で、言葉も音楽も何の音かも分からなかったときは、今までどおり音の値だけの子のまま
-        if (snd && String(a.heard || '').toLowerCase() === 'none') {
-          clearInterval(iv);
-          aiShow(M, 'info', tr('aiAudioNone'), tr('aiAudioNoneHint'));
-          setStatus(done());
-          return true;
-        }
+        const a = await askAI(img, 'photo');
         const ty = aiKey('aiTypes', a.type), kd = aiKey('aiKinds', a.kind), an = aiKey('aiAnimals', a.animal);
         if (ty && TYPES[ty]) M.type = ty;
         if (kd && KINDS[kd] && kd !== '人間') M.g.kind = kd; // 体の形がこの種類に変わる（図鑑にも残る）
@@ -1696,13 +1663,13 @@
         M.motif = clip(a.motif, D('clipMotif'));
         if (Array.isArray(a.moves) && a.moves.length >= 2) M.moves = a.moves.slice(0, 2).map(m => clip(m, D('clipMove')));
         M.desc = clip(a.desc, D('clipDesc')) || M.desc;
-        M.mission = a.mission && !snd ? clip(a.mission, D('clipMission')) : '';
+        M.mission = a.mission ? clip(a.mission, D('clipMission')) : '';
       }
       clearInterval(iv);
       boostAI(M);
       const sec = Math.max(1, Math.round((Date.now() - t0) / 1000));
       // 何のファイルと判断して、何をもとに、どんな子として生まれたかを見せる
-      const kind = life ? 'Life' : !snd ? 'Photo' : heard === 'music' ? 'Music' : heard === 'sound' ? 'Sound' : 'Speech';
+      const kind = life ? 'Life' : 'Photo';
       const type = txt({ ty: M.type }), chara = charaOf(M.g), as = chara ? tr('aiAs', { chara, type }) : tr('aiAsType', { type });
       aiShow(M, 'ok', tr('aiDone' + kind, { sec }), (life ? tr('aiDoneLifeHint') : tr(M.motif ? 'aiResult' + kind : 'aiResultPlain', { motif: txt(M.motif), as }) + tr(M.strong ? 'aiStrong' : 'aiBoost', { power: M.power })));
       if (current === M) { await loadFontsFor(M); drawCard($('card'), M); setStatus(done()); }
@@ -1716,15 +1683,14 @@
       return false;
     }
   }
-  // snd は音声の最初の30秒（AI がオンのときだけ用意する）。AI に聞かせて、言葉・音楽の雰囲気・何の音かから生まれる
-  async function show(M, img, note, snd) {
+  async function show(M, img, note) {
     M.serial = await nextSerial();
     if (!(await display(M))) return;
     const done = () => (note ? note + tr('statusSep') : '') + statusOf(M);
-    if (M.source && M.source !== 'life' && !(M.source === 'audio' && snd) && $('aiOn').checked) { aiShow(M, 'info', tr('aiOffTitle'), tr('aiOffData')); setStatus(done()); return saveCard(M); }
+    // 文章と音声は AI に送らない（音声は、OpenAI の無料枠に音声を聞けるモデルが無いため）
+    if (M.source && M.source !== 'life' && $('aiOn').checked) { aiShow(M, 'info', tr('aiOffTitle'), tr(M.source === 'audio' ? 'aiOffAudio' : 'aiOffData')); setStatus(done()); return saveCard(M); }
     if (M.fusion && $('aiOn').checked) { aiShow(M, 'info', tr('aiOffTitle'), tr('aiOffFuse')); setStatus(done()); return saveCard(M); }
-    if ($('aiOn').checked && snd) await runAI(M, snd, done);
-    else if ($('aiOn').checked && img && img.__fromFile) await runAI(M, img, done);
+    if ($('aiOn').checked && img && img.__fromFile) await runAI(M, img, done);
     else setStatus(done());
     // 待っている間に別のカードを開いていたら、この子の絵をいったん描き直してから図鑑に入れる
     if (current !== M) { const back = current; await display(M); await saveCard(M); return display(back); }
@@ -1817,21 +1783,6 @@
       wide: clamp01(lowR), tall: clamp01(zcr / 0.15), lively: clamp01(rms / 0.2), quiet: quiet / wins, peaks
     } };
   }
-  // AI に聞かせる音声：最初の sec 秒を 16kHz・1チャンネルに縮めた WAV（base64）。30秒で約1MB
-  async function wavClip(buf, sec) {
-    const rate = 16000, len = Math.max(1, Math.ceil(Math.min(buf.duration, sec) * rate));
-    const OC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-    const oc = new OC(1, len, rate), node = oc.createBufferSource();
-    node.buffer = buf; node.connect(oc.destination); node.start(0);
-    const d = (await oc.startRendering()).getChannelData(0);
-    const out = new DataView(new ArrayBuffer(44 + len * 2)), w = (o, t) => { for (let i = 0; i < t.length; i++) out.setUint8(o + i, t.charCodeAt(i)); };
-    w(0, 'RIFF'); out.setUint32(4, 36 + len * 2, true); w(8, 'WAVEfmt '); out.setUint32(16, 16, true); out.setUint16(20, 1, true); out.setUint16(22, 1, true);
-    out.setUint32(24, rate, true); out.setUint32(28, rate * 2, true); out.setUint16(32, 2, true); out.setUint16(34, 16, true); w(36, 'data'); out.setUint32(40, len * 2, true);
-    for (let i = 0; i < len; i++) out.setInt16(44 + i * 2, Math.max(-1, Math.min(1, d[i])) * 32767, true);
-    const u = new Uint8Array(out.buffer); let bin = '';
-    for (let i = 0; i < u.length; i += 0x8000) bin += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
-    return btoa(bin);
-  }
   // 写真の色の代わり：ファイルそのものの指紋で色合いを決め、にぎやかさで鮮やかさを決める（同じファイルなら同じ色）
   function paletteOfData(filePrint, meas) {
     const r = sfc32(filePrint[0], filePrint[1], filePrint[2], filePrint[3]);
@@ -1853,9 +1804,8 @@
     if (file.size > SOURCES[kind].max) throw new Error(tr('errTooBig', { label: tr(SOURCES[kind].label), mb: Math.round(SOURCES[kind].max / 1024 / 1024) }));
     const bytes = new Uint8Array(await file.arrayBuffer());
     if (kind === 'text') return { bytes, data: { kind, meas: measureText(bytes) } };
-    const { meas, buf } = await measureAudio(bytes);
-    // AI がオンのときだけ、AI に聞かせる最初の30秒を作る（オフのときは作らない・送らない）
-    return { bytes, data: { kind, meas }, snd: $('aiOn').checked ? { wav: await wavClip(buf, 30) } : null };
+    const { meas } = await measureAudio(bytes);
+    return { bytes, data: { kind, meas } };
   }
 
   // 1枚なら1体、2〜3枚なら合体。4枚目からは使わない。同じファイルは1枚に数える（ファイルそのものの指紋で見る）
@@ -1880,11 +1830,11 @@
     for (const l of loaded) {
       const pp = printOf(fingerprint(l.bytes));
       if (seen.has(pp)) { notes.push(tr('noteSameFile')); continue; }
-      seen.add(pp); parts.push({ M: await build(l.bytes, l.img || null, pp, l.data), img: l.img || null, snd: l.snd || null });
+      seen.add(pp); parts.push({ M: await build(l.bytes, l.img || null, pp, l.data), img: l.img || null });
     }
     // 人生の記録は合体させない（人生どうしを強さで比べないため）。1枚目だけが生まれる
     if (parts.length > 1 && isHuman(parts[0].M)) { notes.push(tr('noteHumanNoFuse')); parts.length = 1; }
-    if (parts.length === 1) return show(parts[0].M, parts[0].img, notes.join(tr('noteSep')), parts[0].snd);
+    if (parts.length === 1) return show(parts[0].M, parts[0].img, notes.join(tr('noteSep')));
     return show(fuse(parts.map(p => p.M)), null, notes.join(tr('noteSep')));
   }
   // ---- 結婚の操作 ----
@@ -1967,12 +1917,7 @@
       await saveCard(M, true);
     }
   });
-  $('aiOn').addEventListener('change', e => { $('aiBox').classList.toggle('hidden', !e.target.checked); showKeyState(); });
-  $('saveKey').addEventListener('click', () => {
-    const k = $('key').value.trim(); if (!k) return;
-    try { localStorage.setItem(AI_KEY_STORE, k); } catch (e) {}
-    $('key').value = ''; showKeyState();
-  });
+  $('aiOn').addEventListener('change', e => { $('aiBox').classList.toggle('hidden', !e.target.checked); });
   $('clearDex').addEventListener('click', async () => {
     if (!confirm(tr('clearConfirm'))) return;
     await DB.clear('cards'); await DB.clear('couples');
