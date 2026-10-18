@@ -314,14 +314,6 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 .guide-faq a{color:var(--primary);text-decoration:none;}
 .guide-faq a:hover{text-decoration:underline;}
 
-/* ---------- APIキー案内ページへの誘導 ---------- */
-.ak-link-box{
-  background:var(--primary-pale);border-radius:10px;padding:1.05rem 1.2rem;margin:1.2rem 0;
-  font-size:0.9rem;color:var(--text-mid);line-height:1.9;
-}
-.ak-link-box a{display:inline-block;margin-top:0.35rem;color:var(--primary);font-weight:700;text-decoration:none;}
-.ak-link-box a:hover{text-decoration:underline;}
-
 /* CTA */
 .guide-cta{text-align:center;margin:2.8rem 0 1rem;}
 .guide-cta .btn-sm{display:inline-block;}
@@ -474,34 +466,18 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   <!-- 5. AI機能 -->
   <section class="legal-sec" id="s5">
     <h2>Using AI (optional)</h2>
-    <p>For better reading accuracy you can use AI (Google Gemini). <strong>It's entirely your choice.</strong> The basic reading works without it.</p>
+    <p>For better reading accuracy you can use AI. <strong>It's entirely your choice.</strong> The basic reading works without it.</p>
 
     <h3 class="guide-sub">Turning AI on</h3>
-    <p>After signing in, a popup asks whether to use AI. Choose "Use AI" and the API key screen opens.</p>
+    <p>After signing in, a popup asks whether to use AI. Press "Use AI" and that's it. No API key or sign-up is needed (up to 20 a day per person).</p>
     <figure class="guide-shot">
       <img src="/assets/guide/en/ai-choice.png" alt="Popup asking whether to use AI" loading="lazy">
       <figcaption>AI is opt-in — you decide</figcaption>
     </figure>
 
-    <h3 class="guide-sub">Getting an API key</h3>
-    <ol class="guide-ol">
-      <li>Open Google AI Studio</li>
-      <li>Sign in with your Google account</li>
-      <li>Click "Create API key"</li>
-      <li>Copy the key and paste it into Dropper</li>
-    </ol>
-    <p>It's free and takes about 3 minutes.</p>
-    <figure class="guide-shot">
-      <img src="/assets/guide/en/ai-key-modal.png" alt="API key modal with setup steps and a button to open AI Studio" loading="lazy">
-      <figcaption>The key screen — instructions included</figcaption>
-    </figure>
-
-    <div class="guide-safe">🔒 Your key is stored only on your device (browser). It is never sent to the developer.</div>
-    <div class="guide-note">⚠️ On the free tier, submitted content may be used to improve Google's services. Do not drop confidential documents.</div>
+    <div class="guide-safe">📤 Your event document file is sent through our relay (which stores nothing) to OpenAI's AI. Text read by Google Drive and your calendar contents are never sent.</div>
+    <div class="guide-note">⚠️ OpenAI may use what you send to improve its AI (the condition for using it free). Do not drop documents with personal information.</div>
     <p>Your choice is remembered, so the popup won't appear again. To change it, click "AI settings" in the banner at the top of the screen.</p>
-    <div class="ak-link-box">How to get a key, how it is kept safe, and why there is nothing to worry about on cost are all explained on a page of their own.<br>
-      <a href="./apikey.html">How to get a Gemini API key (no card, 3 minutes, free) →</a>
-    </div>
   </section>
 
   <!-- 6. よくある質問 -->
@@ -512,7 +488,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <dt>Which sports are supported?</dt><dd>Table tennis and several other sports. Pick one from the sport selector at the top of the screen.</dd>
       <dt>The reading was wrong.</dt><dd>You can edit the card directly before registering. Some document layouts are harder to read; using AI often helps.</dd>
       <dt>How do I delete a registered event?</dt><dd>Delete it from Google Calendar and Drive as you normally would. Dropper has no delete function.</dd>
-      <dt>Is my data sent anywhere?</dt><dd>No. Event Dropper has no server. Only when you use AI mode is the text of your event document sent to Gemini, using your own API key. See the <a href="./privacy.html">privacy policy</a> for details.</dd>
+      <dt>Is my data sent anywhere?</dt><dd>Event Dropper itself has no server and stores nothing. Only when you use AI mode is your event document file sent to OpenAI through our relay (which stores nothing). See the <a href="./privacy.html">privacy policy</a> for details.</dd>
     </dl>
   </section>
 

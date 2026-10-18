@@ -289,14 +289,6 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 .guide-faq a{color:var(--primary);text-decoration:none;}
 .guide-faq a:hover{text-decoration:underline;}
 
-/* ---------- APIキー案内ページへの誘導 ---------- */
-.ak-link-box{
-  background:var(--primary-pale);border-radius:10px;padding:1.05rem 1.2rem;margin:1.2rem 0;
-  font-size:0.9rem;color:var(--text-mid);line-height:1.9;
-}
-.ak-link-box a{display:inline-block;margin-top:0.35rem;color:var(--primary);font-weight:700;text-decoration:none;}
-.ak-link-box a:hover{text-decoration:underline;}
-
 /* CTA */
 .guide-cta{text-align:center;margin:2.8rem 0 1rem;}
 .guide-cta .btn-sm{display:inline-block;}
@@ -458,24 +450,9 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <img src="/assets/guide-schedule/{{LANG_DIR}}/ai-choice.png" alt="{{gsched.shot6alt}}" loading="lazy">
       <figcaption>{{gsched.shot6cap}}</figcaption>
     </figure>
-
-    <h3 class="guide-sub">{{gsched.s4sub2}}</h3>
-    <ol class="guide-ol">
-      <li>{{gsched.s4k1}}</li>
-      <li>{{gsched.s4k2}}</li>
-      <li>{{gsched.s4k3}}</li>
-      <li>{{gsched.s4k4}}</li>
-    </ol>
-    <figure class="guide-shot">
-      <img src="/assets/guide-schedule/{{LANG_DIR}}/ai-key-modal.png" alt="{{gsched.shot7alt}}" loading="lazy">
-      <figcaption>{{gsched.shot7cap}}</figcaption>
-    </figure>
     <div class="guide-safe">{{gsched.s4note1}}</div>
     <div class="guide-note">{{gsched.s4note2}}</div>
     <p>{{gsched.s4body2}}</p>
-    <div class="ak-link-box">{{apikey.fromGuide}}<br>
-      <a href="{{APIKEY_PATH}}">{{apikey.fromGuideLink}}</a>
-    </div>
   </section>
 
   <!-- 5. 読み取り結果の見かた -->

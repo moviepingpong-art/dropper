@@ -314,14 +314,6 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 .guide-faq a{color:var(--primary);text-decoration:none;}
 .guide-faq a:hover{text-decoration:underline;}
 
-/* ---------- APIキー案内ページへの誘導 ---------- */
-.ak-link-box{
-  background:var(--primary-pale);border-radius:10px;padding:1.05rem 1.2rem;margin:1.2rem 0;
-  font-size:0.9rem;color:var(--text-mid);line-height:1.9;
-}
-.ak-link-box a{display:inline-block;margin-top:0.35rem;color:var(--primary);font-weight:700;text-decoration:none;}
-.ak-link-box a:hover{text-decoration:underline;}
-
 /* CTA */
 .guide-cta{text-align:center;margin:2.8rem 0 1rem;}
 .guide-cta .btn-sm{display:inline-block;}
@@ -397,7 +389,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <tbody>
         <tr><td>A Google account</td><td>The owner of the calendar you want the entries added to.</td></tr>
         <tr><td>A schedule file</td><td>PDF or an image (JPEG/PNG).</td></tr>
-        <tr><td>Cost</td><td>Free. Only AI mode needs your own Gemini API key, which also has a free tier.</td></tr>
+        <tr><td>Cost</td><td>Free. AI mode also works with no key or sign-up (up to 10 a day per person).</td></tr>
       </tbody>
     </table>
   </section>
@@ -463,7 +455,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       </thead>
       <tbody>
         <tr><td>Normal (no AI)</td><td>Table-style sheets with one entry per row.</td><td>Nothing to set up, free.</td></tr>
-        <tr><td>AI mode</td><td>Calendar grids and heavily designed schedules.</td><td>Your own Gemini API key.</td></tr>
+        <tr><td>AI mode</td><td>Calendar grids and heavily designed schedules.</td><td>No setup (up to 10 a day per person).</td></tr>
       </tbody>
     </table>
     <div class="guide-note">⚠️ A calendar grid — the month-by-month layout used by school year planners — cannot be read in normal mode. Once the page is turned into plain text, the link between a date and its entry is lost. Always use AI mode for that shape.</div>
@@ -471,24 +463,9 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <img src="/assets/guide-schedule/en/ai-choice.png" alt="The "Read it more accurately with AI?" dialog" loading="lazy">
       <figcaption>Whether to use AI is up to you, and you can change it at any time.</figcaption>
     </figure>
-
-    <h3 class="guide-sub">Getting a Gemini API key</h3>
-    <ol class="guide-ol">
-      <li>Press "With AI (enter key)".</li>
-      <li>Follow "Open Google AI Studio" and create a key (a few minutes, free, with a Google account).</li>
-      <li>Copy the key and paste it into the box.</li>
-      <li>Press "Save and use".</li>
-    </ol>
-    <figure class="guide-shot">
-      <img src="/assets/guide-schedule/en/ai-key-modal.png" alt="The Gemini API key settings dialog" loading="lazy">
-      <figcaption>The key stays on your device and is never sent to or stored on our servers.</figcaption>
-    </figure>
-    <div class="guide-safe">🔒 The key is stored only in your own browser. We run no server, so we never receive it. The Gemini API has a free tier of roughly 1,500 requests a day.</div>
-    <div class="guide-note">⚠️ On the free tier, what you send may be used to improve Google services. Do not drop confidential documents.</div>
-    <p>If entries are missing after a normal-mode read, press "Read again with AI" above the list to run the same file through AI (an API key is needed).</p>
-    <div class="ak-link-box">How to get a key, how it is kept safe, and why there is nothing to worry about on cost are all explained on a page of their own.<br>
-      <a href="./apikey.html">How to get a Gemini API key (no card, 3 minutes, free) →</a>
-    </div>
+    <div class="guide-safe">📤 Your schedule file is sent through our relay (which stores nothing) to OpenAI's AI. Text read by Google Drive is never sent.</div>
+    <div class="guide-note">⚠️ OpenAI may use what you send to improve its AI (the condition for using it free). Do not drop documents with personal information.</div>
+    <p>If entries are missing after a normal-mode read, press "Read again with AI" above the list to run the same file through AI (no key needed).</p>
   </section>
 
   <!-- 5. 読み取り結果の見かた -->
@@ -518,7 +495,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <dt>Something was read incorrectly.</dt><dd>You can correct it directly in the list before adding. If there is a lot to fix, reading again with AI often helps.</dd>
       <dt>Will dropping the same schedule twice create duplicates?</dt><dd>Rows that were added are unticked, so pressing the button again will not duplicate them. Reloading the page and adding everything from scratch will, though — check your calendar in that case.</dd>
       <dt>Can it write WhatsApp/SNS announcements?</dt><dd>Not in Schedule Dropper. Announcements are a feature of <a href="./guide.html">Event Dropper</a>.</dd>
-      <dt>Is my data sent anywhere?</dt><dd>No. Schedule Dropper has no server. Only when you use AI mode is the schedule file sent to Gemini, using your own API key. See the <a href="./privacy.html">privacy policy</a> for details.</dd>
+      <dt>Is my data sent anywhere?</dt><dd>Schedule Dropper itself has no server and stores nothing. Only when you use AI mode is your schedule file sent to OpenAI through our relay (which stores nothing). See the <a href="./privacy.html">privacy policy</a> for details.</dd>
     </dl>
   </section>
 

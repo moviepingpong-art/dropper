@@ -259,7 +259,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 
   <div class="legal-head">
     <h1>Privacy <span class="blue">Policy</span></h1>
-    <p class="legal-date">Effective: July 15, 2026 / Last updated: July 19, 2026</p>
+    <p class="legal-date">Effective: July 15, 2026 / Last updated: October 18, 2026</p>
   </div>
 
   <p class="legal-lead">DROPPER runs in your browser. For Event, Schedule and Entry Forms we never collect, store, or transmit your data. <strong>the Attendance tool is the one exception - we hold the attendance data</strong> (see its own section).</p>
@@ -299,14 +299,15 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </section>
 
   <section class="legal-sec">
-    <h2>4. About the AI feature (Gemini)</h2>
-    <div class="legal-note">When the AI feature is used, the text read from your event document or schedule — or the file itself (PDF or image) — is sent to Google's Gemini API. Whether to use this feature is entirely your choice.</div>
+    <h2>4. About the AI feature</h2>
+    <div class="legal-note">When the AI feature is used, the event document or schedule file you dropped (PDF or image) is sent as is, through our relay server, to the AI of OpenAI (USA). Whether to use this feature is entirely your choice.</div>
     <ul>
       <li>Using AI is opt-in. After you sign in, a dialog asks you to choose "Use AI" or "Do not use AI".</li>
-      <li>Only if you choose "Use AI" is the text read from your event document or schedule — or the file itself (PDF or image) — sent to Google's Gemini API.</li>
-      <li>The request uses an API key that you obtain yourself. The key is stored only on your own device (in your browser's localStorage) and is never sent to us.</li>
-      <li>Data sent to the Gemini API is handled under Google's own policies.</li>
-      <li>If you choose "Do not use AI", no text is sent anywhere outside your browser and your own Google account.</li>
+      <li>Only if you choose "Use AI" is the file (images are reduced in size) sent through our relay server (Cloudflare Workers) to OpenAI's API. The API key is provided by us; you do not need to enter one. <strong>The relay server stores neither the file nor the AI's answer.</strong></li>
+      <li>To keep our costs within a fixed range, we use OpenAI's free allowance, which is given on the condition that OpenAI may use what is sent to improve its AI. <strong>This means OpenAI may use the files you send to improve its AI.</strong> Please do not use documents that contain personal information.</li>
+      <li><strong>Google user data (the text read by Google Drive, and the contents of your Google Calendar or Drive) is never sent to the AI.</strong> Only the file you dropped from your own device is sent.</li>
+      <li>To prevent overuse, the relay server counts only the amount used that day and the number of requests per mark made from shortened, irreversible connection information, and deletes them the next day (up to 20 event files and 10 schedules per person per day).</li>
+      <li>If you choose "Do not use AI", nothing is sent to the AI.</li>
     </ul>
   </section>
 
@@ -314,8 +315,8 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
     <h2>5. Data Sharing and Third-Party Disclosure</h2>
     <p>Dropper does not sell, share, or transfer your Google user data to us or to any third party. We never receive Google user data in the first place. The data held for the Attendance tool is likewise never sold or shared with third parties.</p>
     <ul>
-      <li>The only exception is when you choose "Use AI". Only then is the text read from the event document or schedule — or the file itself (PDF or image) — sent to Google's Gemini API using your own API key. This is a direct transmission between you and Google, based on your choice, and does not pass through us.</li>
-      <li>Data sent to the Gemini API is handled in accordance with <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</li>
+      <li>The only exception is when you choose "Use AI". Only then is the file you dropped (PDF or image) sent through our relay server to OpenAI's API (section 4). Even then, Google user data is not sent to the AI.</li>
+      <li>Data sent to OpenAI is handled in accordance with <a href="https://openai.com/policies/privacy-policy/" target="_blank" rel="noopener">OpenAI's Privacy Policy</a>.</li>
       <li>Apart from the above, we never disclose Google user data to any advertiser, analytics provider, or other third party.</li>
     </ul>
   </section>
@@ -326,8 +327,8 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
     <ul>
       <li>All communication takes place over an encrypted connection (HTTPS).</li>
       <li>For the three tools other than the Attendance tool we store no data, so nothing of yours sits under our control to be breached. The data held for the Attendance tool is protected on Cloudflare's platform.</li>
-      <li>Your Gemini API key and settings are stored only on your device (in the browser's localStorage) and are never transmitted to us or anyone else.</li>
-      <li>All access to Google services and the Gemini API takes place under the authentication and authorization of your own Google account.</li>
+      <li>Settings (such as whether to use AI) are stored only on your device (in the browser's localStorage). The relay server for the AI feature does not store the files sent or the AI's answers.</li>
+      <li>All access to Google services takes place under the authentication and authorization of your own Google account.</li>
     </ul>
   </section>
 
@@ -336,14 +337,13 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
     <p>For the three tools other than the Attendance tool we store nothing, so we hold none of your Google user data. Only the following information is stored on your device (in the browser's localStorage), and we cannot access it:</p>
     <ul>
       <li>Whether you chose to use the AI feature</li>
-      <li>Your Gemini API key (only if you chose to use AI)</li>
       <li>Information about the destination folder</li>
     </ul>
     <p>You can delete this data at any time in the following ways:</p>
     <ul>
       <li>Temporary files created for text recognition (OCR) are deleted immediately after reading.</li>
       <li>Events created in your Google Calendar and event documents or schedules saved to your Google Drive are managed by you and can be deleted from Google at any time (Dropper has no delete function).</li>
-      <li>The API key and settings stored on your device can be deleted at any time from your browser settings.</li>
+      <li>The settings stored on your device can be deleted at any time from your browser settings.</li>
       <li>You can revoke Dropper's access to your Google account at any time from your <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Google Account security settings</a>.</li>
     </ul>
   </section>
@@ -365,14 +365,14 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 
   <section class="legal-sec">
     <h2>11. About the LINE official account version</h2>
-    <p>The LINE official account "Dropper" reads images and PDFs sent in the chat and returns the result. For this feature only, the processing goes through our server (Google Apps Script); the browser version runs entirely on your device and does not go through our server. The handling is as follows.</p>
+    <p>The LINE official account "Dropper" reads images and PDFs sent in the chat and returns the result. For this feature only, the processing goes through our server (Google Apps Script); in the browser version, only the files sent when you use the AI feature go through our server (section 4). The handling is as follows.</p>
     <ul>
       <li>We do not store the images or PDFs you send. They are sent to Google's Gemini API for reading and discarded as soon as processing finishes.</li>
       <li>We do not store the extracted content (event name, dates, venue, etc.) either. It is returned to you in the reply and embedded in the link used to add the event to your calendar.</li>
-      <li>The operator's own API key is used for these requests (in the browser version it is your own key). Because it runs within the free tier, there is a daily limit per person.</li>
+      <li>The operator's own API key is used for these requests. Because it runs within the free tier, there is a daily limit per person.</li>
       <li>To understand usage, we record only the date and time, the type of item sent, the result, the time taken, and a hashed string derived from your LINE user identifier (first 8 characters only). The original identifier cannot be recovered from this string.</li>
       <li>We do not obtain your LINE profile information (display name, profile image, phone number, etc.).</li>
-      <li>Data sent to the Gemini API is handled according to Google's policies (same as section 4). When used within the free tier, the content sent may be used to improve Google's services.</li>
+      <li>Data sent to the Gemini API is handled according to Google's policies. When used within the free tier, the content sent may be used to improve Google's services.</li>
     </ul>
   </section>
 
@@ -407,7 +407,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </section>
 
   <!-- 遊び場（モンスタードロッパー、play/monster.html）。2026-10-14。写真を扱うが当方は預からない。
-       AI をオンにしたときだけ写真が Gemini へ行くので、無料枠での扱いも書く。
+       AI をオンにしたときだけ写真が当方の中継を通って OpenAI へ行くので、無料枠（学習に使われる）での扱いも書く。
        ページの下から id="play" でここへ飛ぶので、id を変えないこと -->
   <section class="legal-sec" id="play">
     <h2>About the Playground (Monster Dropper)</h2>

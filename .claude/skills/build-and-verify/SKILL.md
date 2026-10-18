@@ -26,13 +26,13 @@ python3 src/build.py
 
 ## 手順2：検証
 
-### 2-1. 19ページ生成されたか（6ページ × 3言語 ＋ 日本語だけのガイド1ページ）
+### 2-1. 16ページ生成されたか（5ページ × 3言語 ＋ 日本語だけのガイド1ページ）
 
 | 場所 | ファイル |
 |---|---|
-| 直下 | index.html / guide.html / guide-schedule.html / guide-attend.html / privacy.html / apikey.html / **guide-entry.html** |
-| `en/` | 同じ6ファイル（guide-entry.html は無い） |
-| `in/` | 同じ6ファイル（guide-entry.html は無い） |
+| 直下 | index.html / guide.html / guide-schedule.html / guide-attend.html / privacy.html / **guide-entry.html** |
+| `en/` | 同じ5ファイル（guide-entry.html は無い） |
+| `in/` | 同じ5ファイル（guide-entry.html は無い） |
 
 ページを増やすときは `build.py` の `PAGES` に足す。**ここの表と、この見出しの枚数も直す。**
 
@@ -98,9 +98,7 @@ grep -rn "{{" *.html en/ in/
   canonical・hreflang・sitemap はすべて `/` 表記なので、内部リンクだけ `index.html` にすると
   GA4 で `/` と `/index.html` が別ページとして二重計上され、SEOの評価も分散する。
   2026-08-06 まで実際にそうなっており、過去28日で48表示・7ユーザーぶんが分離していた
-- `apikey.html` は**ツール本体（`app.dropper-tools.com`）のポップアップからリンクされている**。
-  ファイル名・場所を変えると別リポジトリ側が404になる。`id="steps"` は `build.py` の
-  `HOWTO_PAGES` が HowTo 構造化データのリンク先に使う
+- （`apikey.html` は 2026-10-18 に廃止。AI をキーなしにしたため。古いURLはわざと404）
 - `CNAME`（中身 `dropper-tools.com`）を削除・変更しない。消えると独自ドメインが切れ、
   Googleに登録済みのホームページ・プライバシーポリシーURLが404になる
 - `privacy.html` のファイル名・場所・生成先を変更しない（OAuth審査で登録済みのURL）

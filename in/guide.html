@@ -314,14 +314,6 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 .guide-faq a{color:var(--primary);text-decoration:none;}
 .guide-faq a:hover{text-decoration:underline;}
 
-/* ---------- APIキー案内ページへの誘導 ---------- */
-.ak-link-box{
-  background:var(--primary-pale);border-radius:10px;padding:1.05rem 1.2rem;margin:1.2rem 0;
-  font-size:0.9rem;color:var(--text-mid);line-height:1.9;
-}
-.ak-link-box a{display:inline-block;margin-top:0.35rem;color:var(--primary);font-weight:700;text-decoration:none;}
-.ak-link-box a:hover{text-decoration:underline;}
-
 /* CTA */
 .guide-cta{text-align:center;margin:2.8rem 0 1rem;}
 .guide-cta .btn-sm{display:inline-block;}
@@ -474,34 +466,18 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   <!-- 5. AI機能 -->
   <section class="legal-sec" id="s5">
     <h2>AI use karna (optional)</h2>
-    <p>Behtar reading accuracy ke liye aap AI (Google Gemini) use kar sakte hain. <strong>Yeh poori tarah aapki choice hai.</strong> Basic reading iske bina bhi chalti hai.</p>
+    <p>Behtar reading accuracy ke liye aap AI use kar sakte hain. <strong>Yeh poori tarah aapki choice hai.</strong> Basic reading iske bina bhi chalti hai.</p>
 
     <h3 class="guide-sub">AI on karna</h3>
-    <p>Sign in ke baad ek popup poochta hai ki AI use karna hai ya nahi. "Use AI" choose karo aur API key screen khul jaayegi.</p>
+    <p>Sign in ke baad ek popup poochta hai ki AI use karna hai ya nahi. "Use AI" dabao, bas. Koi API key ya sign-up nahi chahiye (ek person ke liye roz 20 tak).</p>
     <figure class="guide-shot">
       <img src="/assets/guide/in/ai-choice.png" alt="Popup jo poochta hai ki AI use karna hai ya nahi" loading="lazy">
       <figcaption>AI opt-in hai — aap decide karte hain</figcaption>
     </figure>
 
-    <h3 class="guide-sub">API key kaise len</h3>
-    <ol class="guide-ol">
-      <li>Google AI Studio kholo</li>
-      <li>Apne Google account se sign in karo</li>
-      <li>"Create API key" par click karo</li>
-      <li>Key copy karke Dropper mein paste karo</li>
-    </ol>
-    <p>Yeh free hai aur lagbhag 3 minute lagte hain.</p>
-    <figure class="guide-shot">
-      <img src="/assets/guide/in/ai-key-modal.png" alt="API key modal jismein setup steps aur AI Studio kholne ka button hai" loading="lazy">
-      <figcaption>Key screen — instructions saath mein</figcaption>
-    </figure>
-
-    <div class="guide-safe">🔒 Aapki key sirf aapke device (browser) mein store hoti hai. Yeh developer ko kabhi nahi bheji jaati.</div>
-    <div class="guide-note">⚠️ Free tier par, bheja gaya content Google ki services improve karne ke liye use ho sakta hai. Confidential documents drop na karein.</div>
+    <div class="guide-safe">📤 Aapki event document file hamare relay (jo kuch save nahi karta) se hokar OpenAI ke AI ko jaati hai. Google Drive se padha gaya text aur calendar ka content kabhi nahi bheja jaata.</div>
+    <div class="guide-note">⚠️ OpenAI bheja gaya content apna AI behtar karne mein use kar sakta hai (free use ki shart). Personal information wale documents drop na karein.</div>
     <p>Aapki choice yaad rakhi jaati hai, isliye popup dobara nahi aayega. Ise badalne ke liye, screen ke top par banner mein "AI settings" par click karo.</p>
-    <div class="ak-link-box">Key kaise lein, wo safe kaise rehti hai, aur paise ki chinta kyun nahi hai — sab ek alag page par detail mein likha hai.<br>
-      <a href="./apikey.html">Gemini API key kaise lein (card nahi, 3 minute, free) →</a>
-    </div>
   </section>
 
   <!-- 6. よくある質問 -->
@@ -512,7 +488,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <dt>Kaunse sports supported hain?</dt><dd>Table tennis aur kuch dusre sports. Screen ke top par sport selector se ek choose karo.</dd>
       <dt>Reading galat thi.</dt><dd>Register karne se pehle aap card ko directly edit kar sakte hain. Kuch event document layouts padhne mein mushkil hote hain; AI use karne se aksar madad milti hai.</dd>
       <dt>Registered event kaise delete karun?</dt><dd>Ise Google Calendar aur Drive se waise hi delete karo jaise normally karte hain. Dropper mein delete function nahi hai.</dd>
-      <dt>Kya mera data kahin bheja jaata hai?</dt><dd>Nahi. Dropper ka koi server nahi hai. Sirf tab jab aap AI enable karte hain, event document text aapki apni API key se Gemini ko bheja jaata hai. Details ke liye <a href="./privacy.html">privacy policy</a> dekhein.</dd>
+      <dt>Kya mera data kahin bheja jaata hai?</dt><dd>Event Dropper ka apna koi server nahi hai aur yeh kuch save nahi karta. Sirf AI mode use karne par event document file hamare relay (jo kuch save nahi karta) se hokar OpenAI ko jaati hai. Details ke liye <a href="./privacy.html">privacy policy</a> dekhein.</dd>
     </dl>
   </section>
 

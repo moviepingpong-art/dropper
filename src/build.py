@@ -97,21 +97,6 @@ PAGES = {
         # ガイド自身を指す（現状リンクは出ないが定義は揃えておく）
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
-    # Gemini APIキーの案内ページ。ツール本体のAPIキー入力ポップアップからもここへ送る
-    # （app.dropper-tools.com 側の i18n が /apikey.html・/en/apikey.html・/in/apikey.html を張る）。
-    "apikey": {
-        "template": "apikey-template.html",
-        "filename": "apikey.html",
-        "langs": ["ja", "en", "in"],
-        "switch_paths": {
-            "ja": {"ja": "./apikey.html",  "en": "./en/apikey.html",  "in": "./in/apikey.html"},
-            "en": {"ja": "../apikey.html", "en": "./apikey.html",     "in": "../in/apikey.html"},
-            "in": {"ja": "../apikey.html", "en": "../en/apikey.html", "in": "./apikey.html"},
-        },
-        "nav_prefix": "./",
-        "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
-        "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
-    },
     # 予定表ドロッパーの使い方ガイド。3言語すべて生成（翻訳・スクショ完了済み）。
     # 画像は assets/guide-schedule/<code>/ を参照（各言語7枚）。
     "guide-schedule": {
@@ -252,12 +237,6 @@ TOOL2_LANGS = ["ja", "en", "in"]
 # トップから予定表ドロッパーのガイドへのパス（生成される言語だけリンクを出す）。
 # ガイドは各言語フォルダ内に生成されるので、どの言語も同階層の "./" を指す。
 GSCHED_PATH = {"ja": "./guide-schedule.html", "en": "./guide-schedule.html", "in": "./guide-schedule.html"}
-
-# APIキー案内ページへのパス（{{APIKEY_PATH}}）。
-# どのページも「その言語のフォルダ」に生成されるので、どこから見ても同階層でよい。
-# 言語をまたぐリンクにしないこと（en の読者を ja のページへ送らないため）。
-APIKEY_PATH = "./apikey.html"
-
 
 def build_tool2_guide_btn(code, strings):
     """予定表カードの「使い方ガイド」ボタン。その言語のガイドが無ければ出さない。"""
@@ -454,7 +433,6 @@ SEO_KEYS = {
     "guide-schedule": ("gsched.metaTitle", "gsched.metaDesc"),
     "guide-attend": ("gattend.metaTitle", "gattend.metaDesc"),
     "guide-entry": ("gentry.metaTitle", "gentry.metaDesc"),
-    "apikey":  ("apikey.metaTitle", "apikey.metaDesc"),
 }
 
 # HowTo 構造化データを出すページ:
@@ -466,7 +444,6 @@ HOWTO_PAGES = {
     # 出欠は主催者の準備までを含むので所要時間が長い（名簿を貼り付ける時間）
     "guide-attend": ("gattend", 5, "s3", "PT5M"),
     "guide-entry": ("gentry", 5, "s3", "PT3M"),
-    "apikey": ("apikey", 3, "steps", "PT3M"),
 }
 
 
@@ -637,7 +614,6 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{NAV_PREFIX}}", PAGES[page]["nav_prefix"])
     html = html.replace("{{PRIVACY_PATH}}", PAGES[page]["privacy_path"][code])
     html = html.replace("{{GUIDE_PATH}}", PAGES[page]["guide_path"][code])
-    html = html.replace("{{APIKEY_PATH}}", APIKEY_PATH)
     html = html.replace("{{LANG_DIR}}", code)   # 使い方ガイドの画像は言語別フォルダ assets/guide/<code>/
     html = html.replace("{{GA}}", GA_TAG)
     html = html.replace("{{SEO}}", build_seo_head(page, code, strings))
