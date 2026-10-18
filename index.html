@@ -214,7 +214,7 @@ section{padding:6rem 1.5rem;}
 .tool-tag{font-size:0.72rem;font-weight:700;color:var(--primary-dark);background:var(--primary-pale);border-radius:6px;padding:0.3em 0.8em;letter-spacing:0.03em;}
 
 /* ---------- シリーズカードの図（ツール本体の #tools-modal と同じ考え方） ----------
-   3本の違いは「1枚から何が、いくつ出てくるか」に尽きるので、図はそこだけを描く。
+   3本（イベント・予定表・申込書）の違いは「1枚から何が、いくつ出てくるか」に尽きるので、図はそこだけを描く。
    SVG ではなく HTML+CSS で組む。ラベルが普通のテキストなので辞書のキー（tool1.fig1 など）が
    そのまま効き、英語で文字幅が伸びても折り返せるため。
    配色はツール本体（ティール系）ではなく、この周知サイトの青系にそろえてある。 */
@@ -251,15 +251,6 @@ section{padding:6rem 1.5rem;}
 .tf-chk div{display:flex;align-items:center;gap:3px;}
 .tf-chk em{flex:none;width:6px;height:6px;border-radius:2px;background:var(--primary);}
 .tf-chk .tf-bar{flex:1;}
-.tf-chat{width:64px;background:#fff;border:2px solid var(--primary);border-radius:6px;
-  padding:6px 4px;display:flex;flex-direction:column;gap:3px;}
-.tf-chat u{display:block;height:7px;border-radius:4px;background:var(--primary-pale);width:74%;}
-.tf-chat u.r{margin-left:auto;background:rgba(0,200,150,0.35);width:62%;}
-.tf-bins{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
-.tf-bin{background:#fff;border:2px solid var(--primary-pale);border-radius:6px;
-  padding:4px 5px;font-size:0.58rem;font-weight:700;color:var(--primary-dark);white-space:nowrap;}
-.tf-bin.a{border-color:var(--green);}
-.tf-bin.b{border-color:var(--accent2);}
 /* 出欠の図の部品：名簿から選ぶ → 〇△×が集まる。
    棚を分けた下の .tool-attend で使う（出欠はカードを持たないため） */
 .tf-names{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
@@ -360,7 +351,7 @@ section{padding:6rem 1.5rem;}
 @media(max-width:640px){.ak-band{padding:1.5rem 1.2rem;}}
 
 /* ---------- 遊び場（モンスタードロッパー）の帯。日本語のトップだけに出る（build_play_band） ---------- */
-/* 道具の4本とは別の棚に見えるよう、青ではなくオレンジ系にする */
+/* 道具の3本とは別の棚に見えるよう、青ではなくオレンジ系にする */
 #play-band{background:linear-gradient(180deg,#fff6ec 0%,#ffffff 100%);}
 .play-card{
   background:var(--card);border:2px solid rgba(255,87,34,0.28);border-radius:16px;
@@ -636,59 +627,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         </div>
       </article>
 
-      <!-- ツール3：決めごとドロッパー。3言語とも公開済みなので出し分けが要らず、
-           ツール2のような build.py 側の生成関数は使わずここに直接書いている。
-           使い方ガイドはまだ無いのでガイドボタンは出さない。 -->
-      <article class="tool-card">
-        <span class="tool-status status-open">公開中</span>
-        <div class="tool-icon">✅</div>
-        <h3 class="tool-name">決めごとドロッパー</h3>
-        <p class="tool-desc">会話のスクリーンショットや打ち合わせメモ、議事録をドロップするだけで、決まったこと・まだ決まっていないこと・やること・記録に仕分け。「結局これ決まったんだっけ？」と読み返す時間がなくなります。手書きのノートやホワイトボードの写真も読み取れます。</p>
-        <div class="tool-fig" aria-hidden="true">
-          <div class="tf-col">
-            <div class="tf-chat">
-              <u></u><u class="r"></u><u></u><u class="r"></u>
-            </div>
-            <span class="tf-cap">会話・手書きメモ</span>
-          </div>
-          <span class="tf-arrow">&rarr;</span>
-          <div class="tf-col">
-            <div class="tf-bins">
-              <span class="tf-bin a">✅ 決まった</span>
-              <span class="tf-bin b">❓ 未決</span>
-              <span class="tf-bin a">📌 やること</span>
-              <span class="tf-bin">🗒 記録</span>
-            </div>
-            <span class="tf-cap">4つに仕分け</span>
-          </div>
-          <span class="tf-arrow">&rarr;</span>
-          <div class="tf-col">
-            <div class="tf-cal">
-              <div class="tf-cal-top"></div>
-              <div class="tf-cal-grid">
-                <s></s><s></s><s></s><s class="f1"></s><s></s><s></s><s></s>
-                <s></s><s class="f1"></s><s></s><s></s><s></s><s></s><s></s>
-                <s></s><s></s><s></s><s></s><s></s><s class="f1"></s><s></s>
-              </div>
-            </div>
-            <span class="tf-cap">期限だけ登録</span>
-          </div>
-        </div>
-        <div class="tool-tags">
-          <span class="tool-tag">ログイン不要で試せる</span>
-          <span class="tool-tag">会話のスクショから</span>
-          <span class="tool-tag">手書きメモ・議事録もOK</span>
-          <span class="tool-tag">決まったこと／未決を仕分け</span>
-          <span class="tool-tag">カレンダーにも登録できる</span>
-        </div>
-        <p class="tool-price">完全無料</p>
-        <div class="tool-actions">
-          <a class="btn-sm fill" href="https://app.dropper-tools.com/decide/" target="_blank" rel="noopener">使ってみる</a>
-          <a class="btn-sm line" href="./guide-decide.html">使い方ガイド</a>
-        </div>
-      </article>
-
-      <!-- 申込書ドロッパー（4本目）。申込書＋名簿 → 記入済み。
+      <!-- 申込書ドロッパー（3枚目）。申込書＋名簿 → 記入済み。
            図の要点は「空いていた欄が全部うまる」。ツール本体の #tools-modal と同じ考え方で、
            配色だけこのサイトの青系にしてある。 -->
       <article class="tool-card">
@@ -743,7 +682,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 
     </div>
 
-    <!-- ★ 出欠は**4枚目のカードにしない。ツール1の中にも置かない**（2026-09-06）。
+    <!-- ★ 出欠は**シリーズのカードにしない。ツール1の中にも置かない**（2026-09-06）。
          3本は「紙から出す」道具、出欠は「集める」道具で、**向きが逆**。同じ棚に並べると
          名前（ドロッパー＝ドロップする道具）が嘘になるので、**棚を分けて**下に置く。
          チラシなしでも単体で使えるようになったので、間借りの理由も無くなった。
@@ -813,7 +752,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </div>
 </section>
 
-<!-- 遊び場：道具の4本とは別の棚。文言は play.band* -->
+<!-- 遊び場：道具の3本とは別の棚。文言は play.band* -->
 <section id="play-band">
   <div class="section-inner">
     <p class="section-label">PLAYGROUND</p>
@@ -876,7 +815,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   <div class="section-inner">
     <p class="section-label">About</p>
     <h2 class="section-title">ドロッパー<span class="blue">とは</span></h2>
-    <p class="section-desc">「ファイルを放り込むだけで、面倒が片づく」。そんな小さな道具をドロッパーと名づけ、シリーズで作って公開しています。いまは4本あります。イベント文書から開催日・会場をGoogleカレンダーに入れて、LINE・SNSの案内文まで作るもの。年間行事予定表のように予定がたくさん並んだ1枚を、まとめて読み取るもの。会話のスクリーンショットや打ち合わせメモを、決まったこと・まだ決まっていないこと・やること・記録の4つに仕分けるもの。大会の参加申込書に、クラブの名簿から生年月日・年齢・住所を埋めるもの。大会の参加申込書に、クラブの名簿から生年月日・年齢・住所を埋めるもの。やり方はどれも同じ＝ドロップするだけなので、特定の団体や競技に限らず誰でも使えます。</p>
+    <p class="section-desc">「ファイルを放り込むだけで、面倒が片づく」。そんな小さな道具をドロッパーと名づけ、シリーズで作って公開しています。いまは3本あります。イベント文書から開催日・会場をGoogleカレンダーに入れて、LINE・SNSの案内文まで作るもの。年間行事予定表のように予定がたくさん並んだ1枚を、まとめて読み取るもの。大会の参加申込書に、クラブの名簿から生年月日・年齢・住所を埋めるもの。やり方はどれも同じ＝ドロップするだけなので、特定の団体や競技に限らず誰でも使えます。</p>
     <!-- ★ 出欠は段落を分ける。**「ドロップするだけ」と向きが逆**なので、
          3本と同じ文に混ぜると「4本目のドロッパー」に見えてしまう。
          シリーズのカードで棚を分けている（tools.shelf「もう一つの道具」）のと同じ扱い。 -->
@@ -915,13 +854,6 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         <span>
           <span class="picker-name">予定表ドロッパー</span>
           <span class="picker-line">1枚からまとめて何件も</span>
-        </span>
-      </a>
-      <a class="picker-item" href="https://app.dropper-tools.com/decide/" target="_blank" rel="noopener">
-        <span class="picker-emoji">✅</span>
-        <span>
-          <span class="picker-name">決めごとドロッパー</span>
-          <span class="picker-line">会話やメモから決まったこと</span>
         </span>
       </a>
 

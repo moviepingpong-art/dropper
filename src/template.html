@@ -189,7 +189,7 @@ section{padding:6rem 1.5rem;}
 .tool-tag{font-size:0.72rem;font-weight:700;color:var(--primary-dark);background:var(--primary-pale);border-radius:6px;padding:0.3em 0.8em;letter-spacing:0.03em;}
 
 /* ---------- シリーズカードの図（ツール本体の #tools-modal と同じ考え方） ----------
-   3本の違いは「1枚から何が、いくつ出てくるか」に尽きるので、図はそこだけを描く。
+   3本（イベント・予定表・申込書）の違いは「1枚から何が、いくつ出てくるか」に尽きるので、図はそこだけを描く。
    SVG ではなく HTML+CSS で組む。ラベルが普通のテキストなので辞書のキー（tool1.fig1 など）が
    そのまま効き、英語で文字幅が伸びても折り返せるため。
    配色はツール本体（ティール系）ではなく、この周知サイトの青系にそろえてある。 */
@@ -226,15 +226,6 @@ section{padding:6rem 1.5rem;}
 .tf-chk div{display:flex;align-items:center;gap:3px;}
 .tf-chk em{flex:none;width:6px;height:6px;border-radius:2px;background:var(--primary);}
 .tf-chk .tf-bar{flex:1;}
-.tf-chat{width:64px;background:#fff;border:2px solid var(--primary);border-radius:6px;
-  padding:6px 4px;display:flex;flex-direction:column;gap:3px;}
-.tf-chat u{display:block;height:7px;border-radius:4px;background:var(--primary-pale);width:74%;}
-.tf-chat u.r{margin-left:auto;background:rgba(0,200,150,0.35);width:62%;}
-.tf-bins{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
-.tf-bin{background:#fff;border:2px solid var(--primary-pale);border-radius:6px;
-  padding:4px 5px;font-size:0.58rem;font-weight:700;color:var(--primary-dark);white-space:nowrap;}
-.tf-bin.a{border-color:var(--green);}
-.tf-bin.b{border-color:var(--accent2);}
 /* 出欠の図の部品：名簿から選ぶ → 〇△×が集まる。
    棚を分けた下の .tool-attend で使う（出欠はカードを持たないため） */
 .tf-names{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
@@ -335,7 +326,7 @@ section{padding:6rem 1.5rem;}
 @media(max-width:640px){.ak-band{padding:1.5rem 1.2rem;}}
 
 /* ---------- 遊び場（モンスタードロッパー）の帯。日本語のトップだけに出る（build_play_band） ---------- */
-/* 道具の4本とは別の棚に見えるよう、青ではなくオレンジ系にする */
+/* 道具の3本とは別の棚に見えるよう、青ではなくオレンジ系にする */
 #play-band{background:linear-gradient(180deg,#fff6ec 0%,#ffffff 100%);}
 .play-card{
   background:var(--card);border:2px solid rgba(255,87,34,0.28);border-radius:16px;
@@ -542,58 +533,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
            掲載言語の出し分けは build.py の build_tool2_card() / TOOL2_LANGS -->
       {{TOOL2_CARD}}
 
-      <!-- ツール3：決めごとドロッパー。3言語とも公開済みなので出し分けが要らず、
-           ツール2のような build.py 側の生成関数は使わずここに直接書いている。
-           使い方ガイドはまだ無いのでガイドボタンは出さない。 -->
-      <article class="tool-card">
-        <span class="tool-status status-open">{{tool3.status}}</span>
-        <div class="tool-icon">✅</div>
-        <h3 class="tool-name">{{tool3.name}}</h3>
-        <p class="tool-desc">{{tool3.desc}}</p>
-        <div class="tool-fig" aria-hidden="true">
-          <div class="tf-col">
-            <div class="tf-chat">
-              <u></u><u class="r"></u><u></u><u class="r"></u>
-            </div>
-            <span class="tf-cap">{{tool3.fig1}}</span>
-          </div>
-          <span class="tf-arrow">&rarr;</span>
-          <div class="tf-col">
-            <div class="tf-bins">
-              <span class="tf-bin a">{{tool3.bin1}}</span>
-              <span class="tf-bin b">{{tool3.bin2}}</span>
-              <span class="tf-bin a">{{tool3.bin3}}</span>
-              <span class="tf-bin">{{tool3.bin4}}</span>
-            </div>
-            <span class="tf-cap">{{tool3.fig2}}</span>
-          </div>
-          <span class="tf-arrow">&rarr;</span>
-          <div class="tf-col">
-            <div class="tf-cal">
-              <div class="tf-cal-top"></div>
-              <div class="tf-cal-grid">
-                <s></s><s></s><s></s><s class="f1"></s><s></s><s></s><s></s>
-                <s></s><s class="f1"></s><s></s><s></s><s></s><s></s><s></s>
-                <s></s><s></s><s></s><s></s><s></s><s class="f1"></s><s></s>
-              </div>
-            </div>
-            <span class="tf-cap">{{tool3.fig3}}</span>
-          </div>
-        </div>
-        <div class="tool-tags">
-          <span class="tool-tag">{{tool3.tag1}}</span>
-          <span class="tool-tag">{{tool3.tag2}}</span>
-          <span class="tool-tag">{{tool3.tag3}}</span>
-          <span class="tool-tag">{{tool3.tag4}}</span>
-          <span class="tool-tag">{{tool3.tag5}}</span>
-        </div>
-        <p class="tool-price">{{tool3.price}}</p>
-        <div class="tool-actions">
-          <a class="btn-sm fill" href="{{tool3.url}}" target="_blank" rel="noopener">{{tool3.btn1}}</a>{{TOOL3_GUIDE_BTN}}
-        </div>
-      </article>
-
-      <!-- 申込書ドロッパー（4本目）。申込書＋名簿 → 記入済み。
+      <!-- 申込書ドロッパー（3枚目）。申込書＋名簿 → 記入済み。
            図の要点は「空いていた欄が全部うまる」。ツール本体の #tools-modal と同じ考え方で、
            配色だけこのサイトの青系にしてある。 -->
       <article class="tool-card">
@@ -647,7 +587,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 
     </div>
 
-    <!-- ★ 出欠は**4枚目のカードにしない。ツール1の中にも置かない**（2026-09-06）。
+    <!-- ★ 出欠は**シリーズのカードにしない。ツール1の中にも置かない**（2026-09-06）。
          3本は「紙から出す」道具、出欠は「集める」道具で、**向きが逆**。同じ棚に並べると
          名前（ドロッパー＝ドロップする道具）が嘘になるので、**棚を分けて**下に置く。
          チラシなしでも単体で使えるようになったので、間借りの理由も無くなった。
@@ -803,13 +743,6 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
         <span>
           <span class="picker-name">{{tool2.name}}</span>
           <span class="picker-line">{{picker.t2line}}</span>
-        </span>
-      </a>
-      <a class="picker-item" href="{{tool3.url}}" target="_blank" rel="noopener">
-        <span class="picker-emoji">✅</span>
-        <span>
-          <span class="picker-name">{{tool3.name}}</span>
-          <span class="picker-line">{{picker.t3line}}</span>
         </span>
       </a>
 

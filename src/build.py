@@ -130,22 +130,6 @@ PAGES = {
         # イベントドロッパー側のガイドへのリンク用
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
-    # 決めごとドロッパーの使い方ガイド。3言語すべて生成（翻訳・スクショ完了済み）。
-    # 画像は assets/guide-decide/<code>/ を参照（各言語7枚）。en と in は画面の文言が
-    # 別物（Padhein / Jo tay hua など）なので、スクショも辞書も言語ごとに分けてある。
-    "guide-decide": {
-        "template": "guide-decide-template.html",
-        "filename": "guide-decide.html",
-        "langs": ["ja", "en", "in"],
-        "switch_paths": {
-            "ja": {"ja": "./guide-decide.html",  "en": "./en/guide-decide.html",  "in": "./in/guide-decide.html"},
-            "en": {"ja": "../guide-decide.html", "en": "./guide-decide.html",     "in": "../in/guide-decide.html"},
-            "in": {"ja": "../guide-decide.html", "en": "../en/guide-decide.html", "in": "./guide-decide.html"},
-        },
-        "nav_prefix": "./",
-        "privacy_path": {"ja": "./privacy.html", "en": "./privacy.html", "in": "./privacy.html"},
-        "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
-    },
     # 出欠システムの使い方ガイド。2026-09-09 新設、同日に3言語へ。
     # ★ **スクリーンショットは日本語だけ**（shot_langs）。出欠システムの画面は
     #   en/in にも訳があるので、日本語の画面を英語のページに並べるわけにはいかない。
@@ -171,7 +155,7 @@ PAGES = {
         "guide_path": {"ja": "./guide.html", "en": "./guide.html", "in": "./guide.html"},
     },
     # 申込書ドロッパーの使い方ガイド。2026-09-29 新設。
-    # ★ **日本語だけ**。道具そのものが日本語のみ（dropper-app の決めごと。日本の大会の Excel 様式が相手のため）。
+    # ★ **日本語だけ**。道具そのものが日本語のみ（日本の大会の Excel 様式が相手のため）。
     #   en / in は作らない。言語切替は押せないラベルになる（build_switcher）。
     #   いちばん上に使い方の動画（YouTube・2分28秒）。**押すまで YouTube と通信しない**（テンプレートの script）。
     #   画像は assets/guide-entry/ja/（動画の撮影と同じ画面。人・団体・大会はすべて架空）
@@ -283,22 +267,8 @@ def build_tool2_guide_btn(code, strings):
     return f'\n          <a class="btn-sm line" href="{GSCHED_PATH[code]}">{label}</a>'
 
 
-# 決めごとドロッパーのガイドへのパス（{{TOOL3_GUIDE_BTN}}）。
-# ガイドは各言語フォルダ内に生成されるので、どの言語も同階層の "./" でよい。
-GDECIDE_PATH = {"ja": "./guide-decide.html", "en": "./guide-decide.html", "in": "./guide-decide.html"}
-
-
-def build_tool3_guide_btn(code, strings):
-    """決めごとカードの「使い方ガイド」ボタン。
-    ガイドは現在 ja のみ生成しているので、en/in ではボタンごと出さない
-    （出すと存在しないURLへのリンクになる）。"""
-    if code not in page_langs("guide-decide"):
-        return ""
-    label = strings.get("tool3.btn2", "")
-    return f'\n          <a class="btn-sm line" href="{GDECIDE_PATH[code]}">{label}</a>'
-
-
-# 申込書ドロッパーのガイドへのパス（{{TOOL4_GUIDE_BTN}}）。ガイドは日本語だけ（PAGES の guide-entry）。
+# 申込書ドロッパーのガイドへのパス（{{TOOL4_GUIDE_BTN}}）。
+# ★ ツール3（決めごとドロッパー）は 2026-10-18 に廃止した。tool4 の名前はそのまま（辞書のキーを付け替えない）。ガイドは日本語だけ（PAGES の guide-entry）。
 GENTRY_PATH = {"ja": "./guide-entry.html"}
 
 
@@ -319,14 +289,14 @@ PLAY_PATH = {"ja": "./play/monster.html", "en": "./play/monster.html", "in": "./
 
 
 def build_play_band(page, code, strings):
-    """トップの「ドロッパーの遊び場」の帯。道具の4本とは別の棚に置く。
+    """トップの「ドロッパーの遊び場」の帯。道具の3本とは別の棚に置く。
     PLAY_PATH に無い言語では帯ごと出さない。"""
     if page != "index" or code not in PLAY_PATH:
         return ""
     t = lambda k: strings.get(k, "")
     tags = "".join(f'<span class="play-tag">{t(f"play.bandTag{i}")}</span>' for i in range(1, 5))
     return f"""
-<!-- 遊び場：道具の4本とは別の棚。文言は play.band* -->
+<!-- 遊び場：道具の3本とは別の棚。文言は play.band* -->
 <section id="play-band">
   <div class="section-inner">
     <p class="section-label">{t("play.bandLabel")}</p>
@@ -482,7 +452,6 @@ SEO_KEYS = {
     "privacy": ("privacy.metaTitle", "privacy.metaDesc"),
     "guide":   ("guide.metaTitle", "guide.metaDesc"),
     "guide-schedule": ("gsched.metaTitle", "gsched.metaDesc"),
-    "guide-decide": ("gdecide.metaTitle", "gdecide.metaDesc"),
     "guide-attend": ("gattend.metaTitle", "gattend.metaDesc"),
     "guide-entry": ("gentry.metaTitle", "gentry.metaDesc"),
     "apikey":  ("apikey.metaTitle", "apikey.metaDesc"),
@@ -494,7 +463,6 @@ SEO_KEYS = {
 HOWTO_PAGES = {
     "guide": ("guide", 4, "s3", "PT2M"),
     "guide-schedule": ("gsched", 5, "s3", "PT2M"),
-    "guide-decide": ("gdecide", 5, "s3", "PT2M"),
     # 出欠は主催者の準備までを含むので所要時間が長い（名簿を貼り付ける時間）
     "guide-attend": ("gattend", 5, "s3", "PT5M"),
     "guide-entry": ("gentry", 5, "s3", "PT3M"),
@@ -676,7 +644,6 @@ def render(template, page, code, ja, langdict, hreflang):
     html = html.replace("{{HITS_PATH}}", "" if code == "ja" else "/" + code)   # 訪問者カウンターを言語別に分ける(hits.shはパス別カウント)
     html = html.replace("{{GUIDE_BTN}}", build_guide_btn(page, code, strings))
     html = html.replace("{{TOOL2_CARD}}", build_tool2_card(code, strings))
-    html = html.replace("{{TOOL3_GUIDE_BTN}}", build_tool3_guide_btn(code, strings))
     html = html.replace("{{TOOL4_GUIDE_BTN}}", build_tool4_guide_btn(code, strings))
     html = html.replace("{{ATTEND_GUIDE_BTN}}", build_attend_guide_btn(code, strings))
     html = html.replace("{{PLAY_BAND}}", build_play_band(page, code, strings))
