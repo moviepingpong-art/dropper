@@ -125,7 +125,10 @@ def build():
 def main():
     out = build()
     if '--check' in sys.argv:
-        stale = [p for p, b in out.items() if not p.exists() or p.read_bytes() != b]
+        # 改行の違い（Windows の core.autocrlf=true で取り出すと CRLF になる）は見ない。
+        # git が保存する中身は LF なので、ここで食い違いと見ると Windows でコミットのたびに止まる
+        lf = lambda b: b.replace(b'\r\n', b'\n')
+        stale = [p for p, b in out.items() if not p.exists() or lf(p.read_bytes()) != lf(b)]
         for p in stale:
             print('  ' + p.relative_to(ROOT).as_posix())
         sys.exit(1 if stale else 0)
