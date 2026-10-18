@@ -104,7 +104,7 @@ nav a:hover::after{transform:scaleX(1);}
 .hero-bg-shape.s2{width:500px;height:500px;background:var(--accent2);opacity:0.08;bottom:-150px;left:-150px;}
 .hero-bg-shape.s3{width:300px;height:300px;background:var(--accent);opacity:0.06;top:40%;left:25%;}
 .hero-content{text-align:center;z-index:1;animation:fadeUp 0.9s ease both;padding:0 1.5rem;display:flex;flex-direction:column;align-items:center;}
-/* 一番上の「完全無料」。帯の中にも大きく出しているが、トップに来て最初に目に入る位置にも置く。 */
+/* 一番上の「完全無料」。トップに来て最初に目に入る位置に置く（下にあったAI無料枠の帯は 2026-10-18 に外した）。 */
 .hero-free-badge{
   display:inline-block;background:var(--green);color:#fff;
   font-size:clamp(0.9rem,3.4vw,1.2rem);font-weight:700;letter-spacing:0.06em;
@@ -363,29 +363,6 @@ section{padding:6rem 1.5rem;}
 .play-tag{font-size:0.76rem;font-weight:700;color:#c2410c;background:rgba(255,87,34,0.12);border-radius:50px;padding:0.35em 0.95em;white-space:nowrap;}
 @media(max-width:640px){.play-card{padding:1.5rem 1.2rem;}}
 
-/* hero直下のAI無料枠の帯。トップで最初に目に入る大きなキャッチなので、
-   下の #apikey-band より一段大きく見せる。改行は辞書側の <br> で入る。 */
-#idle-band{background:linear-gradient(180deg,#effcf6 0%,#ffffff 100%);padding:3rem 0 1rem;}
-.idle-card{
-  background:var(--card);border:2px solid rgba(0,200,150,0.35);border-radius:16px;
-  padding:2.2rem 2rem;box-shadow:0 6px 24px rgba(0,200,150,0.12);
-}
-/* 「完全無料」。ヒーローの小さなバッジから、この帯の中の見出しへ移した。
-   キャッチより一段大きくして、カードに入って最初に目に入るようにする。 */
-.idle-free{display:inline-block;background:var(--green);color:#fff;
-  font-family:'Oswald',sans-serif;font-size:clamp(1.7rem,5.6vw,2.8rem);font-weight:700;
-  letter-spacing:0.04em;line-height:1.2;padding:0.3em 0.9em;border-radius:12px;
-  margin-bottom:1rem;box-shadow:0 6px 20px rgba(0,200,150,0.35);}
-.idle-catch{font-family:'Oswald',sans-serif;font-size:clamp(1.5rem,5vw,2.4rem);font-weight:700;
-  color:var(--text-dark);line-height:1.35;letter-spacing:0.02em;margin-bottom:0.9rem;}
-.idle-sub{font-size:0.95rem;color:var(--text-mid);line-height:1.95;}
-.idle-badges{display:flex;flex-wrap:wrap;gap:0.5rem;margin:1.2rem 0 1.4rem;}
-.idle-badge{font-size:0.78rem;font-weight:700;color:#00936e;background:rgba(0,200,150,0.14);
-  border-radius:50px;padding:0.38em 1em;white-space:nowrap;}
-.idle-actions{display:flex;flex-wrap:wrap;align-items:center;gap:0.9rem;}
-.idle-note{font-size:0.76rem;color:var(--text-light);line-height:1.8;}
-@media(max-width:640px){#idle-band{padding:2.2rem 0 0.5rem;}.idle-card{padding:1.6rem 1.2rem;}}
-
 /* LINE友だち追加バンド（日本語トップのみ。build_line_cta が出力）。LINE緑を主役にする */
 #line-band{padding:2.6rem 0 0.5rem;}
 .line-card{background:var(--card);border:2px solid rgba(6,199,85,0.35);border-radius:16px;
@@ -491,29 +468,6 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </div>
 </section>
 
-
-<!-- hero直下：Googleアカウントに眠っているAIの無料枠を、この道具に回してもらう帯。
-     下の #apikey-band（コピペはもう終わり）とは役割が違う。あちらは詳しい説明への導線、
-     こちらはトップで最初に目に入る大きなキャッチ。
-     idle.note（キー無しでも使える）は外さないこと。AIモードは任意である。 -->
-<section id="idle-band">
-  <div class="section-inner">
-    <div class="idle-card">
-      <p class="idle-free">完全無料</p>
-      <p class="idle-catch">眠ったままのAI無料枠、<br>ここで使いませんか。</p>
-      <p class="idle-sub">Googleアカウントには、毎日戻ってくるAIの無料枠があります。使わなければ、そのまま消えるだけ。クレジットカード不要・0円・約3分で、ドロッパーの読み取りに回せます。</p>
-      <div class="idle-badges">
-        <span class="idle-badge">💳 クレカ登録なし</span>
-        <span class="idle-badge">🆓 無料枠内なら0円</span>
-        <span class="idle-badge">⏱ 取得は約3分</span>
-      </div>
-      <div class="idle-actions">
-        <a class="btn-sm fill" href="./apikey.html">AI無料枠の使い方を見る</a>
-        <p class="idle-note">※ キーが無くても、ドロッパーはそのまま使えます。AIモードは任意です。</p>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- ツール一覧 -->
 <section id="tools">
