@@ -1,4 +1,18 @@
-# monster-ai — モンスタードロッパーの AI 中継
+# monster-ai — AI 中継（モンスタードロッパー・イベントドロッパー・予定表ドロッパー）
+
+道は3本。OpenAI のキーと、その日の全体の上限（`DAILY_TOKEN_LIMIT`）は3本で共通。
+
+| 道 | 受け付ける生成元 | 受け取るもの | 1人1日 |
+|---|---|---|---|
+| `/monster` | `ALLOWED_ORIGINS`（dropper-tools.com） | JSON（`kind`・`lang`・縮めた画像） | `PER_IP_DAILY` |
+| `/event` | `TOOL_ORIGINS`（app.dropper-tools.com） | URL に `lang`・`type`・`mime`、本文にファイル（PDF・画像）の base64 | `PER_IP_EVENT` |
+| `/schedule` | `TOOL_ORIGINS` | URL に `lang`・`fy`（年度、無くてよい）・`mime`、本文に base64 | `PER_IP_SCHEDULE` |
+
+- 道具2本の頼み文は `tool-prompts.js` にある（ツールのページは頼み文を持たない）。**直したら出し直す**
+- 本文は文字として読まず、バイトのまま OpenAI への頼みに挟む。だから base64 の文字以外が1つでもあれば断る（JSON に別の指示を差し込ませない）
+- イベントはファイルそのものを読ませる。Google ドライブの OCR の文字は、Google の Limited Use の決まりで、学習に使われる先へ渡せないため
+
+以下は、もとの遊び場だけだった頃の説明（今も遊び場には当てはまる）。
 
 来てくれた人が API キーを入れなくても、モンスタードロッパーで AI が使えるようにするための中継。
 重吉さんの OpenAI キーは **Cloudflare のシークレットにだけ**置く（このリポジトリにもページにも書かない）。
