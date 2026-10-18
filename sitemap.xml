@@ -7,7 +7,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/"/>
     <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/"/>
-    <lastmod>2026-08-05</lastmod>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -17,7 +17,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/"/>
     <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/"/>
-    <lastmod>2026-08-05</lastmod>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -27,7 +27,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/"/>
     <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/"/>
-    <lastmod>2026-08-05</lastmod>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -92,42 +92,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://dropper-tools.com/guide-decide.html</loc>
-    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/guide-decide.html"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/guide-decide.html"/>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/guide-decide.html"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/guide-decide.html"/>
-    <lastmod>2026-08-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://dropper-tools.com/en/guide-decide.html</loc>
-    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/guide-decide.html"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/guide-decide.html"/>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/guide-decide.html"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/guide-decide.html"/>
-    <lastmod>2026-08-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://dropper-tools.com/in/guide-decide.html</loc>
-    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/guide-decide.html"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/guide-decide.html"/>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/guide-decide.html"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/guide-decide.html"/>
-    <lastmod>2026-08-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://dropper-tools.com/apikey.html</loc>
     <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/apikey.html"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/apikey.html"/>
     <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/apikey.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/apikey.html"/>
-    <lastmod>2026-07-30</lastmod>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -137,7 +107,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/apikey.html"/>
     <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/apikey.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/apikey.html"/>
-    <lastmod>2026-07-30</lastmod>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -147,7 +117,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/apikey.html"/>
     <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/apikey.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/apikey.html"/>
-    <lastmod>2026-07-30</lastmod>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -157,7 +127,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/privacy.html"/>
     <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/privacy.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/privacy.html"/>
-    <lastmod>2026-07-19</lastmod>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
@@ -167,7 +137,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/privacy.html"/>
     <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/privacy.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/privacy.html"/>
-    <lastmod>2026-07-19</lastmod>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
@@ -177,7 +147,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/privacy.html"/>
     <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/privacy.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/privacy.html"/>
-    <lastmod>2026-07-19</lastmod>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

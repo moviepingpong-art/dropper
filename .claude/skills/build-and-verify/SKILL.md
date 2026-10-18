@@ -26,17 +26,17 @@ python3 src/build.py
 
 ## 手順2：検証
 
-### 2-1. 22ページ生成されたか（7ページ × 3言語 ＋ 日本語だけのガイド1ページ）
+### 2-1. 19ページ生成されたか（6ページ × 3言語 ＋ 日本語だけのガイド1ページ）
 
 | 場所 | ファイル |
 |---|---|
-| 直下 | index.html / guide.html / guide-schedule.html / guide-decide.html / guide-attend.html / privacy.html / apikey.html / **guide-entry.html** |
-| `en/` | 同じ7ファイル（guide-entry.html は無い） |
-| `in/` | 同じ7ファイル（guide-entry.html は無い） |
+| 直下 | index.html / guide.html / guide-schedule.html / guide-attend.html / privacy.html / apikey.html / **guide-entry.html** |
+| `en/` | 同じ6ファイル（guide-entry.html は無い） |
+| `in/` | 同じ6ファイル（guide-entry.html は無い） |
 
 ページを増やすときは `build.py` の `PAGES` に足す。**ここの表と、この見出しの枚数も直す。**
 
-- `guide-decide.html` — 決めごとドロッパーのガイド（2026-08 追加）
+- （`guide-decide.html` は 2026-10-18 に道具ごと廃止。古いURLはわざと404）
 - `guide-attend.html` — 出欠システムの使い方（2026-09-08 追加。
   **画像は ja だけ**。`build.py` の `shot_langs` で en / in からは figure ごと落としている）
 - `guide-entry.html` — 申込書ドロッパーの使い方（2026-09-29 追加）。**ページごと ja だけ**（`langs: ["ja"]`）。
