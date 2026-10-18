@@ -1,4 +1,4 @@
-# モンスタードロッパーの AI 中継（重吉さんの OpenAI キーをここにだけ置く）
+# AI 中継（モンスタードロッパー・イベントドロッパー・予定表ドロッパー。重吉さんの OpenAI キーをここにだけ置く）
 # 出し方は README.md。キー（OPENAI_API_KEY）と IP_SALT は `wrangler secret put` で登録し、ここには書かない
 name = "monster-ai"
 main = "worker.js"
@@ -25,3 +25,10 @@ RESERVE_TOKENS = "20000"
 # 接続元1つあたり、1日に読ませてよい枚数
 PER_IP_DAILY = "20"
 ALLOWED_ORIGINS = "https://dropper-tools.com"
+# イベントドロッパー・予定表ドロッパー（/event・/schedule）。全体の上限は遊び場と共通
+TOOL_ORIGINS = "https://app.dropper-tools.com"
+PER_IP_EVENT = "20"
+PER_IP_SCHEDULE = "10"
+# PDF は1ページごとに絵として読まれ、予定表は答えも長いので、遊び場より多く見込む
+RESERVE_EVENT = "40000"
+RESERVE_SCHEDULE = "100000"
