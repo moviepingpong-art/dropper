@@ -314,14 +314,6 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 .guide-faq a{color:var(--primary);text-decoration:none;}
 .guide-faq a:hover{text-decoration:underline;}
 
-/* ---------- APIキー案内ページへの誘導 ---------- */
-.ak-link-box{
-  background:var(--primary-pale);border-radius:10px;padding:1.05rem 1.2rem;margin:1.2rem 0;
-  font-size:0.9rem;color:var(--text-mid);line-height:1.9;
-}
-.ak-link-box a{display:inline-block;margin-top:0.35rem;color:var(--primary);font-weight:700;text-decoration:none;}
-.ak-link-box a:hover{text-decoration:underline;}
-
 /* CTA */
 .guide-cta{text-align:center;margin:2.8rem 0 1rem;}
 .guide-cta .btn-sm{display:inline-block;}
@@ -409,7 +401,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <tbody>
         <tr><td>Googleアカウント</td><td>予定を登録したいカレンダーの持ち主のアカウント。</td></tr>
         <tr><td>予定表ファイル</td><td>PDF または 画像（JPEG・PNG）。</td></tr>
-        <tr><td>料金</td><td>無料です。AIモードを使うときだけ、ご自身のGemini APIキーが必要です（こちらも無料枠があります）。</td></tr>
+        <tr><td>料金</td><td>無料です。AIモードも、キーや登録なしで使えます（1人1日10枚まで）。</td></tr>
       </tbody>
     </table>
   </section>
@@ -475,7 +467,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       </thead>
       <tbody>
         <tr><td>通常モード（AIなし）</td><td>1行に1つずつ予定が並ぶ表形式。</td><td>追加設定なし・無料。</td></tr>
-        <tr><td>AIモード</td><td>マス目のカレンダー形式や、デザインされた予定表。</td><td>ご自身のGemini APIキー。</td></tr>
+        <tr><td>AIモード</td><td>マス目のカレンダー形式や、デザインされた予定表。</td><td>設定は要りません（1人1日10枚まで）。</td></tr>
       </tbody>
     </table>
     <div class="guide-note">⚠️ 学校の年間行事予定表のような「マス目のカレンダー」は、通常モードでは読み取れません。文字にした時点で、日付と行事名の対応が失われてしまうためです。この形式は必ずAIモードをお使いください。</div>
@@ -483,24 +475,9 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <img src="/assets/guide-schedule/ja/ai-choice.png" alt="「AIで読み取り精度を上げますか？」と表示された選択画面" loading="lazy">
       <figcaption>AIを使うかどうかは、いつでも選べます。</figcaption>
     </figure>
-
-    <h3 class="guide-sub">Gemini APIキーの取り方</h3>
-    <ol class="guide-ol">
-      <li>「AIを使う（キーを入力）」を押します。</li>
-      <li>「Google AI Studio を開く」からキーを作成します（Googleアカウントがあれば数分・無料）。</li>
-      <li>作成したキーをコピーして、入力欄に貼り付けます。</li>
-      <li>「保存して使う」を押します。</li>
-    </ol>
-    <figure class="guide-shot">
-      <img src="/assets/guide-schedule/ja/ai-key-modal.png" alt="Gemini APIキーの入力欄が表示された設定画面" loading="lazy">
-      <figcaption>キーは端末内だけに保存され、当方のサーバーには送信も保存もされません。</figcaption>
-    </figure>
-    <div class="guide-safe">🔒 キーはお使いの端末内（ブラウザ）だけに保存されます。当方はサーバーを持たないため、キーを受け取ることはありません。Gemini APIには無料枠があり、1日およそ1,500件まで無料で使えます。</div>
-    <div class="guide-note">⚠️ 無料枠では、送信内容がGoogleのサービス改善に利用される場合があります。機密文書はドロップしないでください。</div>
-    <p>通常モードで読み取れない予定があったときは、一覧の上にある「AIで読み直す」を押すと、同じファイルをAIで読み直せます（APIキーが必要です）。</p>
-    <div class="ak-link-box">APIキーの取り方・安全性・お金の心配がいらない理由は、専用ページで詳しく説明しています。<br>
-      <a href="./apikey.html">Gemini APIキーの取り方（クレカ不要・3分・0円）→</a>
-    </div>
+    <div class="guide-safe">📤 予定表のファイルは、当方の中継（何も保存しません）を通して OpenAI のAIへ送ります。Googleドライブで読み取った文字は送りません。</div>
+    <div class="guide-note">⚠️ 送った内容は、OpenAI がAIの改良に使うことがあります（無料で使える条件です）。個人の情報が入った文書はドロップしないでください。</div>
+    <p>通常モードで読み取れない予定があったときは、一覧の上にある「AIで読み直す」を押すと、同じファイルをAIで読み直せます（キーは要りません）。</p>
   </section>
 
   <!-- 5. 読み取り結果の見かた -->
@@ -530,7 +507,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <dt>読み取りが間違っていました</dt><dd>一覧の上で直接修正してから登録できます。修正する箇所が多いときは、AIモードで読み直すと改善する場合があります。</dd>
       <dt>同じ予定表をもう一度ドロップしたら、二重になりますか</dt><dd>登録できた行はチェックが外れるため、続けて押した場合は二重になりません。ただし、ページを開き直して最初から登録し直すと同じ予定が増えます。カレンダー側でご確認ください。</dd>
       <dt>LINE・SNSの案内文は作れますか</dt><dd>予定表ドロッパーにはこの機能はありません。案内文の作成は<a href="./guide.html">イベントドロッパー</a>の機能です。</dd>
-      <dt>データはどこかに送られますか</dt><dd>いいえ。予定表ドロッパーはサーバーを持ちません。AIモードを使う場合のみ、予定表のファイルがあなた自身のAPIキーでGeminiに送られます。詳しくは<a href="./privacy.html">プライバシーポリシー</a>をご覧ください。</dd>
+      <dt>データはどこかに送られますか</dt><dd>予定表ドロッパー自体はサーバーを持たず、何も保存しません。AIモードを使う場合のみ、予定表のファイルが当方の中継（何も保存しません）を通して OpenAI に送られます。詳しくは<a href="./privacy.html">プライバシーポリシー</a>をご覧ください。</dd>
     </dl>
   </section>
 

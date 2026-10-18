@@ -259,7 +259,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 
   <div class="legal-head">
     <h1>Privacy <span class="blue">Policy</span></h1>
-    <p class="legal-date">Effective: 15 July 2026 / Last updated: 19 July 2026</p>
+    <p class="legal-date">Effective: 15 July 2026 / Last updated: 18 October 2026</p>
   </div>
 
   <p class="legal-lead">DROPPER aapke browser mein chalta hai. Event, Schedule aur Entry Forms ke liye hum aapka data kabhi collect, store ya transmit nahi karte. <strong>Attendance tool akela exception hai - uska data hum rakhte hain</strong> (uska alag section dekhein).</p>
@@ -299,14 +299,15 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </section>
 
   <section class="legal-sec">
-    <h2>4. AI feature (Gemini) ke baare mein</h2>
-    <div class="legal-note">AI feature use karne par, aapke event document ya schedule se padha gaya text — ya file khud (PDF ya image) — Google ke Gemini API ko bheja jaata hai. Ye feature use karna hai ya nahi, ye poori tarah aapki choice hai.</div>
+    <h2>4. AI feature ke baare mein</h2>
+    <div class="legal-note">AI feature use karne par, aapki drop ki hui event document ya schedule ki file (PDF ya image) jaisi hai waisi hamare relay server se hokar OpenAI (USA) ke AI ko bheji jaati hai. Ye feature use karna hai ya nahi, ye poori tarah aapki choice hai.</div>
     <ul>
       <li>AI use karna opt-in hai. Sign in ke baad ek dialog aapse "AI use karein" ya "AI use na karein" chunne ko kehta hai.</li>
-      <li>Sirf tab jab aap "AI use karein" chunte hain, event document ya schedule ka text — ya file khud (PDF ya image) — Google ke Gemini API ko bheja jaata hai.</li>
-      <li>Request aapki khud ki li hui API key use karti hai. Key sirf aapke device par (browser ke localStorage mein) store hoti hai aur hamein kabhi nahi bheji jaati.</li>
-      <li>Gemini API ko bheje gaye data ka handling Google ki apni policies ke hisaab se hota hai.</li>
-      <li>Agar aap "AI use na karein" chunte hain, to koi bhi text aapke browser aur aapke apne Google account ke bahar nahi jaata.</li>
+      <li>Sirf tab jab aap "AI use karein" chunte hain, file (image ho to chhoti karke) hamare relay server (Cloudflare Workers) se hokar OpenAI ke API ko bheji jaati hai. API key hum dete hain; aapko key daalne ki zaroorat nahin. <strong>Relay server na file save karta hai na AI ka jawab.</strong></li>
+      <li>Apna kharcha ek tay seema mein rakhne ke liye hum OpenAI ka free hissa use karte hain, jo is shart par milta hai ki OpenAI bheja gaya content apne AI ko behtar banane mein use kar sakta hai. <strong>Isliye bheji gayi files OpenAI apne AI ko behtar banane mein use kar sakta hai.</strong> Personal information wale documents use na karein.</li>
+      <li><strong>Google user data (Google Drive ka padha hua text, aur aapke Google Calendar ya Drive ka content) AI ko kabhi nahi bheja jaata.</strong> Sirf wahi file bheji jaati hai jo aapne apne device se drop ki.</li>
+      <li>Zyada use rokne ke liye, relay server sirf us din ka use aur connection ki jaankari ko chhota karke banaye gaye (wapas na badle ja sakne wale) nishan ke hisaab se ginti rakhta hai, aur agle din mita deta hai (ek vyakti din mein 20 event files aur 10 schedules tak).</li>
+      <li>Agar aap "AI use na karein" chunte hain, to AI ko kuch bhi nahi bheja jaata.</li>
     </ul>
   </section>
 
@@ -314,8 +315,8 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
     <h2>5. Data Sharing aur Third-Party Disclosure</h2>
     <p>DROPPER aapke Google user data ko hamare ya kisi third party ko na bechta hai, na share karta hai, na transfer karta hai. Google user data hum tak pahunchta hi nahi. Attendance tool ka data bhi kisi third party ko na becha jaata hai, na share kiya jaata hai.</p>
     <ul>
-      <li>Sirf ek exception hai — jab aap "Use AI" choose karte hain. Tabhi event document ya schedule se padha gaya text — ya file khud (PDF ya image) — aapke apne API key se Google ke Gemini API ko bheja jaata hai. Yeh aapke choice par, aapke aur Google ke beech direct transmission hai, hamare through nahi jaata.</li>
-      <li>Gemini API ko bheje gaye data ka handling <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google ki Privacy Policy</a> ke according hota hai.</li>
+      <li>Sirf ek exception hai — jab aap "Use AI" choose karte hain. Tabhi aapki drop ki hui file (PDF ya image) hamare relay server se hokar OpenAI ke API ko bheji jaati hai (section 4). Tab bhi Google user data AI ko nahi bheja jaata.</li>
+      <li>OpenAI ko bheje gaye data ka handling <a href="https://openai.com/policies/privacy-policy/" target="_blank" rel="noopener">OpenAI ki Privacy Policy</a> ke according hota hai.</li>
       <li>Iske alawa, hum Google user data kisi bhi advertiser, analytics provider ya third party ko kabhi disclose nahi karte.</li>
     </ul>
   </section>
@@ -326,8 +327,8 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
     <ul>
       <li>Saara communication encrypted connection (HTTPS) par hota hai.</li>
       <li>Attendance tool ke alawa teen tools ka data hum store nahi karte, isliye hamare control mein aapka kuch bhi breach ke liye nahi hota. Attendance tool ka data Cloudflare ke platform par surakshit rehta hai.</li>
-      <li>Aapki Gemini API key aur settings sirf aapke device (browser ke localStorage) mein store hoti hain, aur hume ya kisi aur ko kabhi transmit nahi hoti.</li>
-      <li>Google services aur Gemini API tak saari access aapke apne Google account ke authentication aur authorization ke tehat hoti hai.</li>
+      <li>Settings (jaise AI use karna hai ya nahi) sirf aapke device (browser ke localStorage) mein store hoti hain. AI feature ka relay server bheji gayi files aur AI ke jawab save nahi karta.</li>
+      <li>Google services tak saari access aapke apne Google account ke authentication aur authorization ke tehat hoti hai.</li>
     </ul>
   </section>
 
@@ -336,14 +337,13 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
     <p>Attendance tool ke alawa teen tools ka data hum store nahi karte, isliye aapka koi Google user data hamare paas nahi rehta. Sirf yeh information aapke device (browser ke localStorage) mein store hoti hai, aur hum use access nahi kar sakte:</p>
     <ul>
       <li>AI feature use karna hai ya nahi, yeh choice</li>
-      <li>Aapki Gemini API key (sirf tab jab aapne AI use karna choose kiya ho)</li>
       <li>Destination folder ki information</li>
     </ul>
     <p>Yeh data aap kabhi bhi in tareekon se delete kar sakte hain:</p>
     <ul>
       <li>Text recognition (OCR) ke liye temporarily banayi gayi files padhne ke turant baad delete ho jaati hain.</li>
       <li>Google Calendar mein banaye gaye events aur Google Drive mein save ki gayi event documents ya schedules aap khud manage karte hain aur kabhi bhi Google se delete kar sakte hain (DROPPER mein delete function nahi hai).</li>
-      <li>Device par store ki gayi API key aur settings ko aap kabhi bhi apne browser settings se delete kar sakte hain.</li>
+      <li>Device par store ki gayi settings ko aap kabhi bhi apne browser settings se delete kar sakte hain.</li>
       <li>DROPPER ki aapke Google account tak access ko aap kabhi bhi apni <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Google Account security settings</a> se revoke kar sakte hain.</li>
     </ul>
   </section>
@@ -365,14 +365,14 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 
   <section class="legal-sec">
     <h2>11. LINE official account version ke baare mein</h2>
-    <p>LINE official account "Dropper" chat mein bheji gayi images aur PDFs ko padhkar result wapas deta hai. Sirf is feature ke liye processing hamare server (Google Apps Script) se hoti hai; browser version poori tarah aapke device par chalta hai aur hamare server se nahi jaata. Handling is prakaar hai.</p>
+    <p>LINE official account "Dropper" chat mein bheji gayi images aur PDFs ko padhkar result wapas deta hai. Sirf is feature ke liye processing hamare server (Google Apps Script) se hoti hai; browser version mein sirf AI feature use karne par bheji gayi files hamare server se jaati hain (section 4). Handling is prakaar hai.</p>
     <ul>
       <li>Aapke bheje gaye images ya PDFs hum store nahi karte. Padhne ke liye Google ke Gemini API ko bheje jaate hain aur processing khatam hote hi discard kar diye jaate hain.</li>
       <li>Extract kiya gaya content (event ka naam, dates, venue, etc.) bhi store nahi hota. Wo reply mein wapas milta hai aur calendar mein add karne wali link ke andar embed hota hai.</li>
-      <li>In requests ke liye operator ki apni API key use hoti hai (browser version mein aapki apni key hoti hai). Free tier mein chalne ke kaaran, per person daily limit rakhi gayi hai.</li>
+      <li>In requests ke liye operator ki apni API key use hoti hai. Free tier mein chalne ke kaaran, per person daily limit rakhi gayi hai.</li>
       <li>Usage samajhne ke liye hum sirf date aur time, bheji gayi cheez ka type, result, laga hua time, aur aapke LINE user identifier se bana hashed string (sirf pehle 8 characters) record karte hain. Is string se original identifier wapas nahi nikala ja sakta.</li>
       <li>Hum aapki LINE profile information (display name, profile image, phone number, etc.) nahi lete.</li>
-      <li>Gemini API ko bheja gaya data Google ki policies ke hisaab se handle hota hai (section 4 jaisa hi). Free tier mein use karne par, bheja gaya content Google ki services behtar banane ke liye use ho sakta hai.</li>
+      <li>Gemini API ko bheja gaya data Google ki policies ke hisaab se handle hota hai. Free tier mein use karne par, bheja gaya content Google ki services behtar banane ke liye use ho sakta hai.</li>
     </ul>
   </section>
 
@@ -407,7 +407,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   </section>
 
   <!-- 遊び場（モンスタードロッパー、play/monster.html）。2026-10-14。写真を扱うが当方は預からない。
-       AI をオンにしたときだけ写真が Gemini へ行くので、無料枠での扱いも書く。
+       AI をオンにしたときだけ写真が当方の中継を通って OpenAI へ行くので、無料枠（学習に使われる）での扱いも書く。
        ページの下から id="play" でここへ飛ぶので、id を変えないこと -->
   <section class="legal-sec" id="play">
     <h2>Playground (Monster Dropper) ke baare mein</h2>

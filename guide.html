@@ -314,14 +314,6 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 .guide-faq a{color:var(--primary);text-decoration:none;}
 .guide-faq a:hover{text-decoration:underline;}
 
-/* ---------- APIキー案内ページへの誘導 ---------- */
-.ak-link-box{
-  background:var(--primary-pale);border-radius:10px;padding:1.05rem 1.2rem;margin:1.2rem 0;
-  font-size:0.9rem;color:var(--text-mid);line-height:1.9;
-}
-.ak-link-box a{display:inline-block;margin-top:0.35rem;color:var(--primary);font-weight:700;text-decoration:none;}
-.ak-link-box a:hover{text-decoration:underline;}
-
 /* CTA */
 .guide-cta{text-align:center;margin:2.8rem 0 1rem;}
 .guide-cta .btn-sm{display:inline-block;}
@@ -486,34 +478,18 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
   <!-- 5. AI機能 -->
   <section class="legal-sec" id="s5">
     <h2>AI機能を使う（任意）</h2>
-    <p>読み取りの精度を上げたいときは、AI（Google Gemini）を使えます。<strong>使うかどうかはあなたが選びます。</strong>使わなくても基本の読み取りは動きます。</p>
+    <p>読み取りの精度を上げたいときは、AIを使えます。<strong>使うかどうかはあなたが選びます。</strong>使わなくても基本の読み取りは動きます。</p>
 
     <h3 class="guide-sub">AIを使うには</h3>
-    <p>ログイン後に「AIを使う／使わない」を選ぶポップアップが出ます。「使う」を選ぶと、APIキーの入力画面が開きます。</p>
+    <p>ログイン後に「AIを使う／使わない」を選ぶポップアップが出ます。「AIを使う」を押せば、それだけで使えます。APIキーの入力や登録は要りません（1人1日20枚まで）。</p>
     <figure class="guide-shot">
       <img src="/assets/guide/ja/ai-choice.png" alt="「AIを使う」「AIを使わない」を選ぶポップアップ" loading="lazy">
       <figcaption>AIを使うかどうかは自分で選ぶ</figcaption>
     </figure>
 
-    <h3 class="guide-sub">APIキーの取り方</h3>
-    <ol class="guide-ol">
-      <li>Google AI Studio を開く</li>
-      <li>Googleアカウントでログインする</li>
-      <li>「APIキーを作成」を押す</li>
-      <li>表示されたキーをコピーして、ドロッパーの入力欄に貼り付ける</li>
-    </ol>
-    <p>無料で取得できます。所要3分ほどです。</p>
-    <figure class="guide-shot">
-      <img src="/assets/guide/ja/ai-key-modal.png" alt="APIキーの入力モーダル。取得手順とAI Studioを開くボタンがある" loading="lazy">
-      <figcaption>APIキー入力画面。取得手順もここに書いてある</figcaption>
-    </figure>
-
-    <div class="guide-safe">🔒 キーはあなたの端末（ブラウザ）の中だけに保存されます。開発者には送られません。</div>
-    <div class="guide-note">⚠️ 無料枠では、送信内容がGoogleのサービス改善に利用される場合があります。機密文書はドロップしないでください。</div>
+    <div class="guide-safe">📤 イベント文書のファイルは、当方の中継（何も保存しません）を通して OpenAI のAIへ送ります。Googleドライブで読み取った文字やカレンダーの中身は送りません。</div>
+    <div class="guide-note">⚠️ 送った内容は、OpenAI がAIの改良に使うことがあります（無料で使える条件です）。個人の情報が入った文書はドロップしないでください。</div>
     <p>選択はブラウザに記憶されるので、次回以降ポップアップは出ません。変更したいときは、画面上部のバナーから「AI設定を変更」を押してください。</p>
-    <div class="ak-link-box">APIキーの取り方・安全性・お金の心配がいらない理由は、専用ページで詳しく説明しています。<br>
-      <a href="./apikey.html">Gemini APIキーの取り方（クレカ不要・3分・0円）→</a>
-    </div>
   </section>
 
   <!-- 6. よくある質問 -->
@@ -524,7 +500,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <dt>どの競技に対応していますか</dt><dd>卓球をはじめ複数の競技に対応しています。画面上部の競技セレクタから選んでください。</dd>
       <dt>読み取りが間違っていました</dt><dd>カード上で直接修正してから登録できます。イベント文書のレイアウトによって読み取りにくい場合があります。AI機能を使うと改善することがあります。</dd>
       <dt>登録した予定を消したい</dt><dd>Googleカレンダーとドライブから、通常の操作で削除してください。ドロッパー側に削除機能はありません。</dd>
-      <dt>データはどこかに送られますか</dt><dd>いいえ。イベントドロッパーはサーバーを持ちません。AI機能を使う場合のみ、イベント文書のテキストがあなた自身のAPIキーでGeminiに送られます。詳しくは<a href="./privacy.html">プライバシーポリシー</a>をご覧ください。</dd>
+      <dt>データはどこかに送られますか</dt><dd>イベントドロッパー自体はサーバーを持たず、何も保存しません。AI機能を使う場合のみ、イベント文書のファイルが当方の中継（何も保存しません）を通して OpenAI に送られます。詳しくは<a href="./privacy.html">プライバシーポリシー</a>をご覧ください。</dd>
     </dl>
   </section>
 

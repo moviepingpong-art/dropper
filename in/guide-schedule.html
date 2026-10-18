@@ -314,14 +314,6 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
 .guide-faq a{color:var(--primary);text-decoration:none;}
 .guide-faq a:hover{text-decoration:underline;}
 
-/* ---------- APIキー案内ページへの誘導 ---------- */
-.ak-link-box{
-  background:var(--primary-pale);border-radius:10px;padding:1.05rem 1.2rem;margin:1.2rem 0;
-  font-size:0.9rem;color:var(--text-mid);line-height:1.9;
-}
-.ak-link-box a{display:inline-block;margin-top:0.35rem;color:var(--primary);font-weight:700;text-decoration:none;}
-.ak-link-box a:hover{text-decoration:underline;}
-
 /* CTA */
 .guide-cta{text-align:center;margin:2.8rem 0 1rem;}
 .guide-cta .btn-sm{display:inline-block;}
@@ -397,7 +389,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <tbody>
         <tr><td>Google account</td><td>Us calendar ka owner jisme entries add karni hain.</td></tr>
         <tr><td>Schedule file</td><td>PDF ya image (JPEG/PNG).</td></tr>
-        <tr><td>Kharcha</td><td>Free hai. Sirf AI mode ke liye aapki apni Gemini API key chahiye, usme bhi free tier hai.</td></tr>
+        <tr><td>Kharcha</td><td>Free hai. AI mode bhi bina key ya sign-up ke chalta hai (ek person ke liye roz 10 tak).</td></tr>
       </tbody>
     </table>
   </section>
@@ -463,7 +455,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       </thead>
       <tbody>
         <tr><td>Normal (AI ke bina)</td><td>Table jaisi sheet, jisme ek row mein ek entry ho.</td><td>Kuch set karne ki zaroorat nahi, free.</td></tr>
-        <tr><td>AI mode</td><td>Calendar grid aur zyada design ki hui schedules.</td><td>Aapki apni Gemini API key.</td></tr>
+        <tr><td>AI mode</td><td>Calendar grid aur zyada design ki hui schedules.</td><td>Koi setup nahi (ek person ke liye roz 10 tak).</td></tr>
       </tbody>
     </table>
     <div class="guide-note">⚠️ Calendar grid — jaise school year planner ka mahine-wise layout — normal mode mein nahi padha ja sakta. Page ko plain text banate hi date aur entry ka jod toot jaata hai. Is shakal ke liye hamesha AI mode use karein.</div>
@@ -471,24 +463,9 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <img src="/assets/guide-schedule/in/ai-choice.png" alt=""AI se aur sahi padhwana hai?" wala dialog" loading="lazy">
       <figcaption>AI use karna aapki marzi hai, aur kabhi bhi badal sakte hain.</figcaption>
     </figure>
-
-    <h3 class="guide-sub">Gemini API key kaise lein</h3>
-    <ol class="guide-ol">
-      <li>"AI ke saath (key daalein)" dabayein.</li>
-      <li>"Google AI Studio kholein" se key banayein (Google account ho to kuch minute, free).</li>
-      <li>Key copy karke box mein paste karein.</li>
-      <li>"Save karke use karein" dabayein.</li>
-    </ol>
-    <figure class="guide-shot">
-      <img src="/assets/guide-schedule/in/ai-key-modal.png" alt="Gemini API key ka settings dialog" loading="lazy">
-      <figcaption>Key sirf aapke device par rehti hai; hamare server par na bheji jaati hai na store hoti hai.</figcaption>
-    </figure>
-    <div class="guide-safe">🔒 Key sirf aapke apne browser mein store hoti hai. Hamara koi server nahi hai, isliye hamein wo milti hi nahi. Gemini API mein roz lagbhag 1,500 requests ka free tier hai.</div>
-    <div class="guide-note">⚠️ Free tier par bheja gaya content Google ki services behtar karne mein use ho sakta hai. Confidential documents drop na karein.</div>
-    <p>Normal mode se padhne ke baad kuch entries chhoot jaayein, to list ke upar "AI se dobara padhein" dabaakar wahi file AI se padhwa sakte hain (API key chahiye).</p>
-    <div class="ak-link-box">Key kaise lein, wo safe kaise rehti hai, aur paise ki chinta kyun nahi hai — sab ek alag page par detail mein likha hai.<br>
-      <a href="./apikey.html">Gemini API key kaise lein (card nahi, 3 minute, free) →</a>
-    </div>
+    <div class="guide-safe">📤 Aapki schedule file hamare relay (jo kuch save nahi karta) se hokar OpenAI ke AI ko jaati hai. Google Drive se padha gaya text kabhi nahi bheja jaata.</div>
+    <div class="guide-note">⚠️ OpenAI bheja gaya content apna AI behtar karne mein use kar sakta hai (free use ki shart). Personal information wale documents drop na karein.</div>
+    <p>Normal mode se padhne ke baad kuch entries chhoot jaayein, to list ke upar "AI se dobara padhein" dabaakar wahi file AI se padhwa sakte hain (key nahi chahiye).</p>
   </section>
 
   <!-- 5. 読み取り結果の見かた -->
@@ -518,7 +495,7 @@ footer .footer-links a:hover{color:#fff;border-color:#fff;}
       <dt>Kuch galat padha gaya.</dt><dd>Add karne se pehle list mein hi theek kar sakte hain. Bahut kuch theek karna ho to AI se dobara padhwane par aksar behtar result milta hai.</dd>
       <dt>Wahi schedule dobara drop karne se duplicate ho jaayega?</dt><dd>Jo rows add ho gayin unka tick hat jaata hai, isliye dobara dabane se duplicate nahi hoga. Lekin page reload karke sab shuru se add karenge to ho jaayega — us case mein calendar check kar lein.</dd>
       <dt>WhatsApp/SNS announcement bana sakte hain?</dt><dd>Schedule Dropper mein nahi. Announcement <a href="./guide.html">Event Dropper</a> ka feature hai.</dd>
-      <dt>Mera data kahin bheja jaata hai?</dt><dd>Nahi. Dropper ka koi server nahi hai. Sirf AI mode use karne par schedule file aapki apni API key se Gemini ko jaati hai. Detail ke liye <a href="./privacy.html">privacy policy</a> dekhein.</dd>
+      <dt>Mera data kahin bheja jaata hai?</dt><dd>Schedule Dropper ka apna koi server nahi hai aur yeh kuch save nahi karta. Sirf AI mode use karne par schedule file hamare relay (jo kuch save nahi karta) se hokar OpenAI ko jaati hai. Detail ke liye <a href="./privacy.html">privacy policy</a> dekhein.</dd>
     </dl>
   </section>
 
