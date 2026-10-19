@@ -32,6 +32,11 @@ GitHub Pages で公開している静的サイト。公開URL: https://dropper-t
   だから同じ子が、見ているページの言語で描かれる。図鑑の鍵（属性・強さの項目・種類）は日本語のまま。
   **名前の音・技の表は、3言語で長さをそろえる**（番号で選ぶため）。AI が書いた文と人生の記録の名前だけは文そのもの
 - 図鑑（IndexedDB）は言語をまたいで1つ。図鑑の小さな絵だけは、生まれたときの言語のまま
+- **モンスター対戦（`play/battle.html`、2026-10-19〜）**も同じ作りの静的ページ。ファイルは `battle.html`・`battle-i18n.js`（`b*` の言葉。`monster-i18n.js` のあとに読み、各言語の辞書に足す）・`battle-app.js`。
+  5言語は `make-monster-langs.py` が作る（`BATTLE_LANGS`）。入口は図鑑の見出しの下の `battleLink`。ルールの正は保管庫の外の `card-game/04_ルールまとめ.md`（共有フォルダ）
+  - 図鑑（IndexedDB）は**読むだけ**（書き換えない）。記録（約束の指紋・お礼をしたか）は localStorage `dropper-monster-battle` だけ。プライバシーポリシーの `privacy.play7` がこれを約束している
+  - **守り神（人間のカード）は戦わない「立会人」。** 強さを持たせず、比べない（上の守り神の約束と同じ）
+  - パワーの上限（`CAP`）・★エースの力（出した回のあと1試合に1回だけ手札に戻る）を変えたら、ルール画面の `bRule*` を6言語とも直す
 - トップの入口は `build_play_band()` の帯（`{{PLAY_BAND}}`、文言は `play.band*`）。3言語のトップに出る
 - **`sitemap.xml` には手で足してある**（6言語分・hreflang つき）。遊び場のページを増やしたら、ここも手で足す
 - 検索用の head（canonical・OGP・hreflang）と GA4 のタグも、ページの中に**手で書いてある**（`build_seo_head()` と `GA_TAG` を通らない）。
