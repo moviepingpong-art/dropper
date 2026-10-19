@@ -152,7 +152,7 @@
   let ZK = [], GUARDS = [], trial = false, noAce = false;
   let dpick = [], aceI = -1, guardI = 0;
   const SIZE = () => noAce ? 6 : 7; // エースを置けない1戦は、エースの枠が空いたまま6枚で戦う
-  let outNote = '', ME = [], OP = [], MYSEAL = 'linear-gradient(135deg,#ccc,#999)', sel = [], w = [0, 0], round = 1, log = [], busy = false;
+  let outNote = '', ME = [], OP = [], MYSEAL = 'linear-gradient(135deg,#ccc,#999)', sel = [], w = [0, 0], round = 1, log = [], busy = false, aceBack = [false, false], lastBack = '';
   const OPSEAL = 'linear-gradient(135deg,#f6a57a,#e76f51)';
   const wait = ms => new Promise(r => setTimeout(r, ms));
 
@@ -201,7 +201,7 @@
   const short = h => h.slice(0, 8);
   $('go').onclick = async () => {
     if (busy || !sel.length) return;
-    busy = true;
+    busy = true; lastBack = '';
     const mine = sel.map(i => ME[i]), oi = oppChoose(), theirs = oi.map(i => OP[i]);
     // 約束：出すカードと秘密の数の指紋を、開く前に見せる（開いたあとで同じ指紋になるか確かめられる）
     const s1 = salt(), s2 = salt();
@@ -220,7 +220,11 @@
     $('oz').replaceChildren(...theirs.map(c => cardEl(c, 0, false, true)));
     $('mz').replaceChildren(...mine.map(c => cardEl(c, 0, false, true)));
     if (res > 0) w[0]++; else if (res < 0) w[1]++;
-    $('mid').innerHTML = `<div class="verdict ${res > 0 ? 'win' : res < 0 ? 'lose' : 'draw'}">${esc(tr(res > 0 ? 'bWin' : res < 0 ? 'bLose' : 'bDraw'))}</div><span class="score">${A.v} − ${B.v}</span>${A.v === B.v ? '<br>' + esc(tr('bBySpd')) : ''}`;
+    // ★エースの力：出した回が終わると、1試合に1回だけ手札に戻る（勝っても負けても）
+    const back = [mine, theirs].map((cs, k) => { const a = cs.find(c => c.ace); if (!a || aceBack[k]) return false; aceBack[k] = true; a.used = false; return true; });
+    if (back[0] || back[1]) { draw(); sfx('reveal'); }
+    const backMsg = lastBack = (back[0] ? '<br><span class="aceback">' + esc(tr('bBackMe')) + '</span>' : '') + (back[1] ? '<br><span class="aceback">' + esc(tr('bBackOpp', { name: tr('bOppName') })) + '</span>' : '');
+    $('mid').innerHTML = `<div class="verdict ${res > 0 ? 'win' : res < 0 ? 'lose' : 'draw'}">${esc(tr(res > 0 ? 'bWin' : res < 0 ? 'bLose' : 'bDraw'))}</div><span class="score">${A.v} − ${B.v}</span>${A.v === B.v ? '<br>' + esc(tr('bBySpd')) : ''}${backMsg}`;
     log.push({ r: round, m: mine, A, t: theirs, B, x: res, h: h1 });
     $('ow').innerHTML = wins(w[1]); $('mw').innerHTML = wins(w[0]); drawHist();
     await wait(900); round++;
@@ -294,7 +298,7 @@
     if (!log.length) { h.textContent = tr('bHistNone'); return; }
     h.innerHTML = esc(tr('bHist')) + log.map(L => `<span class="h ${L.x > 0 ? 'win' : L.x < 0 ? 'lose' : ''}">${esc(tr('bRound', { n: L.r }))} ${esc(tr(L.x > 0 ? 'bHWin' : L.x < 0 ? 'bHLose' : 'bHDraw'))} <b>${L.A.v}−${L.B.v}</b> ${L.m.map(c => TY[c.t][0]).join('')}</span>`).join('');
   }
-  const waitMsg = () => `<div class="midscore"><small>${esc(tr('bYou'))}</small>${w[0]} − ${w[1]}<small>${esc(tr('bOppName'))}</small></div>${esc(tr('bPick', { n: round }))}${log.length ? '<br><span style="font-size:10px">' + esc(tr('bFaded')) + '</span>' : ''}`;
+  const waitMsg = () => `<div class="midscore"><small>${esc(tr('bYou'))}</small>${w[0]} − ${w[1]}<small>${esc(tr('bOppName'))}</small></div>${esc(tr('bPick', { n: round }))}${log.length ? '<br><span style="font-size:10px">' + esc(tr('bFaded')) + '</span>' : ''}${lastBack}`;
 
   // ---- 7枚えらぶ ----
   const sum6 = () => dpick.filter(i => i !== aceI).reduce((a, i) => a + ZK[i].p, 0);
@@ -375,7 +379,7 @@
     $('myguard').textContent = g ? tr('bWitness', { name: g.n }) : tr('bNoWitness');
     MYSEAL = g ? g.seal : 'linear-gradient(135deg,#ccc,#999)'; $('myseal').style.setProperty('--sealc', MYSEAL);
     $('trialNote').hidden = !trial;
-    $('deck').hidden = true; sel = []; w = [0, 0]; round = 1; log = []; busy = false; outNote = '';
+    $('deck').hidden = true; sel = []; w = [0, 0]; round = 1; log = []; busy = false; outNote = ''; aceBack = [false, false]; lastBack = '';
     $('oz').innerHTML = ''; $('mz').innerHTML = ''; $('oz').classList.remove('last'); $('mz').classList.remove('last');
     $('mid').innerHTML = waitMsg(); drawHist(); draw(); sfx('seal'); track('battle_start');
     // エースなしの罰は、この1戦で終わり
