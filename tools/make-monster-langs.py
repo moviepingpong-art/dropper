@@ -1,4 +1,4 @@
-# モンスタードロッパーの英語版・インド版を、日本語版（play/monster.html）から作る。
+# 遊び場（モンスタードロッパー・モンスター対戦）のほかの言語版を、日本語版（play/monster.html・play/battle.html）から作る。
 #
 #   python tools/make-monster-langs.py          … en/play/ と in/play/ に書き出す
 #   python tools/make-monster-langs.py --check  … 書き出した物が最新かだけを見る（コミット前のフック）
@@ -6,15 +6,16 @@
 # 親は日本語版。ページの中身（</head> より後ろ）は3言語で同じで、違うのは
 # head（題・説明・canonical・OGP・字体）と <script>window.LANG = 'ja';</script> の1行だけ。
 # 画面の言葉は monster-i18n.js の辞書が、読み込んだあとに入れ替える。
-# monster-i18n.js と monster-app.js は、3つのフォルダにバイト同一で置く。
+# JS（JS の表）は、どのフォルダにもバイト同一で置く。
+# 対戦のページ（battle.html）も同じ作り。head の差し替えは BATTLE_JA_HEAD / BATTLE_LANGS（2026-10-19〜）
 #
-# ★ play/monster.html を直したら、これを走らせる（直したのが en/ in/ の側だと、次に走らせたとき消える）
+# ★ play/monster.html・play/battle.html を直したら、これを走らせる（直したのが en/ in/ の側だと、次に走らせたとき消える）
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'play'
-JS = ['monster-i18n.js', 'monster-app.js']
+JS = ['monster-i18n.js', 'monster-app.js', 'battle-i18n.js', 'battle-app.js']
 
 JA_HEAD_FONTS = '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">'
 
@@ -106,17 +107,84 @@ LANGS = {
     },
 }
 
+# ---- モンスター対戦（battle.html） ----
+# 字体：見出しの Dela Gothic One と本文の M PLUS Rounded 1c は日本語と英字だけ。ほかの言語は Noto を前に置く（:root の変数を上書き）
+BATTLE_FONTS = '<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;800&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">'
+def battle_fonts(fam, css):
+    return (f'<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;800&family={fam}:wght@400;700;900&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">\n'
+            f"<style>:root{{--display:'Dela Gothic One','{css}',sans-serif;--body:'{css}','M PLUS Rounded 1c',sans-serif}}</style>")
+
+BATTLE_JA_HEAD = {
+    'lang': '<html lang="ja">',
+    'title': '<title>モンスター対戦｜図鑑のモンスターで1対1の勝負｜ドロッパーの遊び場</title>',
+    'desc': '<meta name="description" content="モンスタードロッパーの図鑑から7枚をえらんで、1対1で勝負する遊び。1〜3枚を伏せて同時に出し、合体の法則で強さが変わる。先に3回勝ったほうの勝ち。カードの中身はブラウザの中だけで読みます。">',
+    'canonical': '<link rel="canonical" href="https://dropper-tools.com/play/battle.html">',
+    'site': '<meta property="og:site_name" content="ドロッパー">',
+    'locale': '<meta property="og:locale" content="ja_JP">',
+    'ogtitle': '<meta property="og:title" content="モンスター対戦｜ドロッパーの遊び場">',
+    'ogdesc': '<meta property="og:description" content="図鑑のモンスターで1対1の勝負。1〜3枚を伏せて同時に出す。先に3回勝ったほうの勝ち。">',
+    'ogurl': '<meta property="og:url" content="https://dropper-tools.com/play/battle.html">',
+    'ogimage': '<meta property="og:image" content="https://dropper-tools.com/assets/og/og-ja.png">',
+    'langjs': "<script>window.LANG = 'ja';</script>",
+    'fonts': BATTLE_FONTS,
+}
+
+
+def bhead(lang, html_lang, title, desc, locale, ogtitle, ogdesc, og, fonts=BATTLE_FONTS, site='Dropper'):
+    url = f'https://dropper-tools.com/{lang}/play/battle.html'
+    return {
+        'lang': f'<html lang="{html_lang}">',
+        'title': f'<title>{title}</title>',
+        'desc': f'<meta name="description" content="{desc}">',
+        'canonical': f'<link rel="canonical" href="{url}">',
+        'site': f'<meta property="og:site_name" content="{site}">',
+        'locale': f'<meta property="og:locale" content="{locale}">',
+        'ogtitle': f'<meta property="og:title" content="{ogtitle}">',
+        'ogdesc': f'<meta property="og:description" content="{ogdesc}">',
+        'ogurl': f'<meta property="og:url" content="{url}">',
+        'ogimage': f'<meta property="og:image" content="https://dropper-tools.com/assets/og/og-{og}.png">',
+        'langjs': f"<script>window.LANG = '{lang}';</script>",
+        'fonts': fonts,
+    }
+
+
+BATTLE_LANGS = {
+    'en': bhead('en', 'en', 'Monster Battle | One-on-one with the monsters in your collection | Dropper Playground',
+                'Pick 7 cards from your Monster Dropper collection and battle one-on-one. Play 1 to 3 cards face down at the same time, and the fusion rules change their strength. First to win 3 rounds wins. Your cards are read only inside your browser.',
+                'en_US', 'Monster Battle | Dropper Playground', 'One-on-one with the monsters in your collection. Play 1 to 3 cards face down at the same time. First to 3 wins.', 'en'),
+    'in': bhead('in', 'en-IN', 'Monster Battle | Apne collection ke monsters se one-on-one muqabla | Dropper Playground',
+                'Monster Dropper collection se 7 cards chuno aur one-on-one battle karo. 1 se 3 cards face down ek saath khelo, fusion rules se strength badalti hai. Pehle 3 round jeetne wala jeetta hai. Cards sirf aapke browser mein padhe jaate hain.',
+                'en_IN', 'Monster Battle | Dropper Playground', 'Apne collection ke monsters se one-on-one muqabla. 1 se 3 cards face down ek saath. Pehle 3 jeeto.', 'in'),
+    'ko': bhead('ko', 'ko', '몬스터 대전 | 도감의 몬스터로 1대1 승부 | 드로퍼 놀이터',
+                '몬스터 드로퍼의 도감에서 7장을 골라 1대1로 승부하는 놀이. 1~3장을 엎어서 동시에 내고, 합체의 법칙으로 강함이 바뀐다. 먼저 3번 이긴 쪽이 승리. 카드 내용은 브라우저 안에서만 읽습니다.',
+                'ko_KR', '몬스터 대전 | 드로퍼 놀이터', '도감의 몬스터로 1대1 승부. 1~3장을 엎어서 동시에 낸다. 먼저 3번 이긴 쪽이 승리.', 'en',
+                battle_fonts('Noto+Sans+KR', 'Noto Sans KR')),
+    'zh-hant': bhead('zh-hant', 'zh-Hant', '怪獸對戰｜用圖鑑裡的怪獸一對一較量｜Dropper 遊樂場',
+                     '從 Monster Dropper 的圖鑑選出 7 張，一對一較量的遊戲。蓋上 1～3 張同時出牌，合體法則會改變強度。先贏 3 回合的一方獲勝。卡片內容只在瀏覽器裡讀取。',
+                     'zh_TW', '怪獸對戰｜Dropper 遊樂場', '用圖鑑裡的怪獸一對一較量。蓋上 1～3 張同時出牌。先贏 3 回合的一方獲勝。', 'en',
+                     battle_fonts('Noto+Sans+TC', 'Noto Sans TC')),
+    'vi': bhead('vi', 'vi', 'Đấu quái vật | Đấu tay đôi bằng quái vật trong bộ sưu tập | Sân chơi Dropper',
+                'Chọn 7 thẻ từ bộ sưu tập Monster Dropper và đấu tay đôi. Úp 1–3 thẻ rồi ra cùng lúc, quy tắc hợp thể làm thay đổi độ mạnh. Ai thắng 3 lượt trước sẽ thắng. Thẻ chỉ được đọc trong trình duyệt.',
+                'vi_VN', 'Đấu quái vật | Sân chơi Dropper', 'Đấu tay đôi bằng quái vật trong bộ sưu tập. Úp 1–3 thẻ và ra cùng lúc. Ai thắng 3 lượt trước sẽ thắng.', 'en',
+                battle_fonts('Noto+Sans', 'Noto Sans')),
+}
+
+PAGES = [('monster.html', JA_HEAD, LANGS), ('battle.html', BATTLE_JA_HEAD, BATTLE_LANGS)]
+
 
 def build():
-    ja = (SRC / 'monster.html').read_text(encoding='utf-8')
-    for k, v in JA_HEAD.items():
-        assert ja.count(v) == 1, f'play/monster.html に {k} の行が1つだけ無い（JA_HEAD も直す）'
     out = {}
-    for lang, head in LANGS.items():
-        s = ja
-        for k, v in JA_HEAD.items():
-            s = s.replace(v, head[k])
-        out[ROOT / lang / 'play' / 'monster.html'] = s.encode('utf-8')
+    for name, ja_head, langs in PAGES:
+        ja = (SRC / name).read_text(encoding='utf-8')
+        for k, v in ja_head.items():
+            assert ja.count(v) == 1, f'play/{name} に {k} の行が1つだけ無い（{name} の JA の head の表も直す）'
+        assert set(langs) == set(LANGS), f'{name} の言語が monster.html とそろっていない'
+        for lang, head in langs.items():
+            s = ja
+            for k, v in ja_head.items():
+                s = s.replace(v, head[k])
+            out[ROOT / lang / 'play' / name] = s.encode('utf-8')
+    for lang in LANGS:
         for f in JS:
             out[ROOT / lang / 'play' / f] = (SRC / f).read_bytes()
     return out
