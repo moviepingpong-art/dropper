@@ -81,6 +81,10 @@
       bHDraw: '△引分',
       bPower: 'パワー',
       bAce: 'エース',
+      bAceIn: '★エース登場！',
+      bAceWho: '{name}の★エース',
+      bAceDuel: '★エース対決！！',
+      bAceDuelSub: 'エースとエースがぶつかる！',
       // ---- 終わり ----
       bYouWin: 'あなたの勝ち',
       bOppWin: '{name}さんの勝ち',

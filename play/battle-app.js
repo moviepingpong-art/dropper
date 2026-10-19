@@ -250,6 +250,9 @@
     // 枚数は開くまで分からないので、伏せた束は1つずつ見せる
     $('rvo').replaceChildren(bigBack(OPSEAL)); $('rvm').replaceChildren(bigBack(MYSEAL));
     rv.hidden = false; sfx('drumroll'); await wait(1900);
+    // エースが入っていたら、開く前に別の場面をはさむ（エース同士はさらに派手に。曲も切り替える）
+    const ma = mine.find(c => c.ace), ta = theirs.find(c => c.ace), lvl = (ma ? 1 : 0) + (ta ? 1 : 0);
+    if (lvl) await aceCut(lvl, ma, ta);
     sfx('jajan'); rv.insertAdjacentHTML('beforeend', '<div class="flash"></div>'); setTimeout(() => { const f = rv.querySelector('.flash'); if (f) f.remove(); }, 600);
     $('rvo').replaceChildren(...theirs.map(bigCard)); $('rvm').replaceChildren(...mine.map(bigCard));
     await wait(1600); $('rvso').innerHTML = sumHtml(B); $('rvsm').innerHTML = sumHtml(A); sfx('pick');
@@ -262,6 +265,28 @@
       setTimeout(() => { rv.addEventListener('click', done); addEventListener('keydown', done); }, 400);
     });
     $('rvtap').hidden = true; rv.hidden = true; if (res > 0) burst(.5, .5, '#ffd23a', 70);
+    if (lvl) { rv.classList.remove('ace1', 'ace2'); setMode(0); }
+  }
+  // エースの場面：1枚なら「エース登場」、両方なら左右から飛んできてぶつかる「エース対決」
+  async function aceCut(lvl, ma, ta) {
+    const rv = $('rv'), box = $('acein');
+    const big = c => { const d = bigCard(c); d.classList.remove('pop'); return d; };
+    const who = (c, mine) => `<span class="who">${esc(tr('bAceWho', { name: mine ? tr('bYou') : tr('bOppName') }))}</span>`;
+    rv.classList.add('ace' + lvl); setMode(lvl); sfx(lvl === 2 ? 'ace2In' : 'aceIn');
+    if (lvl === 2) {
+      box.innerHTML = `<div class="band">${esc(tr('bAceDuel'))}</div><div class="acecards duel"><div class="side l"></div><div class="zap">⚡</div><div class="side r"></div></div><div class="who">${esc(tr('bAceDuelSub'))}</div>`;
+      box.querySelector('.side.l').append(big(ma)); box.querySelector('.side.l').insertAdjacentHTML('beforeend', who(ma, true));
+      box.querySelector('.side.r').append(big(ta)); box.querySelector('.side.r').insertAdjacentHTML('beforeend', who(ta, false));
+    } else {
+      const c = ma || ta;
+      box.innerHTML = `<div class="band">${esc(tr('bAceIn'))}</div><div class="acecards"></div>${who(c, !!ma)}`;
+      box.querySelector('.acecards').append(big(c));
+    }
+    box.hidden = false; rv.classList.add('cut', 'quake'); setTimeout(() => rv.classList.remove('quake'), 600);
+    if (lvl === 2) setTimeout(() => { rv.classList.add('quake'); rv.insertAdjacentHTML('beforeend', '<div class="flash"></div>'); setTimeout(() => { rv.classList.remove('quake'); const f = rv.querySelector('.flash'); if (f) f.remove(); }, 600); burst(.5, .45, '#ffe600', 90); }, 750);
+    else burst(.5, .45, '#ffd23a', 60);
+    await wait(lvl === 2 ? 3300 : 2500);
+    box.hidden = true; box.innerHTML = ''; rv.classList.remove('cut');
   }
   // これまでの結果：各回の勝ち負けと強さを、手札の上に並べて残す
   function drawHist() {
@@ -483,7 +508,10 @@
       parse(['A4 . A4 A4 D5 . F#5 -', 'G5 - F#5 - D5 . D5 D5', 'E5 - C#5 - A4 . C#5 E5', 'D5 - - - A4 . . .', 'B4 . B4 B4 D5 . F#5 -', 'B5 - G5 - D5 . G5 B5', 'A5 - G5 E5 E5 - C#5 -', 'A5 - - - - - . .']),
       parse(['F#4 . F#4 F#4 A4 . D5 -', 'D5 - D5 - B4 . A4 B4', 'C#5 - A4 - E4 . A4 C#5', 'A4 - - - F#4 . . .', 'F#4 . F#4 F#4 B4 . D5 -', 'G5 - D5 - B4 . D5 G5', 'E5 - E5 C#5 C#5 - A4 -', 'F#5 - - - - - . .'])]
   };
-  const ST = 60 / SONG.bpm / 4;
+  // 曲の切り替え：0＝いつもの行進曲、1＝エース登場（1音半上げて速く、4つ打ち）、2＝エース対決（短調の別の曲、さらに速く）
+  const BPM = [SONG.bpm, 204, 228];
+  let ST = 60 / SONG.bpm / 4, mode = 0;
+  function setMode(m) { if (mode === m) return; mode = m; ST = 60 / BPM[m] / 4; if (ac && timer) { step = 0; nextT = ac.currentTime + .05; } }
   function beat(s16, bar, t, b, tp) {
     const ch = SONG.chords[bar].map(n => n + tp);
     if (s16 === 0) ch.forEach(n => brass(N(n - 12), t, ST * 3, .05));
@@ -500,11 +528,42 @@
     if (bar % 4 === 0 && s16 === 0) noise(t, 1.4, .3, bgmGain, 5000);
     noise(t, .025, s16 % 2 ? .05 : .08, bgmGain, 8000);
   }
+  function kick(t, v = .9) {
+    const o = ac.createOscillator(), e = ac.createGain(); o.frequency.setValueAtTime(160, t); o.frequency.exponentialRampToValueAtTime(45, t + .12);
+    e.gain.setValueAtTime(v, t); e.gain.exponentialRampToValueAtTime(.001, t + .3); o.connect(e); e.connect(bgmGain); o.start(t); o.stop(t + .32);
+  }
+  // エース対決の曲：ニ短調の4小節。16分で刻むベース・和音の打ち込み・4つ打ち・トランペット2本（上は旋律、下は3度下）
+  const DUEL = {
+    chords: [[62, 65, 69], [58, 62, 65], [60, 64, 67], [57, 61, 64]], bass: [38, 34, 36, 33],
+    duo: [parse(['D5 . D5 F5 A5 - D6 -', 'A#5 - A5 - F5 . D5 F5', 'G5 - C6 - E5 . G5 C6', 'C#6 - - - E6 - A5 -']),
+      parse(['A4 . A4 D5 F5 - A5 -', 'F5 - F5 - D5 . A#4 D5', 'E5 - G5 - C5 . E5 G5', 'A5 - - - C#6 - E5 -'])]
+  };
+  function duel(s64, t) {
+    const bar = Math.floor(s64 / 16), s16 = s64 % 16, b = DUEL.bass[bar];
+    tone(N(b + (s16 % 2 ? 12 : 0)), t, ST * .9, 'sawtooth', .12, bgmGain);
+    if ([0, 3, 6, 10, 12].includes(s16)) DUEL.chords[bar].forEach(n => brass(N(n), t, ST * 1.4, .06));
+    if (s16 % 4 === 0) kick(t);
+    if (s16 === 4 || s16 === 12) noise(t, .18, .5, bgmGain, 1500);
+    if (bar === 3 && s16 >= 8) noise(t, .06, .2 + .04 * (s16 - 8), bgmGain, 2000);
+    if (s64 === 0) { noise(t, 1.6, .35, bgmGain, 5000); timp(N(b + 12), t, 1); }
+    if (bar === 3 && s16 === 0) {
+      const o = ac.createOscillator(), e = ac.createGain(); o.type = 'square'; o.frequency.setValueAtTime(300, t); o.frequency.exponentialRampToValueAtTime(1800, t + ST * 16);
+      e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(.035, t + ST * 15); e.gain.exponentialRampToValueAtTime(.0001, t + ST * 16); o.connect(e); e.connect(bgmGain); o.start(t); o.stop(t + ST * 16);
+    }
+    noise(t, .03, s16 % 2 ? .07 : .1, bgmGain, 8000);
+    DUEL.duo.forEach((v, vi) => { for (const [p, n0, d] of v) if (p === s64) trumpet(N(n0), t, ST * d, [.18, .12][vi], [-.3, .3][vi]); });
+  }
   function sched() {
     while (nextT < ac.currentTime + .15) {
-      const s128 = step % 128, bar = Math.floor(s128 / 16), s16 = s128 % 16, t = nextT, tp = Math.floor(step / 128) % 2 ? 2 : 0;
-      beat(s16, bar, t, SONG.bass[bar] + tp, tp);
-      SONG.trio.forEach((v, vi) => { for (const [p, n0, d] of v) if (p === s128) trumpet(N(n0 + tp), t, ST * d, [.17, .12, .11][vi], [0, -.45, .45][vi]); });
+      const t = nextT;
+      if (mode === 2) duel(step % 64, t);
+      else {
+        const s128 = step % 128, bar = Math.floor(s128 / 16), s16 = s128 % 16, tp = mode === 1 ? 3 : Math.floor(step / 128) % 2 ? 2 : 0;
+        beat(s16, bar, t, SONG.bass[bar] + tp, tp);
+        // エース登場：4つ打ちと16分の刻みを足して、せき立てる
+        if (mode === 1) { if (s16 % 4 === 0) kick(t, .8); noise(t, .03, .06, bgmGain, 9000); }
+        SONG.trio.forEach((v, vi) => { for (const [p, n0, d] of v) if (p === s128) trumpet(N(n0 + tp), t, ST * d, [.17, .12, .11][vi], [0, -.45, .45][vi]); });
+      }
       nextT += ST; step++;
     }
   }
@@ -532,7 +591,30 @@
         [50, 62, 66, 69, 74].forEach(n => { trumpet(N(n + 12), t, .25, .14, 0, master); trumpet(N(n + 12), t + .32, 1.3, .16, 0, master); });
         [38, 50].forEach(n => { brass(N(n), t, .25, .25, master); brass(N(n), t + .32, 1.3, .28, master); });
         timpR(t, 1); timpR(t + .32, 1.2); noise(t + .32, 1.8, .4, master, 4000); noise(t, .2, .35, master, 1500);
-        bgmGain.gain.setValueAtTime(.12, t + 1.4); bgmGain.gain.linearRampToValueAtTime(.7, t + 2.6);
+        if (!mode) { bgmGain.gain.setValueAtTime(.12, t + 1.4); bgmGain.gain.linearRampToValueAtTime(.7, t + 2.6); }
+      },
+      // エース登場：ズンと低い一撃 → せり上がるうなり → トランペットの「タ・タ・ターン」。曲を戻す
+      aceIn: () => {
+        timpR(t, 1.4); noise(t, .7, .5, master, 200);
+        const o = ac.createOscillator(), e = ac.createGain(); o.type = 'sawtooth'; o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(1400, t + .5);
+        e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(.07, t + .45); e.gain.exponentialRampToValueAtTime(.0001, t + .55); o.connect(e); e.connect(master); o.start(t); o.stop(t + .6);
+        [65, 69, 72, 77].forEach(n => [.55, .7, .85].forEach((d, i) => trumpet(N(n), t + d, i < 2 ? .11 : 1.4, .13, 0, master)));
+        [41, 53].forEach(n => brass(N(n), t + .85, 1.4, .26, master));
+        timpR(t + .85, 1.3); noise(t + .85, 2, .45, master, 4000);
+        bgmGain.gain.cancelScheduledValues(t); bgmGain.gain.setValueAtTime(.12, t); bgmGain.gain.linearRampToValueAtTime(.8, t + 1.6);
+      },
+      // エース対決：左と右から2回の衝撃・雷・サイレン → 長調の大きな和音で「タ・タ・タ・ターン」
+      ace2In: () => {
+        const pan = (x, f) => { if (!ac.createStereoPanner) return f(master); const p = ac.createStereoPanner(); p.pan.value = x; p.connect(master); f(p); };
+        pan(-.8, d => { noise(t, .5, .6, d, 300); tone(70, t, .5, 'sine', .9, d, 40); });
+        pan(.8, d => { noise(t + .35, .5, .6, d, 300); tone(70, t + .35, .5, 'sine', .9, d, 40); });
+        noise(t + .75, 1.6, .6, master, 60); noise(t + .75, .3, .5, master, 3000); timpR(t + .75, 1.6);
+        const o = ac.createOscillator(), e = ac.createGain(); o.type = 'square'; o.frequency.setValueAtTime(500, t); o.frequency.linearRampToValueAtTime(1500, t + .6); o.frequency.linearRampToValueAtTime(600, t + 1.2);
+        e.gain.setValueAtTime(.04, t); e.gain.linearRampToValueAtTime(.0001, t + 1.2); o.connect(e); e.connect(master); o.start(t); o.stop(t + 1.25);
+        [62, 66, 69, 74, 78].forEach(n => [1.2, 1.32, 1.44, 1.6].forEach((d, i) => trumpet(N(n), t + d, i < 3 ? .09 : 1.6, .12, 0, master)));
+        [38, 50].forEach(n => brass(N(n), t + 1.6, 1.6, .3, master));
+        timpR(t + 1.6, 1.5); noise(t + 1.6, 2.4, .5, master, 4000);
+        bgmGain.gain.cancelScheduledValues(t); bgmGain.gain.setValueAtTime(.1, t); bgmGain.gain.linearRampToValueAtTime(.85, t + 2.4);
       },
       win: () => [0, 4, 7, 12, 16].forEach((n, i) => tone(N(72 + n), t + i * .07, .3, 'square', .16)),
       lose: () => [0, -3, -7].forEach((n, i) => tone(N(64 + n), t + i * .14, .3, 'triangle', .22)),
