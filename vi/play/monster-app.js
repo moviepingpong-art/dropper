@@ -15,6 +15,7 @@
   //   {sl, from, to}    … 文字を切り出す（子・合体の名前。幅は辞書の sliceUnit 倍）
   //   {ty}              … 属性の名前
   //   {nm, tail}        … 名前のつなぎ目を直し、辞書の minName 字に満たなければおしりを足す（子の名前）
+  //   {ml: {ja, en, …}} … 言語ごとの文そのもの（美術館の作品から生まれた子。前もって6言語で作ってある）。無い言語は en
   const LANG = window.LANG || 'ja';
   const tr = (k, v) => window.t(k, v), D = k => window.tdata(k);
   function txt(s) {
@@ -22,6 +23,7 @@
     if (typeof s !== 'object') return String(s);
     if (Array.isArray(s)) return s.map(txt).join('');
     if (s.cat) return s.cat.map(txt).join('');
+    if (s.ml) return String(s.ml[LANG] ?? s.ml.en ?? s.ml.ja ?? '');
     if (s.k) { const v = {}; for (const key in (s.v || {})) v[key] = txt(s.v[key]); return tr(s.k, v); }
     if (s.d) { let x = D(s.d); for (const i of s.p) x = x === undefined ? undefined : x[i]; return x === undefined ? '' : String(x); }
     if (s.ty) return (D('types') || {})[s.ty] || s.ty;
@@ -1367,7 +1369,7 @@
     // 生まれ（合体の子は、混ぜた属性）と、右にパワー
     c.fillStyle = '#4a4a6a'; c.font = `500 18px ${FF}`;
     const origin = M.parents ? tr('originChild', { gen: M.gen, f: txt(M.parentNames[0]), m: txt(M.parentNames[1]) })
-      : M.fusion ? tr('originFuse', { n: M.fusion, parts: M.parts.map(p => txt({ ty: p })).join(tr('partsSep')) }) : M.g.kind === '人間' ? (txt(M.motif) || tr(SOURCES.life.origin)) : M.motif ? (charaOf(M.g) ? charaOf(M.g) + tr('charaSep') : '') + tr(M.source === 'audio' ? 'originSound' : 'originPhoto', { motif: txt(M.motif) }) : M.source ? tr(SOURCES[M.source].origin) : tr('originColor');
+      : M.fusion ? tr('originFuse', { n: M.fusion, parts: M.parts.map(p => txt({ ty: p })).join(tr('partsSep')) }) : M.g.kind === '人間' ? (txt(M.motif) || tr(SOURCES.life.origin)) : M.motif ? (charaOf(M.g) ? charaOf(M.g) + tr('charaSep') : '') + tr(M.source === 'museum' ? 'originWork' : M.source === 'audio' ? 'originSound' : 'originPhoto', { motif: txt(M.motif) }) : M.source ? tr(SOURCES[M.source].origin) : tr('originColor');
     if (M.parents) c.font = `700 16px ${FF}`;
     c.fillText(origin, 46, ay + ah + 34);
     c.textAlign = 'right'; c.fillStyle = '#9090b0'; c.font = `700 16px ${FF}`;
@@ -1617,6 +1619,7 @@
     await loadFontsFor(M);
     if (current !== M) return false;
     drawCard($('card'), M);
+    showWorks(M);
     $('stage').classList.remove('hidden');
     $('stage').scrollIntoView({ behavior: 'smooth', block: 'start' });
     if (note !== undefined) setStatus(note);
@@ -1687,10 +1690,8 @@
     M.serial = await nextSerial();
     if (!(await display(M))) return;
     const done = () => (note ? note + tr('statusSep') : '') + statusOf(M);
-    // 文章と音声は AI に送らない（音声は、OpenAI の無料枠に音声を聞けるモデルが無いため）
-    if (M.source && M.source !== 'life' && $('aiOn').checked) { aiShow(M, 'info', tr('aiOffTitle'), tr(M.source === 'audio' ? 'aiOffAudio' : 'aiOffData')); setStatus(done()); return saveCard(M); }
-    if (M.fusion && $('aiOn').checked) { aiShow(M, 'info', tr('aiOffTitle'), tr('aiOffFuse')); setStatus(done()); return saveCard(M); }
-    if ($('aiOn').checked && img && img.__fromFile) await runAI(M, img, done);
+    // AI に送るのは、人生の記録の画像（自分でドロップした物）だけ。美術館の作品は、名前・技・説明を前もって作ってあるので送らない
+    if ($('aiOn').checked && img && img.__fromFile && M.source === 'life') await runAI(M, img, done);
     else setStatus(done());
     // 待っている間に別のカードを開いていたら、この子の絵をいったん描き直してから図鑑に入れる
     if (current !== M) { const back = current; await display(M); await saveCard(M); return display(back); }
@@ -1720,70 +1721,16 @@
       img.src = url;
     });
   }
-  // ---- 写真以外のデータ（文章・音声）----
-  // 中身はこの端末の中で数えるだけ。カードに入れるのは、数えた値から決めた強さと形だけ
+  // ---- 写真以外のデータ ----
+  // 前は文章・音声のファイルからも生まれた（2026-10-20 まで）。図鑑に残っている子を描くために、呼び名だけ残す
   const SOURCES = {
     text: { label: 'labelText', origin: 'originText', desc: 'srcText', max: 5 * 1024 * 1024 },
     audio: { label: 'labelAudio', origin: 'originAudio', desc: 'srcAudio', max: 30 * 1024 * 1024 },
     life: { label: 'labelLife', origin: 'originLife', desc: 'srcLife', max: 0 }
   };
-  function kindOf(f) {
-    const ext = (f.name.split('.').pop() || '').toLowerCase();
-    if (f.type.startsWith('image/')) return 'photo';
-    if (f.type.startsWith('audio/') || ['mp3', 'm4a', 'wav', 'ogg'].includes(ext)) return 'audio';
-    if (f.type === 'text/plain' || f.type === 'text/markdown' || ['txt', 'md'].includes(ext)) return 'text';
-    return null;
-  }
   const clamp01 = v => Math.max(0, Math.min(1, v));
   // 強さのかたよりは、どれも -10〜+20 のあいだ（写真のときと同じくらいの幅）
   const toBias = v => clamp01(v) * 30 - 10;
-  function measureText(bytes) {
-    const t = new TextDecoder('utf-8').decode(bytes.subarray(0, 1024 * 1024));
-    const chars = [...t.replace(/\s/g, '')].length;
-    if (!chars) throw new Error(tr('errNoText'));
-    const sentences = Math.max(1, t.split(/[。．.!?！？\n]+/).filter(x => x.trim()).length);
-    const marks = (t.match(/[!?！？]/g) || []).length;
-    const kanji = (t.match(/\p{Script=Han}/gu) || []).length;
-    const lines = Math.max(1, t.split('\n').length);
-    return {
-      bias: {
-        hp: toBias(Math.min(chars, 2000) / 2000),
-        atk: toBias(marks / sentences),
-        def: toBias(kanji / chars / 0.5),
-        spd: toBias((40 - chars / sentences) / 35)
-      },
-      tall: clamp01((lines / chars) * 15), // 改行が多いほど縦長
-      lively: clamp01(marks / sentences)
-    };
-  }
-  async function measureAudio(bytes) {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) throw new Error(tr('errNoAudio'));
-    const ac = new AC();
-    let buf;
-    try { buf = await ac.decodeAudioData(bytes.slice().buffer); }
-    catch (e) { throw new Error(tr('errAudio')); }
-    finally { try { ac.close(); } catch (e) {} }
-    const d = buf.getChannelData(0), rate = buf.sampleRate, n = Math.min(d.length, rate * 180);
-    // 50ミリ秒ごとに、音の大きさ・低い音の強さ・波の向きの変わる回数を数える
-    const win = Math.max(1, Math.floor(rate * 0.05));
-    let sum = 0, low = 0, cross = 0, quiet = 0, wins = 0, lp = 0; const peaks = [];
-    for (let i = 0; i + win <= n; i += win) {
-      let e = 0, el = 0;
-      for (let j = i; j < i + win; j++) {
-        const v = d[j]; lp += (v - lp) * 0.02; e += v * v; el += lp * lp;
-        if (j > i && (v >= 0) !== (d[j - 1] >= 0)) cross++;
-      }
-      const rms = Math.sqrt(e / win); peaks.push(rms); sum += rms; low += e ? el / e : 0; if (rms < 0.02) quiet++; wins++;
-    }
-    if (!wins) throw new Error(tr('errShortAudio'));
-    const rms = sum / wins, lowR = low / wins, zcr = cross / (wins * win);
-    return { buf, meas: {
-      bias: { hp: toBias(buf.duration / 180), atk: toBias(rms / 0.2), def: toBias(lowR), spd: toBias(zcr / 0.15) },
-      wide: clamp01(lowR), tall: clamp01(zcr / 0.15), lively: clamp01(rms / 0.2), quiet: quiet / wins, peaks
-    } };
-  }
-  // 写真の色の代わり：ファイルそのものの指紋で色合いを決め、にぎやかさで鮮やかさを決める（同じファイルなら同じ色）
   function paletteOfData(filePrint, meas) {
     const r = sfc32(filePrint[0], filePrint[1], filePrint[2], filePrint[3]);
     const hue = Math.floor(r() * 360), sat = 0.35 + meas.lively * 0.5, lum = 0.5;
@@ -1800,43 +1747,123 @@
     if (meas.tall !== undefined) g.ry = (g.ry + 0.55 + meas.tall * 0.3) / 2;
     if (meas.wide !== undefined) g.rx = (g.rx + 0.62 + meas.wide * 0.3) / 2;
   }
-  async function loadData(file, kind) {
-    if (file.size > SOURCES[kind].max) throw new Error(tr('errTooBig', { label: tr(SOURCES[kind].label), mb: Math.round(SOURCES[kind].max / 1024 / 1024) }));
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    if (kind === 'text') return { bytes, data: { kind, meas: measureText(bytes) } };
-    const { meas } = await measureAudio(bytes);
-    return { bytes, data: { kind, meas } };
+  // ---- 自分でドロップできるのは、人生の記録の画像だけ（2026-10-20〜）----
+  // 写真・文章・音声を自由に落とせると、人の顔や個人のことが書かれた物を誤って落とす心配があるため。
+  // 人生の記録かどうかはこの端末の中で形を見て見分け、違えば何も残さずに断る。人生の記録は合体させない（人生どうしを強さで比べないため）
+  async function fromFiles(files) {
+    const f = [...files].find(x => x.type.startsWith('image/'));
+    if (!f) { setStatus(tr('lifeOnly')); return; }
+    const notes = [];
+    if (files.length > 1) notes.push(tr('noteLifeOne'));
+    setStatus(tr('hatching'));
+    let l;
+    try { l = await loadPhoto(f); } catch (e) { setStatus(e.message); return; }
+    const life = readLifeCard(l.img);
+    if (!life) { setStatus(tr('lifeOnly')); return; }
+    const M = await build(l.bytes, l.img, printOf(fingerprint(l.bytes)), { kind: 'life', meas: lifeMeas(life), life });
+    return show(M, l.img, notes.join(tr('noteSep')));
   }
 
-  // 1枚なら1体、2〜3枚なら合体。4枚目からは使わない。同じファイルは1枚に数える（ファイルそのものの指紋で見る）
-  // 合体は、いまは同じ種類（写真どうし・文章どうし・音声どうし）だけ
-  async function fromFiles(files) {
-    const all = [...files].map(f => ({ f, kind: kindOf(f) })).filter(x => x.kind);
-    if (!all.length) { setStatus(tr('dropNone')); return; }
-    const notes = [], kind = all[0].kind;
-    const same = all.filter(x => x.kind === kind);
-    if (same.length < all.length) notes.push(tr('noteMixedKinds'));
-    if (same.length > 3) notes.push(tr('noteMax3'));
-    setStatus(tr(same.length > 1 ? 'fusing' : 'hatching'));
-    let loaded;
-    try { loaded = await Promise.all(same.slice(0, 3).map(x => kind === 'photo' ? loadPhoto(x.f) : loadData(x.f, kind))); } catch (e) { setStatus(e.message); return; }
-    if (kind === 'photo') { // 人生の記録の画像は、人間のカードになる。人間とほかの写真は合体させない
-      for (const l of loaded) { const life = readLifeCard(l.img); if (life) l.data = { kind: 'life', meas: lifeMeas(life), life }; }
-      const human = !!loaded[0].data, keep = loaded.filter(l => !!l.data === human);
-      if (keep.length < loaded.length) notes.push(tr('noteHumanMix'));
-      loaded = keep;
+  // ---- 美術館の作品から生まれる（2026-10-20〜）----
+  // 4館（メトロポリタン・シカゴ・クリーブランド・デンマーク国立）の、権利の切れた作品（CC0）から選んだ300点を /play/museum/ に置いてある。
+  // 人・文字・ロゴの写った物は外してある。名前・技・説明・由来は前もって6言語で作ってある（museum.json）。AI には送らない
+  const MUSEUM_BASE = '/play/museum/';
+  const SHELF = 15;
+  let museum = null, shelf = [];
+  const picked = new Set();
+  async function loadMuseum() {
+    if (!museum) {
+      const r = await fetch(MUSEUM_BASE + 'museum.json');
+      if (!r.ok) throw new Error('museum ' + r.status);
+      museum = await r.json();
     }
-    const parts = [], seen = new Set();
-    for (const l of loaded) {
-      const pp = printOf(fingerprint(l.bytes));
-      if (seen.has(pp)) { notes.push(tr('noteSameFile')); continue; }
-      seen.add(pp); parts.push({ M: await build(l.bytes, l.img || null, pp, l.data), img: l.img || null });
-    }
-    // 人生の記録は合体させない（人生どうしを強さで比べないため）。1枚目だけが生まれる
-    if (parts.length > 1 && isHuman(parts[0].M)) { notes.push(tr('noteHumanNoFuse')); parts.length = 1; }
-    if (parts.length === 1) return show(parts[0].M, parts[0].img, notes.join(tr('noteSep')));
-    return show(fuse(parts.map(p => p.M)), null, notes.join(tr('noteSep')));
+    return museum;
   }
+  // 並びは毎回くじで決める（Math.random ではなく crypto の乱数で）
+  function shuffle(a) {
+    a = a.slice();
+    const r = new Uint32Array(a.length); crypto.getRandomValues(r);
+    for (let i = a.length - 1; i > 0; i--) { const j = r[i] % (i + 1); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  async function deal(from) {
+    let list;
+    try { list = await loadMuseum(); } catch (e) { setStatus(tr('museumErr')); return; }
+    document.querySelectorAll('.museums button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === from)));
+    shelf = shuffle(from === 'all' ? list : list.filter(x => x.m === from)).slice(0, SHELF);
+    picked.clear();
+    renderShelf();
+    setStatus('');
+  }
+  function renderShelf() {
+    const box = $('eggs'); box.innerHTML = '';
+    shelf.forEach((w, i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'egg';
+      b.setAttribute('aria-pressed', String(picked.has(i)));
+      b.title = tr('mu_' + w.m) + ' ／ ' + w.title;
+      const im = new Image(); im.src = MUSEUM_BASE + w.f; im.alt = w.title; im.loading = 'lazy'; b.appendChild(im);
+      b.addEventListener('click', () => {
+        if (picked.has(i)) picked.delete(i);
+        else if (picked.size >= 3) { setStatus(tr('noteMax3')); return; }
+        else picked.add(i);
+        renderShelf();
+      });
+      box.appendChild(b);
+    });
+    $('shelfBox').classList.toggle('hidden', !shelf.length);
+    const n = picked.size;
+    $('hatch').disabled = !n;
+    $('hatch').textContent = tr(n > 1 ? 'fuseBtn' : 'hatchBtn', { n });
+  }
+  // 作品の画像を読み込む。指紋や色はこのバイトから取る（自分の写真のときと同じ作り）
+  async function loadWork(w) {
+    const r = await fetch(MUSEUM_BASE + w.f);
+    if (!r.ok) throw new Error('museum ' + r.status);
+    const blob = await r.blob(), bytes = new Uint8Array(await blob.arrayBuffer());
+    const url = URL.createObjectURL(blob), img = new Image();
+    await new Promise((ok, ng) => { img.onload = ok; img.onerror = ng; img.src = url; });
+    URL.revokeObjectURL(url);
+    return { bytes, img };
+  }
+  const mlOf = (w, f, i) => ({ ml: Object.fromEntries(Object.entries(w.t).map(([l, v]) => [l, i === undefined ? v[f] : v[f][i]])) });
+  // 前もって作った名前・属性・種類・技・説明を入れる。強さは写真のときと同じ作り（AI の強さアップは無い）
+  function applyWork(M, w) {
+    if (TYPES[w.type]) M.type = w.type;
+    if (KINDS[w.kind] && w.kind !== '人間') M.g.kind = w.kind;
+    if (w.kind === '動物' && ANIMALS[w.animal]) M.g.animal = w.animal;
+    M.name = mlOf(w, 'name'); M.motif = mlOf(w, 'motif'); M.desc = mlOf(w, 'desc');
+    M.moves = [mlOf(w, 'moves', 0), mlOf(w, 'moves', 1)];
+    M.source = 'museum';
+    M.works = [{ m: w.m, title: w.title, url: w.url, story: mlOf(w, 'story') }];
+  }
+  async function hatch() {
+    const ws = [...picked].sort((a, b) => a - b).map(i => shelf[i]);
+    if (!ws.length) return;
+    setStatus(tr(ws.length > 1 ? 'fusing' : 'hatching'));
+    let loaded;
+    try { loaded = await Promise.all(ws.map(loadWork)); } catch (e) { setStatus(tr('museumErr')); return; }
+    const parts = [];
+    for (let i = 0; i < ws.length; i++) {
+      const M = await build(loaded[i].bytes, loaded[i].img, printOf(fingerprint(loaded[i].bytes)));
+      applyWork(M, ws[i]); parts.push(M);
+    }
+    picked.clear(); renderShelf();
+    if (parts.length === 1) return show(parts[0], null);
+    const F = fuse(parts);
+    F.source = 'museum'; F.works = parts.flatMap(p => p.works);
+    return show(F, null);
+  }
+  // カードの下に、生まれた作品と由来を出す（作品ページへのリンクつき）
+  function showWorks(M) {
+    const box = $('works'), ws = Array.isArray(M.works) ? M.works : [];
+    box.classList.toggle('hidden', !ws.length);
+    box.innerHTML = ws.map(w => {
+      const url = typeof w.url === 'string' && /^https:\/\/[^\s"'<>]+$/.test(w.url) ? w.url : '';
+      const title = url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(w.title)}</a>` : esc(w.title);
+      return `<p><b>🏛 ${esc(tr('mu_' + w.m))}</b>　${title}<br>${esc(txt(w.story))}</p>`;
+    }).join('');
+  }
+
   // ---- 結婚の操作 ----
   const slots = { m: null, f: null };
   function renderSlots() {
@@ -1885,6 +1912,9 @@
   }
 
   // ---- 入力 ----
+  document.querySelectorAll('.museums button').forEach(b => b.addEventListener('click', () => deal(b.dataset.m)));
+  $('reshuffle').addEventListener('click', () => { const on = document.querySelector('.museums button[aria-pressed="true"]'); deal(on ? on.dataset.m : 'all'); });
+  $('hatch').addEventListener('click', hatch);
   const drop = $('drop');
   drop.addEventListener('click', () => $('file').click());
   drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('file').click(); } });
@@ -1892,9 +1922,10 @@
   ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
   ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
   drop.addEventListener('drop', e => { if (e.dataTransfer.files.length) fromFiles(e.dataTransfer.files); });
+  // 枠の外に落としたときは、ブラウザがファイルを開かないようにするだけ（読まない）
   window.addEventListener('dragover', e => e.preventDefault());
-  window.addEventListener('drop', e => { e.preventDefault(); if (e.target !== drop && e.dataTransfer.files.length) fromFiles(e.dataTransfer.files); });
-  $('again').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  window.addEventListener('drop', e => e.preventDefault());
+  $('again').addEventListener('click', () => { $('pick').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
   $('save').addEventListener('click', () => {
     $('card').toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `monster-${current.print}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }, 'image/png');
   });

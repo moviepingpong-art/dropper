@@ -11,6 +11,7 @@
     if (typeof s !== 'object') return String(s);
     if (Array.isArray(s)) return s.map(txt).join('');
     if (s.cat) return s.cat.map(txt).join('');
+    if (s.ml) return String(s.ml[window.LANG || 'ja'] ?? s.ml.en ?? s.ml.ja ?? ''); // 美術館の作品から生まれた子（言語ごとの文）
     if (s.k) { const v = {}; for (const key in (s.v || {})) v[key] = txt(s.v[key]); return tr(s.k, v); }
     if (s.d) { let x = D(s.d); for (const i of s.p) x = x === undefined ? undefined : x[i]; return x === undefined ? '' : String(x); }
     if (s.ty) return (D('types') || {})[s.ty] || s.ty;
