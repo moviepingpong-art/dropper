@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>몬스터 드로퍼 | 사진에서 몬스터 카드가 태어난다 | 드로퍼 놀이터</title>
-<meta name="description" content="사진을 드롭하면 세상에 한 장뿐인 몬스터 카드가 태어나는 놀이. 2~3장으로 합체, 남성 카드와 여성 카드로 결혼과 아이. 1000장에 1장인 골드도. 사진은 브라우저 안에서만 처리하며 로그인도 필요 없습니다.">
+<title>몬스터 드로퍼 | 미술관 작품에서 몬스터 카드가 태어난다 | 드로퍼 놀이터</title>
+<meta name="description" content="미술관 작품에서 세상에 한 장뿐인 몬스터 카드가 태어나는 놀이. 제비뽑기로 놓인 15점 중 1점이면 부화, 2~3점이면 합체, 남성 카드와 여성 카드로 결혼과 아이. 1000장에 1장인 골드도. 내 사진이나 파일은 쓰지 않으며 로그인도 필요 없습니다.">
 <link rel="canonical" href="https://dropper-tools.com/ko/play/monster.html">
 <link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/monster.html">
 <link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/monster.html">
@@ -17,7 +17,7 @@
 <meta property="og:site_name" content="Dropper">
 <meta property="og:locale" content="ko_KR">
 <meta property="og:title" content="몬스터 드로퍼 | 드로퍼 놀이터">
-<meta property="og:description" content="사진을 드롭하면 세상에 한 장뿐인 몬스터 카드가 태어난다. 합체·결혼·아이. 1000장에 1장인 골드도.">
+<meta property="og:description" content="미술관 작품에서 세상에 한 장뿐인 몬스터 카드가 태어난다. 합체·결혼·아이. 1000장에 1장인 골드도.">
 <meta property="og:url" content="https://dropper-tools.com/ko/play/monster.html">
 <meta property="og:image" content="https://dropper-tools.com/assets/og/og-en.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -134,6 +134,21 @@ footer a{color:var(--primary)}
 .couple .kids{color:var(--text-mid);margin-left:auto}
 .couple button{padding:6px 14px;font-size:14px}
 @media (max-width:480px){.slots{grid-template-columns:1fr}}
+.pick h3{margin:0 0 4px;font-size:17px}
+.museums{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.museums button{padding:8px 12px;font-size:14px}
+.museums button[aria-pressed="true"]{background:var(--primary);color:#fff;border-color:var(--primary)}
+.eggs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:6px 0 10px}
+.egg{position:relative;padding:0;border:3px solid transparent;border-radius:10px;background:var(--card);cursor:pointer;aspect-ratio:1;overflow:hidden}
+.egg img{width:100%;height:100%;object-fit:cover;display:block}
+.egg[aria-pressed="true"]{border-color:var(--accent)}
+.egg[aria-pressed="true"]::after{content:"✓";position:absolute;right:4px;top:2px;background:var(--accent);color:#fff;border-radius:50%;width:22px;height:22px;font-weight:900;line-height:22px;font-size:14px}
+.egg:focus-visible{outline:3px solid var(--primary)}
+.drop.life{padding:18px 16px}
+.drop.life .big{font-size:30px}
+.works{max-width:600px;margin:8px auto 0;font-size:14px;color:var(--text-mid)}
+.works p{margin:6px 0}
+@media (max-width:480px){.eggs{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
@@ -141,24 +156,41 @@ footer a{color:var(--primary)}
   <nav class="langs" aria-label="Language"><a href="/play/monster.html" hreflang="ja" data-lang="ja">日本語</a><span class="sep">/</span><a href="/en/play/monster.html" hreflang="en" data-lang="en">English</a><span class="sep">/</span><a href="/in/play/monster.html" hreflang="en-IN" data-lang="in">Hinglish</a><span class="sep">/</span><a href="/ko/play/monster.html" hreflang="ko" data-lang="ko">한국어</a><span class="sep">/</span><a href="/zh-hant/play/monster.html" hreflang="zh-Hant" data-lang="zh-hant">繁體中文</a><span class="sep">/</span><a href="/vi/play/monster.html" hreflang="vi" data-lang="vi">Tiếng Việt</a></nav>
   <div class="shelf" data-i18n="shelf">DROPPER PLAYGROUND ／ ドロッパーの遊び場</div>
   <h1><span data-i18n="h1a">モンスター</span><span data-i18n="h1b">ドロッパー</span></h1>
-  <p class="lead" data-i18n="lead">身の回りの写真をドロップすると、その写真からモンスターが生まれます。冷蔵庫の中、散歩の景色、机の上、なんでも。文章のファイルや音声のファイルからも生まれます。</p>
+  <p class="lead" data-i18n="lead">世界の美術館の作品から、くじで15点が並びます。えらんだ作品から、世界に1枚だけのモンスターが生まれます。壺も、剣も、花の絵も。自分の写真やファイルは使いません。</p>
   <p class="lead" data-i18n="lead2" data-i18n-html>「<a href="https://1in8b.life/ja/" target="_blank" rel="noopener">80億分の1</a>」の人生の記録の画像をドロップすると、その人生から<b>守り神</b>（人間のカード）が生まれます。※「80億分の1」の公式の機能ではありません。</p>
 
-  <div class="drop" id="drop" tabindex="0" role="button" aria-label="写真・文章・音声のファイルを選ぶ" data-i18n="dropAria" data-i18n-attr="aria-label">
-    <div class="big">🥚</div>
-    <b data-i18n="dropTitle">写真・文章・音声をドロップ</b>
-    <small data-i18n="dropHint" data-i18n-html>2〜3枚まとめて落とすと<b>合体</b>します。ここを押して選ぶこともできます（写真＝JPEG・PNG・WebP、文章＝.txt・.md、音声＝.mp3・.m4a・.wav・.ogg）</small>
+  <section class="panel pick" id="pick">
+    <h3 data-i18n="pickTitle">🏛 美術館をえらぶ</h3>
+    <p class="note" data-i18n="pickHint" data-i18n-html>押すと、その館の作品から<b>15点</b>がくじで並びます。1点えらぶと<b>孵化</b>、2〜3点えらぶと<b>合体</b>します。</p>
+    <div class="museums">
+      <button type="button" class="sub" data-m="all" aria-pressed="false" data-i18n="mu_all">🎲 4館ぜんぶ</button>
+      <button type="button" class="sub" data-m="met" aria-pressed="false" data-i18n="mu_met">メトロポリタン美術館</button>
+      <button type="button" class="sub" data-m="aic" aria-pressed="false" data-i18n="mu_aic">シカゴ美術館</button>
+      <button type="button" class="sub" data-m="cma" aria-pressed="false" data-i18n="mu_cma">クリーブランド美術館</button>
+      <button type="button" class="sub" data-m="smk" aria-pressed="false" data-i18n="mu_smk">デンマーク国立美術館</button>
+    </div>
+    <div id="shelfBox" class="hidden">
+      <div class="eggs" id="eggs"></div>
+      <div class="row"><button id="hatch" disabled data-i18n="hatchBtn">🥚 孵す</button><button class="sub" id="reshuffle" data-i18n="reshuffle">🎲 別の15点</button></div>
+    </div>
+    <p class="note" data-i18n="pickNote">作品は、メトロポリタン美術館・シカゴ美術館・クリーブランド美術館・デンマーク国立美術館が権利を放棄して公開している物（CC0）から選びました。人や文字・ロゴが写った物は外してあります。</p>
+  </section>
+
+  <div class="drop life" id="drop" tabindex="0" role="button" aria-label="人生の記録の画像を選ぶ" data-i18n="dropAria" data-i18n-attr="aria-label">
+    <div class="big">🕯</div>
+    <b data-i18n="dropTitle">人生の記録の画像をドロップ（守り神）</b>
+    <small data-i18n="dropHint" data-i18n-html>自分でドロップできるのは「80億分の1」の人生の記録の画像だけです。それ以外の画像は、この端末の中で見分けて、何も残さずに断ります。</small>
   </div>
-  <input type="file" id="file" accept="image/*,text/plain,text/markdown,.txt,.md,audio/*,.mp3,.m4a,.wav,.ogg" multiple class="hidden">
+  <input type="file" id="file" accept="image/*" class="hidden">
 
   <div class="panel">
     <label class="switch">
       <input type="checkbox" id="aiOn">
-      <span><b data-i18n="aiSwitch">AI に写っているものを読ませる（任意）</b>
-      <small data-i18n="aiSwitchHint" data-i18n-html>オフのときは、写真の色や音の大きさ・高さだけで生まれ、ファイルはこの端末から出ません。オンにすると、AI が写真の中身を読み取り、その内容に合ったモンスターが生まれます。API キーはいりません。文章と音声のファイルは AI に送りません。</small></span>
+      <span><b data-i18n="aiSwitch">人生の記録の文字を AI に読ませる（任意）</b>
+      <small data-i18n="aiSwitchHint" data-i18n-html>オンにすると、守り神のカードに、記録に書かれた名前・仕事・国などが入ります。オフのときは、画像はこの端末から出ません。美術館の作品は AI に送りません。API キーはいりません。</small></span>
     </label>
     <div id="aiBox" class="hidden">
-      <p class="warn" data-i18n="aiWarn">⚠ オンのときは、縮めた写真を、ドロッパーの中継を通して OpenAI の AI に送ります。中継では保存しません。送った写真は、OpenAI が AI の改良に使うことがあります。人の顔や名前・住所などが写った写真は使わないでください。</p>
+      <p class="warn" data-i18n="aiWarn">⚠ オンのときは、縮めた人生の記録の画像を、ドロッパーの中継を通して OpenAI の AI に送ります。中継では保存しません。送った画像は、OpenAI が AI の改良に使うことがあります。</p>
     </div>
   </div>
 
@@ -167,10 +199,11 @@ footer a{color:var(--primary)}
   <section class="stage hidden" id="stage">
     <div class="ai-state hidden" id="aiState" role="status" aria-live="polite"><span class="ai-spin"></span><span id="aiMsg"></span><button id="aiRetry" class="hidden" data-i18n="aiRetry">もう一度試す</button></div>
     <canvas id="card" width="600" height="920" aria-label="モンスターのカード" data-i18n="cardAria" data-i18n-attr="aria-label"></canvas>
+    <div class="works hidden" id="works"></div>
     <div class="row">
       <button id="save" data-i18n="save">カードを画像で保存</button>
       <button class="sub" id="cand" data-i18n="cand">💍 結婚相手の候補にする</button>
-      <button class="sub" id="again" data-i18n="again">別のファイルで</button>
+      <button class="sub" id="again" data-i18n="again">別の作品で</button>
     </div>
   </section>
 
@@ -202,7 +235,7 @@ footer a{color:var(--primary)}
       <li data-i18n="rule3" data-i18n-html><b>打ち消し</b>：炎×水・炎×森・雷×土が入ると、ほかの法則はぜんぶ効かなくなり、混ぜた中でいちばん強い子の力から1組ごとに15%ずつ削られる。<b>必ず元より弱くなる</b></li>
       <li data-i18n="rule4" data-i18n-html><b>にじ</b>：3つとも違う属性なら +10%</li>
       <li data-i18n="rule5" data-i18n-html><b>データの珍しさ</b>：🥇ゴールド（1000枚に1枚）を混ぜると1枚ごとに +25%、🥈シルバー（500枚に1枚）は +10%、⚠バグ個体は +8%。ただしバグ個体が2つ以上だと、合体した子もバグる</li>
-      <li data-i18n="rule6">落とす順番は関係ありません</li>
+      <li data-i18n="rule6">えらぶ順番は関係ありません</li>
       <li data-i18n="rule8" data-i18n-html><b>守り神</b>（人生の記録から生まれた人間のカード）は合体しません</li>
       <li data-i18n="rule7">……ほかにも、まだ見つかっていない法則があるらしい</li>
     </ul>
@@ -211,13 +244,13 @@ footer a{color:var(--primary)}
   <section class="about">
     <h3 data-i18n="howTitle">どうやって生まれるの？</h3>
     <ul>
-      <li data-i18n="how1">写真のいちばん多い色で、属性（炎・水・森…）が決まります</li>
-      <li data-i18n="how2" data-i18n-html>AI をオンにすると、写真に写っているもので<b>キャラの種類・体の形・属性・名前・技・説明</b>が決まります（食べ物なら器の形の料理の妖精、乗り物ならロボット、建物なら家の形の街の番人…）。音声は AI に送りません</b>が決まります（食べ物なら器の形の料理の妖精、乗り物ならロボット、建物なら家の形の街の番人…）</li>
-      <li data-i18n="how3">文章は、長さ・「！」や「？」の多さ・漢字の割合・1文の短さ・改行の多さで、強さと体の形が決まります。音声は、長さ・音の大きさ・低い音と高い音の多さで決まります</li>
-      <li data-i18n="how4" data-i18n-html>写真のデータから<b>発行のたびに違う部分</b>を読み取り、それで体の形・目・模様・強さ・性別を決めます。同じ写真でも、二度と同じ子は生まれません</li>
-      <li data-i18n="how8" data-i18n-html>同じファイルなら、<b>AI で中身まで読めた子のほうが必ず強く</b>生まれます。ただし20個に1個くらいの<b>力の強いデータ</b>は、AI があってもなくても同じように強く生まれます</li>
+      <li data-i18n="how1" data-i18n-html>作品ごとに、描かれている物や形に合った<b>属性・キャラの種類・名前・技・説明</b>が決まっています（壺なら器の形、鳥の絵なら鳥のけもの…）。どれも前もって用意したもので、AI には送りません</li>
+      <li data-i18n="how2" data-i18n-html>カードの下に、生まれた<b>作品の名前と由来</b>が出ます。作品の名前を押すと、美術館のページで本物を見られます</li>
+      <li data-i18n="how3">作品は、4つの美術館が権利を放棄して公開している物（CC0）だけです。人の顔や姿、目立つ文字、ロゴが写った物は、1点ずつ見て外しました</li>
+      <li data-i18n="how4" data-i18n-html>作品の画像のデータから<b>発行のたびに違う部分</b>を読み取り、それで体の形・目・模様・強さ・性別を決めます。同じ作品でも、二度と同じ子は生まれません</li>
+      <li data-i18n="how8" data-i18n-html>20個に1個くらいの<b>力の強いデータ</b>からは、ほかより強い子が生まれます。どの作品がそうかは、生まれるまで分かりません</li>
       <li data-i18n="how5" data-i18n-html>どのカードにも、その1枚だけの<b>紋章</b>と、読み取った部分・発行番号が入ります</li>
-      <li data-i18n="how6">カードの背景には、読み取った写真の一部・文章の一部が薄く入ります。音声の中身とファイル名は入れません</li>
+      <li data-i18n="how6">カードの背景には、読み取った作品の画像の一部が薄く入ります</li>
       <li data-i18n="how9" data-i18n-html>人生の記録から生まれた<b>守り神</b>は、戦わずにモンスターたちを見守る存在です。どの人生にも点数をつけないので、強さ・珍しさはつけません</li>
       <li data-i18n="how7">図鑑・結婚・子どもは、この PC・スマホの中にだけ残ります</li>
     </ul>
