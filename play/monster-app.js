@@ -1686,12 +1686,43 @@
       return false;
     }
   }
+  // 合体した作品から、AI に名前とお話を書いてもらう。うまくいかなければ、ふつうの合体の名前のまま（強さは変えない）
+  async function fuseAI(M, done) {
+    const t0 = Date.now();
+    const tick = () => aiShow(M, 'work', tr('aiWorkFuse', { sec: Math.floor((Date.now() - t0) / 1000) }), tr('aiWorkFuseHint'));
+    tick(); const iv = setInterval(tick, 1000);
+    setStatus(tr('aiReadingFuse'));
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 45000);
+    try {
+      let resp, data = {};
+      try {
+        resp = await fetch(AI_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctl.signal,
+          body: JSON.stringify({ kind: 'fuse', lang: LANG, works: M.works.map(w => w.f) }) });
+      } catch (e) { throw aiErr(e.name === 'AbortError' ? 'slow' : 'net'); }
+      try { data = await resp.json(); } catch (e) {}
+      const a = data.answer || {};
+      const name = clip(a.name, D('clipName')), story = clip(a.story, D('clipStory'));
+      if (!resp.ok || !name) throw aiErr(AI_FAIL[data.error] ? data.error : 'bad');
+      // AI が書いた文は、文そのもの（頼んだときのページの言語のまま）
+      M.name = name; M.fuseStory = story;
+      clearInterval(iv);
+      aiShow(M, 'ok', tr('aiDoneFuse', { sec: Math.max(1, Math.round((Date.now() - t0) / 1000)) }), '');
+      if (current === M) { await loadFontsFor(M); drawCard($('card'), M); showWorks(M); }
+    } catch (e) {
+      clearInterval(iv);
+      const f = AI_FAIL[e.kind] || AI_FAIL.bad;
+      aiShow(M, 'ng', '⚠ ' + (e.kind ? e.message : tr(f.msg)), tr('aiNgFuseHint'));
+    } finally { clearTimeout(timer); }
+    setStatus(done());
+  }
   async function show(M, img, note) {
     M.serial = await nextSerial();
     if (!(await display(M))) return;
     const done = () => (note ? note + tr('statusSep') : '') + statusOf(M);
-    // AI に送るのは、人生の記録の画像（自分でドロップした物）だけ。美術館の作品は、名前・技・説明を前もって作ってあるので送らない
+    // AI に送る画像は、人生の記録（自分でドロップした物）だけ。美術館の作品は、名前・技・説明を前もって作ってある。
+    // 作品を合体したときだけ、作品のファイル名を中継に送り、AI に名前とお話を書いてもらう（スイッチに関係なく。画像は送らない）
     if ($('aiOn').checked && img && img.__fromFile && M.source === 'life') await runAI(M, img, done);
+    else if (M.source === 'museum' && M.fusion && Array.isArray(M.works) && M.works.length > 1) await fuseAI(M, done);
     else setStatus(done());
     // 待っている間に別のカードを開いていたら、この子の絵をいったん描き直してから図鑑に入れる
     if (current !== M) { const back = current; await display(M); await saveCard(M); return display(back); }
@@ -1834,7 +1865,7 @@
     M.name = mlOf(w, 'name'); M.motif = mlOf(w, 'motif'); M.desc = mlOf(w, 'desc');
     M.moves = [mlOf(w, 'moves', 0), mlOf(w, 'moves', 1)];
     M.source = 'museum';
-    M.works = [{ m: w.m, title: w.title, url: w.url, story: mlOf(w, 'story') }];
+    M.works = [{ f: w.f, m: w.m, title: w.title, url: w.url, story: mlOf(w, 'story') }];
   }
   async function hatch() {
     const ws = [...picked].sort((a, b) => a - b).map(i => shelf[i]);
@@ -1857,7 +1888,8 @@
   function showWorks(M) {
     const box = $('works'), ws = Array.isArray(M.works) ? M.works : [];
     box.classList.toggle('hidden', !ws.length);
-    box.innerHTML = ws.map(w => {
+    const story = typeof M.fuseStory === 'string' && M.fuseStory ? `<p class="fuse-story"><b>${esc(tr('fuseStoryHead'))}</b><br>${esc(M.fuseStory)}</p>` : '';
+    box.innerHTML = story + ws.map(w => {
       const url = typeof w.url === 'string' && /^https:\/\/[^\s"'<>]+$/.test(w.url) ? w.url : '';
       const title = url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(w.title)}</a>` : esc(w.title);
       return `<p><b>🏛 ${esc(tr('mu_' + w.m))}</b>　${title}<br>${esc(txt(w.story))}</p>`;

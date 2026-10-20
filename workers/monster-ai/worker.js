@@ -6,6 +6,7 @@
 import './shim.js';
 import '../../play/monster-i18n.js'; // 頼み文の出どころ。ページの辞書と同じ物を使う（直したら出し直す）
 import { eventPrompt, schedulePrompt, HINTS } from './tool-prompts.js';
+import MUSEUM from '../../play/museum/museum.json'; // 合体の材料。ページからは作品のファイル名だけを受け取り、中身はここから引く
 
 const I18N = globalThis.I18N;
 const MAX_IMAGE = 2000000; // base64 の文字数（約1.5MB）
@@ -18,6 +19,7 @@ for (const c of 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+
 const TOOL_WAIT = 90000;   // 予定表は1枚で何十件も返すので長めに待つ
 const MIMES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const EVENT_TYPES = ['sports', 'general', ...Object.keys(HINTS)];
+const WORKS = new Map(MUSEUM.map(w => [w.f, w]));
 
 export default {
   async fetch(req, env) {
@@ -35,6 +37,7 @@ export default {
     let q;
     try { q = await req.json(); } catch (e) { return out({ error: 'bad' }, 400); }
     const kind = q && q.kind, lang = q && q.lang, image = q && q.image;
+    if (kind === 'fuse') return fuse(req, env, q, out);
     if (!['photo', 'life'].includes(kind) || !I18N[lang] || typeof image !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(image)) return out({ error: 'bad' }, 400);
     if (image.length > MAX_IMAGE) return out({ error: 'size' }, 413);
 
@@ -56,6 +59,35 @@ export default {
     await env.DB.prepare('DELETE FROM counts WHERE day < ?').bind(new Date().toISOString().slice(0, 10)).run();
   }
 };
+
+// 美術館の作品の合体（2026-10-20〜）。ページが送るのは言語と、合体した作品のファイル名（2〜3点）だけ。
+// 利用者の画像も文字も受け取らない。作品の名前・由来はこの中継の素材集（museum.json）から引いて、AI に新しい名前と物語を書かせる
+async function fuse(req, env, q, out) {
+  const lang = q.lang, fs = q.works;
+  if (!I18N[lang] || !Array.isArray(fs) || fs.length < 2 || fs.length > 3 || !fs.every(f => typeof f === 'string' && WORKS.has(f))) return out({ error: 'bad' }, 400);
+  const day = new Date().toISOString().slice(0, 10);
+  const used = await env.DB.prepare("SELECT n FROM counts WHERE day = ? AND k = 'tokens'").bind(day).first('n') || 0;
+  if (used + Number(env.RESERVE_TOKENS) > Number(env.DAILY_TOKEN_LIMIT)) return out({ error: 'quota' }, 429);
+  // 1人1日の枚数は、写真・人生の記録と同じ数に入れる
+  const who = 'ip:' + (await sha256(env.IP_SALT + day + (req.headers.get('CF-Connecting-IP') || ''))).slice(0, 16);
+  if (await add(env, day, who, 1) > Number(env.PER_IP_DAILY)) return out({ error: 'limit' }, 429);
+  const works = fs.map((f, i) => {
+    const w = WORKS.get(f), t = w.t[lang] || w.t.en;
+    return `${i + 1}. ${w.title}（${w.date}）\n   ${t.name} / ${t.motif}\n   ${t.story}`;
+  }).join('\n');
+  const prompt = I18N[lang].fusePrompt.replace('{n}', fs.length) + '\n\n' + works;
+  let a;
+  try {
+    a = await call(env, effort => JSON.stringify(Object.assign({
+      model: env.OPENAI_MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      response_format: { type: 'json_object' },
+      max_completion_tokens: 2000
+    }, effort ? { reasoning_effort: 'minimal' } : {})), WAIT);
+  } catch (e) { await add(env, day, who, -1); return out({ error: e.kind || 'busy' }, e.kind === 'bad' ? 502 : 503); }
+  await add(env, day, 'tokens', a.tokens);
+  return out({ answer: a.answer });
+}
 
 // イベント・予定表。言語・種類（または年度）・ファイルの種類は URL で、ファイルそのもの（base64）は本文で受け取る。
 // 本文は文字として読まず、バイトのまま OpenAI への頼みに挟む（大きなファイルで Worker の計算時間を使わないため）

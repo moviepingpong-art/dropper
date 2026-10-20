@@ -5,9 +5,12 @@
 | 道 | 受け付ける生成元 | 受け取るもの | 1人1日 |
 |---|---|---|---|
 | `/monster` | `ALLOWED_ORIGINS`（dropper-tools.com） | JSON（`kind`・`lang`・縮めた画像） | `PER_IP_DAILY` |
+| `/monster`（`kind: 'fuse'`） | 同上 | JSON（`lang`・合体した作品のファイル名2〜3個）。画像は受け取らない | `PER_IP_DAILY`（上と同じ数に入る） |
 | `/event` | `TOOL_ORIGINS`（app.dropper-tools.com） | URL に `lang`・`type`・`mime`、本文にファイル（PDF・画像）の base64 | `PER_IP_EVENT` |
 | `/schedule` | `TOOL_ORIGINS` | URL に `lang`・`fy`（年度、無くてよい）・`mime`、本文に base64 | `PER_IP_SCHEDULE` |
 
+- 合体の名づけ（2026-10-20〜）は、作品の名前・由来を `play/museum/museum.json` から引き、頼み文は `monster-i18n.js` の `fusePrompt`。
+  **素材集か頼み文を直したら出し直す**
 - 道具2本の頼み文は `tool-prompts.js` にある（ツールのページは頼み文を持たない）。**直したら出し直す**
 - 本文は文字として読まず、バイトのまま OpenAI への頼みに挟む。だから base64 の文字以外が1つでもあれば断る（JSON に別の指示を差し込ませない）
 - イベントはファイルそのものを読ませる。Google ドライブの OCR の文字は、Google の Limited Use の決まりで、学習に使われる先へ渡せないため
