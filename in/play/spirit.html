@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spirit Dropper | Museum ki artworks se spirits jaagte hain | Dropper Playground</title>
+<meta name="description" content="Museum band hone ke baad, artworks mein soye spirits jaag uthte hain. Duniya ke museums ki random 15 artworks mein se 1 chuno to spirit jaagta hai, 2-3 chuno to bandhan. Spirits ke rishte aur virasat, aur 1,000 mein 1 Gold Light. Apni photos ya files use nahin hotin. Login nahin chahiye.">
+<link rel="canonical" href="https://dropper-tools.com/in/play/spirit.html">
+<link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/spirit.html">
+<link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/spirit.html">
+<link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/spirit.html">
+<link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/spirit.html">
+<link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/spirit.html">
+<link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/spirit.html">
+<link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/spirit.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dropper">
+<meta property="og:locale" content="en_IN">
+<meta property="og:title" content="Spirit Dropper | Dropper Playground">
+<meta property="og:description" content="Museum band hone ke baad. Artwork mein soya spirit aapke haath se jaagta hai. Jagna, bandhan, rishte aur virasat. 1,000 mein 1 Gold Light.">
+<meta property="og:url" content="https://dropper-tools.com/in/play/spirit.html">
+<meta property="og:image" content="https://dropper-tools.com/assets/og/og-in.png">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Google Analytics (GA4)。測定IDはほかのページと同じ（build.py の GA_TAG）。
+     イベントは回数だけを送る（track()）。写真・名前・カードの中身は送らない（プライバシーポリシー「遊び場」の節） -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PQPKYYYXKG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PQPKYYYXKG');
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* 夜の美術館（2026-10-21〜）。閉館後の展示室なので、明るい表示のときも夜の色のまま */
+:root{
+  --primary:#c9a45c; --primary-soft:#e6cf9a; --primary-pale:#2a2414; --accent:#e6cf9a; --accent2:#e6cf9a;
+  --bg:#0b0d16; --card:#131624; --wall:#121524; --text-dark:#ece6d8; --text-mid:#b8b2a2; --text-light:#8a8577; --border:#2a2c3a;
+  --serif:'Noto Serif JP',serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0b0d16; } }
+:root[data-theme="dark"]{ --bg:#0b0d16; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);background-image:radial-gradient(ellipse 70% 40% at 50% 0%,rgba(201,164,92,.10),transparent 70%);background-repeat:no-repeat;color:var(--text-dark);font-family:'Noto Sans JP',sans-serif;line-height:1.75}
+.wrap{max-width:720px;margin:0 auto;padding:24px 16px 48px}
+/* 日本語以外のページは、辞書で言葉を入れ替えるまで隠す（一瞬だけ日本語が見えないように） */
+html:not([lang="ja"]):not(.i18n-ready) .wrap{visibility:hidden}
+.langs{text-align:right;font-size:12px;font-weight:500;letter-spacing:.03em;margin:-12px 0 2px}
+.langs a{color:var(--text-light);text-decoration:none;white-space:nowrap}
+.langs a.active{color:var(--primary)}
+.langs .sep{color:var(--border);margin:0 .3em}
+.shelf{font-family:var(--serif);letter-spacing:.3em;color:var(--primary);font-size:12px;font-weight:500;margin-top:18px}
+h1{margin:6px 0 8px;font-family:var(--serif);font-size:clamp(28px,6.4vw,40px);font-weight:600;letter-spacing:.1em}
+h1 span+span{color:var(--primary-soft)}
+.lead{margin:0 0 16px;color:var(--text-mid)}
+.lead:first-of-type{font-family:var(--serif);font-size:16.5px;line-height:2}
+.lead a{color:var(--primary-soft)}
+.drop{border:1px dashed var(--primary);border-radius:4px;background:var(--card);padding:36px 16px;text-align:center;cursor:pointer;transition:background .15s}
+.drop.over{background:var(--primary-pale)}
+.drop .big{font-size:40px;line-height:1}
+.drop b{display:block;font-size:17px;margin:10px 0 4px;font-family:var(--serif);font-weight:600}
+.drop small{color:var(--text-light)}
+.drop small b,.switch small b{display:inline;font-size:inherit;margin:0;font-family:inherit}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+button{font:inherit;font-family:var(--serif);font-weight:600;letter-spacing:.08em;border:1px solid var(--primary);border-radius:2px;padding:10px 22px;cursor:pointer;background:var(--primary);color:#1a1408}
+button:disabled{opacity:.45;cursor:default}
+button.sub{background:transparent;color:var(--primary-soft);border:1px solid var(--primary)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--primary-soft);outline-offset:2px}
+.hidden{display:none!important}
+.panel{margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:16px 18px}
+.panel h3,.dex h3,.about h3{font-family:var(--serif);font-weight:600;letter-spacing:.06em}
+.switch{display:flex;align-items:flex-start;gap:10px;cursor:pointer}
+.switch input{width:20px;height:20px;margin-top:4px;accent-color:var(--primary)}
+.switch b{display:block}
+.switch small{color:var(--text-mid)}
+.note{font-size:13px;color:var(--text-mid);margin:8px 0 0}
+/* 対戦のページ（battle.html）への入口。目録の見出しのすぐ下 */
+.battle-link{display:inline-block;margin:10px 0 0;padding:8px 18px;border-radius:2px;font-family:var(--serif);font-weight:600;font-size:14px;letter-spacing:.06em;color:var(--primary-soft);text-decoration:none;border:1px solid var(--primary)}
+.battle-link:hover{background:var(--primary-pale)}
+.note a{color:var(--primary-soft)}
+.warn{font-size:13px;color:var(--primary-soft);margin:8px 0 0;font-weight:500}
+.status{text-align:center;color:var(--text-mid);margin:18px 0 0;min-height:1.7em;font-family:var(--serif)}
+.stage{margin-top:12px;text-align:center;position:relative}
+/* AI のようす（動いている・終わった・うまくいかなかった）。カードの真上に出す */
+.ai-state{display:flex;gap:8px 12px;align-items:center;justify-content:center;flex-wrap:wrap;max-width:600px;margin:0 auto 10px;padding:10px 14px;border-radius:4px;font-weight:500;line-height:1.5;text-align:left;border:1px solid var(--border)}
+.ai-state.work{background:#151a2e;color:#b9c6ef}
+.ai-state.ok{background:#141f1a;color:#b5dcc0}
+.ai-state.ng{background:#251814;color:#f0bfa8}
+.ai-state.info{background:#16171f;color:#b8b2a2;font-weight:400}
+#aiMsg{flex:1 1 220px;min-width:0}
+.ai-state.ok #aiMsg,.ai-state.info #aiMsg{flex:0 1 auto}
+.ai-state small{display:block;font-weight:400;opacity:.85}
+.ai-spin{width:16px;height:16px;flex:none;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:aispin .8s linear infinite}
+.ai-state:not(.work) .ai-spin{display:none}
+.ai-state button{font:inherit;font-size:.92em;padding:6px 14px;border-radius:2px;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer}
+@keyframes aispin{to{transform:rotate(360deg)}}
+.stage.ai-busy canvas{animation:aibusy 1.4s ease-in-out infinite}
+@keyframes aibusy{50%{filter:brightness(.8) saturate(.7)}}
+#card{width:100%;max-width:420px;height:auto;border-radius:14px;box-shadow:0 0 0 1px rgba(201,164,92,.25),0 14px 40px rgba(0,0,0,.55),0 0 60px rgba(201,164,92,.10)}
+/* 目覚め：暗がりに灯りがともり、光の粒が立ちのぼってから、姿が見える */
+.stage.awaken #card{animation:awaken 2.4s ease-out both}
+@keyframes awaken{0%{filter:brightness(.05) blur(2px);transform:scale(.98)}35%{filter:brightness(.35) blur(1px)}100%{filter:none;transform:none}}
+.stage.awaken::before{content:'';position:absolute;left:50%;top:-30px;width:min(520px,100%);height:620px;transform:translateX(-50%);pointer-events:none;background:radial-gradient(ellipse 45% 60% at 50% 35%,rgba(255,230,170,.22),transparent 70%);animation:spot 2.4s ease-out both}
+@keyframes spot{0%{opacity:0}40%{opacity:1}100%{opacity:.25}}
+.motes{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.motes i{position:absolute;bottom:25%;width:4px;height:4px;border-radius:50%;background:#f3e2b5;box-shadow:0 0 10px #f3e2b5;opacity:0;animation:mote 2.2s ease-out forwards}
+@keyframes mote{0%{opacity:0;transform:translateY(0)}25%{opacity:1}100%{opacity:0;transform:translateY(-260px)}}
+/* 結び：左右から光の糸がのびて、まん中で結ばれる */
+.stage.bind #card{animation:awaken 2.6s ease-out both}
+.stage.bind::after{content:'';position:absolute;left:0;right:0;top:40%;height:2px;pointer-events:none;background:linear-gradient(90deg,transparent,#f3e2b5 30%,#fff 50%,#f3e2b5 70%,transparent);box-shadow:0 0 14px #f3e2b5;transform-origin:center;animation:thread 2.6s ease-out both}
+@keyframes thread{0%{transform:scaleX(0);opacity:0}30%{transform:scaleX(1);opacity:1}60%{opacity:.9}100%{transform:scaleX(.2);opacity:0}}
+@media (prefers-reduced-motion:reduce){.ai-spin,.stage.ai-busy canvas,.stage.awaken #card,.stage.bind #card{animation:none}.stage.awaken::before,.stage.bind::after,.motes{display:none}}
+.snd{display:block;margin:8px auto 0;padding:4px 12px;font-size:12px;font-family:'Noto Sans JP',sans-serif;letter-spacing:0;font-weight:500;background:transparent;color:var(--text-light);border:1px solid var(--border)}
+.dex{margin-top:28px}
+.dex h3{margin:0 0 8px;font-size:17px;display:flex;justify-content:space-between;align-items:center}
+.dex h3 button{padding:4px 12px;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.grid img{width:100%;border-radius:6px;display:block;border:1px solid var(--border)}
+.empty{color:var(--text-light);font-size:14px}
+.about{margin-top:28px;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:16px 18px;font-size:14px;color:var(--text-mid)}
+.about h3{margin:0 0 6px;font-size:15px;color:var(--text-dark)}
+.about b{color:var(--text-dark)}
+.about ul{margin:0;padding-left:1.2em}
+footer{margin-top:24px;text-align:center;font-size:13px;color:var(--text-light)}
+footer a{color:var(--primary-soft)}
+.grid .cardthumb{position:relative;cursor:pointer;border:0;padding:0;background:none;border-radius:6px}
+.grid .cardthumb:focus-visible{outline:2px solid var(--primary-soft)}
+.grid .tag{position:absolute;left:4px;top:4px;display:flex;gap:3px}
+.grid .tag span{background:rgba(11,13,22,.82);color:var(--text-dark);border-radius:4px;padding:0 5px;font-size:11px;font-weight:500;line-height:1.6}
+.sym{display:inline-flex;width:28px;height:28px;border-radius:50%;align-items:center;justify-content:center;color:#fff;font-weight:700;flex:0 0 auto}
+.sym.m{background:#4f6fa8}.sym.f{background:#a8577f}
+.marry h3{margin:0 0 4px;font-size:17px}
+.slots{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.slot{display:flex;align-items:center;gap:8px;border:1px dashed var(--border);border-radius:4px;padding:8px;font-size:14px;min-height:64px}
+.slot img{width:38px;border-radius:4px}
+.slot.on{border-style:solid;border-color:var(--primary)}
+.couple{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);padding:10px 0;font-size:14px}
+.couple img{width:40px;border-radius:4px}
+.couple .kids{color:var(--text-mid);margin-left:auto}
+.couple button{padding:6px 14px;font-size:14px}
+@media (max-width:480px){.slots{grid-template-columns:1fr}}
+.pick h3{margin:0 0 4px;font-size:17px}
+.museums{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.museums button{padding:8px 12px;font-size:14px;letter-spacing:.02em}
+.museums button[aria-pressed="true"]{background:var(--primary);color:#1a1408;border-color:var(--primary)}
+.eggs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:6px 0 10px}
+/* 棚の作品は、小さな額に入れて並べる */
+.egg{position:relative;padding:0;border:4px solid #2b2418;outline:1px solid rgba(201,164,92,.45);border-radius:0;background:#05060b;cursor:pointer;aspect-ratio:1;overflow:hidden;letter-spacing:0}
+.egg img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.82)}
+.egg[aria-pressed="true"]{outline:2px solid var(--primary-soft);box-shadow:0 0 18px rgba(230,207,154,.45)}
+.egg[aria-pressed="true"] img{filter:none}
+.egg[aria-pressed="true"]::after{content:"✦";position:absolute;right:3px;top:1px;background:var(--primary);color:#1a1408;border-radius:50%;width:22px;height:22px;font-weight:700;line-height:22px;font-size:13px}
+.egg:focus-visible{outline:2px solid var(--primary-soft)}
+.drop.life{padding:18px 16px}
+.drop.life .big{font-size:28px}
+.works{max-width:600px;margin:10px auto 0;font-size:14px;color:var(--text-mid);text-align:left}
+.works p{margin:6px 0;padding:8px 12px;background:#e9e2cf;color:#2a2418;border-radius:2px;font-family:var(--serif)}
+.works p b{color:#2a2418}
+.works a{color:#5a4316}
+.works .fuse-story{background:var(--card);color:var(--text-mid);border:1px solid var(--border)}
+.works .fuse-story b{color:var(--primary-soft)}
+@media (max-width:480px){.eggs{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="langs" aria-label="Language"><a href="/play/spirit.html" hreflang="ja" data-lang="ja">日本語</a><span class="sep">/</span><a href="/en/play/spirit.html" hreflang="en" data-lang="en">English</a><span class="sep">/</span><a href="/in/play/spirit.html" hreflang="en-IN" data-lang="in">Hinglish</a><span class="sep">/</span><a href="/ko/play/spirit.html" hreflang="ko" data-lang="ko">한국어</a><span class="sep">/</span><a href="/zh-hant/play/spirit.html" hreflang="zh-Hant" data-lang="zh-hant">繁體中文</a><span class="sep">/</span><a href="/vi/play/spirit.html" hreflang="vi" data-lang="vi">Tiếng Việt</a></nav>
+  <div class="shelf" data-i18n="shelf">DROPPER PLAYGROUND ／ ドロッパーの遊び場</div>
+  <h1><span data-i18n="h1a">スピリット</span><span data-i18n="h1b">ドロッパー</span></h1>
+  <p class="lead" data-i18n="lead">閉館後の美術館。世界の4つの美術館の作品から、くじで15点が並びます。えらんだ作品にひそむ精霊が、あなたの手で目を覚まします。壺にも、剣にも、花の絵にも。自分の写真やファイルは使いません。</p>
+  <p class="lead" data-i18n="lead2" data-i18n-html>「<a href="https://1in8b.life/ja/" target="_blank" rel="noopener">80億分の1</a>」の人生の記録の画像をドロップすると、その人生から<b>守り神</b>（人間のカード）が生まれます。※「80億分の1」の公式の機能ではありません。</p>
+
+  <section class="panel pick" id="pick">
+    <h3 data-i18n="pickTitle">🏛 美術館をえらぶ</h3>
+    <p class="note" data-i18n="pickHint" data-i18n-html>押すと、その館の作品から<b>15点</b>がくじで並びます。1点えらぶと精霊が<b>目覚め</b>、2〜3点えらぶと<b>結び</b>になります。</p>
+    <div class="museums">
+      <button type="button" class="sub" data-m="all" aria-pressed="false" data-i18n="mu_all">🎲 4館ぜんぶ</button>
+      <button type="button" class="sub" data-m="met" aria-pressed="false" data-i18n="mu_met">メトロポリタン美術館</button>
+      <button type="button" class="sub" data-m="aic" aria-pressed="false" data-i18n="mu_aic">シカゴ美術館</button>
+      <button type="button" class="sub" data-m="cma" aria-pressed="false" data-i18n="mu_cma">クリーブランド美術館</button>
+      <button type="button" class="sub" data-m="smk" aria-pressed="false" data-i18n="mu_smk">デンマーク国立美術館</button>
+    </div>
+    <div id="shelfBox" class="hidden">
+      <div class="eggs" id="eggs"></div>
+      <div class="row"><button id="hatch" disabled data-i18n="hatchBtn">🕯 目覚めさせる</button><button class="sub" id="reshuffle" data-i18n="reshuffle">🎲 別の15点</button></div>
+    </div>
+    <p class="note" data-i18n="pickNote">作品は、メトロポリタン美術館・シカゴ美術館・クリーブランド美術館・デンマーク国立美術館が権利を放棄して公開している物（CC0）から選びました。人や文字・ロゴが写った物は外してあります。</p>
+  </section>
+
+  <div class="drop life" id="drop" tabindex="0" role="button" aria-label="人生の記録の画像を選ぶ" data-i18n="dropAria" data-i18n-attr="aria-label">
+    <div class="big">🕯</div>
+    <b data-i18n="dropTitle">人生の記録の画像をドロップ（守り神）</b>
+    <small data-i18n="dropHint" data-i18n-html>自分でドロップできるのは「80億分の1」の人生の記録の画像だけです。それ以外の画像は、この端末の中で見分けて、何も残さずに断ります。</small>
+  </div>
+  <input type="file" id="file" accept="image/*" class="hidden">
+
+  <div class="panel">
+    <label class="switch">
+      <input type="checkbox" id="aiOn">
+      <span><b data-i18n="aiSwitch">人生の記録の文字を AI に読ませる（任意）</b>
+      <small data-i18n="aiSwitchHint" data-i18n-html>オンにすると、守り神のカードに、記録に書かれた名前・仕事・国などが入ります。オフのときは、画像はこの端末から出ません。結んだときの精霊の名前とお話は、このスイッチに関係なく AI が書きます（送るのは作品の番号だけです）。API キーはいりません。</small></span>
+    </label>
+    <div id="aiBox" class="hidden">
+      <p class="warn" data-i18n="aiWarn">⚠ オンのときは、縮めた人生の記録の画像を、ドロッパーの中継を通して OpenAI の AI に送ります。中継では保存しません。送った画像は、OpenAI が AI の改良に使うことがあります。</p>
+    </div>
+  </div>
+
+  <p class="status" id="status" aria-live="polite"></p>
+
+  <section class="stage hidden" id="stage">
+    <div class="ai-state hidden" id="aiState" role="status" aria-live="polite"><span class="ai-spin"></span><span id="aiMsg"></span><button id="aiRetry" class="hidden" data-i18n="aiRetry">もう一度試す</button></div>
+    <canvas id="card" width="600" height="920" aria-label="精霊のカード" data-i18n="cardAria" data-i18n-attr="aria-label"></canvas>
+    <div class="works hidden" id="works"></div>
+    <div class="row">
+      <button id="save" data-i18n="save">カードを画像で保存</button>
+      <button class="sub" id="cand" data-i18n="cand">🕊 縁の候補にする</button>
+      <button class="sub" id="again" data-i18n="again">別の作品で</button>
+    </div>
+    <button class="snd" id="snd" type="button" data-i18n="sndOff">♪ 音を止める</button>
+  </section>
+
+  <section class="dex">
+    <h3><span data-i18n="dexTitle">📜 わたしの目録</span> <button class="sub hidden" id="clearDex" data-i18n="clearDex">目録を空にする</button></h3>
+    <p class="note" id="dexNote" data-i18n="dexNote">カードを押すと大きく見られます。カードの中身はこの PC・スマホの中にだけ保存され、ほかの人には見えません。</p>
+    <a class="battle-link" href="battle.html" data-i18n="battleLink">目録の精霊たちと対戦する</a>
+    <div class="grid" id="dex"></div>
+    <p class="empty" id="dexEmpty" data-i18n="dexEmpty">まだ1体もいません。</p>
+  </section>
+
+  <section class="panel marry" id="marry">
+    <h3 data-i18n="marryTitle">🕊 縁と受け継ぎ</h3>
+    <p class="note" data-i18n="marryNote">目録のカードを押して「縁の候補にする」を選ぶと、ここに入ります。男性カード ♂ と女性カード ♀ を1枚ずつ。縁がつながったふたりから、想いを受け継ぐ子が3人まで生まれます。</p>
+    <div class="slots">
+      <div class="slot" id="slotM"><span class="sym m">♂</span><span>夫：まだ選んでいません</span></div>
+      <div class="slot" id="slotF"><span class="sym f">♀</span><span>妻：まだ選んでいません</span></div>
+    </div>
+    <div class="row"><button id="wed" disabled data-i18n="wed">縁をつなぐ</button><button class="sub" id="unslot" data-i18n="unslot">選び直す</button></div>
+    <p class="warn" id="wedMsg"></p>
+    <div id="couples"></div>
+  </section>
+
+  <section class="about">
+    <h3 data-i18n="rulesTitle">✨ 結びのことわり（わかっているもの）</h3>
+    <ul>
+      <li data-i18n="rule1" data-i18n-html><b>そろい</b>：同じ属性が2つで +20%、3つで +50%</li>
+      <li data-i18n="rule2" data-i18n-html><b>相性</b>：組み合わせによっては +30%（炎×風「ほのおのたつまき」、水×森「めぐみの雨」など、全部で10組）</li>
+      <li data-i18n="rule3" data-i18n-html><b>打ち消し</b>：炎×水・炎×森・雷×土が入ると、ほかのことわりはぜんぶ効かなくなり、混ぜた中でいちばん輝きの強い子から1組ごとに15%ずつ光が削られる。<b>必ず元より弱い光になる</b></li>
+      <li data-i18n="rule4" data-i18n-html><b>にじ</b>：3つとも違う属性なら +10%</li>
+      <li data-i18n="rule5" data-i18n-html><b>光の珍しさ</b>：✦金の光（1000枚に1枚）を混ぜると1枚ごとに +25%、✧銀の光（500枚に1枚）は +10%、〰ゆらぎは +8%。ただしゆらぎが2つ以上だと、結ばれた子もゆらぐ</li>
+      <li data-i18n="rule6">えらぶ順番は関係ありません</li>
+      <li data-i18n="rule8" data-i18n-html><b>守り神</b>（人生の記録から生まれた人間のカード）は結びに加わりません</li>
+      <li data-i18n="rule9" data-i18n-html><b>AI の名づけ</b>：結ばれた精霊の名前と目覚めのお話は、AI が材料の作品をもとに書きます。AI が答えられない日は、ふつうの結びの名前のままです。輝きは変わりません</li>
+      <li data-i18n="rule7">……ほかにも、まだ見つかっていないことわりがあるらしい</li>
+    </ul>
+  </section>
+
+  <section class="about">
+    <h3 data-i18n="howTitle">どうやって生まれるの？</h3>
+    <ul>
+      <li data-i18n="how1" data-i18n-html>作品ごとに、描かれている物や形に合った<b>属性・精霊の種類・名前・技・説明</b>が決まっています（壺なら器の形、鳥の絵なら鳥の姿…）。どれも前もって用意したものです</li>
+      <li data-i18n="how2" data-i18n-html>カードの下に、生まれた<b>作品の名前と由来</b>が出ます。作品の名前を押すと、美術館のページで本物を見られます</li>
+      <li data-i18n="how3">作品は、4つの美術館が権利を放棄して公開している物（CC0）だけです。人の顔や姿、目立つ文字、ロゴが写った物は、1点ずつ見て外しました</li>
+      <li data-i18n="how4" data-i18n-html>作品の画像のデータから<b>目覚めのたびに違う部分</b>を読み取り、それで姿・目・模様・輝き・性別を決めます。同じ作品でも、二度と同じ精霊は目覚めません</li>
+      <li data-i18n="how8" data-i18n-html>20個に1個くらいの<b>光の強いデータ</b>からは、ほかより輝く精霊が目覚めます。どの作品がそうかは、目覚めるまで分かりません</li>
+      <li data-i18n="how5" data-i18n-html>どのカードにも、その1枚だけの<b>紋章</b>と、読み取った部分・発行番号が入ります</li>
+      <li data-i18n="how6">カードの背景には、読み取った作品の画像の一部が薄く入ります</li>
+      <li data-i18n="how9" data-i18n-html>人生の記録から生まれた<b>守り神</b>は、精霊たちを見守る存在です。どの人生にも点数をつけないので、輝き・珍しさはつけません</li>
+      <li data-i18n="how7">目録・縁・受け継ぎは、この PC・スマホの中にだけ残ります</li>
+    </ul>
+  </section>
+  <footer><span data-i18n="footerBrand">ドロッパー</span> <a id="homeLink" href="https://dropper-tools.com/">dropper-tools.com</a>　｜　<a id="policyLink" href="/privacy.html#play" data-i18n="footerPolicy">プライバシーポリシー（遊び場）</a></footer>
+</div>
+<script>window.LANG = 'in';</script>
+<script src="monster-i18n.js?v=15"></script>
+<script src="monster-app.js?v=13"></script>
+</body>
+</html>

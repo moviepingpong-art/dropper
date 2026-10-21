@@ -400,7 +400,7 @@
      <button class="btn thanks" id="ty" type="button">${tr('bThanks', { name: og })}</button>
      <div class="warn" id="warn">${tr('bWarn')}</div>
      <button class="btn ghost" id="skip" type="button">${esc(tr('bSkip'))}</button>
-     <a class="back" id="toDex" href="monster.html" hidden>${esc(tr('bBack'))}</a>`;
+     <a class="back" id="toDex" href="spirit.html" hidden>${esc(tr('bBack'))}</a>`;
     $('over').hidden = false;
     // 記録の鎖：各回の約束の指紋を、前の対戦の記録の指紋につないでいく。最後の輪がお礼（または「お礼なし」）
     const R = loadRec();

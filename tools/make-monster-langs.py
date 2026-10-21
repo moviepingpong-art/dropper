@@ -1,4 +1,5 @@
-# 遊び場（モンスタードロッパー・モンスター対戦）のほかの言語版を、日本語版（play/monster.html・play/battle.html）から作る。
+# 遊び場（スピリットドロッパー・対戦）のほかの言語版を、日本語版（play/spirit.html・play/battle.html）から作る。
+# 古いURLの monster.html（6言語）は、spirit.html へ飛ばすだけのページをここで書き出す（2026-10-21 改名）
 #
 #   python tools/make-monster-langs.py          … en/play/ と in/play/ に書き出す
 #   python tools/make-monster-langs.py --check  … 書き出した物が最新かだけを見る（コミット前のフック）
@@ -9,7 +10,7 @@
 # JS（JS の表）は、どのフォルダにもバイト同一で置く。
 # 対戦のページ（battle.html）も同じ作り。head の差し替えは BATTLE_JA_HEAD / BATTLE_LANGS（2026-10-19〜）
 #
-# ★ play/monster.html・play/battle.html を直したら、これを走らせる（直したのが en/ in/ の側だと、次に走らせたとき消える）
+# ★ play/spirit.html・play/battle.html を直したら、これを走らせる（直したのが en/ in/ の側だと、次に走らせたとき消える）
 import sys
 from pathlib import Path
 
@@ -17,95 +18,78 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'play'
 JS = ['monster-i18n.js', 'monster-app.js', 'battle-i18n.js', 'battle-app.js']
 
-JA_HEAD_FONTS = '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">'
+# 字体：本文はゴシック、見出し・名前は明朝（2026-10-21〜「夜の美術館」の見た目）。韓国語・繁体字・ベトナム語は、その言語の Noto を前に置く
+JA_HEAD_FONTS = '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;600;700&display=swap" rel="stylesheet">'
+def spirit_fonts(sans, serif):
+    s, f = sans.replace(' ', '+'), serif.replace(' ', '+')
+    return (f'<link href="https://fonts.googleapis.com/css2?family={s}:wght@400;500;700&family={f}:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;600;700&display=swap" rel="stylesheet">\n'
+            f'<style>html:root{{--serif:"{serif}","Noto Serif JP",serif}}html body{{font-family:"{sans}","Noto Sans JP",sans-serif}}</style>')
 
 JA_HEAD = {
     'lang': '<html lang="ja">',
-    'title': '<title>モンスタードロッパー｜美術館の作品からモンスターのカードが生まれる｜ドロッパーの遊び場</title>',
-    'desc': '<meta name="description" content="世界の美術館の作品から、世界に1枚だけのモンスターのカードが生まれる遊び。くじで並ぶ15点から1点で孵化、2〜3点で合体、男性カードと女性カードで結婚と子ども。1000枚に1枚のゴールドも。自分の写真やファイルは使わず、ログインも不要です。">',
-    'canonical': '<link rel="canonical" href="https://dropper-tools.com/play/monster.html">',
+    'title': '<title>スピリットドロッパー｜美術館の作品に宿る精霊が目を覚ます｜ドロッパーの遊び場</title>',
+    'desc': '<meta name="description" content="閉館後の美術館で、作品にひそむ精霊が目を覚ます遊び。くじで並ぶ世界の美術館の15点から、1点で目覚め、2〜3点で結び。精霊どうしの縁と受け継ぎ、1000体に1体の金の光も。自分の写真やファイルは使わず、ログインも不要です。">',
+    'canonical': '<link rel="canonical" href="https://dropper-tools.com/play/spirit.html">',
     'site': '<meta property="og:site_name" content="ドロッパー">',
     'locale': '<meta property="og:locale" content="ja_JP">',
-    'ogtitle': '<meta property="og:title" content="モンスタードロッパー｜ドロッパーの遊び場">',
-    'ogdesc': '<meta property="og:description" content="美術館の作品から、世界に1枚だけのモンスターのカードが生まれる。合体・結婚・子ども。1000枚に1枚のゴールドも。">',
-    'ogurl': '<meta property="og:url" content="https://dropper-tools.com/play/monster.html">',
+    'ogtitle': '<meta property="og:title" content="スピリットドロッパー｜ドロッパーの遊び場">',
+    'ogdesc': '<meta property="og:description" content="閉館後の美術館。作品にひそむ精霊が、あなたの手で目を覚まします。目覚め・結び・縁と受け継ぎ。1000体に1体の金の光も。">',
+    'ogurl': '<meta property="og:url" content="https://dropper-tools.com/play/spirit.html">',
     'ogimage': '<meta property="og:image" content="https://dropper-tools.com/assets/og/og-ja.png">',
     'langjs': "<script>window.LANG = 'ja';</script>",
     'fonts': JA_HEAD_FONTS,
 }
 
+
+def shead(lang, html_lang, title, desc, locale, ogtitle, ogdesc, og, fonts=JA_HEAD_FONTS):
+    url = f'https://dropper-tools.com/{lang}/play/spirit.html'
+    return {
+        'lang': f'<html lang="{html_lang}">',
+        'title': f'<title>{title}</title>',
+        'desc': f'<meta name="description" content="{desc}">',
+        'canonical': f'<link rel="canonical" href="{url}">',
+        'site': '<meta property="og:site_name" content="Dropper">',
+        'locale': f'<meta property="og:locale" content="{locale}">',
+        'ogtitle': f'<meta property="og:title" content="{ogtitle}">',
+        'ogdesc': f'<meta property="og:description" content="{ogdesc}">',
+        'ogurl': f'<meta property="og:url" content="{url}">',
+        'ogimage': f'<meta property="og:image" content="https://dropper-tools.com/assets/og/og-{og}.png">',
+        'langjs': f"<script>window.LANG = '{lang}';</script>",
+        'fonts': fonts,
+    }
+
+
 LANGS = {
-    'en': {
-        'lang': '<html lang="en">',
-        'title': '<title>Monster Dropper | A monster card is born from a museum artwork | Dropper Playground</title>',
-        'desc': '<meta name="description" content="A one-of-a-kind monster card is born from a museum artwork. Pick 1 of 15 randomly dealt artworks to hatch, or 2–3 to fuse, marry a male and a female card to have children, and look for 1-in-1,000 gold cards. Your own photos and files are not used. No sign-in needed.">',
-        'canonical': '<link rel="canonical" href="https://dropper-tools.com/en/play/monster.html">',
-        'site': '<meta property="og:site_name" content="Dropper">',
-        'locale': '<meta property="og:locale" content="en_US">',
-        'ogtitle': '<meta property="og:title" content="Monster Dropper | Dropper Playground">',
-        'ogdesc': '<meta property="og:description" content="A one-of-a-kind monster card is born from a museum artwork. Fusion, marriage and children. 1-in-1,000 gold cards.">',
-        'ogurl': '<meta property="og:url" content="https://dropper-tools.com/en/play/monster.html">',
-        'ogimage': '<meta property="og:image" content="https://dropper-tools.com/assets/og/og-en.png">',
-        'langjs': "<script>window.LANG = 'en';</script>",
-        'fonts': JA_HEAD_FONTS,
-    },
-    'in': {
-        'lang': '<html lang="en-IN">',
-        'title': '<title>Monster Dropper | Museum ki artwork se monster card paida hota hai | Dropper Playground</title>',
-        'desc': '<meta name="description" content="Museum ki artwork se ek anokha monster card paida hota hai. Random 15 artworks mein se 1 chuno to hatch, 2-3 chuno to fusion, male aur female card ki shaadi karao to bachche, aur 1,000 mein 1 gold card bhi. Apni photos ya files use nahin hotin. Login nahin chahiye.">',
-        'canonical': '<link rel="canonical" href="https://dropper-tools.com/in/play/monster.html">',
-        'site': '<meta property="og:site_name" content="Dropper">',
-        'locale': '<meta property="og:locale" content="en_IN">',
-        'ogtitle': '<meta property="og:title" content="Monster Dropper | Dropper Playground">',
-        'ogdesc': '<meta property="og:description" content="Museum ki artwork se ek anokha monster card paida hota hai. Fusion, shaadi aur bachche. 1,000 mein 1 gold card.">',
-        'ogurl': '<meta property="og:url" content="https://dropper-tools.com/in/play/monster.html">',
-        'ogimage': '<meta property="og:image" content="https://dropper-tools.com/assets/og/og-in.png">',
-        'langjs': "<script>window.LANG = 'in';</script>",
-        'fonts': JA_HEAD_FONTS,
-    },
-    'ko': {
-        'lang': '<html lang="ko">',
-        'title': '<title>몬스터 드로퍼 | 미술관 작품에서 몬스터 카드가 태어난다 | 드로퍼 놀이터</title>',
-        'desc': '<meta name="description" content="미술관 작품에서 세상에 한 장뿐인 몬스터 카드가 태어나는 놀이. 제비뽑기로 놓인 15점 중 1점이면 부화, 2~3점이면 합체, 남성 카드와 여성 카드로 결혼과 아이. 1000장에 1장인 골드도. 내 사진이나 파일은 쓰지 않으며 로그인도 필요 없습니다.">',
-        'canonical': '<link rel="canonical" href="https://dropper-tools.com/ko/play/monster.html">',
-        'site': '<meta property="og:site_name" content="Dropper">',
-        'locale': '<meta property="og:locale" content="ko_KR">',
-        'ogtitle': '<meta property="og:title" content="몬스터 드로퍼 | 드로퍼 놀이터">',
-        'ogdesc': '<meta property="og:description" content="미술관 작품에서 세상에 한 장뿐인 몬스터 카드가 태어난다. 합체·결혼·아이. 1000장에 1장인 골드도.">',
-        'ogurl': '<meta property="og:url" content="https://dropper-tools.com/ko/play/monster.html">',
-        'ogimage': '<meta property="og:image" content="https://dropper-tools.com/assets/og/og-en.png">',
-        'langjs': "<script>window.LANG = 'ko';</script>",
-        'fonts': '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">\n<style>body{font-family:"Noto Sans KR","Noto Sans JP",sans-serif}</style>',
-    },
-    'zh-hant': {
-        'lang': '<html lang="zh-Hant">',
-        'title': '<title>Monster Dropper｜美術館的作品會誕生怪獸卡｜Dropper 遊樂場</title>',
-        'desc': '<meta name="description" content="從美術館的作品誕生世界上獨一無二的怪獸卡。從抽出的 15 件中選 1 件孵化、選 2～3 件合體，男性卡和女性卡可以結婚生孩子。還有 1000 張中 1 張的金卡。不使用你自己的照片或檔案，也不需要登入。">',
-        'canonical': '<link rel="canonical" href="https://dropper-tools.com/zh-hant/play/monster.html">',
-        'site': '<meta property="og:site_name" content="Dropper">',
-        'locale': '<meta property="og:locale" content="zh_TW">',
-        'ogtitle': '<meta property="og:title" content="Monster Dropper｜Dropper 遊樂場">',
-        'ogdesc': '<meta property="og:description" content="從美術館的作品誕生世界上獨一無二的怪獸卡。合體・結婚・孩子。1000 張中 1 張的金卡。">',
-        'ogurl': '<meta property="og:url" content="https://dropper-tools.com/zh-hant/play/monster.html">',
-        'ogimage': '<meta property="og:image" content="https://dropper-tools.com/assets/og/og-en.png">',
-        'langjs': "<script>window.LANG = 'zh-hant';</script>",
-        'fonts': '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">\n<style>body{font-family:"Noto Sans TC","Noto Sans JP",sans-serif}</style>',
-    },
-    'vi': {
-        'lang': '<html lang="vi">',
-        'title': '<title>Monster Dropper | Thẻ quái vật ra đời từ tác phẩm bảo tàng | Sân chơi Dropper</title>',
-        'desc': '<meta name="description" content="Một thẻ quái vật độc nhất ra đời từ tác phẩm bảo tàng. Chọn 1 trong 15 tác phẩm bốc thăm để nở, hoặc 2–3 để hợp thể, cho thẻ nam và thẻ nữ kết hôn để có con, và săn thẻ vàng 1 trên 1.000. Ảnh và tệp của bạn không được dùng. Không cần đăng nhập.">',
-        'canonical': '<link rel="canonical" href="https://dropper-tools.com/vi/play/monster.html">',
-        'site': '<meta property="og:site_name" content="Dropper">',
-        'locale': '<meta property="og:locale" content="vi_VN">',
-        'ogtitle': '<meta property="og:title" content="Monster Dropper | Sân chơi Dropper">',
-        'ogdesc': '<meta property="og:description" content="Một thẻ quái vật độc nhất ra đời từ tác phẩm bảo tàng. Hợp thể, kết hôn và con cái. Thẻ vàng 1 trên 1.000.">',
-        'ogurl': '<meta property="og:url" content="https://dropper-tools.com/vi/play/monster.html">',
-        'ogimage': '<meta property="og:image" content="https://dropper-tools.com/assets/og/og-en.png">',
-        'langjs': "<script>window.LANG = 'vi';</script>",
-        'fonts': '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">\n<style>body{font-family:"Noto Sans","Noto Sans JP",sans-serif}</style>',
-    },
+    'en': shead('en', 'en', 'Spirit Dropper | Spirits awaken from museum artworks | Dropper Playground',
+                'In the museum after closing time, the spirits sleeping in the artworks awaken. Pick 1 of 15 randomly dealt artworks from museums around the world to awaken a spirit, or 2–3 to bind them. Bonds and lineage between spirits, and a 1-in-1,000 Gold Light. Your own photos and files are not used. No sign-in needed.',
+                'en_US', 'Spirit Dropper | Dropper Playground', 'The museum after closing time. The spirit sleeping in an artwork awakens in your hands. Awakening, binding, bonds and lineage. A 1-in-1,000 Gold Light.', 'en'),
+    'in': shead('in', 'en-IN', 'Spirit Dropper | Museum ki artworks se spirits jaagte hain | Dropper Playground',
+                'Museum band hone ke baad, artworks mein soye spirits jaag uthte hain. Duniya ke museums ki random 15 artworks mein se 1 chuno to spirit jaagta hai, 2-3 chuno to bandhan. Spirits ke rishte aur virasat, aur 1,000 mein 1 Gold Light. Apni photos ya files use nahin hotin. Login nahin chahiye.',
+                'en_IN', 'Spirit Dropper | Dropper Playground', 'Museum band hone ke baad. Artwork mein soya spirit aapke haath se jaagta hai. Jagna, bandhan, rishte aur virasat. 1,000 mein 1 Gold Light.', 'in'),
+    'ko': shead('ko', 'ko', '스피릿 드로퍼 | 미술관 작품에 깃든 정령이 깨어난다 | 드로퍼 놀이터',
+                '문 닫은 뒤의 미술관에서, 작품에 깃든 정령이 깨어나는 놀이. 제비뽑기로 놓인 세계 미술관의 15점 중 1점이면 깨어남, 2~3점이면 맺음. 정령끼리의 인연과 이어받음, 1000체에 1체인 금빛도. 내 사진이나 파일은 쓰지 않으며 로그인도 필요 없습니다.',
+                'ko_KR', '스피릿 드로퍼 | 드로퍼 놀이터', '문 닫은 뒤의 미술관. 작품에 깃든 정령이 당신의 손으로 깨어납니다. 깨어남·맺음·인연과 이어받음. 1000체에 1체인 금빛도.', 'en',
+                spirit_fonts('Noto Sans KR', 'Noto Serif KR')),
+    'zh-hant': shead('zh-hant', 'zh-Hant', 'Spirit Dropper｜沉睡在美術館作品裡的精靈甦醒｜Dropper 遊樂場',
+                     '在閉館後的美術館裡，沉睡在作品中的精靈甦醒的遊戲。從抽出的世界美術館 15 件作品中選 1 件喚醒、選 2～3 件結合。精靈之間的緣分與傳承，還有 1000 位中 1 位的金光。不使用你自己的照片或檔案，也不需要登入。',
+                     'zh_TW', 'Spirit Dropper｜Dropper 遊樂場', '閉館後的美術館。沉睡在作品裡的精靈，會在你手中甦醒。甦醒・結合・緣分與傳承。1000 位中 1 位的金光。', 'en',
+                     spirit_fonts('Noto Sans TC', 'Noto Serif TC')),
+    'vi': shead('vi', 'vi', 'Spirit Dropper | Tinh linh thức tỉnh từ tác phẩm bảo tàng | Sân chơi Dropper',
+                'Trong bảo tàng sau giờ đóng cửa, tinh linh ngủ trong các tác phẩm thức tỉnh. Chọn 1 trong 15 tác phẩm bốc thăm từ các bảo tàng thế giới để đánh thức, hoặc 2–3 để kết nối. Nhân duyên và kế thừa giữa các tinh linh, và Ánh Vàng 1 trên 1.000. Ảnh và tệp của bạn không được dùng. Không cần đăng nhập.',
+                'vi_VN', 'Spirit Dropper | Sân chơi Dropper', 'Bảo tàng sau giờ đóng cửa. Tinh linh ngủ trong tác phẩm thức tỉnh trong tay bạn. Thức tỉnh, kết nối, nhân duyên và kế thừa. Ánh Vàng 1 trên 1.000.', 'en',
+                spirit_fonts('Noto Sans', 'Noto Serif')),
 }
+
+# ---- 古いURL（monster.html）から spirit.html へ飛ばすページ（2026-10-21 改名） ----
+# note・X に貼ったリンクが切れないように残す。中身は何も持たず、検索にも出さない
+def redirect_page(pre):
+    url = f'https://dropper-tools.com{pre}play/spirit.html'
+    return ('<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n<meta name="robots" content="noindex">\n'
+            f'<link rel="canonical" href="{url}">\n<meta http-equiv="refresh" content="0; url=spirit.html">\n'
+            '<title>Spirit Dropper</title>\n'
+            "<script>location.replace('spirit.html' + location.search + location.hash);</script>\n"
+            '</head>\n<body style="background:#0b0d16;color:#ece6d8;font-family:sans-serif">\n'
+            '<p><a href="spirit.html" style="color:#e6cf9a">Spirit Dropper</a></p>\n</body>\n</html>\n')
 
 # ---- モンスター対戦（battle.html） ----
 # 字体：見出しの Dela Gothic One と本文の M PLUS Rounded 1c は日本語と英字だけ。ほかの言語は Noto を前に置く（:root の変数を上書き）
@@ -169,7 +153,7 @@ BATTLE_LANGS = {
                 battle_fonts('Noto+Sans', 'Noto Sans')),
 }
 
-PAGES = [('monster.html', JA_HEAD, LANGS), ('battle.html', BATTLE_JA_HEAD, BATTLE_LANGS)]
+PAGES = [('spirit.html', JA_HEAD, LANGS), ('battle.html', BATTLE_JA_HEAD, BATTLE_LANGS)]
 
 
 def build():
@@ -178,13 +162,15 @@ def build():
         ja = (SRC / name).read_text(encoding='utf-8')
         for k, v in ja_head.items():
             assert ja.count(v) == 1, f'play/{name} に {k} の行が1つだけ無い（{name} の JA の head の表も直す）'
-        assert set(langs) == set(LANGS), f'{name} の言語が monster.html とそろっていない'
+        assert set(langs) == set(LANGS), f'{name} の言語が spirit.html とそろっていない'
         for lang, head in langs.items():
             s = ja
             for k, v in ja_head.items():
                 s = s.replace(v, head[k])
             out[ROOT / lang / 'play' / name] = s.encode('utf-8')
+    out[SRC / 'monster.html'] = redirect_page('/').encode('utf-8')
     for lang in LANGS:
+        out[ROOT / lang / 'play' / 'monster.html'] = redirect_page(f'/{lang}/').encode('utf-8')
         for f in JS:
             out[ROOT / lang / 'play' / f] = (SRC / f).read_bytes()
     return out

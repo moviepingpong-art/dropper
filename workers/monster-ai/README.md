@@ -53,7 +53,7 @@ npx wrangler deploy
 
 ### 3. 確かめる
 
-https://dropper-tools.com/play/monster.html で AI をオンにして写真を落とし、AI で読み取られることを見る。
+https://dropper-tools.com/play/spirit.html で AI をオンにして写真を落とし、AI で読み取られることを見る。
 
 ## 手元で試すとき
 

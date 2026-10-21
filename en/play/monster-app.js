@@ -41,6 +41,8 @@
   const nameOf = M => txt(M.name);
   // カードに描く字体。言語ごとに辞書で（韓国語・繁体字・ベトナム語は、日本語の字体に無い字があるため）
   const FF = D('canvasFont') || '"Noto Sans JP", sans-serif';
+  // 名前・数字・ブランドは明朝（2026-10-21〜「夜の美術館」の見た目）
+  const FS = D('canvasSerif') || '"Noto Serif JP", serif';
 
   // ---- 指紋（cyrb128）と乱数（sfc32）。迷路ドロッパーと同じもの ----
   function fingerprint(bytes) {
@@ -893,8 +895,8 @@
   // 指紋の3つ目を1000で割った余りで決める。0 ならゴールド（1000枚に1枚）、1・2 ならシルバー（500枚に1枚）。
   // バグ個体は指紋の1つ目で別に決めるので、重なることもある（バグったゴールド＝1万6千枚に1枚）
   const RARITY = {
-    gold:   { mult: 1.3,  fuse: 0.25, label: 'GOLD',   msg: 'goldMsg' },
-    silver: { mult: 1.15, fuse: 0.10, label: 'SILVER', msg: 'silverMsg' },
+    gold:   { mult: 1.3,  fuse: 0.25, label: 'rareGold',   msg: 'goldMsg' },
+    silver: { mult: 1.15, fuse: 0.10, label: 'rareSilver', msg: 'silverMsg' },
     normal: { mult: 1,    fuse: 0 }
   };
   function rarityOf(fp) {
@@ -923,7 +925,7 @@
     if (types.length === 3 && ['光', '闇', '夢'].every(t => types.includes(t))) rules.push([{ k: 'ruleNight' }, 0.8, 'night']);
     for (const r of ['gold', 'silver']) {
       const n = parts.filter(p => p.rarity === r).length;
-      if (n) rules.push([{ k: 'ruleRare', v: { label: RARITY[r].label, n } }, RARITY[r].fuse * n, 'rare']);
+      if (n) rules.push([{ k: 'ruleRare', v: { label: { k: RARITY[r].label }, n } }, RARITY[r].fuse * n, 'rare']);
     }
     const bugs = parts.filter(p => p.bug).length;
     if (bugs) rules.push([{ k: 'ruleBug', v: { n: bugs } }, 0.08 * bugs, 'bug']);
@@ -1270,35 +1272,76 @@
   }
 
   // カードは1枚の canvas に描く（画面と保存で同じものを使う）
+  // ---- 精霊のカード（2026-10-21〜「夜の美術館」の見た目）----
+  // 紺の地に金の細い二重線。絵の欄は額縁で、奥に生まれた作品の絵（暗くして灯りを当てる）、手前に精霊の姿。
+  // 作品の絵は描く前に art() で読み込んでおく（loadFontsFor の中）。読めない・作品の無い子（子ども・守り神）は、これまでの背景
+  const INK = '#ece6d8', MID = '#b8b2a2', DIM = '#8a8577', GOLD = '#c9a45c', GOLD_SOFT = '#e6cf9a', NAVY = '#0d0f19';
+  // 図鑑に入れる中身（M）には画像を持たせない（IndexedDB に入らないため）。読み込んだ絵はここに覚えておく
+  const ART = new Map(), ARTI = new Map();
+  function art(f) {
+    if (!ART.has(f)) ART.set(f, new Promise(ok => {
+      const im = new Image(); im.onload = () => { ARTI.set(f, im); ok(im); }; im.onerror = () => ok(null); im.src = MUSEUM_BASE + f;
+    }));
+    return ART.get(f);
+  }
+  function drawArtBack(c, x, y, w, h, imgs) {
+    c.save(); roundRect(c, x, y, w, h, 4); c.clip();
+    c.fillStyle = '#05060b'; c.fillRect(x, y, w, h);
+    // 2〜3点の結びは、作品を縦の帯に並べる
+    const sw = w / imgs.length;
+    imgs.forEach((im, i) => {
+      const s = Math.max(sw / im.width, h / im.height), dw = im.width * s, dh = im.height * s;
+      c.save(); c.beginPath(); c.rect(x + sw * i, y, sw, h); c.clip();
+      c.drawImage(im, x + sw * i + (sw - dw) / 2, y + (h - dh) / 2, dw, dh); c.restore();
+    });
+    // 閉館後の暗さと、上からの灯り
+    c.fillStyle = 'rgba(8,10,20,.58)'; c.fillRect(x, y, w, h);
+    const sp = c.createRadialGradient(x + w / 2, y + h * 0.42, 10, x + w / 2, y + h * 0.42, w * 0.55);
+    sp.addColorStop(0, 'rgba(255,232,180,.30)'); sp.addColorStop(1, 'rgba(255,232,180,0)');
+    c.fillStyle = sp; c.fillRect(x, y, w, h);
+    c.restore();
+  }
   function drawCard(cv, M) {
     // 化けさせるときに画素を読むので、最初から CPU で描く（途中で描き方が切り替わると、同じ写真でも色が1目盛りずれる）
     const c = cv.getContext('2d', { willReadFrequently: true }), W = cv.width, H = cv.height, T = TYPES[M.type];
     c.clearRect(0, 0, W, H);
-    // バグ個体は、ふつうの化け方とは別の並びの乱数で狂わせる（描く順が同じなら、同じ写真で同じ狂い方）
+    // ゆらぎ（バグ個体）は、ふつうの化け方とは別の並びの乱数で狂わせる（描く順が同じなら、同じ写真で同じ狂い方）
     const bugR = M.bug ? sfc32(M.fp[1], M.fp[3], M.fp[0], M.fp[2]) : null;
     const typeKeys = Object.keys(TYPES);
-    const METAL = { gold: ['#fff6c2', '#e0a800', '#fff1a1', '#b8860b'], silver: ['#ffffff', '#a9b3c2', '#f4f6fa', '#7d8796'] };
+    const METAL = { gold: ['#fff2c4', '#d9a93c', '#f6dc8e', '#a8781c'], silver: ['#ffffff', '#b9bfcc', '#eef1f6', '#7d8796'] };
     const metal = METAL[M.rarity];
-    const frame = bugR && !metal ? [TYPES[typeKeys[Math.floor(bugR() * 10)]].frame[0], TYPES[typeKeys[Math.floor(bugR() * 10)]].frame[1]] : T.frame;
-    const fr = c.createLinearGradient(0, 0, W, H);
-    if (metal) metal.forEach((col, i) => fr.addColorStop(i / 3, col)); else { fr.addColorStop(0, frame[0]); fr.addColorStop(1, frame[1]); }
-    c.fillStyle = fr; roundRect(c, 0, 0, W, H, 34); c.fill();
-    if (metal) { // 光の筋（枠の上だけ。中の白地で隠れる）
-      c.save(); c.globalAlpha = 0.45; c.fillStyle = '#fff';
-      for (const sx of [-80, 140, 420]) { c.beginPath(); c.moveTo(sx, H); c.lineTo(sx + 60, H); c.lineTo(sx + 360, 0); c.lineTo(sx + 300, 0); c.closePath(); c.fill(); }
+    const line = metal ? metal[1] : GOLD;
+    // 地：夜の紺
+    const bgd = c.createLinearGradient(0, 0, 0, H); bgd.addColorStop(0, '#191c2e'); bgd.addColorStop(1, NAVY);
+    c.fillStyle = bgd; roundRect(c, 0, 0, W, H, 22); c.fill();
+    // 金・銀の光は、枠そのものが光る
+    if (metal) {
+      const fr = c.createLinearGradient(0, 0, W, H); metal.forEach((col, i) => fr.addColorStop(i / 3, col));
+      c.strokeStyle = fr; c.lineWidth = 10; roundRect(c, 5, 5, W - 10, H - 10, 18); c.stroke();
+      c.save(); c.globalAlpha = 0.18; c.fillStyle = '#fff';
+      for (const sx of [-80, 140, 420]) { c.beginPath(); c.moveTo(sx, H); c.lineTo(sx + 40, H); c.lineTo(sx + 340, 0); c.lineTo(sx + 300, 0); c.closePath(); c.fill(); }
       c.restore();
     }
-    if (bugR) for (let i = 0; i < 7; i++) { // 枠に走るノイズの線
-      c.fillStyle = TYPES[typeKeys[Math.floor(bugR() * 10)]].frame[Math.floor(bugR() * 2)];
-      c.fillRect(0, Math.floor(bugR() * H), W, 2 + Math.floor(bugR() * 5));
+    // 細い二重線（ゆらぎの子は、線が波打つ）
+    c.strokeStyle = line; c.lineWidth = 1.5;
+    if (bugR) {
+      for (const ins of [14, 21]) {
+        c.beginPath();
+        const amp = 2 + bugR() * 3, ph = bugR() * 6;
+        for (let t = 0; t <= 1.0001; t += 0.01) { const xx = ins + t * (W - ins * 2), yy = ins + Math.sin(t * 40 + ph) * amp; t ? c.lineTo(xx, yy) : c.moveTo(xx, yy); }
+        for (let t = 0; t <= 1.0001; t += 0.01) { const yy = ins + t * (H - ins * 2), xx = W - ins + Math.sin(t * 60 + ph) * amp; c.lineTo(xx, yy); }
+        for (let t = 0; t <= 1.0001; t += 0.01) { const xx = W - ins - t * (W - ins * 2), yy = H - ins + Math.sin(t * 40 + ph) * amp; c.lineTo(xx, yy); }
+        for (let t = 0; t <= 1.0001; t += 0.01) { const yy = H - ins - t * (H - ins * 2), xx = ins + Math.sin(t * 60 + ph) * amp; c.lineTo(xx, yy); }
+        c.stroke();
+      }
+    } else {
+      roundRect(c, 14, 14, W - 28, H - 28, 14); c.stroke();
+      c.globalAlpha = 0.45; roundRect(c, 21, 21, W - 42, H - 42, 10); c.stroke(); c.globalAlpha = 1;
     }
-    if (M.fusion) { // 合体の子は、枠の内側に虹の輪
-      const rb = c.createLinearGradient(0, 0, W, 0);
-      ['#ff5a5a', '#ffb13b', '#ffe14d', '#46c47a', '#4aa8ff', '#9b6bff'].forEach((col, i) => rb.addColorStop(i / 5, col));
-      c.strokeStyle = rb; c.lineWidth = 8; roundRect(c, 14, 14, W - 28, H - 28, 28); c.stroke();
+    if (M.fusion) { // 結びの子は、内側に光の糸（点の線）
+      c.save(); c.setLineDash([2, 7]); c.lineCap = 'round'; c.strokeStyle = GOLD_SOFT; c.lineWidth = 2.5;
+      roundRect(c, 28, 28, W - 56, H - 56, 8); c.stroke(); c.restore();
     }
-    c.fillStyle = M.rarity === 'gold' ? '#fffbea' : M.rarity === 'silver' ? '#f8fafd' : '#fffdf6';
-    roundRect(c, 22, 22, W - 44, H - 44, 22); c.fill();
     // 名前の帯
     let no = String(M.no).padStart(3, '0'), name = nameOf(M), badge = tr('typeBadge', { icon: T.icon, type: txt({ ty: M.type }) });
     if (bugR) {
@@ -1306,134 +1349,155 @@
       name = garble(name, bugR, 1 + Math.floor(bugR() * 2), 1);
       badge = tr('bugBadge');
     }
-    c.fillStyle = '#1a1a2e'; c.font = '700 22px Oswald, sans-serif'; c.textBaseline = 'alphabetic';
+    c.textBaseline = 'alphabetic';
+    c.fillStyle = metal ? metal[2] : GOLD; c.font = `600 20px ${FS}`;
     c.fillText('No.' + no, 46, 66);
-    // 長い名前（人生の記録の名前など）は、タイプの札にかからないように字を小さくする
-    let nfs = 40; c.font = `900 ${nfs}px ${FF}`;
-    while (nfs > 22 && c.measureText(name).width > W - 46 - 250) { nfs -= 2; c.font = `900 ${nfs}px ${FF}`; }
-    c.fillText(name, 46, 112);
-    if (M.gender) { // 名前のすぐ右に ♂ ♀ の丸
-      const gx = 46 + c.measureText(name).width + 24;
-      c.fillStyle = M.gender === 'm' ? '#2f6fe0' : '#e0459b'; c.beginPath(); c.arc(gx, 98, 16, 0, 7); c.fill();
-      c.fillStyle = '#fff'; c.font = `900 22px ${FF}`; c.textAlign = 'center';
-      c.fillText(M.gender === 'm' ? '♂' : '♀', gx, 106); c.textAlign = 'left';
-    }
-    c.font = `700 22px ${FF}`;
+    // 長い名前（人生の記録の名前など）は、属性の札にかからないように字を小さくする
+    c.font = `600 22px ${FF}`;
     const tw = c.measureText(badge).width + 28;
-    c.fillStyle = bugR ? '#1a1a2e' : metal ? metal[3] : T.frame[1]; roundRect(c, W - 46 - tw, 44, tw, 40, 20); c.fill();
-    c.fillStyle = '#fff'; c.fillText(badge, W - 46 - tw + 14, 72);
-    // 絵
+    let nfs = 38; c.font = `700 ${nfs}px ${FS}`;
+    while (nfs > 22 && c.measureText(name).width > W - 46 - tw - 70) { nfs -= 2; c.font = `700 ${nfs}px ${FS}`; }
+    c.fillStyle = INK; c.fillText(name, 46, 112);
+    if (M.gender) { // 名前のすぐ右に ♂ ♀ の丸（落ち着いた色）
+      const gx = 46 + c.measureText(name).width + 24;
+      c.fillStyle = M.gender === 'm' ? '#4f6fa8' : '#a8577f'; c.beginPath(); c.arc(gx, 98, 15, 0, 7); c.fill();
+      c.fillStyle = INK; c.font = `700 20px ${FF}`; c.textAlign = 'center';
+      c.fillText(M.gender === 'm' ? '♂' : '♀', gx, 105); c.textAlign = 'left';
+    }
+    c.font = `600 22px ${FF}`;
+    c.strokeStyle = metal ? metal[1] : GOLD; c.lineWidth = 1.5; roundRect(c, W - 46 - tw, 46, tw, 38, 19); c.stroke();
+    c.fillStyle = metal ? metal[2] : GOLD_SOFT; c.fillText(badge, W - 46 - tw + 14, 73);
+    // 絵：額縁（濃い木の色＋金の線）。奥に作品、手前に精霊
     const ax = 46, ay = 132, aw = W - 92, ah = 330;
-    const bg = c.createRadialGradient(W / 2, ay + ah * 0.45, 20, W / 2, ay + ah / 2, aw * 0.7);
-    bg.addColorStop(0, '#ffffff'); bg.addColorStop(1, css(shade(M.g.second, 0.7)));
-    c.fillStyle = bg; roundRect(c, ax, ay, aw, ah, 16); c.fill();
-    drawHex(c, ax, ay, aw, ah, M);
-    c.fillStyle = 'rgba(0,0,0,.08)'; c.beginPath(); c.ellipse(W / 2, ay + ah - 34, 120, 16, 0, 0, 7); c.fill();
+    c.fillStyle = '#2b2418'; c.fillRect(ax - 8, ay - 8, aw + 16, ah + 16);
+    c.strokeStyle = line; c.lineWidth = 1.5; c.strokeRect(ax - 8.5, ay - 8.5, aw + 17, ah + 17); c.strokeRect(ax - 0.5, ay - 0.5, aw + 1, ah + 1);
+    const imgs = (Array.isArray(M.works) ? M.works : []).map(w => typeof w.f === 'string' && ARTI.get(w.f)).filter(Boolean);
+    if (imgs.length) drawArtBack(c, ax, ay, aw, ah, imgs);
+    else {
+      const bg = c.createRadialGradient(W / 2, ay + ah * 0.42, 20, W / 2, ay + ah / 2, aw * 0.7);
+      bg.addColorStop(0, '#3a3a52'); bg.addColorStop(1, '#10121d');
+      c.fillStyle = bg; c.fillRect(ax, ay, aw, ah);
+      drawHex(c, ax, ay, aw, ah, M);
+    }
+    c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(W / 2, ay + ah - 34, 120, 14, 0, 0, 7); c.fill();
+    // 精霊の姿は、やわらかい光をまとって描く
+    c.save(); c.shadowColor = metal ? 'rgba(255,240,190,.75)' : 'rgba(255,230,170,.55)'; c.shadowBlur = 34;
     drawMonster(c, W / 2, ay + ah / 2 + 14, 150, M.g, M.gender);
-    // 横ずれの線はバグ個体だけ（2026-10-16 本人の指示。ふつうのカードは人の顔などにかかって気になるため）
+    c.restore();
+    // 横ずれの線はゆらぎの子だけ（2026-10-16 本人の指示。ふつうのカードは人の顔などにかかって気になるため）
     const bug = sfc32(M.fp[3], M.fp[2], M.fp[1], M.fp[0]); // 体の形とは別の並び（説明の文字化けにも使う）
     if (bugR) glitchArt(c, ax, ay, aw, ah, bug, false);
     drawCrest(c, ax + aw - 66, ay + ah - 66, 56, M.fp); // 紋章は化けさせない（その1枚の証なので）
     if (M.longLife) { // 平均寿命より長く生きた人のしるし（絵の左下）
       c.font = `700 18px ${FF}`; const lw = c.measureText(tr('longLife')).width + 24;
-      c.fillStyle = 'rgba(255,255,255,.9)'; roundRect(c, ax + 14, ay + ah - 52, lw, 36, 18); c.fill();
-      c.strokeStyle = '#e0a800'; c.lineWidth = 2; c.stroke();
-      c.fillStyle = '#7a5a00'; c.fillText(tr('longLife'), ax + 26, ay + ah - 28);
+      c.fillStyle = 'rgba(13,15,25,.85)'; roundRect(c, ax + 14, ay + ah - 52, lw, 36, 18); c.fill();
+      c.strokeStyle = GOLD; c.lineWidth = 1.5; c.stroke();
+      c.fillStyle = GOLD_SOFT; c.fillText(tr('longLife'), ax + 26, ay + ah - 28);
     }
     if (bugR) {
       glitchArt(c, ax, ay, aw, ah, bugR, true);
       // 判：絵の右上に、少し傾けて押す
       c.save(); c.translate(ax + aw - 92, ay + 40); c.rotate(-0.2);
-      c.fillStyle = 'rgba(255,45,85,.92)'; roundRect(c, -78, -22, 156, 44, 10); c.fill();
-      c.strokeStyle = '#fff'; c.lineWidth = 3; roundRect(c, -72, -16, 144, 32, 7); c.stroke();
-      c.fillStyle = '#fff'; c.font = `900 22px ${FF}`; c.textAlign = 'center';
+      c.fillStyle = 'rgba(92,80,170,.9)'; roundRect(c, -78, -22, 156, 44, 10); c.fill();
+      c.strokeStyle = INK; c.lineWidth = 1.5; roundRect(c, -72, -16, 144, 32, 7); c.stroke();
+      c.fillStyle = INK; c.font = `700 21px ${FF}`; c.textAlign = 'center';
       c.fillText(tr('bugStamp'), 0, 8); c.restore(); c.textAlign = 'left';
     }
     if (metal) {
-      // きらめき（絵の上に小さな十字の光）と、左上の帯
+      // きらめき（絵の上に小さな十字の光）と、左上の札
       const sp = sfc32(M.fp[2], M.fp[0], M.fp[1], M.fp[3]);
-      c.save(); c.fillStyle = '#fff'; c.globalAlpha = 0.9;
+      c.save(); c.fillStyle = metal[0]; c.globalAlpha = 0.85;
       for (let i = 0; i < 9; i++) {
-        const sx = ax + 20 + sp() * (aw - 40), sy = ay + 20 + sp() * (ah - 40), r = 5 + sp() * 9;
-        c.beginPath(); c.moveTo(sx, sy - r); c.lineTo(sx + r * 0.25, sy - r * 0.25); c.lineTo(sx + r, sy); c.lineTo(sx + r * 0.25, sy + r * 0.25);
-        c.lineTo(sx, sy + r); c.lineTo(sx - r * 0.25, sy + r * 0.25); c.lineTo(sx - r, sy); c.lineTo(sx - r * 0.25, sy - r * 0.25); c.closePath(); c.fill();
+        const sx = ax + 20 + sp() * (aw - 40), sy = ay + 20 + sp() * (ah - 40), r = 4 + sp() * 8;
+        c.beginPath(); c.moveTo(sx, sy - r); c.lineTo(sx + r * 0.2, sy - r * 0.2); c.lineTo(sx + r, sy); c.lineTo(sx + r * 0.2, sy + r * 0.2);
+        c.lineTo(sx, sy + r); c.lineTo(sx - r * 0.2, sy + r * 0.2); c.lineTo(sx - r, sy); c.lineTo(sx - r * 0.2, sy - r * 0.2); c.closePath(); c.fill();
       }
       c.restore();
-      c.save(); c.translate(ax + 70, ay + 34); c.rotate(-0.12);
-      const rb = c.createLinearGradient(-70, 0, 70, 0); metal.forEach((col, i) => rb.addColorStop(i / 3, col));
-      c.fillStyle = rb; roundRect(c, -66, -19, 132, 38, 8); c.fill();
-      c.strokeStyle = metal[3]; c.lineWidth = 3; c.stroke();
-      c.fillStyle = M.rarity === 'gold' ? '#6b4a00' : '#3d4654'; c.font = '700 24px Oswald, sans-serif'; c.textAlign = 'center';
-      c.fillText(RARITY[M.rarity].label, 0, 9); c.restore(); c.textAlign = 'left';
+      const label = tr(M.rarity === 'gold' ? 'rareGold' : 'rareSilver');
+      c.font = `700 20px ${FS}`; const lw = c.measureText(label).width + 28;
+      c.save(); c.translate(ax + 14 + lw / 2, ay + 30);
+      c.fillStyle = 'rgba(13,15,25,.82)'; roundRect(c, -lw / 2, -18, lw, 36, 4); c.fill();
+      c.strokeStyle = metal[1]; c.lineWidth = 1.5; c.stroke();
+      c.fillStyle = metal[2]; c.textAlign = 'center'; c.fillText(label, 0, 7); c.restore(); c.textAlign = 'left';
     }
-    // 生まれ（合体の子は、混ぜた属性）と、右にパワー
-    c.fillStyle = '#4a4a6a'; c.font = `500 18px ${FF}`;
+    // 生まれ（結びの子は、混ぜた属性）と、右に輝き
     const origin = M.parents ? tr('originChild', { gen: M.gen, f: txt(M.parentNames[0]), m: txt(M.parentNames[1]) })
       : M.fusion ? tr('originFuse', { n: M.fusion, parts: M.parts.map(p => txt({ ty: p })).join(tr('partsSep')) }) : M.g.kind === '人間' ? (txt(M.motif) || tr(SOURCES.life.origin)) : M.motif ? (charaOf(M.g) ? charaOf(M.g) + tr('charaSep') : '') + tr(M.source === 'museum' ? 'originWork' : M.source === 'audio' ? 'originSound' : 'originPhoto', { motif: txt(M.motif) }) : M.source ? tr(SOURCES[M.source].origin) : tr('originColor');
-    if (M.parents) c.font = `700 16px ${FF}`;
-    c.fillText(origin, 46, ay + ah + 34);
-    c.textAlign = 'right'; c.fillStyle = '#9090b0'; c.font = `700 16px ${FF}`;
     const human = isHuman(M);
+    // 右の輝き（守り神は札）の幅を先に測り、生まれの文が重ならないように詰める
+    let rightW;
     if (!human) {
-      const pw = String(M.power); c.font = '700 28px Oswald, sans-serif'; const pwW = c.measureText(pw).width;
-      c.fillStyle = metal ? metal[3] : M.fusion ? '#9b3bd6' : T.frame[1]; c.fillText(pw, W - 46, ay + ah + 37);
-      c.fillStyle = '#9090b0'; c.font = `700 15px ${FF}`; c.fillText(tr(M.strong ? 'powerStrong' : M.aiBoost ? 'powerAi' : 'power'), W - 52 - pwW, ay + ah + 34);
-    } else { c.fillStyle = '#7a5a00'; c.font = `700 18px ${FF}`; c.fillText(tr('guardian'), W - 46, ay + ah + 34); }
+      c.font = `700 28px ${FS}`; const pwW = c.measureText('✦ ' + M.power).width;
+      c.font = `600 15px ${FF}`; rightW = pwW + 8 + c.measureText(tr(M.strong ? 'powerStrong' : M.aiBoost ? 'powerAi' : 'power')).width;
+    } else { c.font = `700 18px ${FF}`; rightW = c.measureText(tr('guardian')).width; }
+    c.fillStyle = MID; c.font = M.parents ? `700 16px ${FF}` : `500 18px ${FF}`;
+    let ot = origin;
+    const room = W - 92 - rightW - 16;
+    if (c.measureText(ot).width > room) { while ([...ot].length > 1 && c.measureText(ot + '…').width > room) ot = [...ot].slice(0, -1).join(''); ot += '…'; }
+    c.fillText(ot, 46, ay + ah + 38);
+    c.textAlign = 'right';
+    if (!human) {
+      const pw = '✦ ' + M.power; c.font = `700 28px ${FS}`; const pwW = c.measureText(pw).width;
+      c.fillStyle = metal ? metal[2] : GOLD_SOFT; c.fillText(pw, W - 46, ay + ah + 41);
+      c.fillStyle = DIM; c.font = `600 15px ${FF}`; c.fillText(tr(M.strong ? 'powerStrong' : M.aiBoost ? 'powerAi' : 'power'), W - 54 - pwW, ay + ah + 38);
+    } else { c.fillStyle = GOLD_SOFT; c.font = `700 18px ${FF}`; c.fillText(tr('guardian'), W - 46, ay + ah + 38); }
     c.textAlign = 'left';
-    // 強さ（100を超えたら棒はいっぱいで数字に色。バグ個体の 255 は棒がカードの外まで突き抜ける）
-    let y = ay + ah + 62;
-    // 人間のカードは、強さの棒の代わりに、享年・平均寿命と「強さをつけない」ことを書く（同じ高さ＝4行分）
+    // 4つの力（100を超えたら棒はいっぱいで数字に色。ゆらぎの 255 は棒がカードの外まで突き抜ける）
+    let y = ay + ah + 64;
+    // 人間のカードは、棒の代わりに、享年・平均寿命と「点数をつけない」ことを書く（同じ高さ＝4行分）
     if (human) {
       const L = M.life || {};
       const rows = [[tr('lifeAgeLabel'), L.age ? tr('lifeYears', { n: L.age }) : '—'], [tr('lifeAvgLabel'), L.avg ? tr('lifeYears', { n: L.avg }) : '—']];
       for (const [label, val] of rows) {
-        c.fillStyle = '#1a1a2e'; c.font = `700 17px ${FF}`; c.fillText(label, 46, y + 14);
+        c.fillStyle = INK; c.font = `700 17px ${FF}`; c.fillText(label, 46, y + 14);
         c.font = `700 18px ${FF}`; c.fillText(val, 160, y + 15); y += 28;
       }
-      c.fillStyle = '#4a4a6a'; c.font = `500 16px ${FF}`; wrap(c, tr('lifeNoScore'), 46, y + 14, W - 92, 24, 2); y += 56;
+      c.fillStyle = MID; c.font = `500 16px ${FF}`; wrap(c, tr('lifeNoScore'), 46, y + 14, W - 92, 24, 2); y += 56;
     }
     for (const [k, v] of human ? [] : Object.entries(M.stats)) {
-      c.fillStyle = '#1a1a2e'; c.font = `700 17px ${FF}`; c.fillText(D('stats')[k] || k, 46, y + 14);
-      c.fillStyle = '#e8eaf2'; roundRect(c, 160, y, 330, 16, 8); c.fill();
+      c.fillStyle = INK; c.font = `600 17px ${FF}`; c.fillText(D('stats')[k] || k, 46, y + 14);
+      c.fillStyle = '#262a3d'; roundRect(c, 170, y + 4, 320, 8, 4); c.fill();
       if (k === M.bugStat) {
-        c.fillStyle = '#ff2d55'; c.fillRect(160, y, W - 160, 16);
-        c.font = '700 18px Oswald, sans-serif'; c.lineWidth = 4; c.strokeStyle = '#1a1a2e'; c.strokeText(String(v), 502, y + 15);
-        c.fillStyle = '#fff'; c.fillText(String(v), 502, y + 15);
+        c.fillStyle = '#7a6be0'; c.fillRect(170, y + 4, W - 170, 8);
+        c.font = `700 18px ${FS}`; c.lineWidth = 4; c.strokeStyle = NAVY; c.strokeText(String(v), 502, y + 15);
+        c.fillStyle = INK; c.fillText(String(v), 502, y + 15);
       } else {
-        c.fillStyle = metal ? metal[1] : T.frame[1]; roundRect(c, 160, y, 330 * Math.min(1, v / 100), 16, 8); c.fill();
-        c.fillStyle = v > 99 ? '#d9361b' : '#1a1a2e'; c.font = '700 18px Oswald, sans-serif'; c.fillText(String(v), 502, y + 15);
+        const bar = c.createLinearGradient(170, 0, 490, 0);
+        bar.addColorStop(0, metal ? metal[3] : '#8a6d36'); bar.addColorStop(1, metal ? metal[2] : GOLD_SOFT);
+        c.fillStyle = bar; roundRect(c, 170, y + 4, 320 * Math.min(1, v / 100), 8, 4); c.fill();
+        c.fillStyle = v > 99 ? GOLD_SOFT : INK; c.font = `600 18px ${FS}`; c.fillText(String(v), 502, y + 15);
       }
       y += 28;
     }
-    // 技（バグ個体は2つ目の技が半分ほど化ける）
-    y += 8; c.font = `700 18px ${FF}`; let x = 46;
+    // 技（ゆらぎの子は2つ目の技が半分ほど化ける）
+    y += 8; c.font = `600 18px ${FF}`; let x = 46;
     const mv0 = M.moves.map(txt);
     const moves = bugR ? [mv0[0], garble(mv0[1], bugR, Math.ceil([...mv0[1]].length / 2), 0)] : mv0;
     for (const mv of moves) {
-      const w = c.measureText(mv).width + 30;
-      c.fillStyle = css(shade(TYPES[M.type].frame[0].match(/\w\w/g).map(h => parseInt(h, 16)), 0.75)); roundRect(c, x, y, w, 36, 18); c.fill();
-      c.fillStyle = '#1a1a2e'; c.fillText(mv, x + 15, y + 25); x += w + 10;
+      const label = '◇ ' + mv, w = c.measureText(label).width + 30;
+      c.strokeStyle = 'rgba(201,164,92,.6)'; c.lineWidth = 1.2; roundRect(c, x, y, w, 36, 18); c.stroke();
+      c.fillStyle = INK; c.fillText(label, x + 15, y + 25); x += w + 10;
     }
     // 説明
-    y += 64; c.fillStyle = '#4a4a6a'; c.font = `500 18px ${FF}`;
+    y += 64; c.fillStyle = MID; c.font = `500 18px ${FF}`;
     let desc = garble(txt(M.desc), bug);
     if (bugR) desc = garble(desc, bugR, 5 + Math.floor(bugR() * 4), 0);
     y += wrap(c, desc, 46, y, W - 92, 28, 3);
     if (M.mission) {
-      y += 6; c.fillStyle = '#fff3e0'; roundRect(c, 40, y - 4, W - 80, 64, 12); c.fill();
-      c.fillStyle = '#d9361b'; c.font = `700 17px ${FF}`;
+      y += 6; c.strokeStyle = 'rgba(201,164,92,.5)'; c.lineWidth = 1.2; roundRect(c, 40, y - 4, W - 80, 64, 10); c.stroke();
+      c.fillStyle = GOLD_SOFT; c.font = `700 17px ${FF}`;
       c.fillText(tr('mission'), 54, y + 20);
-      c.fillStyle = '#1a1a2e'; c.font = `500 16px ${FF}`;
+      c.fillStyle = INK; c.font = `500 16px ${FF}`;
       wrap(c, txt(M.mission), 54, y + 46, W - 108, 22, 1);
     }
-    // 下の帯：1行目に、その1枚だけの記録（発行番号と、読み取った部分・両親・合体）
+    // 下の帯：1行目に、その1枚だけの記録（発行番号と、読み取った部分・両親・結び）
     const birth = M.parents ? tr('birthChild', { f: txt(M.parentNames[0]), m: txt(M.parentNames[1]), n: M.childNo })
       : M.fusion ? tr('birthFuse', { n: M.fusion }) : M.frag ? tr('birthFrag', { n: M.frag.n, start: M.frag.start, stride: M.frag.stride }) : '';
-    c.fillStyle = '#9090b0'; c.font = `500 14px ${FF}`; c.textAlign = 'left';
+    c.fillStyle = DIM; c.font = `500 14px ${FF}`; c.textAlign = 'left';
     c.fillText(tr('issued', { serial: String(M.serial || 0).padStart(6, '0'), birth }), 46, H - 66);
-    c.fillStyle = '#0057ff'; c.font = `700 17px ${FF}`;
+    c.fillStyle = metal ? metal[2] : GOLD; c.font = `600 17px ${FS}`;
     c.fillText(tr('brand'), 46, H - 40);
-    c.fillStyle = '#9090b0'; c.textAlign = 'right'; c.font = '500 15px Oswald, sans-serif';
+    c.fillStyle = DIM; c.textAlign = 'right'; c.font = `500 14px ${FS}`;
     c.fillText('ID ' + M.print, W - 46, H - 40); c.textAlign = 'left';
   }
 
@@ -1533,8 +1597,11 @@
       .map(v => typeof v === 'string' ? v : JSON.stringify(v)).join('');
     const text = 'No.0123456789?' + nameOf(M) + txt(M.desc) + M.moves.map(txt).join('') + txt(M.motif) + txt(M.mission) + MOJIBAKE +
       words + 'GOLDSILVER♂♀ID#' + (M.parentNames || []).map(txt).join('') + (M.shardText || '');
-    const fonts = [`900 40px ${FF}`, `900 22px ${FF}`, `700 18px ${FF}`, `700 16px ${FF}`, `500 18px ${FF}`, `500 14px ${FF}`, `700 15px ${FF}`, '700 22px Oswald', '700 28px Oswald', '500 15px Oswald'];
-    try { await Promise.all(fonts.map(f => document.fonts.load(f, text))); } catch (e) { /* 読めなければ代わりの字体で描く */ }
+    const fonts = [`700 22px ${FF}`, `600 22px ${FF}`, `700 18px ${FF}`, `600 18px ${FF}`, `700 16px ${FF}`, `500 18px ${FF}`, `500 14px ${FF}`, `600 15px ${FF}`,
+      `700 38px ${FS}`, `700 28px ${FS}`, `600 20px ${FS}`, `600 17px ${FS}`, `500 14px ${FS}`];
+    // 奥に描く作品の絵も、ここでいっしょに読み込んでおく（読めなければ、これまでの背景で描く）
+    const works = (Array.isArray(M.works) ? M.works : []).filter(w => typeof w.f === 'string' && /^[\w.-]+$/.test(w.f));
+    try { await Promise.all([...fonts.map(f => document.fonts.load(f, text)), ...works.map(w => art(w.f))]); } catch (e) { /* 読めなければ代わりの字体で描く */ }
   }
   // 1枚の写真から1体を作る（まだ描かない）。発行のたびに写真の違う部分を読むので、同じ写真でも毎回違う子になる。
   // 珍しさの倍率と、バグ個体の 255 はここで強さに入れる
@@ -1715,9 +1782,44 @@
     } finally { clearTimeout(timer); }
     setStatus(done());
   }
+  // ---- 目覚め・結びの場面（2026-10-21〜）。暗がりに灯り → 光の粒 → 姿。結びは光の糸 ----
+  // 音は鈴のような短い余韻。ボタンを押して生まれたときだけ鳴る（図鑑から開いたときは鳴らさない）。止めるボタンは覚えない
+  let soundOn = true, AC = null;
+  function chime(kind) {
+    if (!soundOn) return;
+    try {
+      AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+      const t0 = AC.currentTime, notes = kind === 'bind' ? [659.25, 783.99, 987.77] : [880, 1318.51];
+      notes.forEach((f, i) => {
+        const t = t0 + 0.35 + i * 0.28;
+        for (const [mul, vol, len] of [[1, 0.07, 2.4], [2.76, 0.02, 0.9]]) { // 基音と、鈴らしい上の音
+          const o = AC.createOscillator(), g = AC.createGain();
+          o.type = 'sine'; o.frequency.value = f * mul;
+          g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+          o.connect(g).connect(AC.destination); o.start(t); o.stop(t + len + 0.1);
+        }
+      });
+    } catch (e) { /* 音が出せなくても遊べる */ }
+  }
+  function scene(kind) {
+    const st = $('stage');
+    st.classList.remove('awaken', 'bind'); void st.offsetWidth; st.classList.add(kind);
+    let box = st.querySelector('.motes');
+    if (!box) { box = document.createElement('div'); box.className = 'motes'; st.appendChild(box); }
+    box.innerHTML = '';
+    for (let i = 0; i < 18; i++) {
+      const m = document.createElement('i');
+      m.style.left = (28 + Math.random() * 44) + '%'; m.style.animationDelay = (0.3 + Math.random() * 1.2) + 's';
+      box.appendChild(m);
+    }
+    chime(kind);
+    clearTimeout(scene.t);
+    scene.t = setTimeout(() => { st.classList.remove(kind); box.innerHTML = ''; }, 3000);
+  }
   async function show(M, img, note) {
     M.serial = await nextSerial();
     if (!(await display(M))) return;
+    scene(M.fusion ? 'bind' : 'awaken');
     const done = () => (note ? note + tr('statusSep') : '') + statusOf(M);
     // AI に送る画像は、人生の記録（自分でドロップした物）だけ。美術館の作品は、名前・技・説明を前もって作ってある。
     // 作品を合体したときだけ、作品のファイル名を中継に送り、AI に名前とお話を書いてもらう（スイッチに関係なく。画像は送らない）
@@ -1957,6 +2059,7 @@
   // 枠の外に落としたときは、ブラウザがファイルを開かないようにするだけ（読まない）
   window.addEventListener('dragover', e => e.preventDefault());
   window.addEventListener('drop', e => e.preventDefault());
+  $('snd').addEventListener('click', () => { soundOn = !soundOn; $('snd').textContent = tr(soundOn ? 'sndOff' : 'sndOn'); });
   $('again').addEventListener('click', () => { $('pick').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
   $('save').addEventListener('click', () => {
     $('card').toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `monster-${current.print}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }, 'image/png');
