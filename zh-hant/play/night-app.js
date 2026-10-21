@@ -4,7 +4,7 @@
 // 結びのことわりは monster-app.js の fusionRules と同じ数字。守り神（人間のカード）は灯さない「立会人」で、強さを持たせない。
 // 2026-10-21〜（PR3-2）：朝を迎えた回数で朝の場面が5段階に育つ・朝ごとに額縁を1つ・目録の精霊を1体だけ飾る（はめかえ不可）・わたしの展示室・
 // 飾った子は「展示室の主」としてひとこと話す・金の光／銀の光の子を連れた夜だけ6つめの「光の間」が開く。
-// 朝の場面と額縁は、Blender の静止画ができるまでページの中で描いた仮の絵（drawScene・.frame の CSS）。差しかえるときはこの2か所だけを直す。
+// 朝の場面は、Blender の静止画ができるまでページの中で描いた仮の絵（drawScene）。額縁と展示室は Blender の静止画（play/gallery/、作り方は tools/blender/）。
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -140,7 +140,7 @@
 
   // ---- 夜の記録（この端末の中だけ） ----
   // { n: 遊んだ夜, dawn: 夜明けを迎えた回数, quiet: 静かな朝を迎えた回数, noAce: 次の夜は★主なし,
-  //   frames: 手に入れた額縁 [{ k: 'dawn'|'quiet', n: 何回目の朝, id: 飾った目録のカード（空なら null）, name, rar, th: 飾ったときの名前・珍しさ・小さな絵の写し }] }
+  //   frames: 手に入れた額縁 [{ k: 'dawn'|'quiet', n: 何回目の朝, id: 飾った目録のカード（空なら null）, name, rar, th, desc, w: 飾ったときの名前・珍しさ・小さな絵・説明・生まれた作品（worksOf）の写し }] }
   // 飾った子の写しを持つのは、目録を空にしても展示室に残すため。目録のページ（monster-app.js の framesById）も、この frames を読むだけ
   // 読めない画面でも遊べる
   const STORE = 'dropper-spirit-night';
@@ -343,7 +343,7 @@
       + `<p>${dawn ? tr('nDawnP') : lit ? tr('nQuietP', { n: lit, rooms: esc(dark) }) : tr('nQuietP0')}</p>`
       + (dawn && hikariLit ? `<p class="hk">${esc(tr(hikariLit === 'gold' ? 'nHikariGold' : 'nHikariSilver'))}</p>` : '')
       + `<div class="lamps">${ROOM.map(R => `<i class="${R.lit ? 'on' : ''}${R.special ? ' sp' : ''}"></i>`).join('')}</div>`
-      + (gift !== null ? `<div class="gift" id="gift">${frameBox({ k }, 'mini')}<p>${tr('nGift', { frame: esc(tr(dawn ? 'frameDawn' : 'frameQuiet')) })}</p>`
+      + (gift !== null ? `<div class="gift" id="gift">${frameBox({ k }, 96)}<p>${tr('nGift', { frame: esc(tr(dawn ? 'frameDawn' : 'frameQuiet')) })}</p>`
         + `<div class="btns"><button class="btn" id="pickNow" type="button">${esc(tr('nPickNow'))}</button><button class="btn ghost" id="later" type="button">${esc(tr('nLater'))}</button></div></div>`
         : `<p class="small">${esc(tr(trial ? 'nGiftTrial' : 'nGiftNone'))}</p>`)
       + `<button class="btn" id="ty" type="button">${witness ? tr('nThanks', { name: who }) : esc(tr('nThanksMuseum'))}</button>`
@@ -429,33 +429,124 @@
     }
   }
 
-  // ---- 額縁（仮の絵は CSS。夜明け＝金の飾り、静かな朝＝木と銀。金の光・銀の光の子を飾ると箔で光る） ----
-  function frameBox(f, size) {
-    const leaf = f.id && (f.rar === 'gold' || f.rar === 'silver') ? (f.k === 'dawn' ? ' leaf-gold' : ' leaf-silver') + ' rar-' + f.rar : '';
-    const th = f.id ? safeThumb(f.th) : '';
-    return `<div class="frame f-${f.k}${leaf}${size ? ' ' + size : ''}${f.id ? '' : ' empty'}"><div class="win"${th ? ` style="background-image:url('${th}')"` : ''}>${f.id ? '' : esc(tr('nEmptyFrame'))}</div></div>`;
+  // ---- 額縁（Blender の静止画 play/gallery/。作り方は tools/blender/）。夜明け＝金の飾り、静かな朝＝くるみ材と銀 ----
+  // 額縁の絵の大きさと窓（作品が入る穴）の位置（px）。top は額縁の外の上のふち。s は小さな額縁（夜明けは上の貝殻なし）
+  // 窓には精霊が生まれた美術館の作品を窓いっぱいに。上のふちには小さな額縁を、上のふちをそろえて食いこませ、その中に精霊
+  const GAL = '/play/gallery/';
+  const FR = {
+    dawn: { w: 720, h: 1149, l: 141, t: 336, ww: 438, wh: 672, top: 208, s: { w: 300, h: 398, l: 59, t: 59, ww: 182, wh: 280, top: 6 } },
+    quiet: { w: 720, h: 968, l: 128, t: 128, ww: 464, wh: 711, top: 14, s: { w: 300, h: 403, l: 53, t: 53, ww: 193, wh: 296, top: 6 } }
+  };
+  const SMALL = 0.26; // 小さな額縁の窓は、大きな額縁の窓の幅の 26%
+  // 飾った子の作品の写し（目録の M.works から。題・美術館・由来。結びの子は最初の作品の絵を窓に入れる）
+  const worksOf = M => (Array.isArray(M.works) ? M.works : []).filter(w => w && safeArt(w.f)).slice(0, 3)
+    .map(w => ({ f: w.f, m: /^(aic|met|cma|smk)$/.test(w.m) ? w.m : '', title: String(w.title || '').slice(0, 200), url: /^https:\/\/[\w./?=&%#-]+$/.test(w.url || '') ? w.url : '', story: w.story || '' }));
+  const box4 = (x, y, w, h) => `left:${x}px;top:${y}px;width:${w}px;height:${h}px`;
+  // 額縁の絵そのものの大きさの要素（使う所で縮める・ゆがめる）
+  function fbox(f) {
+    const P = FR[f.k], S = P.s, art = f.id && Array.isArray(f.w) && f.w[0] ? safeArt(f.w[0].f) : '', th = f.id ? safeThumb(f.th) : '';
+    const rar = f.id && (f.rar === 'gold' || f.rar === 'silver') ? ' rar-' + f.rar : '';
+    let h = `<div class="fb f-${f.k}${rar}" style="width:${P.w}px;height:${P.h}px">`;
+    if (!f.id) h += `<div class="fw empty" style="${box4(P.l, P.t, P.ww, P.wh)}">${esc(tr('nEmptyFrame'))}</div>`;
+    else h += `<div class="fw" style="${box4(P.l, P.t, P.ww, P.wh)};background-image:url('${art ? '/play/museum/' + art : th}')"></div>`;
+    h += `<img class="fi" src="${GAL}frame-${f.k}.webp" alt="" draggable="false">`;
+    if (art && th) {
+      const k = P.ww * SMALL / S.ww, x = (P.w - S.w * k) / 2, y = P.top - S.top * k;
+      h += `<div class="fsm" style="${box4(x, y, S.w * k, S.h * k)}"><div class="fsw" style="${box4(S.l * k - 1, S.t * k - 1, S.ww * k + 2, S.wh * k + 2)};background-image:url('${th}')"></div><img src="${GAL}frame-${f.k}-s.webp" alt="" draggable="false"></div>`;
+    }
+    return h + '</div>';
   }
-  function plate(f) {
-    const dawn = f.k === 'dawn', cls = f.id && (f.rar === 'gold' || f.rar === 'silver') ? ' ' + (f.rar === 'gold' ? 'g' : 's') : '';
-    if (!f.id) return `<div class="plate"><div class="t">&nbsp;</div><div class="nm dim">${esc(tr('nNotYet'))}</div><div class="d">${esc(tr('nTapToPick'))}</div></div>`;
-    return `<div class="plate${cls}"><div class="t">${esc(tr(dawn ? 'frameTitleDawn' : 'frameTitleQuiet'))}</div><div class="nm">${esc(txt(f.name))}</div><div class="d">${esc(tr(dawn ? 'framedAtDawn' : 'framedAtQuiet', { n: Number(f.n) || 1 }))}</div></div>`;
+  // 決まった幅に縮めた額縁（朝にもらうとき・選ぶとき・正面から見るとき）
+  function frameBox(f, width = 160) {
+    const P = FR[f.k], k = width / P.w;
+    return `<div class="fscale" style="width:${width}px;height:${Math.round(P.h * k)}px">${fbox(f).replace('style="width:', `style="transform:scale(${k});width:`)}</div>`;
   }
 
-  // ---- わたしの展示室（目録とは別の部屋）。飾った子と、まだ空いている額縁が並ぶ ----
-  function openGallery() {
-    const F = frames();
-    $('wall').replaceChildren(...F.map((f, i) => {
-      const d = document.createElement(f.id ? 'div' : 'button'); d.className = 'item';
-      if (!f.id) { d.type = 'button'; d.onclick = () => openPicker(i, openGallery); }
-      d.innerHTML = frameBox(f) + plate(f);
-      return d;
-    }));
-    $('galleryEmpty').hidden = F.length > 0;
-    $('gallery').hidden = false; sfx('pick');
+  // ---- わたしの展示室：中世風の石の通路（hall.jpg）。両側の壁に2つずつ、1つの部屋に4つ。5つ目からは「奥へ進む」で次の部屋 ----
+  // 壁の額縁の窓の四隅（絵の割合。左上・右上・右下・左下）と名札の位置。hall.py が書き出した値。並びは 手前の左・手前の右・奥の左・奥の右
+  const HALL = { w: 1600, h: 1067, slots: [
+    { c: [[0.1358, 0.3191], [0.2057, 0.3482], [0.2086, 0.5923], [0.1404, 0.6208]], p: [0.1776, 0.679] },
+    { c: [[0.7943, 0.3482], [0.8642, 0.3191], [0.8596, 0.6208], [0.7914, 0.5923]], p: [0.8224, 0.679] },
+    { c: [[0.2764, 0.3777], [0.3048, 0.3896], [0.3061, 0.5517], [0.2781, 0.5634]], p: [0.2933, 0.6043] },
+    { c: [[0.6952, 0.3896], [0.7236, 0.3777], [0.7219, 0.5634], [0.6939, 0.5517]], p: [0.7067, 0.6043] }
+  ] };
+  const PER = HALL.slots.length;
+  let room = 0;
+  // 4点の対応から、射影の行列（3×3）を解く
+  function homography(src, dst) {
+    const A = [], B = [];
+    src.forEach(([x, y], i) => { const [u, v] = dst[i]; A.push([x, y, 1, 0, 0, 0, -u * x, -u * y]); B.push(u); A.push([0, 0, 0, x, y, 1, -v * x, -v * y]); B.push(v); });
+    for (let c = 0; c < 8; c++) {
+      let p = c; for (let r = c + 1; r < 8; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+      [A[c], A[p]] = [A[p], A[c]]; [B[c], B[p]] = [B[p], B[c]];
+      for (let r = 0; r < 8; r++) if (r !== c) { const m = A[r][c] / A[c][c]; for (let k = c; k < 8; k++) A[r][k] -= m * A[c][k]; B[r] -= m * B[c]; }
+    }
+    const h = B.map((b, i) => b / A[i][i]);
+    return `matrix3d(${h[0]},${h[3]},0,${h[6]},${h[1]},${h[4]},0,${h[7]},0,0,1,0,${h[2]},${h[5]},0,1)`;
+  }
+  function fitHall() { const w = $('hallWrap').clientWidth; $('stage').style.transform = `scale(${w / HALL.w})`; }
+  function drawHall() {
+    const F = frames(), rooms = Math.max(1, Math.ceil(F.length / PER));
+    room = Math.min(room, rooms - 1);
+    const stage = $('stage'), labels = $('hLabels'); stage.replaceChildren(); labels.replaceChildren();
+    HALL.slots.forEach((S, j) => {
+      const i = room * PER + j, f = F[i]; if (!f) return;
+      const P = FR[f.k], b = document.createElement('button'); b.type = 'button'; b.className = 'hf';
+      b.style.width = P.w + 'px'; b.style.height = P.h + 'px';
+      b.style.transform = homography([[P.l, P.t], [P.l + P.ww, P.t], [P.l + P.ww, P.t + P.wh], [P.l, P.t + P.wh]], S.c.map(([x, y]) => [x * HALL.w, y * HALL.h]));
+      b.innerHTML = fbox(f);
+      b.setAttribute('aria-label', f.id ? txt(f.name) : tr('nEmptyFrame') + ' ' + tr('nTapToPick'));
+      b.onclick = () => f.id ? openView(f) : openPicker(i, openGallery);
+      stage.append(b);
+      const l = document.createElement('span');
+      l.className = (j < 2 ? 'near' : '') + (!f.id ? ' dim' : f.rar === 'gold' ? ' g' : f.rar === 'silver' ? ' s' : '');
+      l.style.left = S.p[0] * 100 + '%'; l.style.top = S.p[1] * 100 + '%';
+      l.textContent = f.id ? txt(f.name) : tr('nNotYet');
+      labels.append(l);
+    });
+    $('roomNo').textContent = rooms > 1 ? tr('nRoomNo', { n: room + 1 }) : '';
+    $('hallUp').hidden = room >= rooms - 1; $('hallDown').hidden = room <= 0;
+    $('galleryEmpty').hidden = F.length > 0; $('hallHint').hidden = !F.length;
+    fitHall();
+  }
+  // 奥へ進む：奥のアーチへ寄りながら暗くなり、次の部屋が明るくなる（同じ通路の絵に、次の4つを掛ける）
+  function walk(d) {
+    const A = $('hallAnim'); if (A.classList.contains('go') || A.classList.contains('back')) return;
+    sfx(d > 0 ? 'send' : 'un');
+    const swap = () => { room += d; drawHall(); A.classList.remove('go', 'back'); A.classList.add('arrive'); setTimeout(() => A.classList.remove('arrive'), 600); };
+    if (reduce) return swap();
+    A.classList.add(d > 0 ? 'go' : 'back'); setTimeout(swap, 480);
+  }
+  $('hallUp').onclick = () => walk(1);
+  $('hallDown').onclick = () => walk(-1);
+  addEventListener('resize', () => { if (!$('gallery').hidden) fitHall(); });
+  async function openGallery() {
+    $('gallery').hidden = false; drawHall(); sfx('pick');
+    // 前の版で飾った子には作品の写しが無いので、目録にまだいれば足しておく
+    const R = loadRec(); if (!Array.isArray(R.frames) || !R.frames.some(f => f && f.id && !f.w)) return;
+    await reloadDex(); let n = 0;
+    R.frames.forEach(f => { if (!f || !f.id || f.w) return; const M = ALL.find(x => x.id === f.id); if (M) { f.w = worksOf(M); f.desc = M.desc || null; n++; } });
+    if (n && saveRec(R) && !$('gallery').hidden) drawHall();
   }
   $('galleryBtn').onclick = openGallery;
   $('galleryBtn2').onclick = openGallery;
   $('galleryClose').onclick = () => { $('gallery').hidden = true; sfx('un'); };
+
+  // ---- 正面から見る：額縁のアップと、呼び名・名前・説明・生まれた作品 ----
+  function openView(f) {
+    const dawn = f.k === 'dawn', W = Math.min(380, innerWidth - 60, Math.round((innerHeight * .78) * FR[f.k].w / FR[f.k].h));
+    $('fvFrame').innerHTML = frameBox(f, W);
+    $('fvT').textContent = tr(dawn ? 'frameTitleDawn' : 'frameTitleQuiet');
+    $('fvName').textContent = txt(f.name);
+    $('fvN').textContent = tr(dawn ? 'framedAtDawn' : 'framedAtQuiet', { n: Number(f.n) || 1 });
+    const d = f.desc ? txt(f.desc) : ''; $('fvDesc').textContent = d; $('fvDesc').hidden = !d;
+    const ws = Array.isArray(f.w) ? f.w : [];
+    $('fvWork').innerHTML = ws.length ? `<b>${esc(tr(ws.length > 1 ? 'nBornFromN' : 'nBornFrom', { n: ws.length }))}</b>` + ws.map((w, i) =>
+      `<div><span class="ti">${w.url ? `<a href="${esc(w.url)}" target="_blank" rel="noopener">${esc(w.title)}</a>` : esc(w.title)}</span><br>${esc(w.m ? tr('mu_' + w.m) : '')} · ${esc(tr('nCC0'))}</div>`
+      + (i === 0 && w.story ? `<p>${esc(txt(w.story))}</p>` : '')).join('') : '';
+    $('fview').hidden = false; sfx('pick');
+  }
+  $('fvClose').onclick = () => { $('fview').hidden = true; sfx('un'); };
 
   // ---- 飾る精霊を選ぶ（目録から1体。守り神も飾れる）。一度飾ったら、はめかえできない ----
   let ALL = [], pickFor = -1, pickDone = null, pickSel = null;
@@ -484,7 +575,7 @@
   function confirmPick() {
     const f = frames()[pickFor], M = pickSel; if (!f || !M) return;
     const rar = M.rarity === 'gold' || M.rarity === 'silver' ? M.rarity : 'normal';
-    $('pickPreview').innerHTML = frameBox({ k: f.k, id: M.id, rar, th: M.thumb });
+    $('pickPreview').innerHTML = frameBox({ k: f.k, id: M.id, rar, th: M.thumb, w: worksOf(M) }, 150);
     $('pickMsg').innerHTML = esc(tr('nConfirm', { name: txt(M.name), frame: tr(f.k === 'dawn' ? 'frameDawn' : 'frameQuiet') })) + '<br><span class="warn">' + esc(tr('nNoSwap')) + '</span>';
     $('pickConfirm').hidden = false;
     $('pickConfirm').scrollIntoView({ block: 'nearest' });
@@ -492,7 +583,7 @@
   $('doFrame').onclick = () => {
     const R = loadRec(), F = Array.isArray(R.frames) ? R.frames : [], f = F[pickFor], M = pickSel;
     if (!f || f.id || !M) return; // もう飾ってある額縁は、はめかえない
-    Object.assign(f, { id: M.id, name: M.name, rar: M.rarity === 'gold' || M.rarity === 'silver' ? M.rarity : 'normal', th: safeThumb(M.thumb) });
+    Object.assign(f, { id: M.id, name: M.name, rar: M.rarity === 'gold' || M.rarity === 'silver' ? M.rarity : 'normal', th: safeThumb(M.thumb), desc: M.desc || null, w: worksOf(M) });
     R.frames = F;
     if (!saveRec(R)) { $('pickMsg').textContent = tr('nSaveFail'); return; }
     sfx('light'); burst(.5, .4, 50); track('night_frame');

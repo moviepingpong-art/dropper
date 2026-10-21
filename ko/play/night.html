@@ -201,32 +201,57 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .gift{display:flex;flex-direction:column;align-items:center;gap:8px;background:rgba(11,13,22,.55);border:1px solid rgba(201,164,92,.45);padding:14px;width:100%}
 .gift p{font-size:14px}
 .gift .btns{justify-content:center}
-/* 額縁（仮の絵。夜明け＝金の飾り、静かな朝＝木と銀。箔＝金の光・銀の光の子） */
-.frame{display:inline-block;position:relative}
-.frame .win{width:120px;aspect-ratio:180/276;background:#000 center/cover no-repeat}
-.frame.mini .win{width:72px}
-.f-dawn{padding:12px;background:linear-gradient(135deg,#7a5418,#f6dc8e 22%,#a8781c 45%,#f1d488 70%,#6e4a12);box-shadow:inset 0 0 0 2px #3b2a0c,inset 0 0 0 5px #e9c97a,0 6px 20px rgba(0,0,0,.6)}
-.f-dawn .win{box-shadow:0 0 0 3px #3b2a0c,0 0 0 5px #f6dc8e}
-.f-quiet{padding:11px;background:linear-gradient(90deg,#4a3422,#6b4c33 30%,#5a3f2a 60%,#3e2b1c);box-shadow:inset 0 0 0 2px #2a1d12,0 6px 20px rgba(0,0,0,.6)}
-.f-quiet .win{box-shadow:0 0 0 3px #d8dde6,0 0 0 4px #7d8796}
-.frame.mini{padding:8px}
-.frame.empty .win{background:repeating-linear-gradient(45deg,#11131c 0 8px,#0d0f17 8px 16px);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;font-family:var(--serif)}
-.frame.rar-gold{background:linear-gradient(135deg,#fff2c4,#d9a93c 20%,#fff8dc 35%,#c9952e 55%,#fff2c4 75%,#b07d1e);box-shadow:inset 0 0 0 2px #6e4a12,inset 0 0 0 5px #fffbe8,0 0 26px rgba(255,236,180,.7),0 6px 20px rgba(0,0,0,.6)}
-.frame.rar-silver.f-dawn{background:linear-gradient(135deg,#eef1f6,#9aa3b2 20%,#ffffff 35%,#8d96a6 55%,#eef1f6 75%,#7d8796);box-shadow:inset 0 0 0 2px #4a505c,inset 0 0 0 5px #ffffff,0 0 24px rgba(238,241,246,.6),0 6px 20px rgba(0,0,0,.6)}
-.frame.rar-silver.f-quiet{box-shadow:inset 0 0 0 2px #2a1d12,inset 0 0 0 5px #eef1f6,0 0 24px rgba(238,241,246,.55),0 6px 20px rgba(0,0,0,.6)}
-.frame.rar-gold.f-quiet{box-shadow:inset 0 0 0 2px #6e4a12,inset 0 0 0 5px #fff2c4,0 0 26px rgba(255,236,180,.6),0 6px 20px rgba(0,0,0,.6);background:linear-gradient(90deg,#4a3422,#6b4c33 30%,#5a3f2a 60%,#3e2b1c)}
-.plate{margin:12px auto 0;width:170px;max-width:100%;padding:6px 8px;background:#1a1810;border:1px solid #6e5a2c;text-align:center}
-.plate .t{font-size:11px;color:var(--gold);letter-spacing:.1em;font-family:var(--serif)}
-.plate .nm{font-family:var(--serif);font-size:15px;font-weight:600;word-break:break-word}
-.plate .nm.dim{color:var(--mid);font-weight:500;font-size:13px}
-.plate .d{font-size:10.5px;color:var(--mid);margin-top:2px}
-.plate.g{background:linear-gradient(90deg,#3b2a0c,#5a4416,#3b2a0c);border-color:#f6dc8e}.plate.g .nm{color:#fff2c4}
-.plate.s{background:linear-gradient(90deg,#2c3038,#454b56,#2c3038);border-color:#eef1f6}.plate.s .nm{color:#fff}.plate.s .t{color:#dfe3ea}
 /* 展示室・選ぶ画面 */
 .box.wide{max-width:760px}
-.wall{display:flex;flex-wrap:wrap;gap:28px 24px;justify-content:center;align-items:flex-end;padding:24px 10px;background:radial-gradient(ellipse 60% 80% at 50% 0%,rgba(230,207,154,.12),transparent 70%),#10121c;border:1px solid var(--line)}
-.wall .item{text-align:center;background:none;border:0;padding:0;color:var(--ink);font:inherit}
-.wall button.item{cursor:pointer}
+/* 額縁（Blender の静止画 play/gallery/）。.fb は額縁の絵そのものの大きさ（px）で組み、使う所で縮める・ゆがめる */
+.fb{position:relative}
+.fb>*{position:absolute}
+.fb .fw{background:#0d0f17 center/cover no-repeat}
+.fb .fw.empty{background:repeating-linear-gradient(45deg,#1a0f12 0 18px,#140b0e 18px 36px);display:flex;align-items:center;justify-content:center;color:var(--dim);font:500 44px var(--serif);letter-spacing:.2em}
+.fb .fi{left:0;top:0;width:100%;height:100%}
+.fb .fsm>*{position:absolute}
+.fb .fsm img{left:0;top:0;width:100%;height:100%}
+.fb .fsm{filter:drop-shadow(4px 8px 7px rgba(0,0,0,.7))}
+/* 小さな額縁の精霊：カードの小さな絵のうち、作品の窓（600×920 のカードの 46,132 から 508×330）の真ん中を縦長に切り出す */
+.fb .fsw{background:#0d0f17 no-repeat;background-size:278.8% auto;background-position:50% 22.4%}
+.fb.rar-gold .fi{filter:drop-shadow(0 0 14px rgba(255,226,140,.95)) drop-shadow(0 0 34px rgba(255,210,110,.6))}
+.fb.rar-silver .fi{filter:drop-shadow(0 0 14px rgba(240,244,250,.9)) drop-shadow(0 0 34px rgba(220,228,240,.55))}
+.fscale{position:relative;display:inline-block;overflow:visible}
+.fscale>.fb{transform-origin:0 0}
+/* わたしの展示室：通路の絵（hall.jpg）の上に、額縁を壁の位置へゆがめて重ねる */
+.hallbox{max-width:980px;padding:18px 14px}
+.hallbox h2 .roomno{font-size:15px;color:var(--gold-soft);margin-left:14px;letter-spacing:.12em}
+.hallwrap{position:relative;width:100%;aspect-ratio:1600/1067;overflow:hidden;border:1px solid var(--line);background:#0b0a0c}
+.hallanim{position:absolute;inset:0;transform-origin:50% 42%}
+.hallanim.go{transition:transform .5s ease-in,opacity .5s ease-in;transform:scale(1.28);opacity:0}
+.hallanim.back{transition:transform .5s ease-in,opacity .5s ease-in;transform:scale(.82);opacity:0}
+.hallanim.arrive{animation:arrive .55s ease-out}
+@keyframes arrive{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
+.stage{position:absolute;left:0;top:0;width:1600px;height:1067px;transform-origin:0 0;background:url('/play/gallery/hall.jpg') 0 0/100% 100% no-repeat}
+.stage .hf{position:absolute;left:0;top:0;transform-origin:0 0;background:none;border:0;padding:0;cursor:pointer;filter:brightness(.84) drop-shadow(10px 16px 14px rgba(0,0,0,.7))}
+.stage .hf:hover,.stage .hf:focus-visible{filter:brightness(1) drop-shadow(10px 16px 14px rgba(0,0,0,.7));outline:none}
+.hlabels{position:absolute;inset:0;pointer-events:none}
+.hlabels span{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-family:var(--serif);color:#f6dc8e;background:rgba(14,12,20,.86);border:1px solid #c9a45c;padding:1px 8px;font-size:clamp(9px,1.25vw,13px)}
+.hlabels span.near{font-size:clamp(10px,1.7vw,17px)}
+.hlabels span.g{color:#fff2c4;border-color:#f6dc8e;box-shadow:0 0 10px rgba(255,226,140,.5)}
+.hlabels span.s{color:#fff;border-color:#eef1f6;box-shadow:0 0 10px rgba(240,244,250,.45)}
+.hlabels span.dim{color:var(--mid)}
+.hallnav{justify-content:center}
+.hallnav [hidden]{display:none}
+/* 正面から見る */
+.fv{max-width:900px;flex-direction:row;gap:26px;align-items:flex-start}
+.fvl{flex:0 0 auto;display:flex;justify-content:center}
+.fvr{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.fvt{font-family:var(--serif);color:var(--gold-soft);font-size:14px;letter-spacing:.12em}
+.fvr h2{margin:0;text-align:left;font-size:28px}
+.fvn{font-size:12px;color:var(--mid);padding-bottom:10px;border-bottom:1px solid var(--gold)}
+.fvd{margin:6px 0 0;font-family:var(--serif);line-height:1.9}
+.fvw{font-size:13px;line-height:1.8;color:var(--mid)}
+.fvw b{display:block;color:var(--gold-soft);font-weight:500;font-family:var(--serif);margin-top:6px}
+.fvw .ti{color:var(--ink)}
+.fvw a{color:var(--gold-soft)}
+.fvw p{margin:6px 0 0;font-family:var(--serif);color:var(--ink);opacity:.9}
+@media (max-width:640px){.fv{flex-direction:column;align-items:center}.fvr h2{font-size:24px}}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;max-height:46vh;overflow:auto;padding:4px}
 .pgrid .th{aspect-ratio:180/276;background:#000 center/cover no-repeat;border:1px solid var(--line);position:relative;cursor:pointer;padding:0}
 .pgrid .th.sel{outline:2px solid var(--gold-soft);box-shadow:0 0 18px rgba(230,207,154,.4)}
@@ -310,12 +335,28 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 <div class="layer morning" id="morning" hidden><div class="end" id="end"></div></div>
 
 <div class="layer" id="gallery" hidden>
- <div class="box wide">
-  <h2 data-i18n="nGalleryH">わたしの展示室</h2>
+ <div class="box hallbox">
+  <h2><span data-i18n="nGalleryH">わたしの展示室</span><span class="roomno" id="roomNo"></span></h2>
   <p class="lead" data-i18n="nGalleryLead">飾った精霊は、ここに並びます。目録とは別の部屋です</p>
-  <div class="wall" id="wall"></div>
+  <div class="hallwrap" id="hallWrap"><div class="hallanim" id="hallAnim"><div class="stage" id="stage"></div><div class="hlabels" id="hLabels"></div></div></div>
   <p class="note center" id="galleryEmpty" data-i18n="nGalleryEmpty">まだ額縁がありません。朝を迎えると、額縁を1つもらえます</p>
+  <p class="note center" id="hallHint" data-i18n="nHallHint">額縁を押すと、正面から見られます</p>
+  <div class="btns hallnav"><button class="btn ghost" id="hallDown" type="button" data-i18n="nGoBack">↓ 手前へ戻る</button><button class="btn" id="hallUp" type="button" data-i18n="nGoDeeper">奥へ進む ↑</button></div>
   <div class="center"><button class="btn ghost" id="galleryClose" type="button" data-i18n="nClose">閉じる</button></div>
+ </div>
+</div>
+
+<div class="layer" id="fview" hidden>
+ <div class="box fv">
+  <div class="fvl" id="fvFrame"></div>
+  <div class="fvr">
+   <div class="fvt" id="fvT"></div>
+   <h2 id="fvName"></h2>
+   <div class="fvn" id="fvN"></div>
+   <p class="fvd" id="fvDesc"></p>
+   <div class="fvw" id="fvWork"></div>
+   <div><button class="btn ghost" id="fvClose" type="button" data-i18n="nClose">閉じる</button></div>
+  </div>
  </div>
 </div>
 
@@ -334,7 +375,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 </div>
 
 <script src="monster-i18n.js?v=17"></script>
-<script src="night-i18n.js?v=2"></script>
-<script src="night-app.js?v=4"></script>
+<script src="night-i18n.js?v=3"></script>
+<script src="night-app.js?v=5"></script>
 </body>
 </html>
