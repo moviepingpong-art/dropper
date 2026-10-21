@@ -187,7 +187,8 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .ltsay{font-family:var(--serif);font-size:15px;color:var(--gold-soft);min-height:1.6em;max-width:480px}
 /* 朝の場面（仮の絵は canvas）・段階・額縁をもらう */
 .end{position:relative;overflow:hidden}
-.end .scene{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+/* 場面は上の窓（文字やボタンと重ならないよう、絵の下に文字を並べる） */
+.end .scene{display:block;width:calc(100% + 44px);height:200px;margin:-40px -22px 4px;border-bottom:1px solid var(--line)}
 .end .endin{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;align-items:center;width:100%}
 .end .lv{font-family:var(--serif);font-size:14px;color:var(--gold-soft)}
 .steps{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;font-size:11px;color:var(--mid)}
@@ -333,6 +334,6 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 
 <script src="monster-i18n.js?v=17"></script>
 <script src="night-i18n.js?v=2"></script>
-<script src="night-app.js?v=2"></script>
+<script src="night-app.js?v=3"></script>
 </body>
 </html>
