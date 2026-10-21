@@ -260,11 +260,11 @@ def build_tool4_guide_btn(code, strings):
     return f'\n          <a class="btn-sm line" href="{GENTRY_PATH[code]}">{label}</a>'
 
 
-# 遊び場（モンスタードロッパー）の帯（{{PLAY_BAND}}）。2026-10-14。
+# 遊び場（スピリットドロッパー。2026-10-21 にモンスタードロッパーから改名）の帯（{{PLAY_BAND}}）。2026-10-14。
 # 2026-10-17 から3言語（en/play/・in/play/ は tools/make-monster-langs.py が日本語版から作る）。
 # どの言語も、トップと同じフォルダの play/ を指す。
-# ページ本体 play/monster.html は build.py の外にある静的ページ（CLAUDE.md「遊び場」）。
-PLAY_PATH = {"ja": "./play/monster.html", "en": "./play/monster.html", "in": "./play/monster.html"}
+# ページ本体 play/spirit.html は build.py の外にある静的ページ（CLAUDE.md「遊び場」）。古いURLの monster.html は飛ばすだけ
+PLAY_PATH = {"ja": "./play/spirit.html", "en": "./play/spirit.html", "in": "./play/spirit.html"}
 
 
 def build_play_band(page, code, strings):
