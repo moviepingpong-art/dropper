@@ -1520,11 +1520,34 @@
   const safeThumb = s => (typeof s === 'string' && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(s) ? s : '');
 
 
+  // 夜の美術館を灯す（night.html）で額縁に飾った精霊。記録は localStorage の dropper-spirit-night（frames）にあり、ここでは読むだけ
+  // 飾った子は、目録の小さな絵に額縁の印、開いたカードに額縁の外枠と名札（呼び名・何回目の朝に飾ったか）を出す。輝き（強さ）は変えない
+  function framesById() {
+    const out = new Map();
+    try {
+      const R = JSON.parse(localStorage.getItem('dropper-spirit-night')) || {};
+      for (const f of Array.isArray(R.frames) ? R.frames : []) if (f && f.id && (f.k === 'dawn' || f.k === 'quiet')) out.set(f.id, f);
+    } catch (e) { /* 読めなければ印を出さない */ }
+    return out;
+  }
+  function showFrame(M) {
+    const f = framesById().get(M.id), el = $('framePlate'), cv = $('card');
+    cv.classList.remove('framed-dawn', 'framed-quiet', 'leaf');
+    if (!f) { el.classList.add('hidden'); return; }
+    const dawn = f.k === 'dawn';
+    cv.classList.add(dawn ? 'framed-dawn' : 'framed-quiet');
+    if (M.rarity === 'gold' || M.rarity === 'silver') cv.classList.add('leaf');
+    el.innerHTML = `<b>${esc(tr(dawn ? 'frameTitleDawn' : 'frameTitleQuiet'))}</b><span>${esc(tr(dawn ? 'framedAtDawn' : 'framedAtQuiet', { n: Number(f.n) || 1 }))}</span>`;
+    el.classList.remove('hidden');
+  }
+
   async function renderDex() {
-    const cards = (await DB.getAll('cards')).sort((a, b) => b.serial - a.serial), g = $('dex');
+    const cards = (await DB.getAll('cards')).sort((a, b) => b.serial - a.serial), g = $('dex'), framed = framesById();
     g.innerHTML = '';
     for (const m of cards) {
       const b = document.createElement('button'); b.className = 'cardthumb'; b.type = 'button';
+      const fr = framed.get(m.id);
+      if (fr) { b.classList.add('framed', fr.k); const mk = document.createElement('span'); mk.className = 'fmark'; mk.textContent = tr(fr.k === 'dawn' ? 'frameMarkDawn' : 'frameMarkQuiet'); b.appendChild(mk); }
       b.title = `No.${m.no} ${nameOf(m)}`;
       const i = new Image(); i.src = m.thumb; i.alt = tr('dexAlt', { name: nameOf(m), gender: tr(m.gender === 'm' ? 'male' : 'female'), gen: m.gen }); b.appendChild(i);
       const tag = document.createElement('span'); tag.className = 'tag';
@@ -1686,6 +1709,7 @@
     await loadFontsFor(M);
     if (current !== M) return false;
     drawCard($('card'), M);
+    showFrame(M);
     showWorks(M);
     $('stage').classList.remove('hidden');
     $('stage').scrollIntoView({ behavior: 'smooth', block: 'start' });

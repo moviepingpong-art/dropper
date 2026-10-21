@@ -2,6 +2,9 @@
 // 2026-10-21 に対戦（battle.html）から置きかえた（相手のいない形。重吉さんの判断）。
 // 目録（IndexedDB の dropper-monster）は読むだけ。書き換えない。夜の記録は localStorage（この端末の中だけ）。
 // 結びのことわりは monster-app.js の fusionRules と同じ数字。守り神（人間のカード）は灯さない「立会人」で、強さを持たせない。
+// 2026-10-21〜（PR3-2）：朝を迎えた回数で朝の場面が5段階に育つ・朝ごとに額縁を1つ・目録の精霊を1体だけ飾る（はめかえ不可）・わたしの展示室・
+// 飾った子は「展示室の主」としてひとこと話す・金の光／銀の光の子を連れた夜だけ6つめの「光の間」が開く。
+// 朝の場面と額縁は、Blender の静止画ができるまでページの中で描いた仮の絵（drawScene・.frame の CSS）。差しかえるときはこの2か所だけを直す。
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -112,7 +115,8 @@
     const w = Array.isArray(M.works) && M.works[0];
     return {
       id: M.id, t: TY[M.type] ? M.type : '鋼', n: txt(M.name), p: Math.round(Number(M.power) || 0),
-      art: w ? safeArt(w.f) : '', th: safeThumb(M.thumb), rarity: M.rarity === 'gold' || M.rarity === 'silver' ? M.rarity : 'normal', bug: !!M.bug, fusion: Number(M.fusion) || 0
+      art: w ? safeArt(w.f) : '', th: safeThumb(M.thumb), rarity: M.rarity === 'gold' || M.rarity === 'silver' ? M.rarity : 'normal', bug: !!M.bug, fusion: Number(M.fusion) || 0,
+      framed: (frames().find(f => f.id === M.id) || {}).k || null
     };
   }
   // 守り神の色：その人の人生地図の丘の色（monster-app.js の drawLife と同じ式）を5つ拾う
@@ -135,26 +139,41 @@
   }
 
   // ---- 夜の記録（この端末の中だけ） ----
-  // { n: 遊んだ夜, dawn: 夜明けを迎えた回数, quiet: 静かな朝を迎えた回数, noAce: 次の夜は★主なし }。読めない画面でも遊べる
+  // { n: 遊んだ夜, dawn: 夜明けを迎えた回数, quiet: 静かな朝を迎えた回数, noAce: 次の夜は★主なし,
+  //   frames: 手に入れた額縁 [{ k: 'dawn'|'quiet', n: 何回目の朝, id: 飾った目録のカード（空なら null）, name, rar, th: 飾ったときの名前・珍しさ・小さな絵の写し }] }
+  // 飾った子の写しを持つのは、目録を空にしても展示室に残すため。目録のページ（monster-app.js の framesById）も、この frames を読むだけ
+  // 読めない画面でも遊べる
   const STORE = 'dropper-spirit-night';
   function loadRec() { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } }
-  function saveRec(x) { try { localStorage.setItem(STORE, JSON.stringify(x)); } catch (e) { /* 残せなくても遊べる */ } }
+  function saveRec(x) { try { localStorage.setItem(STORE, JSON.stringify(x)); return true; } catch (e) { return false; /* 残せなくても遊べる */ } }
+  function frames() { const R = loadRec(); return Array.isArray(R.frames) ? R.frames.filter(f => f && (f.k === 'dawn' || f.k === 'quiet')) : []; }
+  // 朝の場面の段階：1・3・6・10・15回目で1つずつ上がる（1〜5）
+  const LV = [1, 3, 6, 10, 15];
+  const levelOf = n => Math.max(1, LV.filter(x => n >= x).length);
 
   // ---- 今夜の美術館：日付で決まる（だれが遊んでも同じ夜） ----
   // 部屋は12。名前の順は辞書の nRoomNames と同じ。好む属性は部屋ごとに決まっている
   const ROOMS = [['炎', '光'], ['闇', '風'], ['水', '夢'], ['森', '土'], ['雷', '鋼'], ['光', '夢'], ['水', '闇'], ['風', '雷'], ['鋼', '炎'], ['森', '水'], ['土', '闇'], ['夢', '風']];
   // 要る明るさのもと（共有フォルダ sacred/night.py で試した「ふつう」）。日ごとに ±10% ゆらす
   const LEVELS = [280, 350, 450, 560, 650];
-  const roomName = R => (D('nRoomNames') || [])[R.k] || '';
+  const roomName = R => R.special ? tr('nHikariName') : (D('nRoomNames') || [])[R.k] || '';
+  // 光の間：金の光か銀の光の子を連れた夜だけ開く6つめの部屋。灯さなくても夜明けになれる（灯せたら夜明けの場面に特別な光）。
+  // 送る組に金か銀の子が1体いること。要る明るさは 500 を日ごとに ±10%
+  const HIKARI = { fav: ['光', '夢'], level: 500 };
+  const isRare = c => c.rarity === 'gold' || c.rarity === 'silver';
+  const allowed = (cs, R) => !R || !R.special || cs.some(isRare);
   function sfc32(a, b, c, d) {
     return () => { a |= 0; b |= 0; c |= 0; d |= 0; const t = (a + b | 0) + d | 0; d = d + 1 | 0; a = b ^ b >>> 9; b = c + (c << 3) | 0; c = c << 21 | c >>> 11; c = c + t | 0; return (t >>> 0) / 4294967296; };
   }
-  function tonight(now) {
+  function tonight(now, hikari) {
     const key = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
     let h = 2166136261; for (const ch of 'night:' + key) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
     const r = sfc32(h, h ^ 0x9e3779b9, h ^ 0x85ebca6b, h ^ 0xc2b2ae35); for (let i = 0; i < 12; i++) r();
     const ks = [...ROOMS.keys()].map(k => [k, r()]).sort((a, b) => a[1] - b[1]).slice(0, 5).map(x => x[0]);
-    return LEVELS.map((lv, i) => ({ k: ks[i], fav: ROOMS[ks[i]], need: Math.round(lv * (0.9 + r() * 0.2) / 10) * 10, lit: false })).sort((a, b) => a.need - b.need);
+    const rooms = LEVELS.map((lv, i) => ({ k: ks[i], fav: ROOMS[ks[i]], need: Math.round(lv * (0.9 + r() * 0.2) / 10) * 10, lit: false })).sort((a, b) => a.need - b.need);
+    const hn = Math.round(HIKARI.level * (0.9 + r() * 0.2) / 10) * 10;
+    if (hikari) rooms.push({ k: -1, special: true, fav: HIKARI.fav, need: hn, lit: false });
+    return rooms;
   }
 
   // ---- 状態 ----
@@ -163,7 +182,8 @@
   let ZK = [], GUARDS = [], trial = false, noAce = false;
   let dpick = [], aceI = -1, guardI = -1;
   const SIZE = () => noAce ? 6 : 7;
-  let HAND = [], ROOM = [], sel = [], cur = -1, aceBack = false, busy = false, witness = null, ended = false, endArm = false;
+  let HAND = [], ROOM = [], sel = [], cur = -1, aceBack = false, busy = false, witness = null, ended = false, endArm = false, hikariLit = null;
+  const normals = () => ROOM.filter(R => !R.special);
 
   function cardEl(c, opts = {}) {
     const b = document.createElement(opts.button === false ? 'div' : 'button');
@@ -173,6 +193,7 @@
     if (opts.n) b.dataset.n = opts.n;
     const bg = c.art ? `background-image:url('/play/museum/${c.art}')` : c.th ? `background-image:url('${c.th}')` : `background:linear-gradient(${TY[c.t]},#0b0d16)`;
     b.innerHTML = (opts.ace ? `<span class="star">${esc(tr('nAceOn'))}</span>` : '')
+      + (c.framed && opts.keeper !== false ? `<span class="keeper ${c.framed}">${esc(tr('nKeeper'))}</span>` : '')
       + (c.rarity !== 'normal' ? `<span class="rar ${c.rarity}">${esc(tr(RARE[c.rarity][0]))}</span>` : '')
       + `<div class="fr" style="${bg}">${c.art || c.th ? '' : `<span class="ty">${esc(txt({ ty: c.t }))}</span>`}</div>`
       + `<div class="nm">${esc(c.n)}</div><div class="meta"><span>${esc(txt({ ty: c.t }))}</span><b>✦${c.p}</b></div>`;
@@ -185,9 +206,12 @@
     $('rooms').replaceChildren(...ROOM.map((R, i) => {
       const b = document.createElement('button'); b.type = 'button';
       const can = !R.lit && canLight(R);
-      b.className = 'room' + (R.lit ? ' lit' : i === cur ? ' now' : '') + (can ? ' can' : '');
-      b.innerHTML = `<span class="lamp"></span><div class="n">${esc(roomName(R))}</div><div class="need">${esc(tr('nNeed', { n: R.need }))}</div>`
-        + `<div class="fav">${esc(tr('nFav', { a: txt({ ty: R.fav[0] }), b: txt({ ty: R.fav[1] }) }))}</div><div class="st">${esc(tr(R.lit ? 'nLit' : i === cur ? 'nNow' : 'nDark'))}</div>`;
+      b.className = 'room' + (R.special ? ' hikari' : '') + (R.lit ? ' lit' : i === cur ? ' now' : '') + (can ? ' can' : '');
+      b.innerHTML = (R.special ? `<span class="badge">${esc(tr('nHikariBadge'))}</span>` : '')
+        + `<span class="lamp"></span><div class="n">${esc(roomName(R))}</div><div class="need">${esc(tr('nNeed', { n: R.need }))}</div>`
+        + `<div class="fav">${esc(tr('nFav', { a: txt({ ty: R.fav[0] }), b: txt({ ty: R.fav[1] }) }))}</div>`
+        + (R.special ? `<div class="fav hk">${esc(tr('nHikariNeed'))}</div>` : '')
+        + `<div class="st">${esc(tr(R.lit ? 'nLit' : i === cur ? 'nNow' : 'nDark'))}</div>`;
       b.disabled = R.lit || busy || ended;
       b.onclick = () => { if (R.lit || busy) return; cur = cur === i ? -1 : i; sfx(cur < 0 ? 'un' : 'pick'); draw(); };
       return b;
@@ -203,13 +227,14 @@
     if (cs.length) {
       const P = Object.assign(light(cs, R), { cs });
       $('pv').innerHTML = chips(P, R) + `<span><b>${P.sum}</b>${P.m !== 1 ? ' × ' + P.m.toFixed(2) : ''}${P.fav ? ' × ' + FAV : ''} ＝</span><span class="big">${P.v}</span>${R ? `<span>／ ${R.need}</span>` : ''}`;
-      ok = !!R && P.v >= R.need;
+      const okRare = allowed(cs, R);
+      ok = !!R && P.v >= R.need && okRare;
       $('okmsg').className = R ? (ok ? 'ok' : 'short') : '';
-      $('okmsg').textContent = R ? (ok ? tr('nCan') : tr('nShort', { n: R.need - P.v })) : '';
+      $('okmsg').textContent = R ? (!okRare ? tr('nHikariNoRare') : ok ? tr('nCan') : tr('nShort', { n: R.need - P.v })) : '';
     } else { $('pv').innerHTML = `<span>${esc(tr('nPvEmpty'))}</span>`; $('okmsg').textContent = ''; }
     $('go').disabled = !ok || busy || ended;
     $('go').textContent = cs.length ? tr('nGoN', { n: cs.length }) : tr('nGo');
-    if (!busy && !ended) $('msg').textContent = R ? tr('nPickSp', { room: roomName(R) }) : tr('nPickRoom');
+    if (!busy && !ended) $('msg').textContent = R ? tr('nPickSp', { room: roomName(R) }) : normals().every(x => x.lit) ? tr('nHikariLeft') : tr('nPickRoom');
     $('endbtn').disabled = busy || ended;
     $('endbtn').classList.toggle('warn', endArm); $('endbtn').textContent = tr(endArm ? 'nEndSure' : 'nEndBtn');
   }
@@ -222,11 +247,12 @@
   // 残っている精霊の1〜3体で、その部屋に届く組があるか
   function canLight(R) {
     const idx = HAND.map((c, i) => i).filter(i => !HAND[i].used);
+    const ok = cs => allowed(cs, R) && light(cs, R).v >= R.need;
     for (let a = 0; a < idx.length; a++) {
-      if (light([HAND[idx[a]]], R).v >= R.need) return true;
+      if (ok([HAND[idx[a]]])) return true;
       for (let b = a + 1; b < idx.length; b++) {
-        if (light([HAND[idx[a]], HAND[idx[b]]], R).v >= R.need) return true;
-        for (let c = b + 1; c < idx.length; c++) if (light([HAND[idx[a]], HAND[idx[b]], HAND[idx[c]]], R).v >= R.need) return true;
+        if (ok([HAND[idx[a]], HAND[idx[b]]])) return true;
+        for (let c = b + 1; c < idx.length; c++) if (ok([HAND[idx[a]], HAND[idx[b]], HAND[idx[c]]])) return true;
       }
     }
     return false;
@@ -235,7 +261,7 @@
     const R = ROOM[cur], cs = sel.map(i => HAND[i]);
     if (busy || !R || !cs.length) return;
     const P = Object.assign(light(cs, R), { cs });
-    if (P.v < R.need) return;
+    if (P.v < R.need || !allowed(cs, R)) return;
     busy = true; endArm = false;
     sel.forEach(i => { HAND[i].used = true; });
     // ★主の力：送った夜のあと、1夜に1回だけ戻ってくる
@@ -244,9 +270,12 @@
     sel = []; draw();
     await lightScene(R, cs, P, back);
     R.lit = true; if (back) ace.used = false;
+    if (R.special) hikariLit = cs.some(c => c.rarity === 'gold') ? 'gold' : 'silver';
     cur = -1; busy = false; draw();
     glowUp();
-    if (ROOM.every(x => x.lit)) { await wait(500); morning(); return; }
+    // 5部屋が灯れば夜明け。光の間がまだ灯せるなら、朝を待つ（灯さずに朝を迎えるなら「ここまで」）
+    const sp = ROOM.find(x => x.special);
+    if (normals().every(x => x.lit) && (!sp || sp.lit || !canLight(sp))) { await wait(500); morning(); return; }
     if (!ROOM.some(x => !x.lit && canLight(x))) { $('msg').textContent = tr('nNoMore'); ended = true; draw(); await wait(1800); morning(); }
   };
   $('endbtn').onclick = () => {
@@ -260,6 +289,9 @@
     $('ltRoom').textContent = roomName(R); $('ltNeed').textContent = tr('nNeed', { n: R.need });
     $('ltCards').replaceChildren(...cs.map(c => cardEl(c, { button: false, ace: c.ace })));
     $('ltChips').innerHTML = ''; $('ltNum').textContent = '0'; $('ltDone').classList.remove('on'); $('ltBack').textContent = ''; $('ltTap').hidden = true;
+    // 展示室の主（額縁に飾った子）がいれば、灯す前にひとこと話す。言葉は夜明けの額縁と静かな朝の額縁で違う。輝きは変わらない
+    const keeper = cs.find(c => c.framed), lines = keeper ? D(keeper.framed === 'dawn' ? 'nLinesDawn' : 'nLinesQuiet') || [] : [];
+    $('ltSay').textContent = keeper && lines.length ? tr('nSays', { name: keeper.n, line: lines[Math.floor(Math.random() * lines.length)] }) : '';
     const top = Math.max(P.v, R.need) * 1.08;
     $('ltMark').style.left = (R.need / top * 100) + '%'; $('ltBar').style.width = '0';
     $('lt').hidden = false; sfx('send');
@@ -285,24 +317,46 @@
   }
 
   // ---- 朝：夜明け（5部屋すべて）か、静かな朝。負けの言葉は使わない。立会人にお礼を言う ----
+  // 朝を迎えると、その朝の回数を数え、額縁を1つ渡す（おためしの精霊の夜と、1部屋も灯らなかった朝は数えない）。
+  // 場面の段階は、その朝を迎えた回数で決まる（levelOf）
+  let sceneOn = null;
   function morning() {
     ended = true; draw();
-    const lit = ROOM.filter(R => R.lit).length, dawn = lit === ROOM.length;
-    const dark = ROOM.filter(R => !R.lit).map(roomName).join(tr('nRoomSep'));
+    const N = normals(), lit = N.filter(R => R.lit).length, dawn = lit === N.length, k = dawn ? 'dawn' : 'quiet';
+    const dark = N.filter(R => !R.lit).map(roomName).join(tr('nRoomSep'));
     const who = witness ? esc(witness) : '';
+    const counts = !trial && lit > 0;
+    let count = 1, gift = null;
+    if (counts) {
+      const R = loadRec(); R.n = (R.n || 0) + 1; count = R[k] = (R[k] || 0) + 1;
+      R.frames = frames(); R.frames.push({ k, n: count, id: null }); gift = R.frames.length - 1; saveRec(R);
+    }
+    const lv = levelOf(count), stages = D(dawn ? 'nStagesDawn' : 'nStagesQuiet') || [];
     sfx(dawn ? 'dawn' : 'quiet'); if (dawn) burst(.5, .3, 120);
     track(dawn ? 'night_dawn' : 'night_quiet');
-    $('end').className = 'end ' + (dawn ? 'dawn' : 'quiet');
-    $('end').innerHTML = `<h2>${esc(tr(dawn ? 'nDawnH' : 'nQuietH'))}</h2>`
+    $('end').className = 'end ' + k;
+    $('end').innerHTML = `<canvas class="scene" id="scene" aria-hidden="true"></canvas><div class="endin">`
+      + `<h2>${esc(tr(dawn ? 'nDawnH' : 'nQuietH'))}</h2>`
+      + (counts ? `<div class="lv">${esc(tr(dawn ? 'nLevelDawn' : 'nLevelQuiet', { n: count, stage: stages[lv - 1] || '' }))}</div>`
+        + `<div class="steps">${stages.map((x, i) => `<span class="${i < lv ? 'on' : ''}">${esc(x)}</span>`).join('')}</div>` : '')
       + `<p>${dawn ? tr('nDawnP') : lit ? tr('nQuietP', { n: lit, rooms: esc(dark) }) : tr('nQuietP0')}</p>`
-      + `<div class="lamps">${ROOM.map(R => `<i class="${R.lit ? 'on' : ''}"></i>`).join('')}</div>`
+      + (dawn && hikariLit ? `<p class="hk">${esc(tr(hikariLit === 'gold' ? 'nHikariGold' : 'nHikariSilver'))}</p>` : '')
+      + `<div class="lamps">${ROOM.map(R => `<i class="${R.lit ? 'on' : ''}${R.special ? ' sp' : ''}"></i>`).join('')}</div>`
+      + (gift !== null ? `<div class="gift" id="gift">${frameBox({ k }, 'mini')}<p>${tr('nGift', { frame: esc(tr(dawn ? 'frameDawn' : 'frameQuiet')) })}</p>`
+        + `<div class="btns"><button class="btn" id="pickNow" type="button">${esc(tr('nPickNow'))}</button><button class="btn ghost" id="later" type="button">${esc(tr('nLater'))}</button></div></div>`
+        : `<p class="small">${esc(tr(trial ? 'nGiftTrial' : 'nGiftNone'))}</p>`)
       + `<button class="btn" id="ty" type="button">${witness ? tr('nThanks', { name: who }) : esc(tr('nThanksMuseum'))}</button>`
       + `<div class="small" id="warn">${tr('nWarn')}</div>`
       + `<button class="btn ghost" id="skip" type="button">${esc(tr('nSkip'))}</button>`
-      + `<a class="btn ghost" id="toDex" href="spirit.html" hidden>${esc(tr('nBack'))}</a>`;
+      + `<a class="btn ghost" id="toDex" href="spirit.html" hidden>${esc(tr('nBack'))}</a></div>`;
     $('morning').hidden = false;
+    startScene(k, lv, dawn ? hikariLit : null);
+    if (gift !== null) {
+      $('pickNow').onclick = () => openPicker(gift, () => { $('gift').innerHTML = `<p>${esc(tr('nFramedOk'))}</p>`; });
+      $('later').onclick = () => { $('gift').innerHTML = `<p class="small">${esc(tr('nLaterOk'))}</p>`; };
+    }
     const finish = thanked => {
-      if (!trial) { const R = loadRec(); R.n = (R.n || 0) + 1; R[dawn ? 'dawn' : 'quiet'] = (R[dawn ? 'dawn' : 'quiet'] || 0) + 1; R.noAce = !thanked; saveRec(R); }
+      if (!trial) { const R = loadRec(); R.noAce = !thanked; saveRec(R); }
       noAce = !thanked && !trial;
       $('toDex').hidden = false; // お礼をするか決めたあとで出す（決める前に出ると、お礼をせずに抜けられる）
       $('skip').textContent = tr('nAgain'); $('skip').onclick = restart;
@@ -311,9 +365,143 @@
     $('skip').onclick = () => { sfx('no'); $('ty').disabled = true; $('warn').innerHTML = tr('nSkipped'); finish(false); };
   }
   function restart() {
-    $('morning').hidden = true; HAND = []; sel = []; cur = -1; ended = false; endArm = false; dpick = []; aceI = -1;
-    $('deck').hidden = false; drawDeck();
+    $('morning').hidden = true; sceneOn = null; HAND = []; sel = []; cur = -1; ended = false; endArm = false; dpick = []; aceI = -1; hikariLit = null;
+    reloadDex().then(() => { $('deck').hidden = false; drawDeck(); });
   }
+
+  // ---- 朝の場面（仮の絵）：夜明け＝光が育つ（細い光→光の筋→金の粒→鳥が飛ぶ→館全体が金色）、
+  //      静かな朝＝やすらぎが育つ（朝もや→花一輪→花びらが舞う→小鳥が鳴く→庭いっぱいの花）。光の間を灯した夜明けは、金の柱か銀の雨が加わる ----
+  function startScene(k, lv, hk) {
+    const c = $('scene'); if (!c) return;
+    const box = c.parentElement, run = {};
+    sceneOn = run;
+    const rnd = (i, j) => { const x = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return x - Math.floor(x); };
+    const t0 = performance.now();
+    const step = t => {
+      if (sceneOn !== run || $('morning').hidden) return;
+      const w = box.clientWidth, h = box.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
+      if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+      const g2 = c.getContext('2d'); g2.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawScene(g2, w, h, k, lv, hk, reduce ? 0 : (t - t0) / 1000, rnd);
+      if (!reduce) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  function drawScene(g2, w, h, k, lv, hk, s, rnd) {
+    const sky = g2.createLinearGradient(0, 0, 0, h);
+    if (k === 'dawn') { sky.addColorStop(0, '#1b1e33'); sky.addColorStop(.45, lv >= 5 ? '#5a4a52' : '#3a3350'); sky.addColorStop(1, lv >= 5 ? '#e0b46a' : '#b98e5c'); }
+    else { sky.addColorStop(0, '#0e1220'); sky.addColorStop(.6, '#1c2434'); sky.addColorStop(1, '#3a4650'); }
+    g2.fillStyle = sky; g2.fillRect(0, 0, w, h);
+    const base = h * .86;
+    // 美術館の影（夜明けの5段階目では金色に染まる）
+    g2.fillStyle = k === 'dawn' && lv >= 5 ? 'rgba(232,190,110,.55)' : 'rgba(8,9,16,.55)';
+    g2.beginPath(); g2.moveTo(w * .18, base); g2.lineTo(w * .18, h * .7); g2.lineTo(w * .5, h * .6); g2.lineTo(w * .82, h * .7); g2.lineTo(w * .82, base); g2.fill();
+    for (let i = 0; i < 6; i++) g2.fillRect(w * (.22 + i * .11), h * .71, w * .03, base - h * .71);
+    g2.fillRect(0, base, w, h - base);
+    if (k === 'dawn') {
+      const cx = w * .5, cy = h * .58;
+      // 1 細い光
+      const beam = g2.createLinearGradient(cx, 0, cx, cy);
+      beam.addColorStop(0, 'rgba(255,236,180,0)'); beam.addColorStop(1, 'rgba(255,236,180,.55)');
+      g2.fillStyle = beam; g2.fillRect(cx - 2 - lv, 0, 4 + lv * 2, cy);
+      // 2 光の筋
+      if (lv >= 2) { g2.save(); g2.translate(cx, cy); for (let i = 0; i < 9; i++) { g2.rotate(Math.PI / 9); g2.fillStyle = `rgba(255,230,170,${.06 + .02 * Math.sin(s + i)})`; g2.beginPath(); g2.moveTo(0, 0); g2.lineTo(-w * .05, -h); g2.lineTo(w * .05, -h); g2.fill(); } g2.restore(); }
+      // 3 金の粒
+      if (lv >= 3) for (let i = 0; i < 40; i++) { const x = rnd(i, 1) * w, y = ((rnd(i, 2) * h - s * (8 + rnd(i, 3) * 14)) % h + h) % h; g2.fillStyle = `rgba(246,220,142,${.4 + .4 * Math.sin(s * 2 + i)})`; g2.beginPath(); g2.arc(x, y, 1.4, 0, 6.28); g2.fill(); }
+      // 4 鳥が飛ぶ
+      if (lv >= 4) { g2.strokeStyle = 'rgba(30,24,30,.75)'; g2.lineWidth = 1.6; for (let i = 0; i < 5; i++) { const x = ((rnd(i, 4) * w + s * (20 + i * 4)) % (w + 40)) - 20, y = h * (.18 + rnd(i, 5) * .2), f = Math.sin(s * 6 + i) * 3; g2.beginPath(); g2.moveTo(x - 7, y - f); g2.quadraticCurveTo(x - 3, y - 4, x, y); g2.quadraticCurveTo(x + 3, y - 4, x + 7, y - f); g2.stroke(); } }
+      // 光の間：金の柱／銀の雨
+      if (hk === 'gold') { const p = g2.createLinearGradient(cx - 30, 0, cx + 30, 0); p.addColorStop(0, 'rgba(255,220,120,0)'); p.addColorStop(.5, `rgba(255,236,170,${.55 + .15 * Math.sin(s * 2)})`); p.addColorStop(1, 'rgba(255,220,120,0)'); g2.fillStyle = p; g2.fillRect(cx - 30, 0, 60, h * .6); }
+      if (hk === 'silver') { g2.strokeStyle = 'rgba(238,241,246,.6)'; g2.lineWidth = 1; for (let i = 0; i < 50; i++) { const x = rnd(i, 6) * w, y = ((rnd(i, 7) * h + s * 60) % h); g2.beginPath(); g2.moveTo(x, y); g2.lineTo(x, y + 8); g2.stroke(); } }
+    } else {
+      // 1 朝もや
+      for (let i = 0; i < 3; i++) { const y = h * (.7 + i * .06), m = g2.createLinearGradient(0, y - 20, 0, y + 20); m.addColorStop(0, 'rgba(200,210,220,0)'); m.addColorStop(.5, `rgba(200,210,220,${.10 + .03 * Math.sin(s * .5 + i)})`); m.addColorStop(1, 'rgba(200,210,220,0)'); g2.fillStyle = m; g2.fillRect(0, y - 20, w, 40); }
+      const flower = (x, y, r, col) => { g2.strokeStyle = 'rgba(90,120,90,.8)'; g2.lineWidth = 1.2; g2.beginPath(); g2.moveTo(x, base); g2.lineTo(x, y); g2.stroke(); g2.fillStyle = col; for (let p = 0; p < 5; p++) { const a = p / 5 * 6.28 + s * .2; g2.beginPath(); g2.arc(x + Math.cos(a) * r, y + Math.sin(a) * r, r * .8, 0, 6.28); g2.fill(); } g2.fillStyle = '#f6dc8e'; g2.beginPath(); g2.arc(x, y, r * .6, 0, 6.28); g2.fill(); };
+      // 2 花一輪
+      if (lv >= 2) flower(w * .5, base - 26, 5, 'rgba(238,241,246,.85)');
+      // 3 花びらが舞う
+      if (lv >= 3) for (let i = 0; i < 18; i++) { const x = ((rnd(i, 8) * w + s * (10 + i)) % (w + 20)) - 10, y = ((rnd(i, 9) * h + s * 14) % h); g2.save(); g2.translate(x, y); g2.rotate(s + i); g2.fillStyle = 'rgba(240,200,210,.7)'; g2.beginPath(); g2.ellipse(0, 0, 3, 1.6, 0, 0, 6.28); g2.fill(); g2.restore(); }
+      // 4 小鳥が鳴く（枝にとまる小鳥と、音符の代わりの小さな光）
+      if (lv >= 4) { g2.strokeStyle = 'rgba(60,50,40,.9)'; g2.lineWidth = 2; g2.beginPath(); g2.moveTo(w * .62, h * .42); g2.lineTo(w * .9, h * .38); g2.stroke(); for (let i = 0; i < 2; i++) { const x = w * (.7 + i * .1), y = h * .4 - i * 2; g2.fillStyle = 'rgba(40,36,34,.95)'; g2.beginPath(); g2.ellipse(x, y - 5, 6, 4.5, 0, 0, 6.28); g2.fill(); g2.beginPath(); g2.arc(x + 5, y - 9, 3, 0, 6.28); g2.fill(); g2.fillStyle = `rgba(230,207,154,${.5 + .5 * Math.sin(s * 3 + i)})`; g2.beginPath(); g2.arc(x + 9, y - 18 - 4 * Math.sin(s * 2 + i), 1.6, 0, 6.28); g2.fill(); } }
+      // 5 庭いっぱいの花
+      if (lv >= 5) for (let i = 0; i < 16; i++) flower(w * (.06 + i * .058), base - 10 - rnd(i, 10) * 18, 3 + rnd(i, 11) * 2, ['rgba(238,241,246,.85)', 'rgba(240,200,210,.85)', 'rgba(230,207,154,.85)'][i % 3]);
+    }
+  }
+
+  // ---- 額縁（仮の絵は CSS。夜明け＝金の飾り、静かな朝＝木と銀。金の光・銀の光の子を飾ると箔で光る） ----
+  function frameBox(f, size) {
+    const leaf = f.id && (f.rar === 'gold' || f.rar === 'silver') ? (f.k === 'dawn' ? ' leaf-gold' : ' leaf-silver') + ' rar-' + f.rar : '';
+    const th = f.id ? safeThumb(f.th) : '';
+    return `<div class="frame f-${f.k}${leaf}${size ? ' ' + size : ''}${f.id ? '' : ' empty'}"><div class="win"${th ? ` style="background-image:url('${th}')"` : ''}>${f.id ? '' : esc(tr('nEmptyFrame'))}</div></div>`;
+  }
+  function plate(f) {
+    const dawn = f.k === 'dawn', cls = f.id && (f.rar === 'gold' || f.rar === 'silver') ? ' ' + (f.rar === 'gold' ? 'g' : 's') : '';
+    if (!f.id) return `<div class="plate"><div class="t">&nbsp;</div><div class="nm dim">${esc(tr('nNotYet'))}</div><div class="d">${esc(tr('nTapToPick'))}</div></div>`;
+    return `<div class="plate${cls}"><div class="t">${esc(tr(dawn ? 'frameTitleDawn' : 'frameTitleQuiet'))}</div><div class="nm">${esc(txt(f.name))}</div><div class="d">${esc(tr(dawn ? 'framedAtDawn' : 'framedAtQuiet', { n: Number(f.n) || 1 }))}</div></div>`;
+  }
+
+  // ---- わたしの展示室（目録とは別の部屋）。飾った子と、まだ空いている額縁が並ぶ ----
+  function openGallery() {
+    const F = frames();
+    $('wall').replaceChildren(...F.map((f, i) => {
+      const d = document.createElement(f.id ? 'div' : 'button'); d.className = 'item';
+      if (!f.id) { d.type = 'button'; d.onclick = () => openPicker(i, openGallery); }
+      d.innerHTML = frameBox(f) + plate(f);
+      return d;
+    }));
+    $('galleryEmpty').hidden = F.length > 0;
+    $('gallery').hidden = false; sfx('pick');
+  }
+  $('galleryBtn').onclick = openGallery;
+  $('galleryBtn2').onclick = openGallery;
+  $('galleryClose').onclick = () => { $('gallery').hidden = true; sfx('un'); };
+
+  // ---- 飾る精霊を選ぶ（目録から1体。守り神も飾れる）。一度飾ったら、はめかえできない ----
+  let ALL = [], pickFor = -1, pickDone = null, pickSel = null;
+  async function reloadDex() { ALL = await readDex(); }
+  async function openPicker(fi, done) {
+    pickFor = fi; pickDone = done; pickSel = null;
+    await reloadDex();
+    const F = frames(), f = F[fi]; if (!f || f.id) return;
+    const used = new Set(F.filter(x => x.id).map(x => x.id));
+    const cards = ALL.filter(M => safeThumb(M.thumb)).sort((a, b) => (b.serial || 0) - (a.serial || 0));
+    $('pickH').textContent = tr('nPickH', { frame: tr(f.k === 'dawn' ? 'frameDawn' : 'frameQuiet') });
+    $('pickNone').hidden = cards.length > 0;
+    $('pickGrid').replaceChildren(...cards.map(M => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'th' + (used.has(M.id) ? ' done' : '');
+      b.style.backgroundImage = `url('${safeThumb(M.thumb)}')`;
+      const fr = F.find(x => x.id === M.id);
+      b.innerHTML = (fr ? `<span class="mk ${fr.k}">${esc(tr(fr.k === 'dawn' ? 'frameMarkDawn' : 'frameMarkQuiet'))}</span>` : '') + `<span class="lbl">${esc(txt(M.name))}</span>`;
+      b.disabled = used.has(M.id);
+      b.setAttribute('aria-label', txt(M.name) + (fr ? ' ' + tr('nPickDone') : ''));
+      b.onclick = () => { pickSel = M; sfx('pick'); confirmPick(); [...$('pickGrid').children].forEach(x => x.classList.toggle('sel', x === b)); };
+      return b;
+    }));
+    $('pickConfirm').hidden = true;
+    $('picker').hidden = false;
+  }
+  function confirmPick() {
+    const f = frames()[pickFor], M = pickSel; if (!f || !M) return;
+    const rar = M.rarity === 'gold' || M.rarity === 'silver' ? M.rarity : 'normal';
+    $('pickPreview').innerHTML = frameBox({ k: f.k, id: M.id, rar, th: M.thumb });
+    $('pickMsg').innerHTML = esc(tr('nConfirm', { name: txt(M.name), frame: tr(f.k === 'dawn' ? 'frameDawn' : 'frameQuiet') })) + '<br><span class="warn">' + esc(tr('nNoSwap')) + '</span>';
+    $('pickConfirm').hidden = false;
+    $('pickConfirm').scrollIntoView({ block: 'nearest' });
+  }
+  $('doFrame').onclick = () => {
+    const R = loadRec(), F = Array.isArray(R.frames) ? R.frames : [], f = F[pickFor], M = pickSel;
+    if (!f || f.id || !M) return; // もう飾ってある額縁は、はめかえない
+    Object.assign(f, { id: M.id, name: M.name, rar: M.rarity === 'gold' || M.rarity === 'silver' ? M.rarity : 'normal', th: safeThumb(M.thumb) });
+    R.frames = F;
+    if (!saveRec(R)) { $('pickMsg').textContent = tr('nSaveFail'); return; }
+    sfx('light'); burst(.5, .4, 50); track('night_frame');
+    // 手もとの精霊にも、展示室の主の印をつける
+    ZK.forEach(c => { if (c.id === M.id) c.framed = f.k; }); HAND.forEach(c => { if (c.id === M.id) c.framed = f.k; });
+    $('picker').hidden = true;
+    if (pickDone) pickDone();
+  };
+  $('repick').onclick = () => { pickSel = null; $('pickConfirm').hidden = true; [...$('pickGrid').children].forEach(x => x.classList.remove('sel')); sfx('un'); };
+  $('pickClose').onclick = () => { $('picker').hidden = true; sfx('un'); };
 
   // ---- 7体えらぶ ----
   const sum6 = () => dpick.filter(i => i !== aceI).reduce((a, i) => a + ZK[i].p, 0);
@@ -374,7 +562,7 @@
   $('trial').onclick = () => { trial = true; dpick = []; aceI = -1; ZK = trialSet(); sfx('pick'); drawDeck(); };
   $('tonight').onclick = () => {
     HAND = dpick.map(i => Object.assign({}, ZK[i], { used: false, ace: i === aceI }));
-    ROOM = tonight(new Date()); sel = []; cur = -1; aceBack = false; busy = false; ended = false; endArm = false;
+    ROOM = tonight(new Date(), HAND.some(isRare)); sel = []; cur = -1; aceBack = false; busy = false; ended = false; endArm = false; hikariLit = null;
     const g = GUARDS[guardI]; witness = g ? g.n : null;
     $('witness').innerHTML = witness ? esc(tr('nWitness', { name: '' })) + `<b>${esc(witness)}</b>` : esc(tr('nNoWitness'));
     $('trialNote').hidden = !trial;
@@ -390,7 +578,7 @@
   rs(); addEventListener('resize', rs);
   const motes = Array.from({ length: 90 }, (_, i) => ({ x: Math.random(), y: Math.random(), v: .00008 + Math.random() * .00022, r: .6 + Math.random() * 1.8, ph: Math.random() * 6.28, k: i }));
   let sparks = [], glow = 0, glowTo = 0;
-  function glowUp() { glowTo = ROOM.length ? ROOM.filter(R => R.lit).length / ROOM.length : 0; }
+  function glowUp() { const N = normals(); glowTo = N.length ? N.filter(R => R.lit).length / N.length : 0; }
   function burst(x, y, n = 40) { for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, v = .6 + Math.random() * 2.6; sparks.push({ x: x * W, y: y * H, vx: Math.cos(a) * v, vy: Math.sin(a) * v - .8, l: 1 }); } }
   const t0 = performance.now();
   function frame(t) {
@@ -480,7 +668,7 @@
   const dexP = readDex();
   $('startbtn').onclick = async () => {
     $('startbtn').disabled = true; $('startbtn').textContent = tr('nLoading');
-    const all = await dexP;
+    const all = ALL = await dexP;
     ZK = all.filter(M => !isHuman(M) && Number(M.power) > 0).map(spirit).sort((a, b) => b.p - a.p);
     GUARDS = all.filter(isHuman).map(M => ({ n: txt(M.name), map: lifeGrad(M) })); guardI = GUARDS.length ? 0 : -1;
     noAce = !!loadRec().noAce;
