@@ -239,79 +239,79 @@
   </url>
   <!-- 遊び場のモンスター対戦。spirit.html と同じく手で足した（2026-10-19、6言語） -->
   <url>
-    <loc>https://dropper-tools.com/play/battle.html</loc>
-    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/battle.html"/>
+    <loc>https://dropper-tools.com/play/night.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/night.html"/>
     <lastmod>2026-10-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://dropper-tools.com/en/play/battle.html</loc>
-    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/battle.html"/>
+    <loc>https://dropper-tools.com/en/play/night.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/night.html"/>
     <lastmod>2026-10-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://dropper-tools.com/in/play/battle.html</loc>
-    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/battle.html"/>
+    <loc>https://dropper-tools.com/in/play/night.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/night.html"/>
     <lastmod>2026-10-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://dropper-tools.com/ko/play/battle.html</loc>
-    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/battle.html"/>
+    <loc>https://dropper-tools.com/ko/play/night.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/night.html"/>
     <lastmod>2026-10-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://dropper-tools.com/zh-hant/play/battle.html</loc>
-    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/battle.html"/>
+    <loc>https://dropper-tools.com/zh-hant/play/night.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/night.html"/>
     <lastmod>2026-10-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://dropper-tools.com/vi/play/battle.html</loc>
-    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/battle.html"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/battle.html"/>
+    <loc>https://dropper-tools.com/vi/play/night.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/night.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/night.html"/>
     <lastmod>2026-10-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
