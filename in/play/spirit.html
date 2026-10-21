@@ -128,6 +128,18 @@ footer{margin-top:24px;text-align:center;font-size:13px;color:var(--text-light)}
 footer a{color:var(--primary-soft)}
 .grid .cardthumb{position:relative;cursor:pointer;border:0;padding:0;background:none;border-radius:6px}
 .grid .cardthumb:focus-visible{outline:2px solid var(--primary-soft)}
+/* 夜の美術館で額縁に飾った子：小さな絵に額縁の印、開いたカードに外枠と名札（夜明け＝金の額縁、静かな朝＝木と銀。金の光・銀の光の子は箔で光る） */
+.grid .cardthumb.framed img{border:3px solid #c9a45c;box-shadow:0 0 0 1px #3b2a0c}
+.grid .cardthumb.framed.quiet img{border-color:#6b4c33;box-shadow:0 0 0 1px #d8dde6}
+.grid .fmark{position:absolute;right:4px;bottom:4px;font-family:var(--serif);font-size:10px;padding:0 5px;background:linear-gradient(90deg,#a8781c,#f6dc8e);color:#1a1408}
+.grid .cardthumb.quiet .fmark{background:#5a3f2a;color:#eef1f6;border:1px solid #d8dde6}
+.frame-plate{margin:0 auto 10px;max-width:300px;text-align:center;border:1px solid #6e5a2c;background:#1a1810;padding:5px 10px;font-family:var(--serif)}
+.frame-plate b{display:block;font-size:12px;letter-spacing:.12em;color:var(--primary);font-weight:500}
+.frame-plate span{font-size:12px;color:var(--text-mid)}
+#card.framed-dawn{border:12px solid #c9a45c;border-image:linear-gradient(135deg,#7a5418,#f6dc8e 22%,#a8781c 45%,#f1d488 70%,#6e4a12) 1;border-radius:0}
+#card.framed-quiet{border:12px solid #5a3f2a;border-image:linear-gradient(90deg,#4a3422,#6b4c33 30%,#5a3f2a 60%,#3e2b1c) 1;border-radius:0;outline:2px solid #d8dde6;outline-offset:-14px}
+#card.framed-dawn.leaf{box-shadow:0 0 40px rgba(255,236,180,.55)}
+#card.framed-quiet.leaf{box-shadow:0 0 36px rgba(238,241,246,.5)}
 .grid .tag{position:absolute;left:4px;top:4px;display:flex;gap:3px}
 .grid .tag span{background:rgba(11,13,22,.82);color:var(--text-dark);border-radius:4px;padding:0 5px;font-size:11px;font-weight:500;line-height:1.6}
 .sym{display:inline-flex;width:28px;height:28px;border-radius:50%;align-items:center;justify-content:center;color:#fff;font-weight:700;flex:0 0 auto}
@@ -212,6 +224,7 @@ footer a{color:var(--primary-soft)}
 
   <section class="stage hidden" id="stage">
     <div class="ai-state hidden" id="aiState" role="status" aria-live="polite"><span class="ai-spin"></span><span id="aiMsg"></span><button id="aiRetry" class="hidden" data-i18n="aiRetry">もう一度試す</button></div>
+    <div class="frame-plate hidden" id="framePlate"></div>
     <canvas id="card" width="600" height="920" aria-label="精霊のカード" data-i18n="cardAria" data-i18n-attr="aria-label"></canvas>
     <div class="works hidden" id="works"></div>
     <div class="row">
@@ -274,7 +287,7 @@ footer a{color:var(--primary-soft)}
   <footer><span data-i18n="footerBrand">ドロッパー</span> <a id="homeLink" href="https://dropper-tools.com/">dropper-tools.com</a>　｜　<a id="policyLink" href="/privacy.html#play" data-i18n="footerPolicy">プライバシーポリシー（遊び場）</a></footer>
 </div>
 <script>window.LANG = 'in';</script>
-<script src="monster-i18n.js?v=16"></script>
-<script src="monster-app.js?v=13"></script>
+<script src="monster-i18n.js?v=17"></script>
+<script src="monster-app.js?v=14"></script>
 </body>
 </html>

@@ -178,13 +178,71 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .end .btn{min-width:240px;line-height:1.6}
 .end .small{font-size:12px;color:var(--mid)}
 .end .small b{color:var(--warm);font-weight:500}
+/* 展示室の主・光の間 */
+.sp .keeper{position:absolute;bottom:42px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;padding:0 6px;font-family:var(--serif);z-index:1;background:linear-gradient(90deg,#a8781c,#f6dc8e);color:#1a1408}
+.sp .keeper.quiet{background:#5a3f2a;color:#eef1f6;border:1px solid #d8dde6}
+.room.hikari{border-color:var(--gold-soft);background:radial-gradient(circle at 50% 40%,rgba(255,236,180,.22),transparent 70%),linear-gradient(135deg,#2a2210,#0c0d16 60%,#2a2210);box-shadow:0 0 22px rgba(230,207,154,.3)}
+.room.hikari .n{color:#fff2c4}
+.room .badge{position:absolute;top:-9px;right:8px;background:var(--gold);color:#1a1408;font-size:10px;padding:1px 6px;font-family:var(--serif)}
+.room .fav.hk{color:var(--gold-soft)}
+.ltsay{font-family:var(--serif);font-size:15px;color:var(--gold-soft);min-height:1.6em;max-width:480px}
+/* 朝の場面（仮の絵は canvas）・段階・額縁をもらう */
+.end{position:relative;overflow:hidden}
+.end .scene{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.end .endin{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;align-items:center;width:100%}
+.end .lv{font-family:var(--serif);font-size:14px;color:var(--gold-soft)}
+.steps{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;font-size:11px;color:var(--mid)}
+.steps span{border:1px solid rgba(255,255,255,.2);padding:1px 6px;background:rgba(0,0,0,.25)}
+.steps span.on{border-color:var(--gold-soft);color:#fff2c4;background:rgba(201,164,92,.28)}
+.end p.hk{color:#fff2c4;font-size:14px}
+.lamps i.sp{border-radius:2px;transform:rotate(45deg)}
+.lamps i.sp.on{background:#fff2c4}
+.gift{display:flex;flex-direction:column;align-items:center;gap:8px;background:rgba(11,13,22,.55);border:1px solid rgba(201,164,92,.45);padding:14px;width:100%}
+.gift p{font-size:14px}
+.gift .btns{justify-content:center}
+/* 額縁（仮の絵。夜明け＝金の飾り、静かな朝＝木と銀。箔＝金の光・銀の光の子） */
+.frame{display:inline-block;position:relative}
+.frame .win{width:120px;aspect-ratio:180/276;background:#000 center/cover no-repeat}
+.frame.mini .win{width:72px}
+.f-dawn{padding:12px;background:linear-gradient(135deg,#7a5418,#f6dc8e 22%,#a8781c 45%,#f1d488 70%,#6e4a12);box-shadow:inset 0 0 0 2px #3b2a0c,inset 0 0 0 5px #e9c97a,0 6px 20px rgba(0,0,0,.6)}
+.f-dawn .win{box-shadow:0 0 0 3px #3b2a0c,0 0 0 5px #f6dc8e}
+.f-quiet{padding:11px;background:linear-gradient(90deg,#4a3422,#6b4c33 30%,#5a3f2a 60%,#3e2b1c);box-shadow:inset 0 0 0 2px #2a1d12,0 6px 20px rgba(0,0,0,.6)}
+.f-quiet .win{box-shadow:0 0 0 3px #d8dde6,0 0 0 4px #7d8796}
+.frame.mini{padding:8px}
+.frame.empty .win{background:repeating-linear-gradient(45deg,#11131c 0 8px,#0d0f17 8px 16px);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;font-family:var(--serif)}
+.frame.rar-gold{background:linear-gradient(135deg,#fff2c4,#d9a93c 20%,#fff8dc 35%,#c9952e 55%,#fff2c4 75%,#b07d1e);box-shadow:inset 0 0 0 2px #6e4a12,inset 0 0 0 5px #fffbe8,0 0 26px rgba(255,236,180,.7),0 6px 20px rgba(0,0,0,.6)}
+.frame.rar-silver.f-dawn{background:linear-gradient(135deg,#eef1f6,#9aa3b2 20%,#ffffff 35%,#8d96a6 55%,#eef1f6 75%,#7d8796);box-shadow:inset 0 0 0 2px #4a505c,inset 0 0 0 5px #ffffff,0 0 24px rgba(238,241,246,.6),0 6px 20px rgba(0,0,0,.6)}
+.frame.rar-silver.f-quiet{box-shadow:inset 0 0 0 2px #2a1d12,inset 0 0 0 5px #eef1f6,0 0 24px rgba(238,241,246,.55),0 6px 20px rgba(0,0,0,.6)}
+.frame.rar-gold.f-quiet{box-shadow:inset 0 0 0 2px #6e4a12,inset 0 0 0 5px #fff2c4,0 0 26px rgba(255,236,180,.6),0 6px 20px rgba(0,0,0,.6);background:linear-gradient(90deg,#4a3422,#6b4c33 30%,#5a3f2a 60%,#3e2b1c)}
+.plate{margin:12px auto 0;width:170px;max-width:100%;padding:6px 8px;background:#1a1810;border:1px solid #6e5a2c;text-align:center}
+.plate .t{font-size:11px;color:var(--gold);letter-spacing:.1em;font-family:var(--serif)}
+.plate .nm{font-family:var(--serif);font-size:15px;font-weight:600;word-break:break-word}
+.plate .nm.dim{color:var(--mid);font-weight:500;font-size:13px}
+.plate .d{font-size:10.5px;color:var(--mid);margin-top:2px}
+.plate.g{background:linear-gradient(90deg,#3b2a0c,#5a4416,#3b2a0c);border-color:#f6dc8e}.plate.g .nm{color:#fff2c4}
+.plate.s{background:linear-gradient(90deg,#2c3038,#454b56,#2c3038);border-color:#eef1f6}.plate.s .nm{color:#fff}.plate.s .t{color:#dfe3ea}
+/* 展示室・選ぶ画面 */
+.box.wide{max-width:760px}
+.wall{display:flex;flex-wrap:wrap;gap:28px 24px;justify-content:center;align-items:flex-end;padding:24px 10px;background:radial-gradient(ellipse 60% 80% at 50% 0%,rgba(230,207,154,.12),transparent 70%),#10121c;border:1px solid var(--line)}
+.wall .item{text-align:center;background:none;border:0;padding:0;color:var(--ink);font:inherit}
+.wall button.item{cursor:pointer}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;max-height:46vh;overflow:auto;padding:4px}
+.pgrid .th{aspect-ratio:180/276;background:#000 center/cover no-repeat;border:1px solid var(--line);position:relative;cursor:pointer;padding:0}
+.pgrid .th.sel{outline:2px solid var(--gold-soft);box-shadow:0 0 18px rgba(230,207,154,.4)}
+.pgrid .th.done{opacity:.35;cursor:default}
+.pgrid .lbl{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);color:var(--ink);font-size:11px;padding:2px 4px;font-family:var(--serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pgrid .mk{position:absolute;right:3px;top:3px;font-size:10px;padding:0 5px;font-family:var(--serif)}
+.mk.dawn{background:linear-gradient(90deg,#a8781c,#f6dc8e);color:#1a1408}.mk.quiet{background:#5a3f2a;color:#eef1f6;border:1px solid #d8dde6}
+.pconfirm{border:1px solid var(--gold);background:#0e1020;padding:16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.pconfirm p{margin:0;font-family:var(--serif);line-height:1.9}
+.pconfirm .warn{color:var(--warm)}
 @media (prefers-reduced-motion:reduce){.ltcards .sp{animation:none}.room,.sp,.ltdone{transition:none}}
 </style>
 </head>
 <body>
 <canvas id="bg" aria-hidden="true"></canvas>
 <div class="app" id="app">
-  <div class="top"><span class="logo" data-i18n="nLogo">夜の美術館を灯す</span><span class="topr"><a class="back" href="spirit.html" data-i18n="nBack">← 目録へ</a><button class="snd" id="snd" type="button" data-i18n="nSndOn">♪ 音を出す</button></span></div>
+  <div class="top"><span class="logo" data-i18n="nLogo">夜の美術館を灯す</span><span class="topr"><a class="back" href="spirit.html" data-i18n="nBack">← 目録へ</a><button class="back" id="galleryBtn" type="button" data-i18n="nGalleryBtn">わたしの展示室</button><button class="snd" id="snd" type="button" data-i18n="nSndOn">♪ 音を出す</button></span></div>
   <div class="head"><div><h1 data-i18n="nTonight">今夜の美術館</h1><div class="date" id="date"></div></div><div class="witness" id="witness"></div></div>
   <div class="rooms" id="rooms"></div>
   <div class="hand" id="hand"></div>
@@ -206,10 +264,12 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
    <li><b class="n">4</b><span data-i18n="nRule4" data-i18n-html></span></li>
    <li><b class="n">5</b><span data-i18n="nRule5" data-i18n-html></span></li>
    <li><b class="n">6</b><span data-i18n="nRule6" data-i18n-html></span></li>
+   <li><b class="n">7</b><span data-i18n="nRule7" data-i18n-html></span></li>
+   <li><b class="n">8</b><span data-i18n="nRule8" data-i18n-html></span></li>
   </ol>
   <div class="tip" data-i18n="nTip" data-i18n-html></div>
   <div class="gnote" data-i18n="nGuardNote"></div>
-  <div class="center"><button class="btn" id="startbtn" type="button" data-i18n="nStart">美術館へ入る</button></div>
+  <div class="center btns" style="justify-content:center"><button class="btn" id="startbtn" type="button" data-i18n="nStart">美術館へ入る</button><button class="btn ghost" id="galleryBtn2" type="button" data-i18n="nGalleryBtn">わたしの展示室</button></div>
   <div class="note center" data-i18n="nNote"></div>
  </div>
 </div>
@@ -234,6 +294,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 <div class="layer lt" id="lt" hidden aria-live="polite">
  <div class="ltbox">
   <div class="ltroom" id="ltRoom"></div>
+  <div class="ltsay" id="ltSay"></div>
   <div class="ltneed" id="ltNeed"></div>
   <div class="ltcards" id="ltCards"></div>
   <div class="ltchips" id="ltChips"></div>
@@ -247,8 +308,32 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 
 <div class="layer morning" id="morning" hidden><div class="end" id="end"></div></div>
 
-<script src="monster-i18n.js?v=16"></script>
-<script src="night-i18n.js?v=1"></script>
-<script src="night-app.js?v=1"></script>
+<div class="layer" id="gallery" hidden>
+ <div class="box wide">
+  <h2 data-i18n="nGalleryH">わたしの展示室</h2>
+  <p class="lead" data-i18n="nGalleryLead">飾った精霊は、ここに並びます。目録とは別の部屋です</p>
+  <div class="wall" id="wall"></div>
+  <p class="note center" id="galleryEmpty" data-i18n="nGalleryEmpty">まだ額縁がありません。朝を迎えると、額縁を1つもらえます</p>
+  <div class="center"><button class="btn ghost" id="galleryClose" type="button" data-i18n="nClose">閉じる</button></div>
+ </div>
+</div>
+
+<div class="layer" id="picker" hidden>
+ <div class="box wide">
+  <h2 id="pickH"></h2>
+  <p class="note center" id="pickNone" hidden data-i18n="nNoDexCards">目録に精霊がいません。精霊を目覚めさせてから飾れます</p>
+  <div class="pgrid" id="pickGrid"></div>
+  <div class="pconfirm" id="pickConfirm" hidden>
+   <div id="pickPreview"></div>
+   <p id="pickMsg"></p>
+   <div class="btns" style="justify-content:center"><button class="btn" id="doFrame" type="button" data-i18n="nDoFrame">飾る</button><button class="btn ghost" id="repick" type="button" data-i18n="nRepick">選び直す</button></div>
+  </div>
+  <div class="center"><button class="btn ghost" id="pickClose" type="button" data-i18n="nClose">閉じる</button></div>
+ </div>
+</div>
+
+<script src="monster-i18n.js?v=17"></script>
+<script src="night-i18n.js?v=2"></script>
+<script src="night-app.js?v=2"></script>
 </body>
 </html>
