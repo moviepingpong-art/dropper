@@ -4,7 +4,7 @@
 // 結びのことわりは monster-app.js の fusionRules と同じ数字。守り神（人間のカード）は灯さない「立会人」で、強さを持たせない。
 // 2026-10-21〜（PR3-2）：朝を迎えた回数で朝の場面が5段階に育つ・朝ごとに額縁を1つ・目録の精霊を1体だけ飾る（はめかえ不可）・わたしの展示室・
 // 飾った子は「展示室の主」としてひとこと話す・金の光／銀の光の子を連れた夜だけ6つめの「光の間」が開く。
-// 朝の場面は、Blender の静止画ができるまでページの中で描いた仮の絵（drawScene）。額縁と展示室は Blender の静止画（play/gallery/、作り方は tools/blender/）。
+// 朝の場面・額縁・展示室は Blender の静止画（play/gallery/、作り方は tools/blender/）。朝の場面の動くもの（光の筋・粒・鳥・花びら）は canvas で重ねる（drawScene）。
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -370,62 +370,86 @@
     reloadDex().then(() => { $('deck').hidden = false; drawDeck(); });
   }
 
-  // ---- 朝の場面（仮の絵）：夜明け＝光が育つ（細い光→光の筋→金の粒→鳥が飛ぶ→館全体が金色）、
-  //      静かな朝＝やすらぎが育つ（朝もや→花一輪→花びらが舞う→小鳥が鳴く→庭いっぱいの花）。光の間を灯した夜明けは、金の柱か銀の雨が加わる ----
+  // ---- 朝の場面：Blender の静止画（play/gallery/morning-{dawn,quiet}-{1..5}.jpg、作り方は tools/blender/morning.py）の上に、動くものを canvas で重ねる。
+  //      夜明け＝光が育つ（細い光→光の筋→金の粒→鳥が飛ぶ→館全体が金色）、静かな朝＝やすらぎが育つ（朝もや→花一輪→花びらが舞う→小鳥が鳴く→庭いっぱいの花）。
+  //      光の間を灯した夜明けは、金の柱か銀の雨が加わる。位置は絵の割合（morning.py が書き出す JSON の値）
+  const MORN = {
+    sun: [[0.1966, 0.5449], [0.1968, 0.4929], [0.197, 0.4409], [0.1972, 0.3801], [0.1975, 0.3018]], // 夜明けの太陽（段階ごと）
+    birds: [[0.8819, 0.0845], [0.9167, 0.1131]],  // 静かな朝の枝の小鳥の頭の上
+    door: [0.5, 0.5851],                          // 館の扉の上
+    fx: 0.42                                      // 狭い画面で左右を切るとき、絵のどこを中心に残すか（太陽と館が両方入るように）
+  };
+  const mornImg = {};
+  function mornPic(k, lv) {
+    const key = k + lv;
+    if (!mornImg[key]) { const im = new Image(); im.src = `${GAL}morning-${k}-${lv}.jpg`; mornImg[key] = im; }
+    return mornImg[key];
+  }
   function startScene(k, lv, hk) {
     const c = $('scene'); if (!c) return;
     const run = {};
     sceneOn = run;
     const rnd = (i, j) => { const x = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return x - Math.floor(x); };
+    const img = mornPic(k, lv);
     const t0 = performance.now();
     const step = t => {
       if (sceneOn !== run || $('morning').hidden) return;
       const w = c.clientWidth, h = c.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
       if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
       const g2 = c.getContext('2d'); g2.setTransform(dpr, 0, 0, dpr, 0, 0);
-      drawScene(g2, w, h, k, lv, hk, reduce ? 0 : (t - t0) / 1000, rnd);
+      drawScene(g2, w, h, k, lv, hk, reduce ? 0 : (t - t0) / 1000, rnd, img);
       if (!reduce) requestAnimationFrame(step);
     };
+    // 動きを減らす設定では1枚だけ描く（絵が届いてから）
+    if (reduce && !img.complete) img.addEventListener('load', () => requestAnimationFrame(step), { once: true });
     requestAnimationFrame(step);
   }
-  function drawScene(g2, w, h, k, lv, hk, s, rnd) {
-    const sky = g2.createLinearGradient(0, 0, 0, h);
-    if (k === 'dawn') { sky.addColorStop(0, '#1b1e33'); sky.addColorStop(.45, lv >= 5 ? '#5a4a52' : '#3a3350'); sky.addColorStop(1, lv >= 5 ? '#e0b46a' : '#b98e5c'); }
-    else { sky.addColorStop(0, '#0e1220'); sky.addColorStop(.6, '#1c2434'); sky.addColorStop(1, '#3a4650'); }
-    g2.fillStyle = sky; g2.fillRect(0, 0, w, h);
-    const base = h * .86;
-    // 美術館の影（夜明けの5段階目では金色に染まる）
-    g2.fillStyle = k === 'dawn' && lv >= 5 ? 'rgba(232,190,110,.55)' : 'rgba(8,9,16,.55)';
-    g2.beginPath(); g2.moveTo(w * .18, base); g2.lineTo(w * .18, h * .7); g2.lineTo(w * .5, h * .6); g2.lineTo(w * .82, h * .7); g2.lineTo(w * .82, base); g2.fill();
-    for (let i = 0; i < 6; i++) g2.fillRect(w * (.22 + i * .11), h * .71, w * .03, base - h * .71);
-    g2.fillRect(0, base, w, h - base);
+  function drawScene(g2, w, h, k, lv, hk, s, rnd, img) {
+    // 絵を枠いっぱいに（はみ出しは切る）。ix, iy で絵の割合の位置を画面の位置にする
+    let sc = 1, ox = 0, oy = 0;
+    if (img && img.complete && img.naturalWidth) {
+      sc = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+      const dw = img.naturalWidth * sc, dh = img.naturalHeight * sc;
+      ox = Math.min(0, Math.max(w - dw, w / 2 - dw * MORN.fx)); oy = (h - dh) / 2;
+      g2.drawImage(img, ox, oy, dw, dh);
+    } else {
+      const sky = g2.createLinearGradient(0, 0, 0, h);
+      sky.addColorStop(0, '#1b1e33'); sky.addColorStop(1, k === 'dawn' ? '#b98e5c' : '#3a4650');
+      g2.fillStyle = sky; g2.fillRect(0, 0, w, h);
+    }
+    const dw = img && img.naturalWidth ? img.naturalWidth * sc : w, dh = img && img.naturalHeight ? img.naturalHeight * sc : h;
+    const ix = f => ox + f * dw, iy = f => oy + f * dh;
     if (k === 'dawn') {
-      const cx = w * .5, cy = h * .58;
-      // 1 細い光
-      const beam = g2.createLinearGradient(cx, 0, cx, cy);
-      beam.addColorStop(0, 'rgba(255,236,180,0)'); beam.addColorStop(1, 'rgba(255,236,180,.55)');
-      g2.fillStyle = beam; g2.fillRect(cx - 2 - lv, 0, 4 + lv * 2, cy);
-      // 2 光の筋
-      if (lv >= 2) { g2.save(); g2.translate(cx, cy); for (let i = 0; i < 9; i++) { g2.rotate(Math.PI / 9); g2.fillStyle = `rgba(255,230,170,${.06 + .02 * Math.sin(s + i)})`; g2.beginPath(); g2.moveTo(0, 0); g2.lineTo(-w * .05, -h); g2.lineTo(w * .05, -h); g2.fill(); } g2.restore(); }
-      // 3 金の粒
-      if (lv >= 3) for (let i = 0; i < 40; i++) { const x = rnd(i, 1) * w, y = ((rnd(i, 2) * h - s * (8 + rnd(i, 3) * 14)) % h + h) % h; g2.fillStyle = `rgba(246,220,142,${.4 + .4 * Math.sin(s * 2 + i)})`; g2.beginPath(); g2.arc(x, y, 1.4, 0, 6.28); g2.fill(); }
+      const [sx, sy] = MORN.sun[lv - 1], cx = ix(sx), cy = iy(sy);
+      // 1 細い光：太陽のまわりのゆらぐ光
+      g2.save(); g2.globalCompositeOperation = 'lighter';
+      const halo = g2.createRadialGradient(cx, cy, 0, cx, cy, h * (.25 + .06 * lv));
+      halo.addColorStop(0, `rgba(255,220,150,${.30 + .05 * Math.sin(s * 1.3)})`); halo.addColorStop(1, 'rgba(255,200,120,0)');
+      g2.fillStyle = halo; g2.fillRect(0, 0, w, h);
+      // 2 光の筋：太陽から扇のように（段階で本数が増え、ゆっくり回る）
+      if (lv >= 2) {
+        const n = [0, 6, 9, 12, 16][lv - 1], R = Math.hypot(w, h);
+        for (let i = 0; i < n; i++) {
+          const an = s * .03 + i / n * Math.PI * 2, wd = .035 + .02 * rnd(i, 12);
+          g2.fillStyle = `rgba(255,226,160,${(.05 + .015 * lv) * (.6 + .4 * Math.sin(s * .8 + i * 1.7))})`;
+          g2.beginPath(); g2.moveTo(cx, cy); g2.lineTo(cx + Math.cos(an - wd) * R, cy + Math.sin(an - wd) * R); g2.lineTo(cx + Math.cos(an + wd) * R, cy + Math.sin(an + wd) * R); g2.fill();
+        }
+      }
+      // 3 金の粒（5段階目は多く）
+      if (lv >= 3) for (let i = 0, n = lv >= 5 ? 90 : 45; i < n; i++) { const x = rnd(i, 1) * w, y = ((rnd(i, 2) * h - s * (8 + rnd(i, 3) * 14)) % h + h) % h; g2.fillStyle = `rgba(246,220,142,${.35 + .4 * Math.sin(s * 2 + i)})`; g2.beginPath(); g2.arc(x, y, 1.1 + rnd(i, 4), 0, 6.28); g2.fill(); }
+      g2.restore();
       // 4 鳥が飛ぶ
-      if (lv >= 4) { g2.strokeStyle = 'rgba(30,24,30,.75)'; g2.lineWidth = 1.6; for (let i = 0; i < 5; i++) { const x = ((rnd(i, 4) * w + s * (20 + i * 4)) % (w + 40)) - 20, y = h * (.18 + rnd(i, 5) * .2), f = Math.sin(s * 6 + i) * 3; g2.beginPath(); g2.moveTo(x - 7, y - f); g2.quadraticCurveTo(x - 3, y - 4, x, y); g2.quadraticCurveTo(x + 3, y - 4, x + 7, y - f); g2.stroke(); } }
-      // 光の間：金の柱／銀の雨
-      if (hk === 'gold') { const p = g2.createLinearGradient(cx - 30, 0, cx + 30, 0); p.addColorStop(0, 'rgba(255,220,120,0)'); p.addColorStop(.5, `rgba(255,236,170,${.55 + .15 * Math.sin(s * 2)})`); p.addColorStop(1, 'rgba(255,220,120,0)'); g2.fillStyle = p; g2.fillRect(cx - 30, 0, 60, h * .6); }
+      if (lv >= 4) { g2.strokeStyle = 'rgba(30,22,26,.8)'; g2.lineWidth = 1.6; for (let i = 0; i < 6; i++) { const x = ((rnd(i, 4) * w + s * (20 + i * 4)) % (w + 40)) - 20, y = h * (.08 + rnd(i, 5) * .22), f = Math.sin(s * 6 + i) * 3; g2.beginPath(); g2.moveTo(x - 7, y - f); g2.quadraticCurveTo(x - 3, y - 4, x, y); g2.quadraticCurveTo(x + 3, y - 4, x + 7, y - f); g2.stroke(); } }
+      // 光の間：扉の上から金の柱／空から銀の雨
+      if (hk === 'gold') { const px = ix(MORN.door[0]), py = iy(MORN.door[1]), p = g2.createLinearGradient(px - 30, 0, px + 30, 0); p.addColorStop(0, 'rgba(255,220,120,0)'); p.addColorStop(.5, `rgba(255,236,170,${.55 + .15 * Math.sin(s * 2)})`); p.addColorStop(1, 'rgba(255,220,120,0)'); g2.save(); g2.globalCompositeOperation = 'lighter'; g2.fillStyle = p; g2.fillRect(px - 30, 0, 60, py); g2.restore(); }
       if (hk === 'silver') { g2.strokeStyle = 'rgba(238,241,246,.6)'; g2.lineWidth = 1; for (let i = 0; i < 50; i++) { const x = rnd(i, 6) * w, y = ((rnd(i, 7) * h + s * 60) % h); g2.beginPath(); g2.moveTo(x, y); g2.lineTo(x, y + 8); g2.stroke(); } }
     } else {
-      // 1 朝もや
-      for (let i = 0; i < 3; i++) { const y = h * (.7 + i * .06), m = g2.createLinearGradient(0, y - 20, 0, y + 20); m.addColorStop(0, 'rgba(200,210,220,0)'); m.addColorStop(.5, `rgba(200,210,220,${.10 + .03 * Math.sin(s * .5 + i)})`); m.addColorStop(1, 'rgba(200,210,220,0)'); g2.fillStyle = m; g2.fillRect(0, y - 20, w, 40); }
-      const flower = (x, y, r, col) => { g2.strokeStyle = 'rgba(90,120,90,.8)'; g2.lineWidth = 1.2; g2.beginPath(); g2.moveTo(x, base); g2.lineTo(x, y); g2.stroke(); g2.fillStyle = col; for (let p = 0; p < 5; p++) { const a = p / 5 * 6.28 + s * .2; g2.beginPath(); g2.arc(x + Math.cos(a) * r, y + Math.sin(a) * r, r * .8, 0, 6.28); g2.fill(); } g2.fillStyle = '#f6dc8e'; g2.beginPath(); g2.arc(x, y, r * .6, 0, 6.28); g2.fill(); };
-      // 2 花一輪
-      if (lv >= 2) flower(w * .5, base - 26, 5, 'rgba(238,241,246,.85)');
-      // 3 花びらが舞う
-      if (lv >= 3) for (let i = 0; i < 18; i++) { const x = ((rnd(i, 8) * w + s * (10 + i)) % (w + 20)) - 10, y = ((rnd(i, 9) * h + s * 14) % h); g2.save(); g2.translate(x, y); g2.rotate(s + i); g2.fillStyle = 'rgba(240,200,210,.7)'; g2.beginPath(); g2.ellipse(0, 0, 3, 1.6, 0, 0, 6.28); g2.fill(); g2.restore(); }
-      // 4 小鳥が鳴く（枝にとまる小鳥と、音符の代わりの小さな光）
-      if (lv >= 4) { g2.strokeStyle = 'rgba(60,50,40,.9)'; g2.lineWidth = 2; g2.beginPath(); g2.moveTo(w * .62, h * .42); g2.lineTo(w * .9, h * .38); g2.stroke(); for (let i = 0; i < 2; i++) { const x = w * (.7 + i * .1), y = h * .4 - i * 2; g2.fillStyle = 'rgba(40,36,34,.95)'; g2.beginPath(); g2.ellipse(x, y - 5, 6, 4.5, 0, 0, 6.28); g2.fill(); g2.beginPath(); g2.arc(x + 5, y - 9, 3, 0, 6.28); g2.fill(); g2.fillStyle = `rgba(230,207,154,${.5 + .5 * Math.sin(s * 3 + i)})`; g2.beginPath(); g2.arc(x + 9, y - 18 - 4 * Math.sin(s * 2 + i), 1.6, 0, 6.28); g2.fill(); } }
-      // 5 庭いっぱいの花
-      if (lv >= 5) for (let i = 0; i < 16; i++) flower(w * (.06 + i * .058), base - 10 - rnd(i, 10) * 18, 3 + rnd(i, 11) * 2, ['rgba(238,241,246,.85)', 'rgba(240,200,210,.85)', 'rgba(230,207,154,.85)'][i % 3]);
+      // 1 朝もや：ゆっくり流れる薄い帯
+      for (let i = 0; i < 3; i++) { const y = h * (.62 + i * .1), a = (.10 - .015 * lv) * (1 + .3 * Math.sin(s * .4 + i)), m = g2.createLinearGradient(0, y - 24, 0, y + 24); m.addColorStop(0, 'rgba(210,220,230,0)'); m.addColorStop(.5, `rgba(210,220,230,${Math.max(0, a)})`); m.addColorStop(1, 'rgba(210,220,230,0)'); g2.fillStyle = m; g2.fillRect(0, y - 24, w, 48); }
+      // 3 花びらが舞う（5段階目は多く）
+      if (lv >= 3) for (let i = 0, n = lv >= 5 ? 36 : 18; i < n; i++) { const x = ((rnd(i, 8) * w + s * (10 + i % 9)) % (w + 20)) - 10, y = ((rnd(i, 9) * h + s * 14) % h); g2.save(); g2.translate(x, y); g2.rotate(s + i); g2.fillStyle = i % 3 ? 'rgba(240,190,205,.75)' : 'rgba(250,246,240,.75)'; g2.beginPath(); g2.ellipse(0, 0, 3, 1.6, 0, 0, 6.28); g2.fill(); g2.restore(); }
+      // 4 小鳥が鳴く：枝の小鳥の頭の上に、音符の代わりの小さな光
+      if (lv >= 4) for (let i = 0; i < 2; i++) { const [bx, by] = MORN.birds[i], ph = (s * .7 + i * .5) % 1.6; if (ph > 1) continue; g2.fillStyle = `rgba(246,226,170,${Math.sin(ph * Math.PI)})`; g2.beginPath(); g2.arc(ix(bx) + (i ? -1 : 1) * ph * 10, iy(by) - ph * 16, 1.8, 0, 6.28); g2.fill(); }
     }
   }
 
