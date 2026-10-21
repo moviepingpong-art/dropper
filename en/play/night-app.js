@@ -717,16 +717,26 @@
   }
   requestAnimationFrame(frame);
 
-  // ---- 音：すべてその場で合成（音のファイルを使わない）。鈴と、弾むオルゴール ----
-  let ac = null, on = false, master, bgmGain, noise, timer = null, nextT = 0, step = 0;
+  // ---- 音：すべてその場で合成（音のファイルを使わない）。鈴と、静かに満ちていく宇宙のような BGM ----
+  let ac = null, on = false, master, bgmGain, wet, noise, timer = null, nextT = 0, step = 0;
   function initAudio() {
     ac = new (window.AudioContext || window.webkitAudioContext)();
     const comp = ac.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3; comp.connect(ac.destination);
     master = ac.createGain(); master.gain.value = .8; master.connect(comp);
-    bgmGain = ac.createGain(); bgmGain.gain.value = .5; bgmGain.connect(master);
+    bgmGain = ac.createGain(); bgmGain.gain.value = .9; bgmGain.connect(master);
     noise = ac.createBuffer(1, ac.sampleRate * .1, ac.sampleRate);
     const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    // 広い残響：消えていく雑音を響きの形にして重ねる（ファイルを使わない）
+    const ir = ac.createBuffer(2, ac.sampleRate * 3, ac.sampleRate);
+    for (let c = 0; c < 2; c++) { const x = ir.getChannelData(c); for (let i = 0; i < x.length; i++) x[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / x.length, 3.2); }
+    const rv = ac.createConvolver(); rv.buffer = ir;
+    wet = ac.createGain(); wet.gain.value = .9; wet.connect(rv); rv.connect(bgmGain);
+    // 分散和音のこだま（付点8分）
+    echo = ac.createDelay(1); echo.delayTime.value = STEP * 3;
+    const fb = ac.createGain(); fb.gain.value = .38; const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3200;
+    echo.connect(lp); lp.connect(fb); fb.connect(echo); lp.connect(bgmGain); lp.connect(wet);
   }
+  let echo = null;
   const N = n => 440 * Math.pow(2, (n - 69) / 12);
   // 鈴：倍音を少しずらした正弦波を重ね、長く消えていく
   function bell(f, t, d = 2.2, v = .18, dest = master) {
@@ -736,38 +746,72 @@
       o.connect(e); e.connect(dest); o.start(t); o.stop(t + d + .05);
     });
   }
-  // 弦：やわらかい三角波を2本、ゆっくり立ち上げる
+  // 弦：やわらかい三角波を2本、ゆっくり立ち上げる（効果音の和音）
   function pad(f, t, d, v = .05, dest = bgmGain) {
     const e = ac.createGain(); e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + d * .4); e.gain.exponentialRampToValueAtTime(.0001, t + d);
     [-5, 5].forEach(dt => { const o = ac.createOscillator(); o.type = 'triangle'; o.frequency.value = f; o.detune.value = dt; o.connect(e); o.start(t); o.stop(t + d + .05); });
     e.connect(dest);
   }
-  // 弾む音：短く消える音（ベース）と、ささやかなシェイカー（雑音を短く）
-  function pluck(f, t, d = .35, v = .12, dest = bgmGain) {
-    const o = ac.createOscillator(), e = ac.createGain(); o.type = 'triangle'; o.frequency.value = f;
-    e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .008); e.gain.exponentialRampToValueAtTime(.0001, t + d);
-    o.connect(e); e.connect(dest); o.start(t); o.stop(t + d + .05);
+  // BGM の音色 ----
+  // 和音の霧：少しずらしたのこぎり波を、こもらせて広い残響へ
+  function haze(fs, t, d, v) {
+    const e = ac.createGain(), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = .4;
+    lp.frequency.setValueAtTime(500, t); lp.frequency.linearRampToValueAtTime(1500, t + d * .5); lp.frequency.linearRampToValueAtTime(700, t + d);
+    e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + 1.2); e.gain.setValueAtTime(v, t + d - .6); e.gain.exponentialRampToValueAtTime(.0001, t + d + .4);
+    fs.forEach(f => [-9, 9].forEach(dt => { const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f; o.detune.value = dt; o.connect(lp); o.start(t); o.stop(t + d + .5); }));
+    lp.connect(e); e.connect(bgmGain); e.connect(wet);
   }
-  function shaker(t, v = .025) {
+  // 星のつぶ：短く光る音（分散和音）。こだまと残響へ
+  function spark(f, t, v) {
+    const o = ac.createOscillator(), o2 = ac.createOscillator(), e = ac.createGain();
+    o.type = 'triangle'; o.frequency.value = f; o2.type = 'sine'; o2.frequency.value = f * 2;
+    e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .006); e.gain.exponentialRampToValueAtTime(.0001, t + .32);
+    o.connect(e); o2.connect(e); e.connect(bgmGain); e.connect(echo); e.connect(wet);
+    o.start(t); o2.start(t); o.stop(t + .36); o2.stop(t + .36);
+  }
+  // 低い脈：根音を8分で、ふくらんで引く
+  function sub(f, t, v) {
+    const o = ac.createOscillator(), e = ac.createGain(); o.type = 'sine'; o.frequency.value = f;
+    e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .03); e.gain.exponentialRampToValueAtTime(.0001, t + STEP * 2);
+    o.connect(e); e.connect(bgmGain); o.start(t); o.stop(t + STEP * 2 + .05);
+  }
+  // 鼓動：低く沈む太鼓
+  function kick(t, v) {
+    const o = ac.createOscillator(), e = ac.createGain(); o.type = 'sine';
+    o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(42, t + .18);
+    e.gain.setValueAtTime(v, t); e.gain.exponentialRampToValueAtTime(.0001, t + .45);
+    o.connect(e); e.connect(bgmGain); o.start(t); o.stop(t + .5);
+  }
+  // さらさら：16分の細かな雑音と、遠い手拍子
+  function hiss(t, v, len = .05, hz = 7000, rev = false) {
     const s = ac.createBufferSource(), f = ac.createBiquadFilter(), e = ac.createGain();
-    s.buffer = noise; f.type = 'highpass'; f.frequency.value = 6000;
-    e.gain.setValueAtTime(v, t); e.gain.exponentialRampToValueAtTime(.0001, t + .06);
-    s.connect(f); f.connect(e); e.connect(bgmGain); s.start(t); s.stop(t + .08);
+    s.buffer = noise; f.type = rev ? 'bandpass' : 'highpass'; f.frequency.value = hz;
+    e.gain.setValueAtTime(v, t); e.gain.exponentialRampToValueAtTime(.0001, t + len);
+    s.connect(f); f.connect(e); e.connect(bgmGain); if (rev) e.connect(wet); s.start(t); s.stop(t + len + .02);
   }
-  // BGM：ニ長調の I–V–vi–IV を、8分音符（0.3 秒）のオルゴールの分散和音で。ベースは 3+3+2 で弾ませ、
-  //      4小節おきに上でメロディを重ねる（毎回くじで選ばず、決まった節にして口ずさめるように）
-  const CH = [{ b: 38, t: [62, 66, 69] }, { b: 45, t: [61, 64, 69] }, { b: 47, t: [62, 66, 71] }, { b: 43, t: [62, 67, 71] }];
-  const ARP = [0, 1, 2, 3, 2, 1, 2, 3];
-  const MEL = [[[0, 81], [2, 78], [4, 81], [6, 83]], [[0, 85], [3, 81], [6, 78]], [[0, 83], [2, 86], [4, 85], [6, 83]], [[0, 81], [3, 79], [4, 78], [6, 76]]];
+  // BGM：テンポ103、ハ短調寄り（ドリア）の Bbmaj7 → Cm9 → Ebmaj7 → Gm7 を2小節ずつ。16分の分散和音がずっと流れ、
+  //      48小節（約1分50秒）で 静か → ベース → 鼓動 → いちばん満ちる（旋律・手拍子）→ ひと息 と満ちていき、くり返す
+  const STEP = 60 / 103 / 4;
+  const CH = [
+    { b: 46, t: [58, 62, 65, 69], pad: [46, 53, 57, 62], mel: [77, 74] },
+    { b: 48, t: [60, 63, 67, 74], pad: [48, 55, 58, 63], mel: [75, 72] },
+    { b: 51, t: [58, 63, 67, 69], pad: [51, 55, 58, 62], mel: [79, 77] },
+    { b: 43, t: [58, 62, 65, 67], pad: [43, 50, 53, 58], mel: [74, 70] }
+  ];
+  const ARP = [0, 1, 2, 3, 4, 3, 2, 1, 0, 2, 1, 3, 2, 4, 3, 1];
+  // 48小節の満ち方（0〜1）
+  const lift = bar => { const b = bar % 48; return b < 8 ? .2 : b < 16 ? .4 : b < 24 ? .6 : b < 40 ? 1 : .35; };
   function sched() {
-    while (nextT < ac.currentTime + .2) {
-      const t = nextT, i = step % 8, barN = Math.floor(step / 8), bar = barN % 4, c = CH[bar];
-      if (i === 0) pad(N(c.t[0] - 12), t, 2.6, .025);
-      const a = ARP[i]; bell(N(a === 3 ? c.t[0] + 12 : c.t[a]), t, 1.2, .045, bgmGain);
-      if (i === 0 || i === 3 || i === 6) pluck(N(c.b), t, .32, .1);
-      if (i % 2 === 1) shaker(t);
-      if (Math.floor(barN / 4) % 2 === 1) MEL[bar].forEach(([s, n]) => { if (s === i) bell(N(n), t, 1.8, .075, bgmGain); });
-      nextT += .3; step++;
+    while (nextT < ac.currentTime + .25) {
+      const t = nextT, i = step % 16, barN = Math.floor(step / 16), c = CH[Math.floor(barN / 2) % 4], L = lift(barN);
+      if (i === 0 && barN % 2 === 0) haze(c.pad.map(N), t, STEP * 32, .016 + .006 * L);
+      const a = ARP[i]; spark(N(a === 4 ? c.t[0] + 12 : c.t[a]), t, (.022 + .02 * L) * (i % 4 === 0 ? 1.3 : 1));
+      if (L >= .4 && i % 2 === 0) sub(N(c.b - 12), t, (i % 4 === 0 ? .16 : .09) * Math.min(1, L + .2));
+      if (L >= .6 && (i === 0 || i === 8 || (L >= 1 && (i === 4 || i === 12)))) kick(t, .22 * L);
+      if (L >= .6) hiss(t, (i % 4 === 2 ? .022 : .01) * L);
+      if (L >= 1 && (i === 4 || i === 12)) hiss(t, .05, .18, 1800, true);
+      if (L >= 1 && i === 0) bell(N(c.mel[barN % 2]), t, 3.6, .05, wet), bell(N(c.mel[barN % 2]), t, 3.6, .035, bgmGain);
+      nextT += STEP; step++;
     }
   }
   function bgm(play) { if (play) { nextT = ac.currentTime + .05; step = 0; timer = setInterval(sched, 60); } else { clearInterval(timer); timer = null; } }
@@ -775,15 +819,15 @@
     if (!on || !ac) return;
     const t = ac.currentTime;
     const S = {
-      pick: () => bell(N(86), t, .8, .1),
-      un: () => bell(N(79), t, .6, .07),
+      pick: () => bell(N(84), t, .8, .1),
+      un: () => bell(N(77), t, .6, .07),
       no: () => bell(N(55), t, .5, .12),
-      send: () => [74, 79, 83].forEach((n, i) => bell(N(n), t + i * .12, 1.6, .1)),
-      light: () => { [62, 69, 74, 78, 81, 86].forEach((n, i) => bell(N(n), t + i * .09, 2.6, .13)); pad(N(50), t, 3, .08, master); pad(N(57), t, 3, .06, master); },
-      back: () => [81, 86].forEach((n, i) => bell(N(n), t + i * .18, 1.6, .12)),
-      dawn: () => { [62, 66, 69, 74, 78, 81, 86, 90].forEach((n, i) => bell(N(n), t + i * .14, 3.2, .13)); [50, 57, 62, 66].forEach(n => pad(N(n), t, 5, .07, master)); },
-      quiet: () => { [69, 74, 76].forEach((n, i) => bell(N(n), t + i * .3, 2.8, .1)); [45, 52, 57].forEach(n => pad(N(n), t, 4.5, .06, master)); },
-      thanks: () => [[86, 0], [90, .25], [93, .5], [98, .75]].forEach(([n, d]) => bell(N(n), t + d, 2.4, .1))
+      send: () => [72, 75, 79].forEach((n, i) => bell(N(n), t + i * .12, 1.6, .1)),
+      light: () => { [60, 67, 72, 74, 79, 84].forEach((n, i) => bell(N(n), t + i * .09, 2.6, .13)); pad(N(48), t, 3, .08, master); pad(N(55), t, 3, .06, master); },
+      back: () => [79, 84].forEach((n, i) => bell(N(n), t + i * .18, 1.6, .12)),
+      dawn: () => { [58, 62, 65, 69, 70, 74, 77, 81].forEach((n, i) => bell(N(n), t + i * .14, 3.2, .13)); [46, 53, 57, 62].forEach(n => pad(N(n), t, 5, .07, master)); },
+      quiet: () => { [67, 72, 74].forEach((n, i) => bell(N(n), t + i * .3, 2.8, .1)); [48, 55, 60].forEach(n => pad(N(n), t, 4.5, .06, master)); },
+      thanks: () => [[82, 0], [86, .25], [89, .5], [94, .75]].forEach(([n, d]) => bell(N(n), t + d, 2.4, .1))
     };
     if (S[k]) S[k]();
   }
