@@ -373,13 +373,13 @@
   //      静かな朝＝やすらぎが育つ（朝もや→花一輪→花びらが舞う→小鳥が鳴く→庭いっぱいの花）。光の間を灯した夜明けは、金の柱か銀の雨が加わる ----
   function startScene(k, lv, hk) {
     const c = $('scene'); if (!c) return;
-    const box = c.parentElement, run = {};
+    const run = {};
     sceneOn = run;
     const rnd = (i, j) => { const x = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return x - Math.floor(x); };
     const t0 = performance.now();
     const step = t => {
       if (sceneOn !== run || $('morning').hidden) return;
-      const w = box.clientWidth, h = box.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
+      const w = c.clientWidth, h = c.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
       if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
       const g2 = c.getContext('2d'); g2.setTransform(dpr, 0, 0, dpr, 0, 0);
       drawScene(g2, w, h, k, lv, hk, reduce ? 0 : (t - t0) / 1000, rnd);
@@ -601,13 +601,15 @@
   }
   requestAnimationFrame(frame);
 
-  // ---- 音：すべてその場で合成（音のファイルを使わない）。鈴と、ゆっくりしたオルゴール ----
-  let ac = null, on = false, master, bgmGain, timer = null, nextT = 0, step = 0;
+  // ---- 音：すべてその場で合成（音のファイルを使わない）。鈴と、弾むオルゴール ----
+  let ac = null, on = false, master, bgmGain, noise, timer = null, nextT = 0, step = 0;
   function initAudio() {
     ac = new (window.AudioContext || window.webkitAudioContext)();
     const comp = ac.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3; comp.connect(ac.destination);
     master = ac.createGain(); master.gain.value = .8; master.connect(comp);
     bgmGain = ac.createGain(); bgmGain.gain.value = .5; bgmGain.connect(master);
+    noise = ac.createBuffer(1, ac.sampleRate * .1, ac.sampleRate);
+    const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   }
   const N = n => 440 * Math.pow(2, (n - 69) / 12);
   // 鈴：倍音を少しずらした正弦波を重ね、長く消えていく
@@ -624,17 +626,32 @@
     [-5, 5].forEach(dt => { const o = ac.createOscillator(); o.type = 'triangle'; o.frequency.value = f; o.detune.value = dt; o.connect(e); o.start(t); o.stop(t + d + .05); });
     e.connect(dest);
   }
-  // オルゴール：5音の音階を、和音の上でゆっくり（1拍 0.6 秒）
-  const PENTA = [0, 2, 4, 7, 9], CH = [[50, 57, 62], [47, 54, 59], [43, 50, 55], [45, 52, 57]];
+  // 弾む音：短く消える音（ベース）と、ささやかなシェイカー（雑音を短く）
+  function pluck(f, t, d = .35, v = .12, dest = bgmGain) {
+    const o = ac.createOscillator(), e = ac.createGain(); o.type = 'triangle'; o.frequency.value = f;
+    e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .008); e.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(e); e.connect(dest); o.start(t); o.stop(t + d + .05);
+  }
+  function shaker(t, v = .025) {
+    const s = ac.createBufferSource(), f = ac.createBiquadFilter(), e = ac.createGain();
+    s.buffer = noise; f.type = 'highpass'; f.frequency.value = 6000;
+    e.gain.setValueAtTime(v, t); e.gain.exponentialRampToValueAtTime(.0001, t + .06);
+    s.connect(f); f.connect(e); e.connect(bgmGain); s.start(t); s.stop(t + .08);
+  }
+  // BGM：ニ長調の I–V–vi–IV を、8分音符（0.3 秒）のオルゴールの分散和音で。ベースは 3+3+2 で弾ませ、
+  //      4小節おきに上でメロディを重ねる（毎回くじで選ばず、決まった節にして口ずさめるように）
+  const CH = [{ b: 38, t: [62, 66, 69] }, { b: 45, t: [61, 64, 69] }, { b: 47, t: [62, 66, 71] }, { b: 43, t: [62, 67, 71] }];
+  const ARP = [0, 1, 2, 3, 2, 1, 2, 3];
+  const MEL = [[[0, 81], [2, 78], [4, 81], [6, 83]], [[0, 85], [3, 81], [6, 78]], [[0, 83], [2, 86], [4, 85], [6, 83]], [[0, 81], [3, 79], [4, 78], [6, 76]]];
   function sched() {
     while (nextT < ac.currentTime + .2) {
-      const t = nextT, bar = Math.floor(step / 8) % 4;
-      if (step % 8 === 0) CH[bar].forEach(n => pad(N(n), t, 5.2));
-      if (step % 2 === 0 || Math.random() < .3) {
-        const n = 74 + PENTA[Math.floor(Math.random() * 5)] + (Math.random() < .25 ? 12 : 0);
-        if (Math.random() < .7) bell(N(n), t, 2.4, .06, bgmGain);
-      }
-      nextT += .6; step++;
+      const t = nextT, i = step % 8, barN = Math.floor(step / 8), bar = barN % 4, c = CH[bar];
+      if (i === 0) pad(N(c.t[0] - 12), t, 2.6, .025);
+      const a = ARP[i]; bell(N(a === 3 ? c.t[0] + 12 : c.t[a]), t, 1.2, .045, bgmGain);
+      if (i === 0 || i === 3 || i === 6) pluck(N(c.b), t, .32, .1);
+      if (i % 2 === 1) shaker(t);
+      if (Math.floor(barN / 4) % 2 === 1) MEL[bar].forEach(([s, n]) => { if (s === i) bell(N(n), t, 1.8, .075, bgmGain); });
+      nextT += .3; step++;
     }
   }
   function bgm(play) { if (play) { nextT = ac.currentTime + .05; step = 0; timer = setInterval(sched, 60); } else { clearInterval(timer); timer = null; } }
