@@ -45,7 +45,8 @@
     document.title = tr('nPageTitle');
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const k = el.getAttribute('data-i18n');
-      if (el.hasAttribute('data-i18n-html')) el.innerHTML = tr(k); else el.textContent = tr(k);
+      const attr = el.getAttribute('data-i18n-attr');
+      if (attr) el.setAttribute(attr, tr(k)); else if (el.hasAttribute('data-i18n-html')) el.innerHTML = tr(k); else el.textContent = tr(k);
     });
     document.documentElement.classList.add('i18n-ready');
   }
@@ -179,7 +180,10 @@
   let dpick = [], aceI = -1;
   // at：'door'＝cur 番目の扉の前・'room'＝部屋の中・'lit'＝灯った部屋・'last'＝最後の通路（pos 0 入口／1 奥の2枚の前／2 光の扉の手前）
   let HAND = [], ROOM = [], sel = [], cur = 0, at = 'door', pos = 0, page = 0, aceBack = false, busy = false, ended = false, endArm = false;
-  let keyed = false, witness = null, witnessMap = '', hikariLit = null;
+  let keyed = false, witness = null, witnessMap = '', hikariLit = null, doorKeyed = [];
+  // 扉2〜4の鍵（2026-10-25〜、重吉さんの決め）：外のサイトで保存した画像。扉1は鍵なし。毎晩要るが、前に保存した同じ画像で何度でも開く
+  const DOORKEY = [null, 'silk', 'hubble', 'sky'];
+  const doorKey = () => at === 'door' && !doorKeyed[cur] ? DOORKEY[cur] || null : null;
 
   function cardEl(c, opts = {}) {
     const b = document.createElement(opts.button === false ? 'div' : 'button');
@@ -213,10 +217,19 @@
     // 絵の下の真ん中のボタン：扉の前では「扉を開ける」、最後の通路では「前に進む ↑」（2026-10-25 重吉さんの決め）
     const fw = $('fwd');
     if (last) { fw.textContent = tr('nForward'); fw.onclick = forward; fw.hidden = pos >= 2 || busy || ended || keyed; }
-    else if (at === 'door') { fw.textContent = tr('nOpenDoor'); fw.onclick = openDoor; fw.hidden = busy || ended; }
+    else if (at === 'door') { fw.textContent = tr('nOpenDoor'); fw.onclick = openDoor; fw.hidden = busy || ended || !!doorKey(); }
     else fw.hidden = true;
     drawHall();
-    $('roomBox').hidden = at !== 'room'; $('keyBox').hidden = !(last && pos === 2) || keyed;
+    const dk = doorKey(), lightKey = last && pos === 2 && !keyed;
+    $('roomBox').hidden = at !== 'room'; $('keyBox').hidden = !(lightKey || dk);
+    // 鍵の箱は、扉2〜4と光の扉で同じものを使い、言葉だけ入れかえる
+    if (dk) {
+      $('keyLead').innerHTML = D('nDoorLead')[dk]; $('keyDrop').textContent = D('nDoorDrop')[dk];
+      $('drop').setAttribute('aria-label', D('nDoorAria')[dk]); $('keyNote').innerHTML = tr('nDoorNote', { site: D('nDoorSite')[dk] });
+    } else if (lightKey) {
+      $('keyLead').innerHTML = tr('nKeyLead'); $('keyDrop').textContent = tr('nKeyDrop');
+      $('drop').setAttribute('aria-label', tr('nKeyAria')); $('keyNote').innerHTML = tr('nKeyNote');
+    }
     ['act', 'act2', 'act3'].forEach(id => { $(id).hidden = true; });
     $('say').textContent = '';
     if (!busy && !ended) $('msg').textContent = '';
@@ -224,7 +237,6 @@
       $('rn').innerHTML = `<small>${esc(tr('nLastNo'))}</small>${esc(tr('nLastName'))}`;
       const n = frames().length, pages = Math.max(1, Math.ceil(n / PER));
       $('info').textContent = pos === 2 ? '' : n ? tr('nLastInfo') : tr('nLastEmpty');
-      if (pos === 2) $('keyLead').innerHTML = tr('nKeyLead');
       if (pos > 0) button('act2', tr('nGoBack'), () => walk(-1, () => { pos--; }));
       if (n > PER) button('act3', tr('nMoreFrames', { a: page + 1, b: pages }), () => walk(0, () => { page = (page + 1) % pages; }));
     } else {
@@ -384,6 +396,7 @@
     });
   }
   async function useKey(files) {
+    if (doorKey()) return useDoorKey(files);
     if (busy || ended || keyed || at !== 'last' || pos !== 2) return;
     const f = [...files].find(x => x.type.startsWith('image/'));
     if (!f) { $('msg').textContent = tr('nKeyNo'); sfx('no'); return; }
@@ -394,6 +407,96 @@
     keyed = true; witness = txt(a.name); witnessMap = a.life ? lifeGrad(a) : ''; track('night_key');
     enterLast(a);
   }
+  // 扉2〜4：落とされた画像を、この端末の中で形と色だけ見る（AI なし・どこにも送らない・残さない）。合えば扉を開ける
+  async function useDoorKey(files) {
+    const dk = doorKey(); if (busy || ended || !dk) return;
+    const f = [...files].find(x => x.type.startsWith('image/')), site = D('nDoorSite')[dk];
+    if (!f) { $('msg').textContent = tr('nDoorNo', { site }); sfx('no'); return; }
+    $('drop').classList.add('busy'); $('msg').textContent = tr('nKeyReading');
+    const ok = await doorKeyFits(dk, f).catch(() => false);
+    $('drop').classList.remove('busy');
+    if (doorKey() !== dk) return;
+    if (!ok) { $('msg').textContent = tr('nDoorNo', { site }); sfx('no'); return; }
+    doorKeyed[cur] = true; sfx('light');
+    openDoor();
+    setTimeout(() => { if (!ended) $('msg').textContent = tr('nDoorOk'); }, reduce ? 200 : 800);
+  }
+  // ---- 扉2〜4の鍵：外のサイトで保存した画像（2026-10-25〜）。AI なしで、この端末の中で形と色だけを見る。画像は残さない ----
+  // silk＝Silk（weavesilk.com）の絵：ほとんど真っ黒の地に光る線、左右対称（絵は毎回ちがう）
+  // hubble＝NASA「ハッブルがあなたの誕生日に見たもの」：ファイル名が「june-1-2003-…」の形。名前が変わっていても、暗い宇宙の写真なら通す（重吉さんの決め）
+  // sky＝TheSkyLive の「あなたの星空」（Dark）：灰色の地の上に、大きな紺の丸い星図
+  const MONTHS = /^(january|february|march|april|may|june|july|august|september|october|november|december)-\d{1,2}-\d{4}-/i;
+  function pixelsOf(file, size = 160) {
+    return new Promise(ok => {
+      const url = URL.createObjectURL(file), im = new Image();
+      im.onload = () => {
+        const s = Math.min(1, size / Math.max(im.naturalWidth, im.naturalHeight)), w = Math.max(1, Math.round(im.naturalWidth * s)), h = Math.max(1, Math.round(im.naturalHeight * s));
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0, w, h);
+        URL.revokeObjectURL(url); ok({ w, h, d: x.getImageData(0, 0, w, h).data, rw: im.naturalWidth, rh: im.naturalHeight });
+      };
+      im.onerror = () => { URL.revokeObjectURL(url); ok(null); };
+      im.src = url;
+    });
+  }
+  function doorKeyOf(kind, P, name) {
+    const { w, h, d } = P, n = w * h, mx = i => Math.max(d[i], d[i + 1], d[i + 2]), mn = i => Math.min(d[i], d[i + 1], d[i + 2]);
+    if (kind === 'silk') {
+      let black = 0, bright = 0, pair = 0, hue = 0;
+      const lit = (x, y) => mx((y * w + x) * 4) > 90;
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        if (mx(i) < 16) black++;
+        if (lit(x, y)) {
+          bright++;
+          if (mx(i) - mn(i) > 40) hue++;
+          const m = w - 1 - x; // 左右を裏返した所（1つずれまで見る）
+          if (lit(m, y) || (m > 0 && lit(m - 1, y)) || (m < w - 1 && lit(m + 1, y))) pair++;
+        }
+      }
+      // 線は細く、色がついている（白い彫刻を黒い地で撮った写真を通さないため）
+      return black / n > 0.55 && bright / n > 0.002 && bright / n < 0.2 && hue / bright > 0.3 && pair / bright > 0.7;
+    }
+    if (kind === 'hubble') {
+      if (MONTHS.test(name || '')) return true;
+      // 名前が変わっていたら：宇宙らしい暗さ（黒に近い所が多い・茶色い暗さではない）と、色のある光。Silk と星空の画像はそれぞれの扉の鍵なので通さない
+      if (doorKeyOf('silk', P) || doorKeyOf('sky', P)) return false;
+      let sum = 0, dark = 0, vdark = 0, warm = 0, color = 0, bright = 0;
+      for (let i = 0; i < d.length; i += 4) {
+        const v = mx(i); sum += (d[i] + d[i + 1] + d[i + 2]) / 3;
+        if (v < 45) dark++;
+        if (v < 25) vdark++;
+        if (v < 60 && d[i] - d[i + 2] > 15) warm++;
+        if (v > 60 && v - mn(i) > 25) color++;
+        if (v > 150) bright++;
+      }
+      return sum / n < 60 && dark / n > 0.45 && vdark / n > 0.25 && warm / n < 0.15 && color / n > 0.003 && bright / n > 0.0005;
+    }
+    if (kind === 'sky') {
+      // 四すみの近くは灰色（33,33,33）
+      const grey = i => Math.abs(d[i] - 33) < 10 && Math.abs(d[i + 1] - 33) < 10 && Math.abs(d[i + 2] - 33) < 10;
+      let g = 0, gn = 0;
+      for (const [fx, fy] of [[.03, .03], [.97, .03], [.03, .97], [.97, .97], [.5, .01], [.5, .99]]) { gn++; if (grey((Math.floor(fy * (h - 1)) * w + Math.floor(fx * (w - 1))) * 4)) g++; }
+      if (g < 5) return false;
+      // 紺の空（青が勝つ暗い色）が、丸く、横いっぱい近くに広がる
+      let x0 = w, x1 = -1, y0 = h, y1 = -1, navy = 0;
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        if (d[i + 2] - d[i] > 6 && mx(i) < 70 && !grey(i)) { navy++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      }
+      if (x1 < 0) return false;
+      const bw = x1 - x0 + 1, bh = y1 - y0 + 1, fill = navy / (bw * bh);
+      // 丸の外（箱の四すみ）は灰色
+      const cg = [[x0 + 1, y0 + 1], [x1 - 1, y0 + 1], [x0 + 1, y1 - 1], [x1 - 1, y1 - 1]].filter(([x, y]) => grey((y * w + x) * 4)).length;
+      return bw / w > 0.75 && Math.abs(bw / bh - 1) < 0.12 && fill > 0.55 && cg >= 3;
+    }
+    return false;
+  }
+  async function doorKeyFits(kind, file) {
+    const P = await pixelsOf(file);
+    return !!P && doorKeyOf(kind, P, file.name);
+  }
+
   // 光の扉をくぐる。最後の部屋（灯さない。夜明けになる）
   async function enterLast(a) {
     busy = true; draw();
@@ -770,7 +873,7 @@
   $('tonight').onclick = () => {
     HAND = dpick.map(i => Object.assign({}, ZK[i], { used: false, ace: i === aceI }));
     ROOM = tonight(new Date()); sel = []; cur = 0; at = 'door'; pos = 0; page = 0;
-    aceBack = false; busy = false; ended = false; endArm = false; keyed = false; witness = null; witnessMap = ''; hikariLit = null;
+    aceBack = false; busy = false; ended = false; endArm = false; keyed = false; doorKeyed = []; witness = null; witnessMap = ''; hikariLit = null;
     $('trialNote').hidden = !trial;
     $('deck').hidden = true; preload(); draw(); glowUp(); sfx('send'); track('night_start');
   };
