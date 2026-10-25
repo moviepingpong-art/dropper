@@ -2123,9 +2123,10 @@
       try {
         const l = await loadPhoto(e.data.file), life = readLifeCard(l.img);
         if (!life) return reply({ ok: false });
-        // 守り神はその夜だけの立会人。目録には入れない（2026-10-25〜、重吉さんの決め）。名前と人生地図の色だけを返す
+        // その夜だけの守り神。目録には入れない（2026-10-25〜、重吉さんの決め）。名前・人生地図の色・カードの小さな絵（最後の部屋の動画に出す）だけを返す
         const M = await build(l.bytes, l.img, printOf(fingerprint(l.bytes)), { kind: 'life', meas: lifeMeas(life), life });
-        reply({ ok: true, name: JSON.parse(JSON.stringify(M.name)), life: { joy: M.life.joy } });
+        await display(M);
+        reply({ ok: true, name: JSON.parse(JSON.stringify(M.name)), life: { joy: M.life.joy }, th: thumbOf() });
       } catch (err) { reply({ ok: false, err: true }); }
     });
     window.parent.postMessage({ type: 'lifeKeyReady' }, location.origin);

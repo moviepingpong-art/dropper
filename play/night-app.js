@@ -158,7 +158,7 @@
   let dpick = [];
   // at：'door'＝cur 番目の扉の前・'room'＝部屋の中・'lit'＝灯った部屋・'last'＝最後の通路（pos 0 入口／1 奥の2枚の前／2 光の扉の手前）
   let HAND = [], ROOM = [], sel = [], cur = 0, at = 'door', pos = 0, page = 0, busy = false, ended = false, endArm = false;
-  let keyed = false, witness = null, witnessMap = '', witnessHues = null, hikariLit = null, film = null, doorKeyed = [];
+  let keyed = false, witness = null, witnessMap = '', witnessHues = null, witnessTh = '', hikariLit = null, film = null, doorKeyed = [];
   // 扉2〜4の鍵（2026-10-25〜、重吉さんの決め）：外のサイトで保存した画像。扉1は鍵なし。毎晩要るが、前に保存した同じ画像で何度でも開く
   const DOORKEY = [null, 'silk', 'hubble', 'sky'];
   const doorKey = () => at === 'door' && !doorKeyed[cur] ? DOORKEY[cur] || null : null;
@@ -379,7 +379,7 @@
     const a = await askMaker(f);
     $('drop').classList.remove('busy');
     if (!a.ok) { $('msg').textContent = tr(a.err ? 'nKeyErr' : 'nKeyNo'); sfx('no'); return; }
-    keyed = true; witness = txt(a.name); witnessMap = a.life ? lifeGrad(a) : ''; witnessHues = a.life ? lifeHues(a) : null; track('night_key');
+    keyed = true; witness = txt(a.name); witnessMap = a.life ? lifeGrad(a) : ''; witnessHues = a.life ? lifeHues(a) : null; witnessTh = safeThumb(a.th); track('night_key');
     enterLast(a);
   }
   // 扉2〜4：落とされた画像を、この端末の中で形と色だけ見る（AI なし・どこにも送らない・残さない）。合えば扉を開ける
@@ -508,7 +508,7 @@
       const cards = HAND.map(c => ({ art: c.art, th: c.th, rar: c.rarity, t: c.t, n: c.n, no: c.no, kin: (c.par || []).length > 0, par: (c.par || []).map(id => HAND.findIndex(h => h.id === id)).filter(k => k >= 0) }));
       $('msg').textContent = tr('nStoryWriting');
       const st = await story;
-      try { film = await window.NightFilm.room({ cards, hues: witnessHues, story: st, seed: HAND.map(c => c.id).join('|') + '|' + isoDate(), congrats: tr('nFilmCongrats'), only: tr('nFilmOnly'), title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
+      try { film = await window.NightFilm.room({ cards, hues: witnessHues, guard: witness ? { th: witnessTh, n: witness, line: tr('nFilmGuard', { name: witness }) } : null, story: st, seed: HAND.map(c => c.id).join('|') + '|' + isoDate(), congrats: tr('nFilmCongrats'), only: tr('nFilmOnly'), title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
         tx: { loading: tr('nFilmLoading'), play: tr('nFilmPlay'), skip: tr('nFilmSkip'), save: tr('nFilmSave'), close: tr('nFilmClose'), made: tr('nFilmMade'), noRec: tr('nFilmNoRec') } }); } catch (e) { film = null; }
       if (wasOn) bgm(true);
     }
@@ -887,7 +887,7 @@
   $('tonight').onclick = () => {
     HAND = dpick.map(i => Object.assign({}, ZK[i], { used: false }));
     ROOM = tonight(new Date()); sel = []; cur = 0; at = 'door'; pos = 0; page = 0;
-    busy = false; ended = false; endArm = false; keyed = false; doorKeyed = []; witness = null; witnessMap = ''; witnessHues = null; hikariLit = null; film = null;
+    busy = false; ended = false; endArm = false; keyed = false; doorKeyed = []; witness = null; witnessMap = ''; witnessHues = null; witnessTh = ''; hikariLit = null; film = null;
     $('trialNote').hidden = !trial;
     $('deck').hidden = true; preload(); draw(); glowUp(); sfx('send'); track('night_start');
   };

@@ -271,6 +271,16 @@
     const fcs = await Promise.all(J.wins.map((w, i) => o.cards[i] ? frameCanvas(Object.assign({ k: w.kind, glow: TYC[o.cards[i].t] }, o.cards[i])) : frameCanvas({ k: w.kind, t: '光' })));
     const hues = (o.hues && o.hues.length ? o.hues : ['#f3d79a', '#f6e2b0', '#ffe9c0']);
     const ths = await Promise.all(o.cards.map(c => img(c.th)));
+    // その夜だけの守り神の姿（カードの小さな絵の、姿の窓の真ん中）。光の柱の中に、ふちをぼかして出す
+    const G = o.guard || null, gim = G ? await img(G.th) : null, gcv = gim ? document.createElement('canvas') : null;
+    if (gcv) {
+      const sw = gim.width * .6, sh = gim.height * .29, sx = gim.width * .2, sy = gim.height * .14;
+      gcv.width = 320; gcv.height = 240; const q = gcv.getContext('2d');
+      q.drawImage(gim, sx, sy, sw, sh, 0, 0, 320, 240);
+      q.globalCompositeOperation = 'destination-in';
+      q.setTransform(1, 0, 0, .75, 0, 30); const m = q.createRadialGradient(160, 160, 80, 160, 160, 158); m.addColorStop(0, '#000'); m.addColorStop(1, 'rgba(0,0,0,0)');
+      q.fillStyle = m; q.fillRect(0, 0, 320, 320); q.setTransform(1, 0, 0, 1, 0, 0);
+    }
     const glowRnd = seeded('glow' + (o.seed || '')), glows = J.wins.map(() => ({ r: .55 + glowRnd() * .35, ph: glowRnd() * 6.28 }));
     const beam = document.createElement('canvas');
     function draw(f) {  // f：1〜n
@@ -367,6 +377,17 @@
         g.globalCompositeOperation = 'screen'; g.globalAlpha = la * .7; g.drawImage(beam, 0, 0);
         const gr = g.createRadialGradient(ox, oy, 0, ox, oy, W * .3); gr.addColorStop(0, hues[Math.floor(hues.length / 2)]); gr.addColorStop(1, 'rgba(0,0,0,0)');
         g.globalAlpha = la * .35; g.fillStyle = gr; g.fillRect(0, 0, W, H); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+        // 光の柱の中に守り神が現れ、名前が下に出る（どの人生も同じ大きさ・同じ明るさ）
+        const ga = clamp((f - 330) / 50);
+        if (G && ga > 0) {
+          const gw = W * .46, gh = gw * .75, gx0 = ox - gw / 2, gy0 = H * .5 - gh / 2 - (1 - ga) * H * .03;
+          if (gcv) { g.globalAlpha = ga; g.drawImage(gcv, gx0, gy0, gw, gh); g.globalAlpha = 1; }
+          const na = clamp((f - 350) / 20);
+          if (G.n && na > 0) {
+            g.textAlign = 'center'; g.textBaseline = 'top'; g.font = `600 ${Math.round(W / 20)}px "Noto Serif JP", serif`;
+            g.fillStyle = `rgba(255,240,205,${na})`; g.shadowColor = 'rgba(0,0,0,.8)'; g.shadowBlur = 8; g.fillText(G.n, ox, gy0 + gh + 6); g.shadowBlur = 0;
+          }
+        }
       }
       // AI のお話の字幕：額縁が灯るたびにその精霊の一言、天窓の光で結びの一言
       const ST = o.story;
@@ -396,6 +417,7 @@
         });
         g.globalAlpha = 1;
         if (o.only) { g.fillStyle = `rgba(122,86,30,${ta})`; g.font = `500 ${Math.round(W / 30)}px "Noto Serif JP", serif`; g.fillText(o.only, W / 2, ty + th0 + W / 40 + W / 18); }
+        if (G && G.line) { g.fillStyle = `rgba(122,86,30,${ta})`; g.font = `500 ${Math.round(W / 32)}px "Noto Serif JP", serif`; g.fillText(G.line, W / 2, ty + th0 + W / 40 + W / 18 * 2); }
         if (o.congrats) { g.fillStyle = `rgba(122,86,30,${clamp((f - 452) / 20)})`; g.font = `600 ${Math.round(W / 20)}px "Noto Serif JP", serif`; g.fillText(o.congrats, W / 2, H * .62); }
       }
     }
