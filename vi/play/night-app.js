@@ -1,7 +1,7 @@
 // night-app.js — 夜の美術館を灯す（night.html）のプログラム。play/ と各言語の play/ でバイト同一に保つ。
 // 2026-10-21 に対戦（battle.html）から置きかえた（相手のいない形。重吉さんの判断）。
 // 目録（IndexedDB の dropper-monster）は読むだけ。書き換えない（光の扉の鍵の守り神だけは、見えない枠で開いた目録のページが入れる）。夜の記録は localStorage（この端末の中だけ）。
-// 結びのことわりは monster-app.js の fusionRules と同じ数字。守り神（人間のカード）は灯さない「立会人」で、強さを持たせない。
+// 明るさは輝きの合計（好む属性の子がいれば ×1.2）。結びのことわりと★主は 2026-10-25 になくした。守り神（人間のカード）は灯さない「立会人」で、強さを持たせない。
 // 2026-10-21〜：朝を迎えた回数で朝の場面が5段階に育つ・朝ごとに額縁を1つ・目録の精霊を1体だけ飾る（はめかえ不可）・
 // 飾った子は「展示室の主」としてひとこと話す。
 // 2026-10-25〜（重吉さんの決め）：通路を進み、中世風の扉の奥の部屋を1つ目から順に4つ灯す → 最後の通路（両側に額縁6つ。もと「わたしの展示室」）→
@@ -53,44 +53,18 @@
     document.documentElement.classList.add('i18n-ready');
   }
 
-  // ---- 属性と結びのことわり（monster-app.js と同じ） ----
+  // ---- 属性 ----
+  // 明るさは輝きの合計だけ（2026-10-25 に結びのことわりを外した。画面の数字を足すだけで分かるように。重吉さんの決め）
   const TY = { '炎': '#d9361b', '水': '#1f5fd6', '森': '#1d8a4c', '雷': '#e09a00', '土': '#7a4f2a', '風': '#22928f', '夢': '#c2479a', '闇': '#3b2f8f', '光': '#f0b429', '鋼': '#5b6778' };
   const TYPES = Object.keys(TY);
-  const PAIRS = [['炎', '風'], ['水', '森'], ['雷', '水'], ['土', '森'], ['光', '闇'], ['夢', '光'], ['鋼', '雷'], ['闇', '夢'], ['土', '炎'], ['風', '水']];
-  const CLASH = [['炎', '水'], ['炎', '森'], ['雷', '土']];
   const RARE = { gold: ['rareGold', 0.25], silver: ['rareSilver', 0.10] };
-  const isPair = (a, b, x, y) => (a === x && b === y) || (a === y && b === x);
-  // ことわりは [見出し（文の仕様）, 倍率]。1体だけなら、ことわりなし（輝きそのまま）
-  function rules(cs) {
-    if (cs.length < 2) return [];
-    const ts = cs.map(c => c.t), out = [], cnt = {};
-    ts.forEach(t => { cnt[t] = (cnt[t] || 0) + 1; });
-    const mx = Math.max(...Object.values(cnt));
-    if (mx === 3) out.push([{ k: 'ruleSame3' }, 0.5]); else if (mx === 2) out.push([{ k: 'ruleSame2' }, 0.2]);
-    for (let i = 0; i < ts.length; i++) for (let j = i + 1; j < ts.length; j++) {
-      PAIRS.forEach(([x, y], pi) => { if (isPair(ts[i], ts[j], x, y)) out.push([{ k: 'rulePair', v: { name: { d: 'pairNames', p: [pi] } } }, 0.3]); });
-      for (const [x, y] of CLASH) if (isPair(ts[i], ts[j], x, y)) out.push([{ k: 'ruleClash', v: { a: { ty: x }, b: { ty: y } } }, -0.15]);
-    }
-    if (ts.length === 3 && mx === 1) out.push([{ k: 'ruleRainbow' }, 0.1]);
-    if (ts.length === 3 && ['光', '闇', '夢'].every(t => ts.includes(t))) out.push([{ k: 'ruleNight' }, 0.8]);
-    for (const r of ['gold', 'silver']) {
-      const n = cs.filter(c => c.rarity === r).length;
-      if (n) out.push([{ k: 'ruleRare', v: { label: { k: RARE[r][0] }, n } }, RARE[r][1] * n]);
-    }
-    const bugs = cs.filter(c => c.bug).length;
-    if (bugs) out.push([{ k: 'ruleBug', v: { n: bugs } }, 0.08 * bugs]);
-    return out;
-  }
   // 部屋が好む属性の子が1体でもいれば、さらに ×1.2
   const FAV = 1.2;
   function light(cs, room) {
-    const r = rules(cs), sum = cs.reduce((a, c) => a + c.p, 0), m = 1 + r.reduce((a, x) => a + x[1], 0);
-    const fav = !!room && cs.some(c => room.fav.includes(c.t));
-    return { sum, m, fav, v: Math.round(sum * m * (fav ? FAV : 1)), r };
+    const sum = cs.reduce((a, c) => a + c.p, 0), fav = !!room && cs.some(c => room.fav.includes(c.t));
+    return { sum, fav, v: Math.round(sum * (fav ? FAV : 1)) };
   }
-  const pct = v => (v >= 0 ? '+' : '−') + Math.round(Math.abs(v) * 100) + '%';
-  const chips = (P, room) => P.r.map(x => `<span class="chip${x[1] < 0 ? ' neg' : ''}">${esc(txt(x[0]))} ${pct(x[1])}</span>`).join('')
-    + (P.fav ? `<span class="chip">${esc(tr('nFavBonus', { room: roomName(room), t: room.fav.filter(t => P.cs.some(c => c.t === t)).map(t => txt({ ty: t })).join('・') }))} ×${FAV}</span>` : '');
+  const chips = (P, room) => (P.fav ? `<span class="chip">${esc(tr('nFavBonus', { room: roomName(room), t: room.fav.filter(t => P.cs.some(c => c.t === t)).map(t => txt({ ty: t })).join('・') }))} ×${FAV}</span>` : '');
 
   // ---- 目録を読む（monster-app.js と同じ作り。無ければ同じ形で作る） ----
   function readDex() {
@@ -162,7 +136,8 @@
   // 灯す部屋は4つ。通路を1つ目から順に進む（2026-10-25〜、重吉さんの決め）。5つ目は最後の部屋で、灯さない（人生の記録の鍵で入る）。
   // 要る明るさのもと。日ごとに ±10% ゆらす。2026-10-21 に「ふつう」[280,350,450,560,650] の6割へ下げた
   // （静かな朝ばかりになったため。試しは共有フォルダ sacred/night.py）。2026-10-25 に5つ目の 390 を外した
-  const LEVELS = [170, 210, 270, 340];
+  // 2026-10-25 に★主と結びのことわりをなくし、少しだけ難しくした（[170,210,270,340] → いまの数。試しでは、7体を上手に送って4部屋とも灯る夜が9割ほど）
+  const LEVELS = [240, 290, 340, 400];
   const roomName = R => (D('nRoomNames') || [])[R.k] || '';
   const isRare = c => c.rarity === 'gold' || c.rarity === 'silver';
   function sfc32(a, b, c, d) {
@@ -177,12 +152,12 @@
   }
 
   // ---- 状態 ----
-  // ★主以外の6体の輝きの合計の上限。対戦のときと同じ 1500
+  // 7体の輝きの合計の上限（2026-10-25 に★主をなくし、7体すべてを数えるようにした。重吉さんの決め）
   const CAP = 1500, SIZE = 7;
   let ZK = [], trial = false;
-  let dpick = [], aceI = -1;
+  let dpick = [];
   // at：'door'＝cur 番目の扉の前・'room'＝部屋の中・'lit'＝灯った部屋・'last'＝最後の通路（pos 0 入口／1 奥の2枚の前／2 光の扉の手前）
-  let HAND = [], ROOM = [], sel = [], cur = 0, at = 'door', pos = 0, page = 0, aceBack = false, busy = false, ended = false, endArm = false;
+  let HAND = [], ROOM = [], sel = [], cur = 0, at = 'door', pos = 0, page = 0, busy = false, ended = false, endArm = false;
   let keyed = false, witness = null, witnessMap = '', witnessHues = null, hikariLit = null, film = null, doorKeyed = [];
   // 扉2〜4の鍵（2026-10-25〜、重吉さんの決め）：外のサイトで保存した画像。扉1は鍵なし。毎晩要るが、前に保存した同じ画像で何度でも開く
   const DOORKEY = [null, 'silk', 'hubble', 'sky'];
@@ -195,12 +170,11 @@
     if (opts.rest) b.dataset.rest = tr('nRest');
     if (opts.n) b.dataset.n = opts.n;
     const bg = c.art ? `background-image:url('/play/museum/${c.art}')` : c.th ? `background-image:url('${c.th}')` : `background:linear-gradient(${TY[c.t]},#0b0d16)`;
-    b.innerHTML = (opts.ace ? `<span class="star">${esc(tr('nAceOn'))}</span>` : '')
-      + (c.framed && opts.keeper !== false ? `<span class="keeper ${c.framed}">${esc(tr('nKeeper'))}</span>` : '')
+    b.innerHTML = (c.framed && opts.keeper !== false ? `<span class="keeper ${c.framed}">${esc(tr('nKeeper'))}</span>` : '')
       + (c.rarity !== 'normal' ? `<span class="rar ${c.rarity}">${esc(tr(RARE[c.rarity][0]))}</span>` : '')
       + `<div class="fr" style="${bg}">${c.art || c.th ? '' : `<span class="ty">${esc(txt({ ty: c.t }))}</span>`}</div>`
       + `<div class="nm">${esc(c.n)}</div><div class="meta"><span>${esc(txt({ ty: c.t }))}</span><b>✦${c.p}</b></div>`;
-    b.setAttribute('aria-label', `${c.n} ${txt({ ty: c.t })} ${tr('nPower')} ${c.p}${opts.ace ? ' ' + tr('nAceOn') : ''}${opts.rest ? ' ' + tr('nRest') : ''}`);
+    b.setAttribute('aria-label', `${c.n} ${txt({ ty: c.t })} ${tr('nPower')} ${c.p}${opts.rest ? ' ' + tr('nRest') : ''}`);
     return b;
   }
 
@@ -216,6 +190,9 @@
     const src = picOf();
     if ($('vimg').getAttribute('src') !== src) { $('vimg').src = src; $('vimg').classList.toggle('lit', at === 'lit' && !reduce); }
     $('plaque').textContent = at === 'door' ? tr('nRoomNo', { n: cur + 1 }) : '';
+    // 部屋の好む属性と要る明るさは、絵の左上に大きめに（2026-10-25 重吉さんの決め）
+    $('rinfo').hidden = last || !R;
+    if (!last && R) $('rinfo').innerHTML = esc(tr('nFav', { a: txt({ ty: R.fav[0] }), b: txt({ ty: R.fav[1] }) })) + '<br>' + esc(tr('nNeed', { n: '\u0001' })).replace('\u0001', '<b>' + R.need + '</b>');
     $('vlit').classList.toggle('on', at === 'lit');
     // 絵の下の真ん中のボタン：扉の前では「扉を開ける」、最後の通路では「前に進む ↑」（2026-10-25 重吉さんの決め）
     const fw = $('fwd');
@@ -244,11 +221,10 @@
       if (n > PER) button('act3', tr('nMoreFrames', { a: page + 1, b: pages }), () => walk(0, () => { page = (page + 1) % pages; }));
     } else {
       $('rn').innerHTML = `<small>${esc(tr('nRoomNo', { n: cur + 1 }))}</small>${esc(roomName(R))}`;
-      const fav = tr('nFav', { a: txt({ ty: R.fav[0] }), b: txt({ ty: R.fav[1] }) });
       if (at === 'door') {
-        $('info').innerHTML = esc(fav) + '　' + esc(tr('nNeed', { n: R.need }));
+        $('info').textContent = '';
       } else if (at === 'room') {
-        $('info').innerHTML = esc(tr('nPickSp', { room: roomName(R) })) + '<br>' + esc(fav) + '　' + esc(tr('nNeed', { n: R.need }));
+        $('info').textContent = tr('nPickSp', { room: roomName(R) });
         drawHand();
       } else {
         const next = ROOM[cur + 1];
@@ -263,7 +239,7 @@
   }
   function drawHand() {
     $('hand').replaceChildren(...HAND.map((c, i) => {
-      const b = cardEl(c, { ace: c.ace, rest: c.used, sel: sel.includes(i) });
+      const b = cardEl(c, { rest: c.used, sel: sel.includes(i) });
       b.disabled = c.used || busy || ended;
       b.onclick = () => pick(i);
       return b;
@@ -272,7 +248,7 @@
     let ok = false;
     if (cs.length) {
       const P = Object.assign(light(cs, R), { cs });
-      $('pv').innerHTML = chips(P, R) + `<span><b>${P.sum}</b>${P.m !== 1 ? ' × ' + P.m.toFixed(2) : ''}${P.fav ? ' × ' + FAV : ''} ＝</span><span class="big">${P.v}</span><span>／ ${R.need}</span>`;
+      $('pv').innerHTML = chips(P, R) + `<span><b>${P.sum}</b>${P.fav ? ' × ' + FAV : ''} ＝</span><span class="big">${P.v}</span><span>／ ${R.need}</span>`;
       ok = P.v >= R.need;
       $('okmsg').className = ok ? 'ok' : 'short';
       $('okmsg').textContent = ok ? tr('nCan') : tr('nShort', { n: R.need - P.v });
@@ -329,13 +305,10 @@
     if (P.v < R.need) return;
     busy = true; endArm = false;
     sel.forEach(i => { HAND[i].used = true; });
-    // ★主の力：送った夜のあと、1夜に1回だけ戻ってくる
-    const ace = cs.find(c => c.ace); let back = false;
-    if (ace && !aceBack) { aceBack = true; back = true; }
     sel = []; draw();
-    await lightScene(R, cs, P, back);
-    R.lit = true; if (back) ace.used = false;
-    at = 'lit'; busy = false; draw(); glowUp(); burst(.5, .35, 60);
+    await lightScene(R, cs, P);
+    R.lit = true;
+    at = 'lit'; busy = false; draw(); glowUp(); burst(.5, .35, 60); sfx('lit');
   };
   $('endbtn').onclick = () => {
     if (busy || ended) return;
@@ -344,10 +317,10 @@
   };
 
   // ---- 灯す場面：送った精霊・明るさが満ちていく線・「灯がともった」。タップするまで進まない ----
-  async function lightScene(R, cs, P, back) {
+  async function lightScene(R, cs, P) {
     $('ltRoom').textContent = roomName(R); $('ltNeed').textContent = tr('nNeed', { n: R.need });
-    $('ltCards').replaceChildren(...cs.map(c => cardEl(c, { button: false, ace: c.ace })));
-    $('ltChips').innerHTML = ''; $('ltNum').textContent = '0'; $('ltDone').classList.remove('on'); $('ltBack').textContent = ''; $('ltTap').hidden = true;
+    $('ltCards').replaceChildren(...cs.map(c => cardEl(c, { button: false })));
+    $('ltChips').innerHTML = ''; $('ltNum').textContent = '0'; $('ltDone').classList.remove('on'); $('ltTap').hidden = true;
     // 展示室の主（額縁に飾った子）がいれば、灯す前にひとこと話す。言葉は夜明けの額縁と静かな朝の額縁で違う。輝きは変わらない
     const keeper = cs.find(c => c.framed), lines = keeper ? D(keeper.framed === 'dawn' ? 'nLinesDawn' : 'nLinesQuiet') || [] : [];
     $('ltSay').textContent = keeper && lines.length ? tr('nSays', { name: keeper.n, line: lines[Math.floor(Math.random() * lines.length)] }) : '';
@@ -366,7 +339,6 @@
       requestAnimationFrame(step);
     });
     $('ltDone').classList.add('on'); sfx('light'); burst(.5, .45, 50);
-    if (back) { await wait(700); $('ltBack').textContent = tr('nAceBack'); sfx('back'); }
     await wait(500); $('ltTap').hidden = false;
     await new Promise(r => {
       const done = e => { if (e.type === 'keydown' && !['Enter', ' '].includes(e.key)) return; $('lt').removeEventListener('click', done); removeEventListener('keydown', done); r(); };
@@ -513,7 +485,7 @@
     // 最後の部屋の映像（20秒）。その夜の7体（★主が先）の作品と精霊が、壁の額縁に灯る。保存できる動画にする（night-film.js）
     if (window.NightFilm) {
       const wasOn = on; if (wasOn) bgm(false);
-      const cards = [...HAND.filter(c => c.ace), ...HAND.filter(c => !c.ace)].map(c => ({ art: c.art, th: c.th, rar: c.rarity, t: c.t, n: c.n, ace: c.ace }));
+      const cards = HAND.map(c => ({ art: c.art, th: c.th, rar: c.rarity, t: c.t, n: c.n }));
       try { film = await window.NightFilm.room({ cards, hues: witnessHues, title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
         tx: { loading: tr('nFilmLoading'), play: tr('nFilmPlay'), skip: tr('nFilmSkip'), save: tr('nFilmSave'), close: tr('nFilmClose'), made: tr('nFilmMade'), noRec: tr('nFilmNoRec') } }); } catch (e) { film = null; }
       if (wasOn) bgm(true);
@@ -584,7 +556,7 @@
     if (wasOn) bgm(true);
   }
   function restart() {
-    $('morning').hidden = true; sceneOn = null; HAND = []; sel = []; dpick = []; aceI = -1;
+    $('morning').hidden = true; sceneOn = null; HAND = []; sel = []; dpick = [];
     reloadDex().then(() => { $('deck').hidden = false; drawDeck(); });
   }
 
@@ -845,59 +817,55 @@
   $('pickClose').onclick = () => { $('picker').hidden = true; sfx('un'); };
 
   // ---- 7体えらぶ ----
-  const sum6 = () => dpick.filter(i => i !== aceI).reduce((a, i) => a + ZK[i].p, 0);
+  const sum7 = () => dpick.reduce((a, i) => a + ZK[i].p, 0);
   function drawDeck() {
     const few = ZK.length < 7;
     $('few').hidden = !few; $('zukan').hidden = few;
     if (few) $('fewMsg').textContent = tr('nFew', { n: ZK.length });
     $('zukan').replaceChildren(...ZK.map((c, i) => {
-      const k = dpick.indexOf(i), b = cardEl(c, { on: k >= 0, n: k + 1, ace: i === aceI });
+      const k = dpick.indexOf(i), b = cardEl(c, { on: k >= 0, n: k + 1 });
       b.onclick = () => togglePick(i); return b;
     }));
     $('picked').replaceChildren(...Array.from({ length: SIZE }, (_, k) => {
       const d = document.createElement('div'); d.className = 'slot'; const i = dpick[k];
       if (i === undefined) { d.innerHTML = '<div class="empty">' + (k + 1) + '</div>'; return d; }
-      const b = cardEl(ZK[i], { ace: i === aceI }); b.onclick = () => togglePick(i); d.append(b);
-      const a = document.createElement('button'); a.type = 'button'; a.className = 'acebtn' + (i === aceI ? ' on' : ''); a.textContent = tr(i === aceI ? 'nAceOn' : 'nAceSet'); 
-      a.onclick = () => { aceI = aceI === i ? -1 : i; sfx('pick'); drawDeck(); }; d.append(a);
+      const b = cardEl(ZK[i]); b.onclick = () => togglePick(i); d.append(b);
       return d;
     }));
-    const t = sum6(), over = t > CAP;
+    const t = sum7(), over = t > CAP;
     $('msumLbl').textContent = tr('nSum');
     $('msum').textContent = t; $('mcap').textContent = CAP; $('mbar').style.width = Math.min(100, t / CAP * 100) + '%';
     $('meter').classList.toggle('bad', over); $('mline').classList.toggle('bad', over);
     $('dmsg').classList.toggle('warn', over);
     $('dmsg').textContent = dpick.length < SIZE ? tr('nLeft', { n: SIZE - dpick.length })
-      : over ? tr('nOver', { n: t - CAP }) : aceI < 0 ? tr('nReadyNoAce') : tr('nReady');
+      : over ? tr('nOver', { n: t - CAP }) : tr('nReady');
     $('tonight').disabled = dpick.length < SIZE || over;
     $('auto').disabled = ZK.length < 7;
   }
   function togglePick(i) {
     const k = dpick.indexOf(i);
-    if (k >= 0) { dpick.splice(k, 1); if (aceI === i) aceI = -1; sfx('un'); }
+    if (k >= 0) { dpick.splice(k, 1); sfx('un'); }
     else if (dpick.length < SIZE) { dpick.push(i); sfx('pick'); }
     else { sfx('no'); return; }
     drawDeck();
   }
-  // おまかせ：いちばん輝きの大きい子を★主に、残りから合計が上限にいちばん近い6体
+  // おまかせ：合計が上限にいちばん近い7体
   function autoPick() {
     const idx = ZK.map((_, i) => i);
-    const ace = idx.reduce((a, b) => ZK[a].p > ZK[b].p ? a : b);
-    const rest = idx.filter(i => i !== ace);
     let best = null, bv = -1;
     for (let k = 0; k < 3000; k++) {
-      const r = [...rest].sort(() => Math.random() - .5).slice(0, 6), v = r.reduce((a, i) => a + ZK[i].p, 0);
+      const r = [...idx].sort(() => Math.random() - .5).slice(0, SIZE), v = r.reduce((a, i) => a + ZK[i].p, 0);
       if (v <= CAP && v > bv) { bv = v; best = r; }
     }
-    if (!best) best = [...rest].sort((a, b) => ZK[a].p - ZK[b].p).slice(0, 6); // どう組んでも超えるときは小さい順（メーターが赤くなる）
-    dpick = [ace, ...best]; aceI = ace; sfx('back'); drawDeck();
+    if (!best) best = [...idx].sort((a, b) => ZK[a].p - ZK[b].p).slice(0, SIZE); // どう組んでも超えるときは小さい順（メーターが赤くなる）
+    dpick = best.sort((a, b) => ZK[b].p - ZK[a].p); sfx('back'); drawDeck();
   }
   $('auto').onclick = autoPick;
-  $('trial').onclick = () => { trial = true; dpick = []; aceI = -1; ZK = trialSet(); sfx('pick'); drawDeck(); };
+  $('trial').onclick = () => { trial = true; dpick = []; ZK = trialSet(); sfx('pick'); drawDeck(); };
   $('tonight').onclick = () => {
-    HAND = dpick.map(i => Object.assign({}, ZK[i], { used: false, ace: i === aceI }));
+    HAND = dpick.map(i => Object.assign({}, ZK[i], { used: false }));
     ROOM = tonight(new Date()); sel = []; cur = 0; at = 'door'; pos = 0; page = 0;
-    aceBack = false; busy = false; ended = false; endArm = false; keyed = false; doorKeyed = []; witness = null; witnessMap = ''; witnessHues = null; hikariLit = null; film = null;
+    busy = false; ended = false; endArm = false; keyed = false; doorKeyed = []; witness = null; witnessMap = ''; witnessHues = null; hikariLit = null; film = null;
     $('trialNote').hidden = !trial;
     $('deck').hidden = true; preload(); draw(); glowUp(); sfx('send'); track('night_start');
   };
@@ -1038,6 +1006,7 @@
       un: () => bell(N(77), t, .6, .07),
       no: () => bell(N(55), t, .5, .12),
       send: () => [72, 75, 79].forEach((n, i) => bell(N(n), t + i * .12, 1.6, .1)),
+      lit: () => { [72, 76, 79, 84, 88, 91].forEach((n, i) => bell(N(n), t + i * .07, 3.2, .12)); [84, 91, 96].forEach((n, i) => bell(N(n), t + .55 + i * .11, 2.2, .06)); pad(N(60), t, 3.5, .07, master); },
       light: () => { [60, 67, 72, 74, 79, 84].forEach((n, i) => bell(N(n), t + i * .09, 2.6, .13)); pad(N(48), t, 3, .08, master); pad(N(55), t, 3, .06, master); },
       back: () => [79, 84].forEach((n, i) => bell(N(n), t + i * .18, 1.6, .12)),
       dawn: () => { [58, 62, 65, 69, 70, 74, 77, 81].forEach((n, i) => bell(N(n), t + i * .14, 3.2, .13)); [46, 53, 57, 62].forEach(n => pad(N(n), t, 5, .07, master)); },
