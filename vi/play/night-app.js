@@ -507,7 +507,7 @@
       const cards = HAND.map(c => ({ art: c.art, th: c.th, rar: c.rarity, t: c.t, n: c.n }));
       $('msg').textContent = tr('nStoryWriting');
       const st = await story;
-      try { film = await window.NightFilm.room({ cards, hues: witnessHues, story: st, title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
+      try { film = await window.NightFilm.room({ cards, hues: witnessHues, story: st, congrats: tr('nFilmCongrats'), title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
         tx: { loading: tr('nFilmLoading'), play: tr('nFilmPlay'), skip: tr('nFilmSkip'), save: tr('nFilmSave'), close: tr('nFilmClose'), made: tr('nFilmMade'), noRec: tr('nFilmNoRec') } }); } catch (e) { film = null; }
       if (wasOn) bgm(true);
     }

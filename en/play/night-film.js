@@ -221,7 +221,7 @@
 
   // ======== 1. 最後の部屋 ========
   // o = { cards:[{art, th, rar, t, n}]（7体まで）, hues:[色]（守り神の人生地図の色。無ければ金）, title, sub, tx:{play, skip, save, close, noRec, made},
-  //       story:{title, lines:[精霊ごと], close, music}（AI が書いたその夜のお話。無ければ字幕なし・いつもの題と曲） }
+  //       story:{title, lines:[精霊ごと], close, music}（AI が書いたその夜のお話。無ければ字幕なし・いつもの題と曲）, congrats（終わりの白い画面のお祝いの言葉） }
   // 字幕は録画に入るよう canvas に描く。幅に合わせて2行まで折り返す
   function wrap(g, text, max) {
     const out = [], words = /\s/.test(text) ? text.split(/(\s+)/) : [...text]; let line = '';
@@ -309,6 +309,7 @@
         g.fillText(big, W / 2, H * .46);
         if (big !== o.title) { g.font = `500 ${Math.round(W / 30)}px "Noto Serif JP", serif`; g.fillText(o.title, W / 2, H * .395); }
         g.font = `500 ${Math.round(W / 26)}px "Noto Serif JP", serif`; g.fillText(o.sub, W / 2, H * .53);
+        if (o.congrats) { g.fillStyle = `rgba(122,86,30,${clamp((f - 452) / 20)})`; g.font = `600 ${Math.round(W / 20)}px "Noto Serif JP", serif`; g.fillText(o.congrats, W / 2, H * .62); }
       }
     }
     v.currentTime = 0; await new Promise(r => { v.onseeked = r; setTimeout(r, 400); }); draw(1);
