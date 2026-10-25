@@ -149,9 +149,8 @@
   function loadRec() { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } }
   function saveRec(x) { try { localStorage.setItem(STORE, JSON.stringify(x)); return true; } catch (e) { return false; /* 残せなくても遊べる */ } }
   function frames() { const R = loadRec(); return Array.isArray(R.frames) ? R.frames.filter(f => f && (f.k === 'dawn' || f.k === 'quiet')) : []; }
-  // 朝の場面の段階：1・3・6・10・15回目で1つずつ上がる（1〜5）
-  const LV = [1, 3, 6, 10, 15];
-  const levelOf = n => Math.max(1, LV.filter(x => n >= x).length);
+  // 朝の場面の段階：その夜に灯した部屋の数（1〜4。2026-10-25〜、重吉さんの決め）。絵は5段階のうち 1・2・4・5 を使う（4部屋＝いちばん華やかな絵）
+  const PL = [1, 2, 4, 5];
 
   // ---- 今夜の美術館：日付で決まる（だれが遊んでも同じ夜） ----
   // 部屋は12。名前の順は辞書の nRoomNames と同じ。好む属性は部屋ごとに決まっている
@@ -211,7 +210,11 @@
     if ($('vimg').getAttribute('src') !== src) { $('vimg').src = src; $('vimg').classList.toggle('lit', at === 'lit' && !reduce); }
     $('plaque').textContent = at === 'door' ? tr('nRoomNo', { n: cur + 1 }) : '';
     $('vlit').classList.toggle('on', at === 'lit');
-    $('fwd').hidden = !last || pos >= 2 || busy || ended || keyed;
+    // 絵の下の真ん中のボタン：扉の前では「扉を開ける」、最後の通路では「前に進む ↑」（2026-10-25 重吉さんの決め）
+    const fw = $('fwd');
+    if (last) { fw.textContent = tr('nForward'); fw.onclick = forward; fw.hidden = pos >= 2 || busy || ended || keyed; }
+    else if (at === 'door') { fw.textContent = tr('nOpenDoor'); fw.onclick = openDoor; fw.hidden = busy || ended; }
+    else fw.hidden = true;
     drawHall();
     $('roomBox').hidden = at !== 'room'; $('keyBox').hidden = !(last && pos === 2) || keyed;
     ['act', 'act2', 'act3'].forEach(id => { $(id).hidden = true; });
@@ -229,7 +232,6 @@
       const fav = tr('nFav', { a: txt({ ty: R.fav[0] }), b: txt({ ty: R.fav[1] }) });
       if (at === 'door') {
         $('info').innerHTML = esc(fav) + '　' + esc(tr('nNeed', { n: R.need }));
-        button('act', tr('nOpenDoor'), openDoor);
       } else if (at === 'room') {
         $('info').innerHTML = esc(tr('nPickSp', { room: roomName(R) })) + '<br>' + esc(fav) + '　' + esc(tr('nNeed', { n: R.need }));
         drawHand();
@@ -304,7 +306,7 @@
     if (cur < ROOM.length - 1) walk(1, () => { cur++; at = 'door'; });
     else walk(1, () => { at = 'last'; pos = 0; page = 0; fixFrames(); });
   }
-  $('fwd').onclick = () => { if (pos < 2) walk(1, () => { pos++; }); };
+  function forward() { if (pos < 2) walk(1, () => { pos++; }); }
   $('go').onclick = async () => {
     const R = ROOM[cur], cs = sel.map(i => HAND[i]);
     if (busy || at !== 'room' || !cs.length) return;
@@ -417,7 +419,7 @@
 
   // ---- 朝：夜明け（4部屋を灯して、光の扉の鍵で最後の部屋へ入った）か、静かな朝。負けの言葉は使わない ----
   // 朝を迎えると、その朝の回数を数え、額縁を1つ渡す（おためしの精霊の夜と、1部屋も灯らなかった朝は数えない）。
-  // 場面の段階は、その朝を迎えた回数で決まる（levelOf）。2026-10-25 に立会人へのお礼（お礼をしないと次の夜は★主を置けない）をなくした
+  // 場面の段階は、その夜に灯した部屋の数で決まる（PL）。2026-10-25 に立会人へのお礼（お礼をしないと次の夜は★主を置けない）をなくした
   let sceneOn = null;
   function morning() {
     ended = true; draw();
@@ -429,14 +431,14 @@
       const R = loadRec(); R.n = (R.n || 0) + 1; count = R[k] = (R[k] || 0) + 1; delete R.noAce;
       R.frames = frames(); R.frames.push({ k, n: count, id: null }); gift = R.frames.length - 1; saveRec(R);
     }
-    const lv = levelOf(count), stages = D(dawn ? 'nStagesDawn' : 'nStagesQuiet') || [];
+    const st = Math.max(1, lit), lv = PL[st - 1], stages = D(dawn ? 'nStagesDawn' : 'nStagesQuiet') || [];
     sfx(dawn ? 'dawn' : 'quiet'); if (dawn) burst(.5, .3, 120);
     track(dawn ? 'night_dawn' : 'night_quiet');
     $('end').className = 'end ' + k;
     $('end').innerHTML = `<canvas class="scene" id="scene" aria-hidden="true"></canvas><div class="endin">`
       + `<h2>${esc(tr(dawn ? 'nDawnH' : 'nQuietH'))}</h2>`
-      + (counts ? `<div class="lv">${esc(tr(dawn ? 'nLevelDawn' : 'nLevelQuiet', { n: count, stage: stages[lv - 1] || '' }))}</div>`
-        + `<div class="steps">${stages.map((x, i) => `<span class="${i < lv ? 'on' : ''}">${esc(x)}</span>`).join('')}</div>` : '')
+      + (counts ? `<div class="lv">${esc(tr(dawn ? 'nLevelDawn' : 'nLevelQuiet', { n: count, stage: stages[st - 1] || '' }))}</div>`
+        + `<div class="steps">${stages.map((x, i) => `<span class="${i < st ? 'on' : ''}">${esc(x)}</span>`).join('')}</div>` : '')
       + `<p>${dawn ? tr('nDawnP') : lit === ROOM.length ? tr('nQuietPKey') : lit ? tr('nQuietP', { n: lit, rooms: esc(dark) }) : tr('nQuietP0')}</p>`
       + (dawn && witness ? `<p class="small">${esc(tr('nWitnessed', { name: witness }))}</p>` + (witnessMap ? `<div class="lifeband" style="background:${witnessMap}"></div>` : '') : '')
       + (dawn && hikariLit ? `<p class="hk">${esc(tr(hikariLit === 'gold' ? 'nHikariGold' : 'nHikariSilver'))}</p>` : '')
