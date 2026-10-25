@@ -1542,8 +1542,18 @@
     el.classList.remove('hidden');
   }
 
+  // 目録は20体まで（2026-10-25〜、重吉さんの決め）。守り神は数えない（夜の光の扉の鍵を止めないため）。
+  // いっぱいのときは新しく目覚める・結ぶ・受け継ぐを止めるだけで、前からいる子は消さない
+  const DEX_MAX = 20;
+  const notGuardian = M => !(M.g && M.g.kind === '人間');
+  const dexCount = async () => (await DB.getAll('cards')).filter(notGuardian).length;
+  async function dexFull() {
+    if ((await dexCount()) < DEX_MAX) return false;
+    setStatus(tr('dexFull', { n: DEX_MAX })); return true;
+  }
   async function renderDex() {
     const cards = (await DB.getAll('cards')).sort((a, b) => b.serial - a.serial), g = $('dex'), framed = framesById();
+    $('dexCount').textContent = tr('dexCount', { n: cards.filter(notGuardian).length, max: DEX_MAX });
     g.innerHTML = '';
     for (const m of cards) {
       const b = document.createElement('button'); b.className = 'cardthumb'; b.type = 'button';
@@ -1984,7 +1994,7 @@
   }
   async function hatch() {
     const ws = [...picked].sort((a, b) => a - b).map(i => shelf[i]);
-    if (!ws.length) return;
+    if (!ws.length || await dexFull()) return;
     setStatus(tr(ws.length > 1 ? 'fusing' : 'hatching'));
     let loaded;
     try { loaded = await Promise.all(ws.map(loadWork)); } catch (e) { setStatus(tr('museumErr')); return; }
@@ -2050,7 +2060,7 @@
   }
   async function haveChild(coupleId) {
     const cp = await DB.get('couples', coupleId);
-    if (!cp || cp.children.length >= 3) return;
+    if (!cp || cp.children.length >= 3 || await dexFull()) return;
     const father = await DB.get('cards', cp.male), mother = await DB.get('cards', cp.female);
     const child = makeChild(father, mother, cp.children.length, await deviceSecret());
     cp.children.push(child.id);
