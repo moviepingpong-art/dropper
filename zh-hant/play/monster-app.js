@@ -1840,8 +1840,40 @@
     clearTimeout(scene.t);
     scene.t = setTimeout(() => { st.classList.remove(kind); box.innerHTML = ''; }, 3000);
   }
+  // ---- 映像（2026-10-25〜。play/gallery/{opening,special}.{webm,mp4}。絵は Blender、曲は合成音。作り方は共有フォルダ sacred/pr4/scripts/） ----
+  // オープニング（18秒）：この端末で初めて開いたときに1回。ブラウザは操作の前に音を出させないので「はじめる」を押してから流す。
+  // 最後の題名は映像に焼きこまず、ページの言語の名前を重ねる（14.5秒で浮かび、16.9秒から消える）。見たかどうかは localStorage の dropper-spirit-intro
+  // 特別な場面（5秒）：金の光・銀の光の精霊が目覚めたとき、カードの前に。銀の光は色を変える。目を開ける所（3.7秒）で名前を重ねる
+  // 音は「音を止める」に従う。どちらも押せば飛ばせる
+  const FILM = { opening: { src: '/play/gallery/opening', poster: '/play/gallery/opening.jpg', at: 14.5, off: 16.9 }, special: { src: '/play/gallery/special', at: 3.7, off: 99 } };
+  function film(kind, opt = {}) {
+    const F = FILM[kind], box = $('film'), v = $('filmV'), t = $('filmT'), play = $('filmPlay');
+    return new Promise(done => {
+      let over = false;
+      const end = () => {
+        if (over) return; over = true;
+        v.pause(); v.removeAttribute('src'); v.load(); v.ontimeupdate = v.onended = null;
+        box.classList.add('hidden'); t.classList.remove('on'); document.removeEventListener('keydown', key); done();
+      };
+      const key = e => { if (e.key === 'Escape') end(); };
+      const start = () => { play.classList.add('hidden'); v.muted = !soundOn; v.play().catch(() => { v.muted = true; v.play().catch(end); }); };
+      box.classList.remove('hidden'); box.classList.toggle('silver', !!opt.silver);
+      t.className = 'film-title' + (kind === 'special' ? ' name' : ''); t.textContent = opt.title || '';
+      v.poster = F.poster || ''; v.src = F.src + (v.canPlayType('video/webm; codecs="vp9, opus"') ? '.webm' : '.mp4'); // WebM が軽い。読めない端末（古い Safari）は MP4
+      v.ontimeupdate = () => t.classList.toggle('on', v.currentTime >= F.at && v.currentTime < F.off);
+      v.onended = end; v.onerror = end;
+      $('filmSkip').onclick = end; document.addEventListener('keydown', key);
+      if (opt.tap) { play.classList.remove('hidden'); play.onclick = start; play.focus(); } else start();
+    });
+  }
+  const INTRO = 'dropper-spirit-intro';
+  function opening() {
+    try { localStorage.setItem(INTRO, '1'); } catch (e) { /* 覚えられなくても見られる */ }
+    return film('opening', { tap: true, title: tr('h1a') + tr('h1b') });
+  }
   async function show(M, img, note) {
     M.serial = await nextSerial();
+    if ((M.rarity === 'gold' || M.rarity === 'silver') && !isHuman(M) && window.parent === window) await film('special', { silver: M.rarity === 'silver', title: nameOf(M) });
     if (!(await display(M))) return;
     scene(M.fusion ? 'bind' : 'awaken');
     const done = () => (note ? note + tr('statusSep') : '') + statusOf(M);
@@ -2109,5 +2141,7 @@
   window.applyI18n();
   renderSlots();
   renderDex();
+  $('filmAgain').addEventListener('click', opening);
+  if (window.parent === window) { let seen = false; try { seen = !!localStorage.getItem(INTRO); } catch (e) { seen = true; } if (!seen) opening(); }
 
 })();
