@@ -972,6 +972,7 @@
       async get(store, key) { const r = await run(store, 'readonly', s => s.get(key)); return memOnly ? mem[store].get(key) : r; },
       async getAll(store) { const r = await run(store, 'readonly', s => s.getAll()); return memOnly ? [...mem[store].values()] : r || []; },
       async put(store, v, key) { if ((await open()) === null) { mem[store].set(keyOf(store, v, key), v); return; } await run(store, 'readwrite', s => key !== undefined ? s.put(v, key) : s.put(v)); },
+      async del(store, key) { if ((await open()) === null) { mem[store].delete(key); return; } await run(store, 'readwrite', s => s.delete(key)); },
       async clear(store) { if ((await open()) === null) { mem[store].clear(); return; } await run(store, 'readwrite', s => s.clear()); },
     };
   })();
@@ -2063,8 +2064,19 @@
   $('hatch').addEventListener('click', hatch);
   $('snd').addEventListener('click', () => { soundOn = !soundOn; $('snd').textContent = tr(soundOn ? 'sndOff' : 'sndOn'); });
   $('again').addEventListener('click', () => { $('pick').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
-  $('save').addEventListener('click', () => {
-    $('card').toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `monster-${current.print}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }, 'image/png');
+  // 目録のカードを1枚だけ消す（2026-10-25〜。カードを画像で保存するボタンの代わり。重吉さんの決め）。
+  // この子が入った縁の記録も消す。受け継いだ子は残す（親の名前はその子が覚えている）。夜の美術館の額縁は写しなので残る
+  $('del').addEventListener('click', async () => {
+    if (!current) return;
+    const M = await DB.get('cards', current.id);
+    if (!M) { setStatus(tr('notInDex')); return; }
+    if (!confirm(tr('delConfirm', { name: nameOf(M) }))) return;
+    for (const cp of await DB.getAll('couples')) if (cp.male === M.id || cp.female === M.id) await DB.del('couples', cp.id);
+    await DB.del('cards', M.id);
+    if (slots.m && slots.m.id === M.id) slots.m = null;
+    if (slots.f && slots.f.id === M.id) slots.f = null;
+    current = null; $('stage').classList.add('hidden'); renderSlots(); await renderDex();
+    setStatus(tr('deleted', { name: nameOf(M) }));
   });
   $('cand').addEventListener('click', async () => {
     if (!current) return;
