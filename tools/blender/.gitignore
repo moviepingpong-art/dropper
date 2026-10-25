@@ -1,0 +1,3 @@
+# carpet.py が書き出す絨毯の絵と、Python のキャッシュ（作り直せるので置かない）
+carpet.png
+__pycache__/

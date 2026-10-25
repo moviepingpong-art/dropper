@@ -1,10 +1,12 @@
 // night-app.js — 夜の美術館を灯す（night.html）のプログラム。play/ と各言語の play/ でバイト同一に保つ。
 // 2026-10-21 に対戦（battle.html）から置きかえた（相手のいない形。重吉さんの判断）。
-// 目録（IndexedDB の dropper-monster）は読むだけ。書き換えない。夜の記録は localStorage（この端末の中だけ）。
+// 目録（IndexedDB の dropper-monster）は読むだけ。書き換えない（光の扉の鍵の守り神だけは、見えない枠で開いた目録のページが入れる）。夜の記録は localStorage（この端末の中だけ）。
 // 結びのことわりは monster-app.js の fusionRules と同じ数字。守り神（人間のカード）は灯さない「立会人」で、強さを持たせない。
-// 2026-10-21〜（PR3-2）：朝を迎えた回数で朝の場面が5段階に育つ・朝ごとに額縁を1つ・目録の精霊を1体だけ飾る（はめかえ不可）・わたしの展示室・
-// 飾った子は「展示室の主」としてひとこと話す・金の光／銀の光の子を連れた夜だけ6つめの「光の間」が開く。
-// 朝の場面・額縁・展示室は Blender の静止画（play/gallery/、作り方は tools/blender/）。朝の場面の動くもの（光の筋・粒・鳥・花びら）は canvas で重ねる（drawScene）。
+// 2026-10-21〜：朝を迎えた回数で朝の場面が5段階に育つ・朝ごとに額縁を1つ・目録の精霊を1体だけ飾る（はめかえ不可）・
+// 飾った子は「展示室の主」としてひとこと話す。
+// 2026-10-25〜（重吉さんの決め）：通路を進み、中世風の扉の奥の部屋を1つ目から順に4つ灯す → 最後の通路（両側に額縁6つ。もと「わたしの展示室」）→
+// 光の扉の手前で「80億分の1」の人生の記録の画像を鍵にして最後の部屋へ（灯さない。夜明け）。立会人へのお礼・光の間はなくした。
+// 通路・部屋・朝の場面・額縁は Blender の静止画（play/gallery/、作り方は tools/blender/）。朝の場面の動くもの（光の筋・粒・鳥・花びら）は canvas で重ねる（drawScene）。
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -119,7 +121,7 @@
       framed: (frames().find(f => f.id === M.id) || {}).k || null
     };
   }
-  // 守り神の色：その人の人生地図の丘の色（monster-app.js の drawLife と同じ式）を5つ拾う
+  // 守り神の色：その人の人生地図の丘の色（monster-app.js の drawLife と同じ式）を5つ拾う。夜明けに、立会人の人生の色の帯として出す（どの人生も同じ大きさ・同じ明るさ）
   function lifeGrad(M) {
     const joy = [...String((M.life || {}).joy || '5')].map(Number).filter(x => !isNaN(x));
     const at = f => { const v = (joy[Math.min(joy.length - 1, Math.floor(f * joy.length))] || 0) / 9; return `hsl(${Math.round(30 + v * 105)},${Math.round(22 + v * 58)}%,${Math.round(46 + v * 12)}%)`; };
@@ -139,52 +141,45 @@
   }
 
   // ---- 夜の記録（この端末の中だけ） ----
-  // { n: 遊んだ夜, dawn: 夜明けを迎えた回数, quiet: 静かな朝を迎えた回数, noAce: 次の夜は★主なし,
+  // { n: 遊んだ夜, dawn: 夜明けを迎えた回数, quiet: 静かな朝を迎えた回数,
   //   frames: 手に入れた額縁 [{ k: 'dawn'|'quiet', n: 何回目の朝, id: 飾った目録のカード（空なら null）, name, rar, th, desc, w: 飾ったときの名前・珍しさ・小さな絵・説明・生まれた作品（worksOf）の写し }] }
-  // 飾った子の写しを持つのは、目録を空にしても展示室に残すため。目録のページ（monster-app.js の framesById）も、この frames を読むだけ
+  // 飾った子の写しを持つのは、目録を空にしても最後の通路に残すため。目録のページ（monster-app.js の framesById）も、この frames を読むだけ
   // 読めない画面でも遊べる
   const STORE = 'dropper-spirit-night';
   function loadRec() { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } }
   function saveRec(x) { try { localStorage.setItem(STORE, JSON.stringify(x)); return true; } catch (e) { return false; /* 残せなくても遊べる */ } }
   function frames() { const R = loadRec(); return Array.isArray(R.frames) ? R.frames.filter(f => f && (f.k === 'dawn' || f.k === 'quiet')) : []; }
-  // 朝の場面の段階：1・3・6・10・15回目で1つずつ上がる（1〜5）
-  const LV = [1, 3, 6, 10, 15];
-  const levelOf = n => Math.max(1, LV.filter(x => n >= x).length);
+  // 朝の場面の段階：その夜に灯した部屋の数（1〜4。2026-10-25〜、重吉さんの決め）。絵は5段階のうち 1・2・4・5 を使う（4部屋＝いちばん華やかな絵）
+  const PL = [1, 2, 4, 5];
 
   // ---- 今夜の美術館：日付で決まる（だれが遊んでも同じ夜） ----
   // 部屋は12。名前の順は辞書の nRoomNames と同じ。好む属性は部屋ごとに決まっている
   const ROOMS = [['炎', '光'], ['闇', '風'], ['水', '夢'], ['森', '土'], ['雷', '鋼'], ['光', '夢'], ['水', '闇'], ['風', '雷'], ['鋼', '炎'], ['森', '水'], ['土', '闇'], ['夢', '風']];
+  // 灯す部屋は4つ。通路を1つ目から順に進む（2026-10-25〜、重吉さんの決め）。5つ目は最後の部屋で、灯さない（人生の記録の鍵で入る）。
   // 要る明るさのもと。日ごとに ±10% ゆらす。2026-10-21 に「ふつう」[280,350,450,560,650] の6割へ下げた
-  // （静かな朝ばかりになったため。目録10体でも2回に1回くらい夜明け。試しは共有フォルダ sacred/night.py）
-  const LEVELS = [170, 210, 270, 340, 390];
-  const roomName = R => R.special ? tr('nHikariName') : (D('nRoomNames') || [])[R.k] || '';
-  // 光の間：金の光か銀の光の子を連れた夜だけ開く6つめの部屋。灯さなくても夜明けになれる（灯せたら夜明けの場面に特別な光）。
-  // 送る組に金か銀の子が1体いること。要る明るさは 300（もと 500 の6割）を日ごとに ±10%
-  const HIKARI = { fav: ['光', '夢'], level: 300 };
+  // （静かな朝ばかりになったため。試しは共有フォルダ sacred/night.py）。2026-10-25 に5つ目の 390 を外した
+  const LEVELS = [170, 210, 270, 340];
+  const roomName = R => (D('nRoomNames') || [])[R.k] || '';
   const isRare = c => c.rarity === 'gold' || c.rarity === 'silver';
-  const allowed = (cs, R) => !R || !R.special || cs.some(isRare);
   function sfc32(a, b, c, d) {
     return () => { a |= 0; b |= 0; c |= 0; d |= 0; const t = (a + b | 0) + d | 0; d = d + 1 | 0; a = b ^ b >>> 9; b = c + (c << 3) | 0; c = c << 21 | c >>> 11; c = c + t | 0; return (t >>> 0) / 4294967296; };
   }
-  function tonight(now, hikari) {
+  function tonight(now) {
     const key = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
     let h = 2166136261; for (const ch of 'night:' + key) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
     const r = sfc32(h, h ^ 0x9e3779b9, h ^ 0x85ebca6b, h ^ 0xc2b2ae35); for (let i = 0; i < 12; i++) r();
-    const ks = [...ROOMS.keys()].map(k => [k, r()]).sort((a, b) => a[1] - b[1]).slice(0, 5).map(x => x[0]);
-    const rooms = LEVELS.map((lv, i) => ({ k: ks[i], fav: ROOMS[ks[i]], need: Math.round(lv * (0.9 + r() * 0.2) / 10) * 10, lit: false })).sort((a, b) => a.need - b.need);
-    const hn = Math.round(HIKARI.level * (0.9 + r() * 0.2) / 10) * 10;
-    if (hikari) rooms.push({ k: -1, special: true, fav: HIKARI.fav, need: hn, lit: false });
-    return rooms;
+    const ks = [...ROOMS.keys()].map(k => [k, r()]).sort((a, b) => a[1] - b[1]).slice(0, LEVELS.length).map(x => x[0]);
+    return LEVELS.map((lv, i) => ({ k: ks[i], fav: ROOMS[ks[i]], need: Math.round(lv * (0.9 + r() * 0.2) / 10) * 10, lit: false })).sort((a, b) => a.need - b.need);
   }
 
   // ---- 状態 ----
-  // ★主以外の6体の輝きの合計の上限（★主を置けない夜は、6体だけで灯す）。対戦のときと同じ 1500
-  const CAP = 1500;
-  let ZK = [], GUARDS = [], trial = false, noAce = false;
-  let dpick = [], aceI = -1, guardI = -1;
-  const SIZE = () => noAce ? 6 : 7;
-  let HAND = [], ROOM = [], sel = [], cur = -1, aceBack = false, busy = false, witness = null, ended = false, endArm = false, hikariLit = null;
-  const normals = () => ROOM.filter(R => !R.special);
+  // ★主以外の6体の輝きの合計の上限。対戦のときと同じ 1500
+  const CAP = 1500, SIZE = 7;
+  let ZK = [], trial = false;
+  let dpick = [], aceI = -1;
+  // at：'door'＝cur 番目の扉の前・'room'＝部屋の中・'lit'＝灯った部屋・'last'＝最後の通路（pos 0 入口／1 奥の2枚の前／2 光の扉の手前）
+  let HAND = [], ROOM = [], sel = [], cur = 0, at = 'door', pos = 0, page = 0, aceBack = false, busy = false, ended = false, endArm = false;
+  let keyed = false, witness = null, witnessMap = '', hikariLit = null;
 
   function cardEl(c, opts = {}) {
     const b = document.createElement(opts.button === false ? 'div' : 'button');
@@ -202,21 +197,56 @@
     return b;
   }
 
-  // ---- 遊ぶ画面 ----
+  // ---- 通路と部屋（Blender の静止画 play/gallery/。作り方は tools/blender/ の hall.py door・room.py・hall.py empty） ----
+  const GAL = '/play/gallery/';
+  const PIC = { door: 'door.jpg', room: 'room-dark.jpg', lit: 'room-lit.jpg' };
+  const picOf = () => GAL + (at === 'last' ? `last-${pos + 1}.jpg` : PIC[at]);
+  function preload() { [...Object.values(PIC), 'last-1.jpg', 'last-2.jpg', 'last-3.jpg'].forEach(f => { const im = new Image(); im.src = GAL + f; }); }
+  function button(id, label, fn, dis) { const b = $(id); b.hidden = false; b.textContent = label; b.onclick = fn; b.disabled = !!dis || busy || ended; }
   function draw() {
-    $('rooms').replaceChildren(...ROOM.map((R, i) => {
-      const b = document.createElement('button'); b.type = 'button';
-      const can = !R.lit && canLight(R);
-      b.className = 'room' + (R.special ? ' hikari' : '') + (R.lit ? ' lit' : i === cur ? ' now' : '') + (can ? ' can' : '');
-      b.innerHTML = (R.special ? `<span class="badge">${esc(tr('nHikariBadge'))}</span>` : '')
-        + `<span class="lamp"></span><div class="n">${esc(roomName(R))}</div><div class="need">${esc(tr('nNeed', { n: R.need }))}</div>`
-        + `<div class="fav">${esc(tr('nFav', { a: txt({ ty: R.fav[0] }), b: txt({ ty: R.fav[1] }) }))}</div>`
-        + (R.special ? `<div class="fav hk">${esc(tr('nHikariNeed'))}</div>` : '')
-        + `<div class="st">${esc(tr(R.lit ? 'nLit' : i === cur ? 'nNow' : 'nDark'))}</div>`;
-      b.disabled = R.lit || busy || ended;
-      b.onclick = () => { if (R.lit || busy) return; cur = cur === i ? -1 : i; sfx(cur < 0 ? 'un' : 'pick'); draw(); };
-      return b;
-    }));
+    const R = ROOM[cur], last = at === 'last';
+    $('path').innerHTML = ROOM.map((x, i) => `<i class="${x.lit ? 'on' : !last && i === cur ? 'now' : ''}"></i>`).join('') + `<i class="key${keyed ? ' on' : last ? ' now' : ''}"></i>`;
+    const src = picOf();
+    if ($('vimg').getAttribute('src') !== src) { $('vimg').src = src; $('vimg').classList.toggle('lit', at === 'lit' && !reduce); }
+    $('plaque').textContent = at === 'door' ? tr('nRoomNo', { n: cur + 1 }) : '';
+    $('vlit').classList.toggle('on', at === 'lit');
+    // 絵の下の真ん中のボタン：扉の前では「扉を開ける」、最後の通路では「前に進む ↑」（2026-10-25 重吉さんの決め）
+    const fw = $('fwd');
+    if (last) { fw.textContent = tr('nForward'); fw.onclick = forward; fw.hidden = pos >= 2 || busy || ended || keyed; }
+    else if (at === 'door') { fw.textContent = tr('nOpenDoor'); fw.onclick = openDoor; fw.hidden = busy || ended; }
+    else fw.hidden = true;
+    drawHall();
+    $('roomBox').hidden = at !== 'room'; $('keyBox').hidden = !(last && pos === 2) || keyed;
+    ['act', 'act2', 'act3'].forEach(id => { $(id).hidden = true; });
+    $('say').textContent = '';
+    if (!busy && !ended) $('msg').textContent = '';
+    if (last) {
+      $('rn').innerHTML = `<small>${esc(tr('nLastNo'))}</small>${esc(tr('nLastName'))}`;
+      const n = frames().length, pages = Math.max(1, Math.ceil(n / PER));
+      $('info').textContent = pos === 2 ? '' : n ? tr('nLastInfo') : tr('nLastEmpty');
+      if (pos === 2) $('keyLead').innerHTML = tr('nKeyLead');
+      if (pos > 0) button('act2', tr('nGoBack'), () => walk(-1, () => { pos--; }));
+      if (n > PER) button('act3', tr('nMoreFrames', { a: page + 1, b: pages }), () => walk(0, () => { page = (page + 1) % pages; }));
+    } else {
+      $('rn').innerHTML = `<small>${esc(tr('nRoomNo', { n: cur + 1 }))}</small>${esc(roomName(R))}`;
+      const fav = tr('nFav', { a: txt({ ty: R.fav[0] }), b: txt({ ty: R.fav[1] }) });
+      if (at === 'door') {
+        $('info').innerHTML = esc(fav) + '　' + esc(tr('nNeed', { n: R.need }));
+      } else if (at === 'room') {
+        $('info').innerHTML = esc(tr('nPickSp', { room: roomName(R) })) + '<br>' + esc(fav) + '　' + esc(tr('nNeed', { n: R.need }));
+        drawHand();
+      } else {
+        const next = ROOM[cur + 1];
+        $('info').textContent = next ? tr('nLitNext', { room: roomName(R), n: cur + 2 }) : tr('nLitLast', { room: roomName(R) });
+        button('act', tr(next ? 'nNextDoor' : 'nToLast'), advance);
+      }
+    }
+    $('endbtn').disabled = busy || ended;
+    $('endbtn').hidden = keyed;
+    $('endbtn').classList.toggle('warn', endArm);
+    $('endbtn').textContent = tr(last ? (endArm ? 'nNoEnterSure' : 'nNoEnter') : endArm ? 'nEndSure' : 'nEndBtn');
+  }
+  function drawHand() {
     $('hand').replaceChildren(...HAND.map((c, i) => {
       const b = cardEl(c, { ace: c.ace, rest: c.used, sel: sel.includes(i) });
       b.disabled = c.used || busy || ended;
@@ -227,17 +257,13 @@
     let ok = false;
     if (cs.length) {
       const P = Object.assign(light(cs, R), { cs });
-      $('pv').innerHTML = chips(P, R) + `<span><b>${P.sum}</b>${P.m !== 1 ? ' × ' + P.m.toFixed(2) : ''}${P.fav ? ' × ' + FAV : ''} ＝</span><span class="big">${P.v}</span>${R ? `<span>／ ${R.need}</span>` : ''}`;
-      const okRare = allowed(cs, R);
-      ok = !!R && P.v >= R.need && okRare;
-      $('okmsg').className = R ? (ok ? 'ok' : 'short') : '';
-      $('okmsg').textContent = R ? (!okRare ? tr('nHikariNoRare') : ok ? tr('nCan') : tr('nShort', { n: R.need - P.v })) : '';
+      $('pv').innerHTML = chips(P, R) + `<span><b>${P.sum}</b>${P.m !== 1 ? ' × ' + P.m.toFixed(2) : ''}${P.fav ? ' × ' + FAV : ''} ＝</span><span class="big">${P.v}</span><span>／ ${R.need}</span>`;
+      ok = P.v >= R.need;
+      $('okmsg').className = ok ? 'ok' : 'short';
+      $('okmsg').textContent = ok ? tr('nCan') : tr('nShort', { n: R.need - P.v });
     } else { $('pv').innerHTML = `<span>${esc(tr('nPvEmpty'))}</span>`; $('okmsg').textContent = ''; }
     $('go').disabled = !ok || busy || ended;
     $('go').textContent = cs.length ? tr('nGoN', { n: cs.length }) : tr('nGo');
-    if (!busy && !ended) $('msg').textContent = R ? tr('nPickSp', { room: roomName(R) }) : normals().every(x => x.lit) ? tr('nHikariLeft') : tr('nPickRoom');
-    $('endbtn').disabled = busy || ended;
-    $('endbtn').classList.toggle('warn', endArm); $('endbtn').textContent = tr(endArm ? 'nEndSure' : 'nEndBtn');
   }
   function pick(i) {
     if (busy || ended || HAND[i].used) return;
@@ -248,7 +274,7 @@
   // 残っている精霊の1〜3体で、その部屋に届く組があるか
   function canLight(R) {
     const idx = HAND.map((c, i) => i).filter(i => !HAND[i].used);
-    const ok = cs => allowed(cs, R) && light(cs, R).v >= R.need;
+    const ok = cs => light(cs, R).v >= R.need;
     for (let a = 0; a < idx.length; a++) {
       if (ok([HAND[idx[a]]])) return true;
       for (let b = a + 1; b < idx.length; b++) {
@@ -258,11 +284,34 @@
     }
     return false;
   }
+  // 進む・戻る：絵の奥へ寄りながら暗くなり、次の絵が明るくなる（d が 0 なら、その場で掛けかえ）
+  function walk(d, then) {
+    if (busy) return;
+    const A = $('vanim'); busy = true; endArm = false;
+    sfx(d < 0 ? 'un' : 'send');
+    const swap = () => { then(); busy = false; draw(); A.classList.remove('go', 'back'); A.classList.add('arrive'); setTimeout(() => A.classList.remove('arrive'), 650); };
+    if (reduce) return swap();
+    A.classList.add(d < 0 ? 'back' : 'go'); setTimeout(swap, 540);
+  }
+  // 扉を開ける。残りの精霊でこの部屋を灯せる組がなければ、静かな朝へ
+  function openDoor() {
+    walk(1, () => { at = 'room'; sel = []; });
+    setTimeout(async () => {
+      if (ended || at !== 'room' || canLight(ROOM[cur])) return;
+      ended = true; $('msg').textContent = tr('nNoMore'); draw();
+      await wait(2200); morning();
+    }, reduce ? 150 : 700);
+  }
+  function advance() {
+    if (cur < ROOM.length - 1) walk(1, () => { cur++; at = 'door'; });
+    else walk(1, () => { at = 'last'; pos = 0; page = 0; fixFrames(); });
+  }
+  function forward() { if (pos < 2) walk(1, () => { pos++; }); }
   $('go').onclick = async () => {
     const R = ROOM[cur], cs = sel.map(i => HAND[i]);
-    if (busy || !R || !cs.length) return;
+    if (busy || at !== 'room' || !cs.length) return;
     const P = Object.assign(light(cs, R), { cs });
-    if (P.v < R.need || !allowed(cs, R)) return;
+    if (P.v < R.need) return;
     busy = true; endArm = false;
     sel.forEach(i => { HAND[i].used = true; });
     // ★主の力：送った夜のあと、1夜に1回だけ戻ってくる
@@ -271,13 +320,7 @@
     sel = []; draw();
     await lightScene(R, cs, P, back);
     R.lit = true; if (back) ace.used = false;
-    if (R.special) hikariLit = cs.some(c => c.rarity === 'gold') ? 'gold' : 'silver';
-    cur = -1; busy = false; draw();
-    glowUp();
-    // 5部屋が灯れば夜明け。光の間がまだ灯せるなら、朝を待つ（灯さずに朝を迎えるなら「ここまで」）
-    const sp = ROOM.find(x => x.special);
-    if (normals().every(x => x.lit) && (!sp || sp.lit || !canLight(sp))) { await wait(500); morning(); return; }
-    if (!ROOM.some(x => !x.lit && canLight(x))) { $('msg').textContent = tr('nNoMore'); ended = true; draw(); await wait(1800); morning(); }
+    at = 'lit'; busy = false; draw(); glowUp(); burst(.5, .35, 60);
   };
   $('endbtn').onclick = () => {
     if (busy || ended) return;
@@ -317,56 +360,104 @@
     $('lt').hidden = true;
   }
 
-  // ---- 朝：夜明け（5部屋すべて）か、静かな朝。負けの言葉は使わない。立会人にお礼を言う ----
+  // ---- 光の扉の鍵：「80億分の1」の人生の記録の画像（2026-10-25〜。それまでは目録のページの最初でドロップしていた） ----
+  // 見分けて守り神を目録に入れるのは目録のページ（monster-app.js）の仕事なので、見えない枠で spirit.html を開き、落とされたファイルを渡す（同じサイトの中だけ）。
+  // AI には送らない。画像はどこにも残さない（目録に入るのは守り神のカードだけ。同じ人生の記録の守り神がもういれば、新しく作らない）
+  let maker = null, makerReady = null;
+  function openMaker() {
+    if (makerReady) return makerReady;
+    maker = document.createElement('iframe'); maker.hidden = true; maker.tabIndex = -1; maker.setAttribute('aria-hidden', 'true');
+    makerReady = new Promise(ok => {
+      const on = e => { if (e.origin === location.origin && e.source === maker.contentWindow && e.data && e.data.type === 'lifeKeyReady') { removeEventListener('message', on); ok(); } };
+      addEventListener('message', on);
+    });
+    maker.src = 'spirit.html?key=1'; document.body.append(maker);
+    return makerReady;
+  }
+  function askMaker(file) {
+    return new Promise(async ok => {
+      const on = e => { if (e.origin !== location.origin || !maker || e.source !== maker.contentWindow || !e.data || e.data.type !== 'lifeKeyDone') return; clearTimeout(timer); removeEventListener('message', on); ok(e.data); };
+      const timer = setTimeout(() => { removeEventListener('message', on); ok({ ok: false, err: true }); }, 25000);
+      addEventListener('message', on);
+      await openMaker();
+      maker.contentWindow.postMessage({ type: 'lifeKey', file }, location.origin);
+    });
+  }
+  async function useKey(files) {
+    if (busy || ended || keyed || at !== 'last' || pos !== 2) return;
+    const f = [...files].find(x => x.type.startsWith('image/'));
+    if (!f) { $('msg').textContent = tr('nKeyNo'); sfx('no'); return; }
+    $('drop').classList.add('busy'); $('msg').textContent = tr('nKeyReading');
+    const a = await askMaker(f);
+    $('drop').classList.remove('busy');
+    if (!a.ok) { $('msg').textContent = tr(a.err ? 'nKeyErr' : 'nKeyNo'); sfx('no'); return; }
+    keyed = true; witness = txt(a.name); witnessMap = a.life ? lifeGrad(a) : ''; track('night_key');
+    enterLast(a);
+  }
+  // 光の扉をくぐる。最後の部屋（灯さない。夜明けになる）
+  async function enterLast(a) {
+    busy = true; draw();
+    $('msg').textContent = tr(a.isNew ? 'nKeyNew' : 'nKeyOk', { name: witness });
+    sfx('light'); burst(.5, .4, 80);
+    $('flash').classList.add('on');
+    await wait(2400);
+    // 金の光・銀の光の子を連れた夜は、夜明けに金の柱／銀の雨（もとの「光の間」の光）
+    hikariLit = HAND.some(c => c.rarity === 'gold') ? 'gold' : HAND.some(c => c.rarity === 'silver') ? 'silver' : null;
+    busy = false; morning();
+    $('flash').classList.remove('on');
+  }
+  const drop = $('drop');
+  drop.addEventListener('click', () => $('file').click());
+  drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('file').click(); } });
+  $('file').addEventListener('change', e => { if (e.target.files.length) useKey(e.target.files); e.target.value = ''; });
+  ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => { if (e.dataTransfer.files.length) useKey(e.dataTransfer.files); });
+  // 枠の外に落としたときは、ブラウザがファイルを開かないようにするだけ（読まない）
+  addEventListener('dragover', e => e.preventDefault());
+  addEventListener('drop', e => e.preventDefault());
+
+  // ---- 朝：夜明け（4部屋を灯して、光の扉の鍵で最後の部屋へ入った）か、静かな朝。負けの言葉は使わない ----
   // 朝を迎えると、その朝の回数を数え、額縁を1つ渡す（おためしの精霊の夜と、1部屋も灯らなかった朝は数えない）。
-  // 場面の段階は、その朝を迎えた回数で決まる（levelOf）
+  // 場面の段階は、その夜に灯した部屋の数で決まる（PL）。2026-10-25 に立会人へのお礼（お礼をしないと次の夜は★主を置けない）をなくした
   let sceneOn = null;
   function morning() {
     ended = true; draw();
-    const N = normals(), lit = N.filter(R => R.lit).length, dawn = lit === N.length, k = dawn ? 'dawn' : 'quiet';
-    const dark = N.filter(R => !R.lit).map(roomName).join(tr('nRoomSep'));
-    const who = witness ? esc(witness) : '';
+    const lit = ROOM.filter(R => R.lit).length, dawn = keyed, k = dawn ? 'dawn' : 'quiet';
+    const dark = ROOM.filter(R => !R.lit).map(roomName).join(tr('nRoomSep'));
     const counts = !trial && lit > 0;
     let count = 1, gift = null;
     if (counts) {
-      const R = loadRec(); R.n = (R.n || 0) + 1; count = R[k] = (R[k] || 0) + 1;
+      const R = loadRec(); R.n = (R.n || 0) + 1; count = R[k] = (R[k] || 0) + 1; delete R.noAce;
       R.frames = frames(); R.frames.push({ k, n: count, id: null }); gift = R.frames.length - 1; saveRec(R);
     }
-    const lv = levelOf(count), stages = D(dawn ? 'nStagesDawn' : 'nStagesQuiet') || [];
+    const st = Math.max(1, lit), lv = PL[st - 1], stages = D(dawn ? 'nStagesDawn' : 'nStagesQuiet') || [];
     sfx(dawn ? 'dawn' : 'quiet'); if (dawn) burst(.5, .3, 120);
     track(dawn ? 'night_dawn' : 'night_quiet');
     $('end').className = 'end ' + k;
     $('end').innerHTML = `<canvas class="scene" id="scene" aria-hidden="true"></canvas><div class="endin">`
       + `<h2>${esc(tr(dawn ? 'nDawnH' : 'nQuietH'))}</h2>`
-      + (counts ? `<div class="lv">${esc(tr(dawn ? 'nLevelDawn' : 'nLevelQuiet', { n: count, stage: stages[lv - 1] || '' }))}</div>`
-        + `<div class="steps">${stages.map((x, i) => `<span class="${i < lv ? 'on' : ''}">${esc(x)}</span>`).join('')}</div>` : '')
-      + `<p>${dawn ? tr('nDawnP') : lit ? tr('nQuietP', { n: lit, rooms: esc(dark) }) : tr('nQuietP0')}</p>`
+      + (counts ? `<div class="lv">${esc(tr(dawn ? 'nLevelDawn' : 'nLevelQuiet', { n: count, stage: stages[st - 1] || '' }))}</div>`
+        + `<div class="steps">${stages.map((x, i) => `<span class="${i < st ? 'on' : ''}">${esc(x)}</span>`).join('')}</div>` : '')
+      + `<p>${dawn ? tr('nDawnP') : lit === ROOM.length ? tr('nQuietPKey') : lit ? tr('nQuietP', { n: lit, rooms: esc(dark) }) : tr('nQuietP0')}</p>`
+      + (dawn && witness ? `<p class="small">${esc(tr('nWitnessed', { name: witness }))}</p>` + (witnessMap ? `<div class="lifeband" style="background:${witnessMap}"></div>` : '') : '')
       + (dawn && hikariLit ? `<p class="hk">${esc(tr(hikariLit === 'gold' ? 'nHikariGold' : 'nHikariSilver'))}</p>` : '')
-      + `<div class="lamps">${ROOM.map(R => `<i class="${R.lit ? 'on' : ''}${R.special ? ' sp' : ''}"></i>`).join('')}</div>`
+      + `<div class="lamps">${ROOM.map(R => `<i class="${R.lit ? 'on' : ''}"></i>`).join('')}<i class="sp${keyed ? ' on' : ''}"></i></div>`
       + (gift !== null ? `<div class="gift" id="gift">${frameBox({ k }, 96)}<p>${tr('nGift', { frame: esc(tr(dawn ? 'frameDawn' : 'frameQuiet')) })}</p>`
         + `<div class="btns"><button class="btn" id="pickNow" type="button">${esc(tr('nPickNow'))}</button><button class="btn ghost" id="later" type="button">${esc(tr('nLater'))}</button></div></div>`
         : `<p class="small">${esc(tr(trial ? 'nGiftTrial' : 'nGiftNone'))}</p>`)
-      + `<button class="btn" id="ty" type="button">${witness ? tr('nThanks', { name: who }) : esc(tr('nThanksMuseum'))}</button>`
-      + `<div class="small" id="warn">${tr('nWarn')}</div>`
-      + `<button class="btn ghost" id="skip" type="button">${esc(tr('nSkip'))}</button>`
-      + `<a class="btn ghost" id="toDex" href="spirit.html" hidden>${esc(tr('nBack'))}</a></div>`;
+      + `<button class="btn" id="again" type="button">${esc(tr('nAgain'))}</button>`
+      + `<a class="btn ghost" href="spirit.html">${esc(tr('nBack'))}</a></div>`;
     $('morning').hidden = false;
     startScene(k, lv, dawn ? hikariLit : null);
     if (gift !== null) {
       $('pickNow').onclick = () => openPicker(gift, () => { $('gift').innerHTML = `<p>${esc(tr('nFramedOk'))}</p>`; });
       $('later').onclick = () => { $('gift').innerHTML = `<p class="small">${esc(tr('nLaterOk'))}</p>`; };
     }
-    const finish = thanked => {
-      if (!trial) { const R = loadRec(); R.noAce = !thanked; saveRec(R); }
-      noAce = !thanked && !trial;
-      $('toDex').hidden = false; // お礼をするか決めたあとで出す（決める前に出ると、お礼をせずに抜けられる）
-      $('skip').textContent = tr('nAgain'); $('skip').onclick = restart;
-    };
-    $('ty').onclick = () => { sfx('thanks'); burst(.5, .55, 60); $('ty').disabled = true; $('ty').textContent = tr('nThanked'); $('warn').textContent = ''; finish(true); };
-    $('skip').onclick = () => { sfx('no'); $('ty').disabled = true; $('warn').innerHTML = tr('nSkipped'); finish(false); };
+    $('again').onclick = restart;
   }
   function restart() {
-    $('morning').hidden = true; sceneOn = null; HAND = []; sel = []; cur = -1; ended = false; endArm = false; dpick = []; aceI = -1; hikariLit = null;
+    $('morning').hidden = true; sceneOn = null; HAND = []; sel = []; dpick = []; aceI = -1;
     reloadDex().then(() => { $('deck').hidden = false; drawDeck(); });
   }
 
@@ -456,7 +547,6 @@
   // ---- 額縁（Blender の静止画 play/gallery/。作り方は tools/blender/）。夜明け＝金の飾り、静かな朝＝くるみ材と銀 ----
   // 額縁の絵の大きさと窓（作品が入る穴）の位置（px）。top は額縁の外の上のふち。s は小さな額縁（夜明けは上の貝殻なし）
   // 窓には精霊が生まれた美術館の作品を窓いっぱいに。上のふちには小さな額縁を、上のふちをそろえて食いこませ、その中に精霊
-  const GAL = '/play/gallery/';
   const FR = {
     dawn: { w: 720, h: 1149, l: 141, t: 336, ww: 438, wh: 672, top: 208, s: { w: 300, h: 398, l: 59, t: 59, ww: 182, wh: 280, top: 6 } },
     quiet: { w: 720, h: 968, l: 128, t: 128, ww: 464, wh: 711, top: 14, s: { w: 300, h: 403, l: 53, t: 53, ww: 193, wh: 296, top: 6 } }
@@ -486,16 +576,38 @@
     return `<div class="fscale" style="width:${width}px;height:${Math.round(P.h * k)}px">${fbox(f).replace('style="width:', `style="transform:scale(${k});width:`)}</div>`;
   }
 
-  // ---- わたしの展示室：中世風の石の通路（hall.jpg）。両側の壁に2つずつ、1つの部屋に4つ。5つ目からは「奥へ進む」で次の部屋 ----
-  // 壁の額縁の窓の四隅（絵の割合。左上・右上・右下・左下）と名札の位置。hall.py が書き出した値。並びは 手前の左・手前の右・奥の左・奥の右
-  const HALL = { w: 1600, h: 1067, slots: [
-    { c: [[0.1358, 0.3191], [0.2057, 0.3482], [0.2086, 0.5923], [0.1404, 0.6208]], p: [0.1776, 0.679] },
-    { c: [[0.7943, 0.3482], [0.8642, 0.3191], [0.8596, 0.6208], [0.7914, 0.5923]], p: [0.8224, 0.679] },
-    { c: [[0.2764, 0.3777], [0.3048, 0.3896], [0.3061, 0.5517], [0.2781, 0.5634]], p: [0.2933, 0.6043] },
-    { c: [[0.6952, 0.3896], [0.7236, 0.3777], [0.7219, 0.5634], [0.6939, 0.5517]], p: [0.7067, 0.6043] }
-  ] };
-  const PER = HALL.slots.length;
-  let room = 0;
+  // ---- 最後の通路（2026-10-25〜。もと「わたしの展示室」）：中世風の石の通路の両側の壁に3つずつ＝6つの額縁。新しい額縁ほど手前に掛ける。7つ目からは「ほかの額縁を見る」で次の6つ ----
+  // 「前に進む」で3か所に立つ（入口・奥の2枚の前・光の扉の手前）。立つ所ごとの絵は last-{1,2,3}.jpg（hall.py -- out.png 1200 64 empty、SLOTS=3・CAMY＝-0.9・2.9・9.6）。光の扉の手前では額縁は後ろに回って見えない。
+  // 壁の額縁の窓の四隅（絵の割合。左上・右上・右下・左下）と名札の位置は hall.py が書いた JSON の値。並びは 手前の左・手前の右・中の左・中の右・奥の左・奥の右。
+  // v＝その立つ所から見えるか（手前の額縁は、前に進むと後ろへ回る）。near＝その立つ所でいちばん近い組（名札を大きく）
+  const LAST = [
+  [
+    { c: [[0.1358,0.3191],[0.2057,0.3482],[0.2086,0.5924],[0.1404,0.6208]], p: [0.1776,0.6791], v: true },
+    { c: [[0.7943,0.3482],[0.8642,0.3191],[0.8596,0.6208],[0.7914,0.5924]], p: [0.8224,0.6791], v: true },
+    { c: [[0.2764,0.3777],[0.3048,0.3895],[0.3061,0.5517],[0.2781,0.5634]], p: [0.2933,0.6043], v: true },
+    { c: [[0.6952,0.3895],[0.7236,0.3777],[0.7219,0.5634],[0.6939,0.5517]], p: [0.7067,0.6043], v: true },
+    { c: [[0.3387,0.4036],[0.354,0.41],[0.3548,0.5315],[0.3396,0.5378]], p: [0.3478,0.5691], v: true },
+    { c: [[0.646,0.41],[0.6613,0.4036],[0.6604,0.5378],[0.6452,0.5315]], p: [0.6522,0.5691], v: true }
+  ],
+  [
+    { c: [[1.9151,1.0609],[18.6609,8.0426],[50.094,-20.2059],[1.9886,-0.1497]], p: [7.4289,-4.0092], v: false },
+    { c: [[-17.6609,8.0426],[-0.9151,1.0609],[-0.9886,-0.1497],[-49.094,-20.2059]], p: [-6.4289,-4.0092], v: false },
+    { c: [[-0.4808,0.062],[-0.0984,0.2214],[-0.0861,0.7153],[-0.4484,0.8663]], p: [-0.243,0.9505], v: false },
+    { c: [[1.0984,0.2214],[1.4808,0.062],[1.4484,0.8663],[1.0861,0.7153]], p: [1.243,0.9505], v: false },
+    { c: [[0.1358,0.3191],[0.2057,0.3482],[0.2086,0.5924],[0.1404,0.6208]], p: [0.1776,0.6791], v: true },
+    { c: [[0.7943,0.3482],[0.8642,0.3191],[0.8596,0.6208],[0.7914,0.5924]], p: [0.8224,0.6791], v: true }
+  ],
+  [
+    { c: [[0.6472,0.5323],[0.6628,0.5388],[0.6637,0.4026],[0.648,0.4092]], p: [0.6556,0.3705], v: false },
+    { c: [[0.3372,0.5388],[0.3528,0.5323],[0.352,0.4092],[0.3363,0.4026]], p: [0.3444,0.3705], v: false },
+    { c: [[0.6973,0.5532],[0.7264,0.5653],[0.7283,0.3757],[0.6987,0.3881]], p: [0.7131,0.3333], v: false },
+    { c: [[0.2736,0.5653],[0.3027,0.5532],[0.3013,0.3881],[0.2717,0.3757]], p: [0.2869,0.3333], v: false },
+    { c: [[0.7993,0.5957],[0.8718,0.6259],[0.8767,0.3139],[0.8024,0.3448]], p: [0.8384,0.2524], v: false },
+    { c: [[0.1282,0.6259],[0.2007,0.5957],[0.1976,0.3448],[0.1233,0.3139]], p: [0.1616,0.2524], v: false }
+  ]
+  ];
+  const NEAR = [0, 2, -1];
+  const PER = 6, HW = 1600, HH = 1067;
   // 4点の対応から、射影の行列（3×3）を解く
   function homography(src, dst) {
     const A = [], B = [];
@@ -508,53 +620,39 @@
     const h = B.map((b, i) => b / A[i][i]);
     return `matrix3d(${h[0]},${h[3]},0,${h[6]},${h[1]},${h[4]},0,${h[7]},0,0,1,0,${h[2]},${h[5]},0,1)`;
   }
-  function fitHall() { const w = $('hallWrap').clientWidth; $('stage').style.transform = `scale(${w / HALL.w})`; }
+  function fitHall() { $('stage').style.transform = `scale(${$('view').clientWidth / HW})`; }
   function drawHall() {
-    const F = frames(), rooms = Math.max(1, Math.ceil(F.length / PER));
-    room = Math.min(room, rooms - 1);
     const stage = $('stage'), labels = $('hLabels'); stage.replaceChildren(); labels.replaceChildren();
-    HALL.slots.forEach((S, j) => {
-      const i = room * PER + j, f = F[i]; if (!f) return;
-      const P = FR[f.k], b = document.createElement('button'); b.type = 'button'; b.className = 'hf';
+    if (at !== 'last') return;
+    const F = frames().map((f, i) => [f, i]).reverse(), pages = Math.max(1, Math.ceil(F.length / PER));
+    page = Math.min(page, pages - 1);
+    LAST[pos].forEach((S, j) => {
+      const e = F[page * PER + j]; if (!e || !S.v) return;
+      const [f, fi] = e, P = FR[f.k], b = document.createElement('button'); b.type = 'button'; b.className = 'hf';
       b.style.width = P.w + 'px'; b.style.height = P.h + 'px';
-      b.style.transform = homography([[P.l, P.t], [P.l + P.ww, P.t], [P.l + P.ww, P.t + P.wh], [P.l, P.t + P.wh]], S.c.map(([x, y]) => [x * HALL.w, y * HALL.h]));
+      b.style.transform = homography([[P.l, P.t], [P.l + P.ww, P.t], [P.l + P.ww, P.t + P.wh], [P.l, P.t + P.wh]], S.c.map(([x, y]) => [x * HW, y * HH]));
       b.innerHTML = fbox(f);
       b.setAttribute('aria-label', f.id ? txt(f.name) : tr('nEmptyFrame') + ' ' + tr('nTapToPick'));
-      b.onclick = () => f.id ? openView(f) : openPicker(i, openGallery);
+      b.onclick = () => { if (busy) return; f.id ? openView(f) : openPicker(fi, draw); };
       stage.append(b);
+      // 名札は近い組とその次の組だけ（遠い組の名札は重なって読めない。前に進むと見える）
+      if (S.p[0] < 0.02 || S.p[0] > 0.98 || (j >> 1) - NEAR[pos] > 1) return;
       const l = document.createElement('span');
-      l.className = (j < 2 ? 'near' : '') + (!f.id ? ' dim' : f.rar === 'gold' ? ' g' : f.rar === 'silver' ? ' s' : '');
+      l.className = (j >> 1 === NEAR[pos] ? 'near' : '') + (!f.id ? ' dim' : f.rar === 'gold' ? ' g' : f.rar === 'silver' ? ' s' : '');
       l.style.left = S.p[0] * 100 + '%'; l.style.top = S.p[1] * 100 + '%';
       l.textContent = f.id ? txt(f.name) : tr('nNotYet');
       labels.append(l);
     });
-    $('roomNo').textContent = rooms > 1 ? tr('nRoomNo', { n: room + 1 }) : '';
-    $('hallUp').hidden = room >= rooms - 1; $('hallDown').hidden = room <= 0;
-    $('galleryEmpty').hidden = F.length > 0; $('hallHint').hidden = !F.length;
     fitHall();
   }
-  // 奥へ進む：奥のアーチへ寄りながら暗くなり、次の部屋が明るくなる（同じ通路の絵に、次の4つを掛ける）
-  function walk(d) {
-    const A = $('hallAnim'); if (A.classList.contains('go') || A.classList.contains('back')) return;
-    sfx(d > 0 ? 'send' : 'un');
-    const swap = () => { room += d; drawHall(); A.classList.remove('go', 'back'); A.classList.add('arrive'); setTimeout(() => A.classList.remove('arrive'), 600); };
-    if (reduce) return swap();
-    A.classList.add(d > 0 ? 'go' : 'back'); setTimeout(swap, 480);
-  }
-  $('hallUp').onclick = () => walk(1);
-  $('hallDown').onclick = () => walk(-1);
-  addEventListener('resize', () => { if (!$('gallery').hidden) fitHall(); });
-  async function openGallery() {
-    $('gallery').hidden = false; drawHall(); sfx('pick');
-    // 前の版で飾った子には作品の写しが無いので、目録にまだいれば足しておく
+  addEventListener('resize', () => { if (at === 'last') fitHall(); });
+  // 前の版で飾った子には作品の写しが無いので、目録にまだいれば足しておく
+  async function fixFrames() {
     const R = loadRec(); if (!Array.isArray(R.frames) || !R.frames.some(f => f && f.id && !f.w)) return;
     await reloadDex(); let n = 0;
     R.frames.forEach(f => { if (!f || !f.id || f.w) return; const M = ALL.find(x => x.id === f.id); if (M) { f.w = worksOf(M); f.desc = M.desc || null; n++; } });
-    if (n && saveRec(R) && !$('gallery').hidden) drawHall();
+    if (n && saveRec(R) && at === 'last') drawHall();
   }
-  $('galleryBtn').onclick = openGallery;
-  $('galleryBtn2').onclick = openGallery;
-  $('galleryClose').onclick = () => { $('gallery').hidden = true; sfx('un'); };
 
   // ---- 正面から見る：額縁のアップと、呼び名・名前・説明・生まれた作品 ----
   function openView(f) {
@@ -629,42 +727,35 @@
       const k = dpick.indexOf(i), b = cardEl(c, { on: k >= 0, n: k + 1, ace: i === aceI });
       b.onclick = () => togglePick(i); return b;
     }));
-    $('picked').replaceChildren(...Array.from({ length: SIZE() }, (_, k) => {
+    $('picked').replaceChildren(...Array.from({ length: SIZE }, (_, k) => {
       const d = document.createElement('div'); d.className = 'slot'; const i = dpick[k];
       if (i === undefined) { d.innerHTML = '<div class="empty">' + (k + 1) + '</div>'; return d; }
       const b = cardEl(ZK[i], { ace: i === aceI }); b.onclick = () => togglePick(i); d.append(b);
-      const a = document.createElement('button'); a.type = 'button'; a.className = 'acebtn' + (i === aceI ? ' on' : ''); a.textContent = tr(i === aceI ? 'nAceOn' : 'nAceSet'); a.disabled = noAce;
+      const a = document.createElement('button'); a.type = 'button'; a.className = 'acebtn' + (i === aceI ? ' on' : ''); a.textContent = tr(i === aceI ? 'nAceOn' : 'nAceSet'); 
       a.onclick = () => { aceI = aceI === i ? -1 : i; sfx('pick'); drawDeck(); }; d.append(a);
       return d;
     }));
-    $('guards').replaceChildren(...(GUARDS.length ? GUARDS.map((g, k) => {
-      const d = document.createElement('div'); d.className = 'gk';
-      d.innerHTML = `<div class="gm" style="background:${g.map}"></div><div class="gn">${esc(g.n)}<small>${esc(tr('nGuardSub'))}</small></div>`;
-      const b = document.createElement('button'); b.type = 'button'; b.className = k === guardI ? 'on' : ''; b.textContent = tr(k === guardI ? 'nGuardOn' : 'nGuardSet');
-      b.onclick = () => { guardI = guardI === k ? -1 : k; sfx('pick'); drawDeck(); }; d.append(b);
-      return d;
-    }) : [Object.assign(document.createElement('div'), { className: 'note', textContent: tr('nNoGuard') })]));
     const t = sum6(), over = t > CAP;
-    $('msumLbl').textContent = tr(noAce ? 'nSumAll' : 'nSum');
+    $('msumLbl').textContent = tr('nSum');
     $('msum').textContent = t; $('mcap').textContent = CAP; $('mbar').style.width = Math.min(100, t / CAP * 100) + '%';
     $('meter').classList.toggle('bad', over); $('mline').classList.toggle('bad', over);
-    $('dmsg').classList.toggle('warn', over || (noAce && dpick.length < SIZE()));
-    $('dmsg').textContent = dpick.length < SIZE() ? (noAce ? tr('nNoAceNow') + '　' : '') + tr('nLeft', { n: SIZE() - dpick.length })
-      : over ? tr(noAce ? 'nOverNoAce' : 'nOver', { n: t - CAP }) : aceI < 0 && !noAce ? tr('nReadyNoAce') : tr('nReady');
-    $('tonight').disabled = dpick.length < SIZE() || over;
+    $('dmsg').classList.toggle('warn', over);
+    $('dmsg').textContent = dpick.length < SIZE ? tr('nLeft', { n: SIZE - dpick.length })
+      : over ? tr('nOver', { n: t - CAP }) : aceI < 0 ? tr('nReadyNoAce') : tr('nReady');
+    $('tonight').disabled = dpick.length < SIZE || over;
     $('auto').disabled = ZK.length < 7;
   }
   function togglePick(i) {
     const k = dpick.indexOf(i);
     if (k >= 0) { dpick.splice(k, 1); if (aceI === i) aceI = -1; sfx('un'); }
-    else if (dpick.length < SIZE()) { dpick.push(i); sfx('pick'); }
+    else if (dpick.length < SIZE) { dpick.push(i); sfx('pick'); }
     else { sfx('no'); return; }
     drawDeck();
   }
-  // おまかせ：いちばん輝きの大きい子を★主に、残りから合計が上限にいちばん近い6体（★主を置けないときは6体だけ）
+  // おまかせ：いちばん輝きの大きい子を★主に、残りから合計が上限にいちばん近い6体
   function autoPick() {
     const idx = ZK.map((_, i) => i);
-    const ace = noAce ? -1 : idx.reduce((a, b) => ZK[a].p > ZK[b].p ? a : b);
+    const ace = idx.reduce((a, b) => ZK[a].p > ZK[b].p ? a : b);
     const rest = idx.filter(i => i !== ace);
     let best = null, bv = -1;
     for (let k = 0; k < 3000; k++) {
@@ -672,19 +763,16 @@
       if (v <= CAP && v > bv) { bv = v; best = r; }
     }
     if (!best) best = [...rest].sort((a, b) => ZK[a].p - ZK[b].p).slice(0, 6); // どう組んでも超えるときは小さい順（メーターが赤くなる）
-    dpick = ace >= 0 ? [ace, ...best] : best; aceI = ace; sfx('back'); drawDeck();
+    dpick = [ace, ...best]; aceI = ace; sfx('back'); drawDeck();
   }
   $('auto').onclick = autoPick;
   $('trial').onclick = () => { trial = true; dpick = []; aceI = -1; ZK = trialSet(); sfx('pick'); drawDeck(); };
   $('tonight').onclick = () => {
     HAND = dpick.map(i => Object.assign({}, ZK[i], { used: false, ace: i === aceI }));
-    ROOM = tonight(new Date(), HAND.some(isRare)); sel = []; cur = -1; aceBack = false; busy = false; ended = false; endArm = false; hikariLit = null;
-    const g = GUARDS[guardI]; witness = g ? g.n : null;
-    $('witness').innerHTML = witness ? esc(tr('nWitness', { name: '' })) + `<b>${esc(witness)}</b>` : esc(tr('nNoWitness'));
+    ROOM = tonight(new Date()); sel = []; cur = 0; at = 'door'; pos = 0; page = 0;
+    aceBack = false; busy = false; ended = false; endArm = false; keyed = false; witness = null; witnessMap = ''; hikariLit = null;
     $('trialNote').hidden = !trial;
-    $('deck').hidden = true; draw(); glowUp(); sfx('send'); track('night_start');
-    // ★主なしの夜は、この1夜で終わり
-    if (noAce) { const R = loadRec(); R.noAce = false; saveRec(R); noAce = false; }
+    $('deck').hidden = true; preload(); draw(); glowUp(); sfx('send'); track('night_start');
   };
 
   // ---- 背景：紺の闇に、金の灯りの粒がただよう。灯った部屋が増えるほど、粒が増えて明るくなる ----
@@ -694,7 +782,7 @@
   rs(); addEventListener('resize', rs);
   const motes = Array.from({ length: 90 }, (_, i) => ({ x: Math.random(), y: Math.random(), v: .00008 + Math.random() * .00022, r: .6 + Math.random() * 1.8, ph: Math.random() * 6.28, k: i }));
   let sparks = [], glow = 0, glowTo = 0;
-  function glowUp() { const N = normals(); glowTo = N.length ? N.filter(R => R.lit).length / N.length : 0; }
+  function glowUp() { glowTo = ROOM.length ? ROOM.filter(R => R.lit).length / ROOM.length : 0; }
   function burst(x, y, n = 40) { for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, v = .6 + Math.random() * 2.6; sparks.push({ x: x * W, y: y * H, vx: Math.cos(a) * v, vy: Math.sin(a) * v - .8, l: 1 }); } }
   const t0 = performance.now();
   function frame(t) {
@@ -826,8 +914,7 @@
       light: () => { [60, 67, 72, 74, 79, 84].forEach((n, i) => bell(N(n), t + i * .09, 2.6, .13)); pad(N(48), t, 3, .08, master); pad(N(55), t, 3, .06, master); },
       back: () => [79, 84].forEach((n, i) => bell(N(n), t + i * .18, 1.6, .12)),
       dawn: () => { [58, 62, 65, 69, 70, 74, 77, 81].forEach((n, i) => bell(N(n), t + i * .14, 3.2, .13)); [46, 53, 57, 62].forEach(n => pad(N(n), t, 5, .07, master)); },
-      quiet: () => { [67, 72, 74].forEach((n, i) => bell(N(n), t + i * .3, 2.8, .1)); [48, 55, 60].forEach(n => pad(N(n), t, 4.5, .06, master)); },
-      thanks: () => [[82, 0], [86, .25], [89, .5], [94, .75]].forEach(([n, d]) => bell(N(n), t + d, 2.4, .1))
+      quiet: () => { [67, 72, 74].forEach((n, i) => bell(N(n), t + i * .3, 2.8, .1)); [48, 55, 60].forEach(n => pad(N(n), t, 4.5, .06, master)); }
     };
     if (S[k]) S[k]();
   }
@@ -847,8 +934,6 @@
     $('startbtn').disabled = true; $('startbtn').textContent = tr('nLoading');
     const all = ALL = await dexP;
     ZK = all.filter(M => !isHuman(M) && Number(M.power) > 0).map(spirit).sort((a, b) => b.p - a.p);
-    GUARDS = all.filter(isHuman).map(M => ({ n: txt(M.name), map: lifeGrad(M) })); guardI = GUARDS.length ? 0 : -1;
-    noAce = !!loadRec().noAce;
     $('intro').hidden = true; $('deck').hidden = false; drawDeck(); sfx('pick');
   };
 })();
