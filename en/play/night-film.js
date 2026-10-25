@@ -173,7 +173,7 @@
       Eb: { b: 51, t: [58, 63, 67, 69], pad: [51, 55, 58, 62] }, Gm: { b: 43, t: [58, 62, 65, 67], pad: [43, 50, 53, 58] } };
     const ARP = [0, 1, 2, 3, 4, 3, 2, 1, 0, 2, 1, 3, 2, 4, 3, 1];
     const arp = (c, t0, t1, v0, v1, rate = 1, pat = ARP) => { for (let t = t0, i = 0; t < t1; t += STEP / rate, i++) { const a = pat[i % pat.length], k = (t - t0) / (t1 - t0); spark(a === 4 ? c.t[0] + 12 : c.t[a], t, v0 + (v1 - v0) * k); } };
-    plan({ bell, haze, spark, sub, boom: (t, v) => boom(t, v * soft), riser: (t, d, v) => riser(t, d, v * soft), arp, CH, STEP, mel, pad });
+    plan({ bell, haze, spark, sub, boom: (t, v) => boom(t, v * soft), riser: (t, d, v) => riser(t, d, v * soft), arp, CH, STEP, mel, pad, voice, harp });
     return { T0, stop: () => { master.gain.cancelScheduledValues(ac.currentTime); master.gain.setTargetAtTime(0, ac.currentTime, .15); } };
   }
   // その夜のカードから決まる乱数（同じ夜の同じ7体なら同じ。カードか日付が1つ違えば別の曲・別の灯り）
@@ -183,7 +183,8 @@
   }
   // 最後の部屋の曲（20秒）：光の扉 → 額縁が1つ灯るたびに鈴が1つ上へ → 光の粒が集まる → 天窓の光で和音がひらく。
   // 旋律（灯るたびの7つの音・はじめと終わりの鈴）・和音の進み方・粒の音の並びは、その夜のカードから決める（rnd）。音が鳴る時刻は映像に合わせて同じ
-  const ROOM_PLAN = rnd => ({ mel: bell, pad: haze, sub, boom, riser, arp, CH }) => {
+  // sp：精霊ごとの特別（rar 金の光・銀の光／kin 縁から生まれた子）。額縁が灯る時刻に、金＝声の和音、銀＝高い鈴の連なり、縁の子＝2つの旋律が重なる
+  const ROOM_PLAN = (rnd, sp = []) => ({ mel: bell, pad: haze, sub, boom, riser, arp, CH, voice, harp }) => {
     const pick = a => a[Math.floor(rnd() * a.length)];
     const P = pick([['Gm', 'Cm', 'Eb', 'Gm'], ['Eb', 'Cm', 'Gm', 'Eb'], ['Cm', 'Eb', 'Gm', 'Cm'], ['Gm', 'Eb', 'Cm', 'Gm'], ['Eb', 'Gm', 'Cm', 'Eb'], ['Cm', 'Gm', 'Eb', 'Cm']]).map(k => CH[k]);
     const SC = [58, 60, 62, 65, 67, 69, 70, 72, 74, 77, 79, 81, 82];
@@ -192,6 +193,12 @@
     haze(CH.Bb.pad.concat([69]), 0, 2.8, .03, 2600);
     pick([[81, 77, 74], [74, 77, 81], [77, 81, 74], [82, 77, 74], [74, 70, 77]]).forEach((n, i) => bell(n, .2 + i * .25, 2.6, .07));
     up.forEach((n, i) => bell(n, 2.95 + i * 1.25, 2.8, .1));                       // 額縁が灯る（70コマ目から30コマごと）
+    sp.forEach((c, i) => {
+      if (!c) return; const t = 2.95 + i * 1.25;
+      if (c.rar === 'gold') { voice([70, 74, 77], t + .05, 1.7, .022); bell(82, t + .12, 3.2, .07); }
+      else if (c.rar === 'silver') [86, 89, 91, 94, 98].forEach((n, k) => bell(n, t + .08 + k * .07, 1.8, .05));
+      if (c.kin) { [70, 74, 72, 77].forEach((n, k) => harp(n, t + .1 + k * .18, 1.2, .07)); [65, 69, 70, 74].forEach((n, k) => bell(n, t + .19 + k * .18, 1.8, .05)); }
+    });
     haze(P[0].pad, 2.8, 2.6, .018, 1200); haze(P[1].pad, 5.3, 2.6, .02); haze(P[2].pad, 7.8, 2.6, .022); haze(P[3].pad, 10.3, 2.4, .022);
     arp(P[0], 3.2, 5.4, .008, .016, 1, pat); arp(P[1], 5.4, 7.9, .016, .022, 1, pat); arp(P[2], 7.9, 10.4, .022, .028, 1, pat); arp(P[3], 10.4, 12.4, .028, .03, 1, pat);
     for (let t = 4.2; t < 12.3; t += .625 * 2) sub((t < 5.4 ? P[0].b : t < 7.9 ? P[1].b : t < 10.4 ? P[2].b : P[3].b) - 12, t, .1);
@@ -294,6 +301,47 @@
         g.globalAlpha = clamp(a); g.fillStyle = gr; g.fillRect(cx - sz, cy - sz, sz * 2, sz * 2);
       });
       g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+      // 特別な精霊の額縁が灯るとき（2026-10-25〜）：金の光＝天窓から金の柱と金の粉、銀の光＝銀の雨、縁の子＝2つの光がひとつになって額縁へ。
+      // 親も7体の中にいれば、親の額縁と子の額縁を光の糸でつなぐ。強さには関係しない（見た目と音だけ）
+      const rr = n => { const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); };
+      const ctr = q => [(q[0][0] + q[1][0] + q[2][0] + q[3][0]) / 4 * W, (q[0][1] + q[1][1] + q[2][1] + q[3][1]) / 4 * H];
+      g.globalCompositeOperation = 'screen';
+      F.w.forEach((q, i) => {
+        const c = o.cards[i]; if (!c || !q[5] || (c.rar !== 'gold' && c.rar !== 'silver' && !c.kin)) return;
+        const age = f - (70 + i * 30); if (age < -8 || age > 52) return;
+        const k = clamp(Math.min((age + 8) / 10, (52 - age) / 14)), [cx, cy] = ctr(q);
+        const fw = Math.hypot((q[1][0] - q[0][0]) * W, (q[1][1] - q[0][1]) * H), fh = Math.hypot((q[3][0] - q[0][0]) * W, (q[3][1] - q[0][1]) * H);
+        if (c.rar === 'gold') {
+          const gr = g.createLinearGradient(0, 0, 0, cy + fh * .6); gr.addColorStop(0, 'rgba(255,226,150,.05)'); gr.addColorStop(.7, 'rgba(255,214,120,.55)'); gr.addColorStop(1, 'rgba(255,214,120,0)');
+          g.globalAlpha = k * .85; g.fillStyle = gr; g.beginPath(); g.moveTo(cx - fw * .28, 0); g.lineTo(cx + fw * .28, 0); g.lineTo(cx + fw * .7, cy + fh * .6); g.lineTo(cx - fw * .7, cy + fh * .6); g.closePath(); g.fill();
+          for (let n = 0; n < 28; n++) { const x = cx + (rr(n) - .5) * fw * 1.5, y = cy - fh * 1.1 + ((rr(n + 50) * fh * 2.2 + (age + 8) * (1.4 + rr(n + 90))) % (fh * 2.2)); g.globalAlpha = k * (.5 + .5 * rr(n + 7)); g.fillStyle = '#ffe2a0'; g.beginPath(); g.arc(x, y, 1.2 + rr(n + 3) * 1.8, 0, 6.29); g.fill(); }
+        } else if (c.rar === 'silver') {
+          g.strokeStyle = '#dfe8f6'; g.lineWidth = 1.3;
+          for (let n = 0; n < 40; n++) { const x = cx + (rr(n) - .5) * fw * 2, y = cy - fh * 1.2 + ((rr(n + 40) * fh * 2.4 + (age + 8) * (9 + rr(n + 80) * 6)) % (fh * 2.4)); g.globalAlpha = k * (.35 + .4 * rr(n + 9)); g.beginPath(); g.moveTo(x, y); g.lineTo(x - 2, y + 12 + rr(n + 5) * 10); g.stroke(); }
+        }
+        if (c.kin) {
+          const p = clamp((age + 8) / 26), e = p * p * (3 - 2 * p), r = Math.max(10, W / 30);
+          [[-1, '#f6c6d8'], [1, '#c6dcf6']].forEach(([sd, col]) => {
+            if (p >= 1) return; const x = cx + sd * fw * 1.2 * (1 - e), y = cy - fh * .35 * Math.sin(e * 3.14) - fh * .1 * (1 - e);
+            const gr = g.createRadialGradient(x, y, 0, x, y, r * 3); gr.addColorStop(0, '#ffffff'); gr.addColorStop(.18, col); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.globalAlpha = k; g.fillStyle = gr; g.fillRect(x - r * 3, y - r * 3, r * 6, r * 6);
+          });
+          if (p >= 1) { const a2 = clamp(1 - (age - 18) / 26), rad = fw * (.4 + .6 * (1 - a2)); const gr = g.createRadialGradient(cx, cy, 0, cx, cy, rad); gr.addColorStop(0, 'rgba(255,240,230,.9)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.globalAlpha = a2 * .8; g.fillStyle = gr; g.fillRect(cx - rad, cy - rad, rad * 2, rad * 2); }
+        }
+      });
+      // 縁の糸：子の額縁が灯ってから、天窓の光まで
+      if (f < 330) F.w.forEach((q, i) => {
+        const c = o.cards[i]; if (!c || !q[5] || !Array.isArray(c.par) || !c.par.length) return;
+        const age = f - (70 + i * 30); if (age < 18) return;
+        const a = clamp(Math.min((age - 18) / 16, (330 - f) / 24)) * (.55 + .15 * Math.sin(f / 6)), [x1, y1] = ctr(q);
+        c.par.forEach(pi => {
+          const pq = F.w[pi]; if (!pq) return;
+          // 親の額縁が画面の外なら、その方へ画面のはしまで糸をのばす
+          let [x0, y0] = ctr(pq); if (!pq[5] || pq[4] <= 0) { x0 = x0 < x1 ? -10 : W + 10; y0 = y1 - H * .08; }
+          const gr = g.createLinearGradient(x0, y0, x1, y1); gr.addColorStop(0, 'rgba(246,198,216,.9)'); gr.addColorStop(.5, 'rgba(255,240,200,1)'); gr.addColorStop(1, 'rgba(198,220,246,.9)');
+          [[9, .25], [3.2, 1]].forEach(([lw, m]) => { g.globalAlpha = a * m; g.strokeStyle = gr; g.lineWidth = lw; g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo((x0 + x1) / 2, Math.min(y0, y1) - H * .06, x1, y1); g.stroke(); });
+        });
+      });
+      g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
       // 灯った額縁の下に、その精霊の名前（灯ってから1.6秒）
       g.textAlign = 'center'; g.textBaseline = 'top';
       F.w.forEach((q, i) => {
@@ -369,7 +417,7 @@
       };
       const stopDraw = onFrames(v, t => draw(Math.floor(t * J.fps) + 1));
       btn(L, o.tx.skip, 'ghost nf-skip', () => finish(false));
-      if (A) { A.ac.resume(); S = score(A.ac, A.out, ROOM_PLAN(seeded(o.seed || '')), o.story && o.story.music); rec = recorder(cv, A.dest); }
+      if (A) { A.ac.resume(); S = score(A.ac, A.out, ROOM_PLAN(seeded(o.seed || ''), o.cards.map(c => ({ rar: c.rar, kin: !!c.kin }))), o.story && o.story.music); rec = recorder(cv, A.dest); }
       if (rec) { rec.ondataavailable = e => { if (e.data && e.data.size) parts.push(e.data); }; rec.start(500); }
       v.onended = () => { draw(J.n); setTimeout(() => finish(true), 900); };
       v.play().catch(() => finish(false));

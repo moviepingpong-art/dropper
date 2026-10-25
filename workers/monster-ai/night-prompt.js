@@ -24,7 +24,7 @@ The ${n} artworks are attached as images, in order. For each one you get, as dat
 
 Write, in ${LANG_NAME[lang] || LANG_NAME.en}:
 - "title": a title for tonight's film, up to 18 characters (for languages with spaces, up to 5 words)
-- "lines": exactly ${n} short lines, one per spirit in the same order, each up to 40 characters (or 10 words). Each line is what that spirit quietly does or says as its frame lights, tied to what you see in its artwork. Use the spirit's name in some of them, not all
+- "lines": exactly ${n} short lines, one per spirit in the same order, each up to 40 characters (or 10 words). Each line is what that spirit quietly does or says as its frame lights, tied to what you see in its artwork. Use the spirit's name in some of them, not all. If a spirit has "special" (gold light or silver light) or "born" (a child of two spirits), give its line a fitting touch of that light or of the bond, gently
 - "close": one closing line for the moment light falls from the skylight, up to 44 characters (or 12 words)
 
 Rules for the words: calm and warm, like a picture book. No fighting, attacking, winning, losing, strength, scores or ranking. No death, fear or sadness. Do not compare the spirits. Do not name real people. Do not mention a guardian, a life or the player.
