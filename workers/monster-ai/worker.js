@@ -108,7 +108,10 @@ async function night(req, env, q, out) {
   if (await add(env, day, who, 1) > Number(env.PER_IP_DAILY)) return out({ error: 'limit' }, 429);
   const data = cs.map((c, i) => {
     const w = WORKS.get(c.f), t = w.t[lang] || w.t.en;
-    return JSON.stringify({ no: i + 1, artwork: w.title, date: w.date, shows: t.motif, about: t.desc, spirit: clipText(c.n, 24) });
+    const d = { no: i + 1, artwork: w.title, date: w.date, shows: t.motif, about: t.desc, spirit: clipText(c.n, 24) };
+    if (c.rar === 'gold' || c.rar === 'silver') d.special = c.rar === 'gold' ? 'gold light (a very rare spirit that shines gold)' : 'silver light (a rare spirit that shines silver)';
+    if (c.kin === true) d.born = 'from the bond of two spirits (a child of two spirits)';
+    return JSON.stringify(d);
   }).join('\n');
   const content = [{ type: 'text', text: nightPrompt(lang, cs.length) + '\n\n' + data }]
     .concat(cs.map(c => ({ type: 'image_url', image_url: { url: MUSEUM_URL + c.f, detail: 'low' } })));

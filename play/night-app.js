@@ -93,7 +93,7 @@
   function spirit(M) {
     const w = Array.isArray(M.works) && M.works[0];
     return {
-      id: M.id, no: Number(M.no) || 0, t: TY[M.type] ? M.type : '鋼', n: txt(M.name), p: Math.round(Number(M.power) || 0),
+      id: M.id, no: Number(M.no) || 0, par: Array.isArray(M.parents) ? M.parents.filter(x => typeof x === 'string').slice(0, 2) : [], t: TY[M.type] ? M.type : '鋼', n: txt(M.name), p: Math.round(Number(M.power) || 0),
       art: w ? safeArt(w.f) : '', th: safeThumb(M.thumb), rarity: M.rarity === 'gold' || M.rarity === 'silver' ? M.rarity : 'normal', bug: !!M.bug, fusion: Number(M.fusion) || 0,
       framed: (frames().find(f => f.id === M.id) || {}).k || null
     };
@@ -476,7 +476,7 @@
   // 守り神・人生の記録・鍵の画像は送らない。12秒で答えが無い・うまくいかないときは null（いつものお話と曲で流す）
   const AI_URL = 'https://ai.dropper-tools.com/monster';
   async function nightStory() {
-    const cs = HAND.filter(c => c.art).map(c => ({ f: c.art, n: String(c.n || '').slice(0, 40) }));
+    const cs = HAND.filter(c => c.art).map(c => ({ f: c.art, n: String(c.n || '').slice(0, 40), rar: c.rarity === 'gold' || c.rarity === 'silver' ? c.rarity : '', kin: (c.par || []).length > 0 }));
     if (trial || cs.length < 2) return null;
     const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 12000);
     try {
@@ -504,7 +504,8 @@
     // 最後の部屋の映像（20秒）。その夜の7体（★主が先）の作品と精霊が、壁の額縁に灯る。保存できる動画にする（night-film.js）
     if (window.NightFilm) {
       const wasOn = on; if (wasOn) bgm(false);
-      const cards = HAND.map(c => ({ art: c.art, th: c.th, rar: c.rarity, t: c.t, n: c.n, no: c.no }));
+      // 縁の子は kin、親もその夜の7体にいれば par にその番号（光の糸でつなぐ）
+      const cards = HAND.map(c => ({ art: c.art, th: c.th, rar: c.rarity, t: c.t, n: c.n, no: c.no, kin: (c.par || []).length > 0, par: (c.par || []).map(id => HAND.findIndex(h => h.id === id)).filter(k => k >= 0) }));
       $('msg').textContent = tr('nStoryWriting');
       const st = await story;
       try { film = await window.NightFilm.room({ cards, hues: witnessHues, story: st, seed: HAND.map(c => c.id).join('|') + '|' + isoDate(), congrats: tr('nFilmCongrats'), only: tr('nFilmOnly'), title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
