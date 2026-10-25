@@ -149,6 +149,11 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .box h1{font-size:24px;color:var(--gold-soft)} .box h2{font-size:20px}
 .box h3{margin:6px 0 0;font-family:var(--serif);font-weight:600;font-size:14px;color:var(--mid);letter-spacing:.06em}
 .lead{margin:0;text-align:center;font-family:var(--serif);color:var(--mid);font-size:14px}
+/* 最後の部屋の動画を売りにする帯（2026-10-25 重吉さんの決め）。大きめの字 */
+.promo{margin:4px 0 2px;padding:14px 16px 12px;border:1px solid var(--gold);border-radius:3px;background:linear-gradient(180deg,rgba(214,183,100,.16),rgba(214,183,100,.05));text-align:center}
+.promo-h{margin:0;font-family:var(--serif);font-weight:600;font-size:22px;line-height:1.45;color:var(--gold-soft);letter-spacing:.05em;word-break:keep-all;overflow-wrap:anywhere}
+.promo-s{margin:6px 0 0;font-size:13px;line-height:1.6;color:var(--mid)}
+@media (max-width:560px){.promo-h{font-size:18px}}
 .rules{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;font-size:14px}
 .rules li{display:flex;gap:10px;align-items:flex-start}
 .rules .n{flex:none;width:22px;height:22px;border:1px solid var(--gold);color:var(--gold-soft);font-family:var(--serif);font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:2px}
@@ -317,6 +322,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
   <a class="back" href="spirit.html" data-i18n="nBack" style="align-self:flex-start">← 目録へ</a>
   <h1 data-i18n="nIntroH">夜の美術館を灯す</h1>
   <p class="lead" data-i18n="nIntroLead">閉館後の美術館。目録の精霊たちと、眠っている展示室に灯をともします</p>
+  <div class="promo"><p class="promo-h">✦ <span data-i18n="nPromo" data-i18n-html>世界にひとつだけの動画を<wbr>手に入れよう</span> ✦</p><p class="promo-s" data-i18n="nPromoSub">4つの部屋を灯して最後の部屋に入ると、その夜の精霊たちと作品、AI が書くお話と曲で、20秒の動画ができます</p></div>
   <ol class="rules">
    <li><b class="n">1</b><span id="rule1"></span></li>
    <li><b class="n">2</b><span data-i18n="nRule2" data-i18n-html></span></li>
@@ -390,9 +396,9 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
  </div>
 </div>
 
-<script src="monster-i18n.js?v=22"></script>
-<script src="night-i18n.js?v=7"></script>
-<script src="night-film.js?v=3"></script>
-<script src="night-app.js?v=11"></script>
+<script src="monster-i18n.js?v=23"></script>
+<script src="night-i18n.js?v=10"></script>
+<script src="night-film.js?v=7"></script>
+<script src="night-app.js?v=15"></script>
 </body>
 </html>
