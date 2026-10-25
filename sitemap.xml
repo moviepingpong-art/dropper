@@ -158,7 +158,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-  <!-- 遊び場（スピリットドロッパー。2026-10-21 に monster.html から spirit.html へ改名）。build.py の外にあるページなので、ここも手で足した（2026-10-14。3言語は 2026-10-17、6言語も 2026-10-17） -->
+  <!-- 遊び場（ともしびの美術館。2026-10-21 に monster.html から spirit.html へ改名）。build.py の外にあるページなので、ここも手で足した（2026-10-14。3言語は 2026-10-17、6言語も 2026-10-17） -->
   <url>
     <loc>https://dropper-tools.com/play/spirit.html</loc>
     <xhtml:link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/spirit.html"/>
