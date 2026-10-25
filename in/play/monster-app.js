@@ -1777,35 +1777,6 @@
       return false;
     }
   }
-  // 合体した作品から、AI に名前とお話を書いてもらう。うまくいかなければ、ふつうの合体の名前のまま（強さは変えない）
-  async function fuseAI(M, done) {
-    const t0 = Date.now();
-    const tick = () => aiShow(M, 'work', tr('aiWorkFuse', { sec: Math.floor((Date.now() - t0) / 1000) }), tr('aiWorkFuseHint'));
-    tick(); const iv = setInterval(tick, 1000);
-    setStatus(tr('aiReadingFuse'));
-    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 45000);
-    try {
-      let resp, data = {};
-      try {
-        resp = await fetch(AI_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctl.signal,
-          body: JSON.stringify({ kind: 'fuse', lang: LANG, works: M.works.map(w => w.f) }) });
-      } catch (e) { throw aiErr(e.name === 'AbortError' ? 'slow' : 'net'); }
-      try { data = await resp.json(); } catch (e) {}
-      const a = data.answer || {};
-      const name = clip(a.name, D('clipName')), story = clip(a.story, D('clipStory'));
-      if (!resp.ok || !name) throw aiErr(AI_FAIL[data.error] ? data.error : 'bad');
-      // AI が書いた文は、文そのもの（頼んだときのページの言語のまま）
-      M.name = name; M.fuseStory = story;
-      clearInterval(iv);
-      aiShow(M, 'ok', tr('aiDoneFuse', { sec: Math.max(1, Math.round((Date.now() - t0) / 1000)) }), '');
-      if (current === M) { await loadFontsFor(M); drawCard($('card'), M); showWorks(M); }
-    } catch (e) {
-      clearInterval(iv);
-      const f = AI_FAIL[e.kind] || AI_FAIL.bad;
-      aiShow(M, 'ng', '⚠ ' + (e.kind ? e.message : tr(f.msg)), tr('aiNgFuseHint'));
-    } finally { clearTimeout(timer); }
-    setStatus(done());
-  }
   // ---- 目覚め・結びの場面（2026-10-21〜）。暗がりに灯り → 光の粒 → 姿。結びは光の糸 ----
   // 音は鈴のような短い余韻。ボタンを押して生まれたときだけ鳴る（図鑑から開いたときは鳴らさない）。止めるボタンは覚えない
   let soundOn = true, AC = null;
@@ -1877,10 +1848,9 @@
     if (!(await display(M))) return;
     scene(M.fusion ? 'bind' : 'awaken');
     const done = () => (note ? note + tr('statusSep') : '') + statusOf(M);
-    // 画像は AI に送らない（2026-10-25 に人生の記録の AI スイッチをなくした）。美術館の作品は、名前・技・説明を前もって作ってある。
-    // 作品を合体したときだけ、作品のファイル名を中継に送り、AI に名前とお話を書いてもらう（画像は送らない）
-    if (M.source === 'museum' && M.fusion && Array.isArray(M.works) && M.works.length > 1) await fuseAI(M, done);
-    else setStatus(done());
+    // 目録のページでは AI を使わない（2026-10-25 に人生の記録の AI スイッチと、結んだときの AI の名づけをなくした。重吉さんの決め）。
+    // 美術館の作品は、名前・技・説明を前もって作ってある。結んだ子の名前は、目覚めと同じ名前の表から
+    setStatus(done());
     // 待っている間に別のカードを開いていたら、この子の絵をいったん描き直してから図鑑に入れる
     if (current !== M) { const back = current; await display(M); await saveCard(M); return display(back); }
     return saveCard(M);
