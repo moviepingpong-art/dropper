@@ -2,8 +2,10 @@
 #   python3 morning.py -- <dawn|quiet> <段階1-5> <出力.png> [幅px] [サンプル数]
 #   夜明け＝光が育つ（細い光→光の筋→金の粒→鳥が飛ぶ→館全体が金色）。太陽の高さと館の染まり方が段階で変わる
 #   静かな朝＝やすらぎが育つ（朝もや→花一輪→花びらが舞う→小鳥が鳴く→庭いっぱいの花）。花・枝の小鳥が段階で増える
+#   FILM=<フォルダ> を付けると、カメラが館のまわりを回る5秒のループ（120コマ）を書き出す（夜明けの画面の映像。2026-10-25 重吉さんの決め）
+#     斜め上から入り、正面・横へ回って元の所へ戻る。できたコマは飛ばすので、止まっても同じ命令で続きから。CAMT=0.25 なら その1コマだけ試す
 #   動くもの（金の粒・飛ぶ鳥・舞う花びら・光の間の金の柱と銀の雨）はページの canvas が上に重ねる（night-app.js の drawScene）
-import bpy, math, sys, random
+import bpy, math, sys, random, os
 from mathutils import Vector, Matrix
 
 a = sys.argv[sys.argv.index('--') + 1:]
@@ -415,16 +417,45 @@ sc.render.engine = 'CYCLES'; sc.cycles.samples = SAMPLES; sc.cycles.use_denoisin
 sc.cycles.max_bounces = 6; sc.cycles.transparent_max_bounces = 32
 sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'AgX - Medium High Contrast'
 sc.render.image_settings.file_format = 'PNG'
+FILM = os.environ.get('FILM'); NF = 120
+def glow_post(path):
+    # 灯りのにじみ（明るい所をぼかして足す）。5段階目は強く、華やかに
+    from PIL import Image, ImageFilter, ImageChops
+    im = Image.open(path).convert('RGB')
+    hi = im.point(lambda v: max(0, v - 200) * 4)
+    glow = hi.filter(ImageFilter.GaussianBlur(PX / 90))
+    k = [0.3, 0.35, 0.4, 0.5, 0.7][LV - 1]
+    ImageChops.add(im, glow.point(lambda v: int(v * k))).save(path)
+def orbit(t):
+    # 0〜1 で1周する楕円：横は左右に ±32°、高さは 左上（高い）→正面（低い）→右（中ほど）→元へ
+    az = math.radians(-32 * math.cos(2 * math.pi * t))
+    h = 5.6 + 3.0 * math.cos(2 * math.pi * t) - 1.0 * math.sin(2 * math.pi * t)
+    r = 30 - 3.0 * math.sin(2 * math.pi * t) ** 2
+    co.location = (r * math.sin(az), -r * math.cos(az), h)
+    co.rotation_euler = (Vector((0, 0, 4.2)) - co.location).to_track_quat('-Z', 'Y').to_euler()
+from bpy_extras.object_utils import world_to_camera_view
+def marks():
+    # 太陽・扉の上の画面上の位置（割合）。動画ではコマごとに変わるので、ページはコマの番号で読む
+    az, el = math.radians(SUN_AZ), math.radians(SUN_EL)
+    p = world_to_camera_view(sc, co, co.location + Vector((math.sin(az) * math.cos(el), math.cos(az) * math.cos(el), math.sin(el))) * 1000)
+    q = world_to_camera_view(sc, co, Vector((0, 0.69, TOP + 2.0)))
+    return [round(p.x, 4), round(1 - p.y, 4), round(q.x, 4), round(1 - q.y, 4)]
+if FILM:
+    os.makedirs(FILM, exist_ok=True)
+    import json
+    json.dump({'fps': 24, 'n': NF, 'm': [orbit(i / NF) or marks() for i in range(NF)]}, open(os.path.join(FILM, 'film.json'), 'w'))
+    one = os.environ.get('CAMT')
+    for i in ([None] if one else range(NF)):
+        t = float(one) if one else i / NF
+        f = os.path.join(FILM, f'test-{t:.2f}.png' if one else f'{i:04d}.png')
+        if os.path.exists(f): continue
+        orbit(t); sc.render.filepath = f + '.tmp.png'
+        bpy.ops.render.render(write_still=True)
+        glow_post(f + '.tmp.png'); os.replace(f + '.tmp.png', f)
+    sys.exit(0)
 sc.render.filepath = OUT
 bpy.ops.render.render(write_still=True)
-# 灯りのにじみ（明るい所をぼかして足す）。5段階目は強く、華やかに
-from PIL import Image, ImageFilter, ImageChops
-im = Image.open(OUT).convert('RGB')
-hi = im.point(lambda v: max(0, v - 200) * 4)
-glow = hi.filter(ImageFilter.GaussianBlur(PX / 90))
-k = [0.3, 0.35, 0.4, 0.5, 0.7][LV - 1]
-im = ImageChops.add(im, glow.point(lambda v: int(v * k)))
-im.save(OUT)
+glow_post(OUT)
 # 太陽の画面上の位置（割合。canvas が光の筋・金の柱をここから描く）
 from bpy_extras.object_utils import world_to_camera_view
 import json

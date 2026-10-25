@@ -164,6 +164,27 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .rules li{display:flex;gap:10px;align-items:flex-start}
 .rules .n{flex:none;width:22px;height:22px;border:1px solid var(--gold);color:var(--gold-soft);font-family:var(--serif);font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:2px}
 .rmore{font-size:12px;line-height:1.7;color:var(--mid)} .rmore b{font-weight:500;color:var(--gold-soft)}
+.rmore summary{cursor:pointer;color:var(--dim);width:max-content} .rmore[open] summary{margin-bottom:6px}
+/* 夜の流れの図：3つずつ2段。番号と矢印で順番が分かる */
+.map{margin:4px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:16px 22px;counter-reset:m}
+.map li{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;counter-increment:m}
+.map li:not(:nth-child(3n)):not(:last-child)::after{content:'';position:absolute;right:-16px;top:calc(33% - 6px);border:6px solid transparent;border-left:9px solid var(--gold);border-right:0}
+.map i{position:relative;display:block;width:100%;aspect-ratio:4/3;background:#10121c center/cover;border:1px solid var(--line);margin-bottom:4px}
+.map i::before{content:counter(m);position:absolute;top:-8px;left:-8px;width:20px;height:20px;border:1px solid var(--gold);background:var(--wall);color:var(--gold-soft);font-family:var(--serif);font-size:12px;font-style:normal;display:flex;align-items:center;justify-content:center}
+.map u{position:absolute;right:5px;bottom:5px;width:28px;height:28px;border-radius:50%;background:rgba(8,9,15,.8);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center}
+.map svg,.lock svg{width:17px;height:17px;fill:none;stroke:var(--gold-soft);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round} .map svg .f{fill:var(--gold-soft);stroke:none}
+.map b{font-family:var(--serif);font-weight:600;font-size:14px;color:var(--gold-soft);line-height:1.3}
+.map small{font-size:11.5px;color:var(--mid);line-height:1.4}
+.fxh{margin:6px 0 -4px;text-align:center;font-family:var(--serif);font-size:13px;color:var(--mid);letter-spacing:.06em}
+.fx{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.fx span{display:flex;flex-direction:column;align-items:center;gap:1px;padding:10px 4px 8px;border:1px solid var(--line);background:#0e1019}
+.fx i{width:46px;height:36px;margin-bottom:4px}
+.fx-g{background:linear-gradient(90deg,transparent 30%,rgba(240,205,110,.85) 46%,rgba(255,236,170,.95) 50%,rgba(240,205,110,.85) 54%,transparent 70%),radial-gradient(circle at 50% 100%,rgba(240,205,110,.5),transparent 60%)}
+.fx-s{background:repeating-linear-gradient(100deg,transparent 0 7px,rgba(210,222,240,.8) 7px 8.5px),radial-gradient(circle at 50% 100%,rgba(200,215,235,.35),transparent 65%);-webkit-mask:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask:linear-gradient(transparent,#000 30%,#000 70%,transparent)}
+.fx-k{background:radial-gradient(circle at 30% 40%,rgba(255,214,150,.95) 0 6px,transparent 13px),radial-gradient(circle at 70% 40%,rgba(170,205,255,.95) 0 6px,transparent 13px),radial-gradient(ellipse at 50% 82%,rgba(255,240,210,.95) 0 6px,transparent 15px)}
+.fx b{font-family:var(--serif);font-weight:600;font-size:13px;color:var(--gold-soft)} .fx small{font-size:11.5px;color:var(--mid)}
+.lock{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--mid)}
+@media (max-width:480px){.map{gap:14px 16px}.map li:not(:nth-child(3n)):not(:last-child)::after{right:-12px;border-width:5px;border-left-width:7px}.map b{font-size:13px}.map small{font-size:10.5px}.map u{width:24px;height:24px}.map svg{width:14px;height:14px}}
 .rules em,.tip b{font-style:normal;color:var(--gold-soft)}
 .tip,.gnote{font-size:13px;color:var(--mid);border-left:2px solid var(--gold);padding:4px 10px}
 .center{text-align:center}
@@ -342,9 +363,24 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
    <li><b class="n">3</b><span data-i18n="nRule3" data-i18n-html></span></li>
    <li><b class="n">4</b><span data-i18n="nRule4" data-i18n-html></span></li>
   </ol>
-  <div class="rmore" data-i18n="nRuleMore" data-i18n-html></div>
+  <!-- 夜の流れの図（2026-10-25 重吉さんの決め：文字を読まずに分かるように）。絵は play/gallery/map-*.jpg -->
+  <ol class="map">
+   <li><i style="background-image:url(/play/gallery/map-seven.jpg)"></i><b data-i18n="nMap1">7体えらぶ</b></li>
+   <li><i style="background-image:url(/play/gallery/map-door.jpg)"></i><b data-i18n="nMap2">扉1</b></li>
+   <li><i style="background-image:url(/play/gallery/map-wall.jpg)"><u><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"/><path d="M12 12h9M18 12v3.5M21 12v2.5"/></svg></u></i><b data-i18n="nMap3">扉2〜4</b><small data-i18n="nMap3s">画像が鍵。壁に映る</small></li>
+   <li><i style="background-image:url(/play/gallery/map-light.jpg)"><u><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"/><path d="M12 12h9M18 12v3.5M21 12v2.5"/></svg></u></i><b data-i18n="nMap4">光の扉</b><small data-i18n="nMap4s">80億分の1が鍵。守り神が一緒に</small></li>
+   <li><i style="background-image:url(/play/gallery/map-last.jpg)"><u><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M10 9.2v5.6l4.6-2.8z" class="f"/></svg></u></i><b data-i18n="nMap5">最後の部屋</b><small data-i18n="nMap5s">20秒の動画</small></li>
+   <li><i style="background-image:url(/play/gallery/map-morning.jpg)"><u><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17"/><rect x="7.5" y="7" width="9" height="10"/></svg></u></i><b data-i18n="nMap6">朝</b><small data-i18n="nMap6s">額縁を1つ</small></li>
+  </ol>
+  <p class="fxh" data-i18n="nFxH">最後の部屋で、特別な光</p>
+  <div class="fx">
+   <span><i class="fx-g"></i><b data-i18n="nFxGold">金の光</b><small data-i18n="nFxGoldS">金の柱</small></span>
+   <span><i class="fx-s"></i><b data-i18n="nFxSilver">銀の光</b><small data-i18n="nFxSilverS">銀の雨</small></span>
+   <span><i class="fx-k"></i><b data-i18n="nFxKin">縁の子</b><small data-i18n="nFxKinS">光がひとつに</small></span>
+  </div>
   <div class="tip" data-i18n="nTip" data-i18n-html></div>
-  <div class="gnote" data-i18n="nGuardNote"></div>
+  <div class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg><span data-i18n="nLock">画像はこの端末の中だけ。AI に送るのは作品と精霊の名前だけ</span></div>
+  <details class="rmore"><summary data-i18n="nMore">くわしく</summary><div data-i18n="nRuleMore" data-i18n-html></div></details>
   <div class="center btns" style="justify-content:center"><button class="btn" id="startbtn" type="button" data-i18n="nStart">美術館へ入る</button></div>
   <div class="note center" data-i18n="nNote"></div>
  </div>
@@ -410,8 +446,8 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 </div>
 
 <script src="monster-i18n.js?v=25"></script>
-<script src="night-i18n.js?v=16"></script>
+<script src="night-i18n.js?v=17"></script>
 <script src="night-film.js?v=10"></script>
-<script src="night-app.js?v=21"></script>
+<script src="night-app.js?v=22"></script>
 </body>
 </html>

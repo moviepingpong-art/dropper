@@ -552,7 +552,7 @@
         + `<div class="mini" id="gift"><button class="lnk" id="again" type="button">${esc(tr('nRetry'))}</button>`
         + (gift !== null ? `<span aria-hidden="true">・</span><button class="lnk" id="pickNow" type="button">${esc(tr('nPickGold'))}</button>` : '') + `</div></div>`;
       $('morning').hidden = false;
-      startScene(k, lv, hikariLit);
+      startScene(k, lv, hikariLit, true);
       if (gift !== null) $('pickNow').onclick = () => openPicker(gift, () => {
         $('pickNow').previousElementSibling.remove(); $('pickNow').replaceWith(Object.assign(document.createElement('span'), { className: 'small', textContent: tr('nFramedOk') }));
         if (lit === ROOM.length && window.NightFilm) walkFilm();
@@ -595,7 +595,12 @@
     if (wasOn) bgm(true);
   }
   function restart() {
-    $('morning').hidden = true; sceneOn = null; HAND = []; sel = []; dpick = [];
+    // もう一度挑戦するときは、曲も始めの静かな所からかけ直す（2026-10-25。前は朝の曲が続いたままだった）
+    if (on && ac) {
+      bgm(false); const g = master.gain, t = ac.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + .5);
+      setTimeout(() => { if (!on || timer) return; g.cancelScheduledValues(ac.currentTime); g.setValueAtTime(.8, ac.currentTime); bgm(true); }, 1600);
+    }
+    $('morning').hidden = true; sceneOn = null; if (mornFilm) mornFilm.v.pause(); HAND = []; sel = []; dpick = [];
     reloadDex().then(() => { $('deck').hidden = false; drawDeck(); });
   }
 
@@ -614,12 +619,29 @@
     if (!mornImg[key]) { const im = new Image(); im.src = `${GAL}morning-${k}-${lv}.jpg`; mornImg[key] = im; }
     return mornImg[key];
   }
-  function startScene(k, lv, hk) {
+  // 夜明けの画面の映像（5秒のループ。カメラが斜め上から正面・横へ回る。2026-10-25 重吉さんの決め）。
+  // 絵は morning.py の FILM で書き出す（play/gallery/morning-dawn-film.{webm,mp4}）。太陽と扉の上の位置はコマごとに .json から読む
+  let mornFilm = null;
+  function mornVideo() {
+    if (mornFilm) return mornFilm;
+    const v = document.createElement('video'); v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'auto';
+    v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
+    v.src = GAL + 'morning-dawn-film.' + (v.canPlayType('video/webm; codecs="vp9"') ? 'webm' : 'mp4');
+    mornFilm = { v, m: null };
+    fetch(GAL + 'morning-dawn-film.json').then(r => r.json()).then(j => { if (Array.isArray(j.m)) mornFilm.m = j; }).catch(() => {});
+    return mornFilm;
+  }
+  function startScene(k, lv, hk, film) {
     const c = $('scene'); if (!c) return;
     const run = {};
     sceneOn = run;
     const rnd = (i, j) => { const x = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return x - Math.floor(x); };
-    const img = mornPic(k, lv);
+    const F = film && !reduce ? mornVideo() : null;
+    if (F) { F.v.currentTime = 0; F.v.play().catch(() => {}); }
+    const pic = mornPic(k, lv);
+    // 映像が流れていればそのコマを、まだなら静止画を描く
+    const img = F ? { get complete() { return F.v.readyState >= 2 && !!F.m || pic.complete; }, get naturalWidth() { return F.v.readyState >= 2 && F.m ? F.v.videoWidth : pic.naturalWidth; }, get naturalHeight() { return F.v.readyState >= 2 && F.m ? F.v.videoHeight : pic.naturalHeight; },
+      get src() { return F.v.readyState >= 2 && F.m ? F.v : pic; }, get mark() { if (!(F.v.readyState >= 2 && F.m)) return null; const m = F.m.m[Math.floor(F.v.currentTime * F.m.fps) % F.m.m.length]; return m; } } : pic;
     const t0 = performance.now();
     const step = t => {
       if (sceneOn !== run || $('morning').hidden) return;
@@ -640,7 +662,7 @@
       sc = Math.max(w / img.naturalWidth, h / img.naturalHeight);
       const dw = img.naturalWidth * sc, dh = img.naturalHeight * sc;
       ox = Math.min(0, Math.max(w - dw, w / 2 - dw * MORN.fx)); oy = (h - dh) / 2;
-      g2.drawImage(img, ox, oy, dw, dh);
+      g2.drawImage(img.src instanceof HTMLElement ? img.src : img, ox, oy, dw, dh);
     } else {
       const sky = g2.createLinearGradient(0, 0, 0, h);
       sky.addColorStop(0, '#1b1e33'); sky.addColorStop(1, k === 'dawn' ? '#b98e5c' : '#3a4650');
@@ -649,7 +671,8 @@
     const dw = img && img.naturalWidth ? img.naturalWidth * sc : w, dh = img && img.naturalHeight ? img.naturalHeight * sc : h;
     const ix = f => ox + f * dw, iy = f => oy + f * dh;
     if (k === 'dawn') {
-      const [sx, sy] = MORN.sun[lv - 1], cx = ix(sx), cy = iy(sy);
+      const mk = img && img.mark, [sx, sy] = mk ? mk : MORN.sun[lv - 1], cx = ix(sx), cy = iy(sy);
+      const door = mk ? [mk[2], mk[3]] : MORN.door;
       // 1 細い光：太陽のまわりのゆらぐ光
       g2.save(); g2.globalCompositeOperation = 'lighter';
       const halo = g2.createRadialGradient(cx, cy, 0, cx, cy, h * (.25 + .06 * lv));
@@ -670,7 +693,7 @@
       // 4 鳥が飛ぶ
       if (lv >= 4) { g2.strokeStyle = 'rgba(30,22,26,.8)'; g2.lineWidth = 1.6; for (let i = 0; i < 6; i++) { const x = ((rnd(i, 4) * w + s * (20 + i * 4)) % (w + 40)) - 20, y = h * (.08 + rnd(i, 5) * .22), f = Math.sin(s * 6 + i) * 3; g2.beginPath(); g2.moveTo(x - 7, y - f); g2.quadraticCurveTo(x - 3, y - 4, x, y); g2.quadraticCurveTo(x + 3, y - 4, x + 7, y - f); g2.stroke(); } }
       // 光の間：扉の上から金の柱／空から銀の雨
-      if (hk === 'gold') { const px = ix(MORN.door[0]), py = iy(MORN.door[1]), p = g2.createLinearGradient(px - 30, 0, px + 30, 0); p.addColorStop(0, 'rgba(255,220,120,0)'); p.addColorStop(.5, `rgba(255,236,170,${.55 + .15 * Math.sin(s * 2)})`); p.addColorStop(1, 'rgba(255,220,120,0)'); g2.save(); g2.globalCompositeOperation = 'lighter'; g2.fillStyle = p; g2.fillRect(px - 30, 0, 60, py); g2.restore(); }
+      if (hk === 'gold') { const px = ix(door[0]), py = iy(door[1]), p = g2.createLinearGradient(px - 30, 0, px + 30, 0); p.addColorStop(0, 'rgba(255,220,120,0)'); p.addColorStop(.5, `rgba(255,236,170,${.55 + .15 * Math.sin(s * 2)})`); p.addColorStop(1, 'rgba(255,220,120,0)'); g2.save(); g2.globalCompositeOperation = 'lighter'; g2.fillStyle = p; g2.fillRect(px - 30, 0, 60, py); g2.restore(); }
       if (hk === 'silver') { g2.strokeStyle = 'rgba(238,241,246,.6)'; g2.lineWidth = 1; for (let i = 0; i < 50; i++) { const x = rnd(i, 6) * w, y = ((rnd(i, 7) * h + s * 60) % h); g2.beginPath(); g2.moveTo(x, y); g2.lineTo(x, y + 8); g2.stroke(); } }
     } else {
       // 1 朝もや：ゆっくり流れる薄い帯
@@ -830,23 +853,21 @@
   }
   $('fvClose').onclick = () => { $('fview').hidden = true; sfx('un'); };
 
-  // ---- 飾る精霊を選ぶ（目録から1体。守り神も飾れる）。一度飾ったら、はめかえできない ----
+  // ---- 飾る精霊を選ぶ（目録から1体）。一度飾ったら、はめかえできない。同じ子を別の額縁にも飾れる（2026-10-25 重吉さんの決め） ----
   let ALL = [], pickFor = -1, pickDone = null, pickSel = null;
   async function reloadDex() { ALL = await readDex(); }
   async function openPicker(fi, done) {
     pickFor = fi; pickDone = done; pickSel = null;
     await reloadDex();
     const F = frames(), f = F[fi]; if (!f || f.id) return;
-    const used = new Set(F.filter(x => x.id).map(x => x.id));
     const cards = ALL.filter(M => safeThumb(M.thumb)).sort((a, b) => (b.serial || 0) - (a.serial || 0));
     $('pickH').textContent = tr('nPickH', { frame: tr(f.k === 'dawn' ? 'frameDawn' : 'frameQuiet') });
     $('pickNone').hidden = cards.length > 0;
     $('pickGrid').replaceChildren(...cards.map(M => {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'th' + (used.has(M.id) ? ' done' : '');
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'th';
       b.style.backgroundImage = `url('${safeThumb(M.thumb)}')`;
       const fr = F.find(x => x.id === M.id);
       b.innerHTML = (fr ? `<span class="mk ${fr.k}">${esc(tr(fr.k === 'dawn' ? 'frameMarkDawn' : 'frameMarkQuiet'))}</span>` : '') + `<span class="lbl">${esc(txt(M.name))}</span>`;
-      b.disabled = used.has(M.id);
       b.setAttribute('aria-label', txt(M.name) + (fr ? ' ' + tr('nPickDone') : ''));
       b.onclick = () => { pickSel = M; sfx('pick'); confirmPick(); [...$('pickGrid').children].forEach(x => x.classList.toggle('sel', x === b)); };
       return b;
@@ -1077,7 +1098,7 @@
   }
   $('snd').onclick = () => {
     if (!ac) initAudio(); ac.resume(); on = !on;
-    $('snd').classList.toggle('on', on); $('snd').textContent = tr(on ? 'nSndOff' : 'nSndOn'); bgm(on); if (on) sfx('pick');
+    $('snd').classList.toggle('on', on); $('snd').textContent = tr(on ? 'nSndOff' : 'nSndOn'); if (on) { master.gain.cancelScheduledValues(ac.currentTime); master.gain.setValueAtTime(.8, ac.currentTime); } bgm(on); if (on) sfx('pick');
   };
 
   // ---- はじめ ----
