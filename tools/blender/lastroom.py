@@ -111,6 +111,10 @@ for k in range(BAYS):
 # ---- 7つの額縁（夜明けと静かな朝をかわるがわる）。窓は抜き。上から小さな灯りが順に灯る ----
 hold = bpy.data.materials.new('hold'); hold.use_nodes = True; nt = hold.node_tree
 nt.nodes.remove(nt.nodes['Principled BSDF']); ho = nt.nodes.new('ShaderNodeHoldout'); nt.links.new(ho.outputs[0], nt.nodes['Material Output'].inputs[0])
+# 額縁の絵（frame.py の JSON。night-app.js の FR と同じ数）。小さな額縁の窓は大きな額縁の窓の幅の 26%（SMALL）
+FR = {'dawn': dict(w=720, h=1149, l=141, t=336, ww=438, wh=672, top=208, s=dict(w=300, h=398, l=59, t=59, ww=182, wh=280, top=6)),
+      'quiet': dict(w=720, h=968, l=128, t=128, ww=464, wh=711, top=14, s=dict(w=300, h=403, l=53, t=53, ww=193, wh=296, top=6))}
+SMALL = 0.26
 LIT0, GAP = 70, 30            # 1つ目の額縁が灯るコマ・次までのコマ数
 wins = []
 for i in range(1, BAYS):
@@ -118,6 +122,11 @@ for i in range(1, BAYS):
     parent, M, et, _, _ = F.build('dawn' if i % 2 else 'quiet')
     bpy.ops.mesh.primitive_plane_add(size=1, location=(0, 0, 0.002)); wp = bpy.context.object
     wp.scale = (F.WW * 1.02, F.WH * 1.02, 1); wp.data.materials.append(hold); wp.parent = parent
+    # 小さな額縁（精霊が見える）の所も抜く。ページが小さな額縁の絵と精霊を下に描く（灯籠などが前に来ても隠れるように）
+    P = FR[('dawn' if i % 2 else 'quiet')]; Q = P['s']; u = F.WW / P['ww']; kk = P['ww'] * SMALL / Q['ww']
+    x0 = (P['w'] - Q['w'] * kk) / 2; y0 = P['top'] - Q['top'] * kk; cx, cy = P['l'] + P['ww'] / 2, P['t'] + P['wh'] / 2
+    bpy.ops.mesh.primitive_plane_add(size=1, location=((x0 + Q['w'] * kk / 2 - cx) * u, -(y0 + Q['h'] * kk / 2 - cy) * u, 0.1)); sp_ = bpy.context.object
+    sp_.scale = (Q['w'] * kk * u, Q['h'] * kk * u, 1); sp_.data.materials.append(hold); sp_.parent = parent
     parent.scale = (S, S, S); parent.location = (x, y, FZ)
     parent.rotation_euler = (math.radians(90), 0, t - math.radians(90))  # 窓が部屋の真ん中を向く
     f0 = LIT0 + (i - 1) * GAP
@@ -133,9 +142,15 @@ for i in range(1, BAYS):
 box((0, 0, 0.45), (0.9, 0.9, 0.9), pil, bevel=0.04)
 box((0, 0, 0.94), (1.05, 1.05, 0.08), gold, bevel=0.02)
 bpy.ops.mesh.primitive_cylinder_add(vertices=6, radius=0.26, depth=0.62, location=(0, 0, 1.34)); lan = bpy.context.object
-glass = emit_mat('lantern', (1.0, 0.72, 0.35), 0.0)
-key(glass.node_tree.nodes['Emission'].inputs['Strength'], [(1, 0.25), (300, 0.5), (380, 6.0), (N, 12.0)])
+glass = F.principled('lantern', (1.0, 0.8, 0.55), rough=0.12)  # 琥珀色のガラス。中の火が透ける
+gb = glass.node_tree.nodes['Principled BSDF']; gb.inputs['Transmission Weight'].default_value = 1.0; gb.inputs['IOR'].default_value = 1.3
 lan.data.materials.append(glass)
+for k in range(6):  # 金の桟
+    t_ = k * math.pi / 3
+    box((0.26 * math.cos(t_), 0.26 * math.sin(t_), 1.34), (0.035, 0.035, 0.64), gold)
+flame = emit_mat('lflame', (1.0, 0.62, 0.25), 0.0)
+key(flame.node_tree.nodes['Emission'].inputs['Strength'], [(1, 25.0), (300, 40.0), (380, 160.0), (N, 260.0)])
+F.sphere((0, 0, 1.3), 0.07, flame, scale=(1, 1, 1.9), seg=16)
 for z in (1.04, 1.66):
     bpy.ops.mesh.primitive_cylinder_add(vertices=6, radius=0.32, depth=0.06, location=(0, 0, z)); bpy.context.object.data.materials.append(gold)
 bpy.ops.mesh.primitive_cone_add(vertices=6, radius1=0.32, depth=0.3, location=(0, 0, 1.84)); bpy.context.object.data.materials.append(gold)
@@ -157,6 +172,7 @@ fog = bpy.data.materials.new('fog'); fog.use_nodes = True; nt = fog.node_tree; n
 vs = nt.nodes.new('ShaderNodeVolumeScatter'); vs.inputs['Density'].default_value = 0.03; nt.links.new(vs.outputs[0], nt.nodes['Material Output'].inputs['Volume'])
 bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=RR - 0.3, depth=WALL + RR - 0.6, location=(0, 0, (WALL + RR) / 2 + 0.05))
 bpy.context.object.data.materials.append(fog)
+if os.environ.get('NOFOG'): bpy.data.objects.remove(bpy.context.object)  # もやは重い。光の柱はページが重ねるので、本番は抜く
 bpy.ops.object.light_add(type='SPOT', location=(0, 0, WALL + RR * 0.93)); SP = bpy.context.object
 SP.rotation_euler = (0, 0, 0); SP.data.spot_size = math.radians(30); SP.data.spot_blend = 0.4; SP.data.color = (0.85, 0.9, 1.0)
 keyp(SP.data, 'energy', [(1, 200.0), (300, 200.0), (380, 4000.0), (N, 9000.0)])
@@ -193,7 +209,7 @@ for ob in (co, tgt, cam):
             for kp in fc.keyframe_points: kp.interpolation = 'BEZIER'; kp.handle_left_type = kp.handle_right_type = 'AUTO_CLAMPED'
 
 sc.render.resolution_x = PX; sc.render.resolution_y = round(PX * 16 / 9)
-sc.render.engine = 'CYCLES'; sc.cycles.samples = max(1, SAMPLES); sc.cycles.use_denoising = True; sc.cycles.max_bounces = 6
+sc.render.engine = 'CYCLES'; sc.cycles.samples = max(1, SAMPLES); sc.cycles.use_denoising = True; sc.cycles.max_bounces = int(os.environ.get('BOUNCES', 6))
 sc.render.film_transparent = True
 sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'AgX - Medium High Contrast'
 sc.render.image_settings.file_format = 'PNG'; sc.render.image_settings.color_mode = 'RGBA'

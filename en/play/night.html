@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Light the Night Museum | Light the sleeping galleries with your spirits | Dropper Playground</title>
-<meta name="description" content="Choose 7 spirits from your Lantern Museum catalogue and bring light to 5 galleries of the museum after closing time. Each gallery needs a certain light and loves certain elements, and the laws of binding change the light. Tonight's museum is set by the date, so everyone gets the same night. There is no losing.">
+<meta name="description" content="Choose 7 spirits from your Lantern Museum catalogue and walk the corridors of the museum after closing time, opening 4 doors and lighting the gallery behind each. Each gallery needs a certain light and loves certain elements, and the laws of binding change the light. Tonight's museum is set by the date, so everyone gets the same night. There is no losing.">
 <link rel="canonical" href="https://dropper-tools.com/en/play/night.html">
 <link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/night.html">
 <link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/night.html">
@@ -17,7 +17,7 @@
 <meta property="og:site_name" content="Dropper">
 <meta property="og:locale" content="en_US">
 <meta property="og:title" content="Light the Night Museum | Dropper Playground">
-<meta property="og:description" content="Bring light to the galleries of the museum after closing time with the spirits in your catalogue. Everyone gets the same night. Light all 5 to reach dawn.">
+<meta property="og:description" content="Bring light to the galleries of the museum after closing time with the spirits in your catalogue. Everyone gets the same night. Light the 4 galleries and open the door of light at the end.">
 <meta property="og:url" content="https://dropper-tools.com/en/play/night.html">
 <meta property="og:image" content="https://dropper-tools.com/assets/og/og-en.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -82,6 +82,15 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 /* 「前に進む」は通路の真ん中の下（絨毯の上） */
 .fwd{position:absolute;left:50%;bottom:6%;transform:translateX(-50%);z-index:2;background:rgba(14,12,20,.78);color:var(--gold-soft);border:1px solid var(--gold);border-radius:2px;padding:9px 22px;font:600 15px var(--serif);letter-spacing:.14em;cursor:pointer;white-space:nowrap}
 .fwd:hover,.fwd:focus-visible{background:var(--gold);color:#1a1408;outline:none}
+/* 2の段（2026-10-25）：最後の部屋の映像（縦）と、最後の通路を進む映像（横）。night-film.js が出す */
+.nfilm{position:fixed;inset:0;z-index:60;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:12px 16px}
+.nfilm[hidden]{display:none}
+.nfilm canvas{display:block;max-width:100%;max-height:calc(100vh - 130px);max-height:calc(100dvh - 130px);background:#05060a;border:1px solid rgba(201,164,92,.35)}
+.nfilm.walk canvas{width:min(100%,960px);height:auto}
+.nfilm.room canvas{height:calc(100vh - 130px);height:calc(100dvh - 130px);width:auto}
+.nf-cap{min-height:1.4em;color:var(--gold-soft);font:500 14px var(--serif);letter-spacing:.06em;text-align:center;max-width:560px}
+.nf-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.nf-btns .nf-skip{position:fixed;right:16px;bottom:16px;background:rgba(0,0,0,.45)}
 /* 光の扉をくぐる */
 .flash{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 52%,#fff 0,#fff6dc 30%,rgba(255,226,160,.85) 60%,rgba(255,210,120,.4) 100%)}
 .flash.on{transition:opacity 1.6s ease-in;opacity:1}
@@ -384,7 +393,8 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 </div>
 
 <script src="monster-i18n.js?v=21"></script>
-<script src="night-i18n.js?v=4"></script>
-<script src="night-app.js?v=8"></script>
+<script src="night-i18n.js?v=5"></script>
+<script src="night-film.js?v=1"></script>
+<script src="night-app.js?v=9"></script>
 </body>
 </html>

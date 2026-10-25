@@ -11,6 +11,8 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const tr = (k, v) => window.t(k, v), D = k => window.tdata(k);
+  const dateText = () => { try { return new Date().toLocaleDateString(document.documentElement.lang || 'ja', { year: 'numeric', month: 'long', day: 'numeric' }); } catch (e) { return isoDate(); } };
+  const isoDate = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
   // 文の仕様（monster-app.js の txt と同じ）。目録のカードの名前は「辞書のどの言葉か」で入っているので、見ているページの言語で組み立てる
   function txt(s) {
     if (s === undefined || s === null) return '';
@@ -122,11 +124,12 @@
     };
   }
   // 守り神の色：その人の人生地図の丘の色（monster-app.js の drawLife と同じ式）を5つ拾う。夜明けに、立会人の人生の色の帯として出す（どの人生も同じ大きさ・同じ明るさ）
-  function lifeGrad(M) {
+  function lifeHues(M) {
     const joy = [...String((M.life || {}).joy || '5')].map(Number).filter(x => !isNaN(x));
     const at = f => { const v = (joy[Math.min(joy.length - 1, Math.floor(f * joy.length))] || 0) / 9; return `hsl(${Math.round(30 + v * 105)},${Math.round(22 + v * 58)}%,${Math.round(46 + v * 12)}%)`; };
-    return `linear-gradient(90deg,${[0, .25, .5, .75, .99].map(at).join(',')})`;
+    return [0, .25, .5, .75, .99].map(at);
   }
+  const lifeGrad = M => `linear-gradient(90deg,${lifeHues(M).join(',')})`;
 
   // ---- おためしの精霊（目録が7体に満たないとき） ----
   // 名前は目録のページと同じ音の表から組む。絵は無いので、属性の色で描く
@@ -179,7 +182,7 @@
   let dpick = [], aceI = -1;
   // at：'door'＝cur 番目の扉の前・'room'＝部屋の中・'lit'＝灯った部屋・'last'＝最後の通路（pos 0 入口／1 奥の2枚の前／2 光の扉の手前）
   let HAND = [], ROOM = [], sel = [], cur = 0, at = 'door', pos = 0, page = 0, aceBack = false, busy = false, ended = false, endArm = false;
-  let keyed = false, witness = null, witnessMap = '', hikariLit = null;
+  let keyed = false, witness = null, witnessMap = '', witnessHues = null, hikariLit = null, film = null;
 
   function cardEl(c, opts = {}) {
     const b = document.createElement(opts.button === false ? 'div' : 'button');
@@ -391,7 +394,7 @@
     const a = await askMaker(f);
     $('drop').classList.remove('busy');
     if (!a.ok) { $('msg').textContent = tr(a.err ? 'nKeyErr' : 'nKeyNo'); sfx('no'); return; }
-    keyed = true; witness = txt(a.name); witnessMap = a.life ? lifeGrad(a) : ''; track('night_key');
+    keyed = true; witness = txt(a.name); witnessMap = a.life ? lifeGrad(a) : ''; witnessHues = a.life ? lifeHues(a) : null; track('night_key');
     enterLast(a);
   }
   // 光の扉をくぐる。最後の部屋（灯さない。夜明けになる）
@@ -403,8 +406,16 @@
     await wait(2400);
     // 金の光・銀の光の子を連れた夜は、夜明けに金の柱／銀の雨（もとの「光の間」の光）
     hikariLit = HAND.some(c => c.rarity === 'gold') ? 'gold' : HAND.some(c => c.rarity === 'silver') ? 'silver' : null;
-    busy = false; morning();
     $('flash').classList.remove('on');
+    // 最後の部屋の映像（20秒）。その夜の7体（★主が先）の作品と精霊が、壁の額縁に灯る。保存できる動画にする（night-film.js）
+    if (window.NightFilm) {
+      const wasOn = on; if (wasOn) bgm(false);
+      const cards = [...HAND.filter(c => c.ace), ...HAND.filter(c => !c.ace)].map(c => ({ art: c.art, th: c.th, rar: c.rarity, t: c.t, n: c.n, ace: c.ace }));
+      try { film = await window.NightFilm.room({ cards, hues: witnessHues, title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
+        tx: { loading: tr('nFilmLoading'), play: tr('nFilmPlay'), skip: tr('nFilmSkip'), save: tr('nFilmSave'), close: tr('nFilmClose'), made: tr('nFilmMade'), noRec: tr('nFilmNoRec') } }); } catch (e) { film = null; }
+      if (wasOn) bgm(true);
+    }
+    busy = false; morning();
   }
   const drop = $('drop');
   drop.addEventListener('click', () => $('file').click());
@@ -446,15 +457,28 @@
       + (gift !== null ? `<div class="gift" id="gift">${frameBox({ k }, 96)}<p>${tr('nGift', { frame: esc(tr(dawn ? 'frameDawn' : 'frameQuiet')) })}</p>`
         + `<div class="btns"><button class="btn" id="pickNow" type="button">${esc(tr('nPickNow'))}</button><button class="btn ghost" id="later" type="button">${esc(tr('nLater'))}</button></div></div>`
         : `<p class="small">${esc(tr(trial ? 'nGiftTrial' : 'nGiftNone'))}</p>`)
+      + (dawn && film ? `<button class="btn ghost" id="saveFilm" type="button">${esc(tr('nSaveFilm'))}</button>` : '')
       + `<button class="btn" id="again" type="button">${esc(tr('nAgain'))}</button>`
       + `<a class="btn ghost" href="spirit.html">${esc(tr('nBack'))}</a></div>`;
     $('morning').hidden = false;
     startScene(k, lv, dawn ? hikariLit : null);
     if (gift !== null) {
-      $('pickNow').onclick = () => openPicker(gift, () => { $('gift').innerHTML = `<p>${esc(tr('nFramedOk'))}</p>`; });
+      $('pickNow').onclick = () => openPicker(gift, () => {
+        $('gift').innerHTML = `<p>${esc(tr('nFramedOk'))}</p>`;
+        // 4つの部屋を灯した朝（4段階目）に飾ったときだけ、最後の通路を進む映像で額縁が通路に掛かる（2026-10-25 重吉さんの決め）
+        if (lit === ROOM.length && window.NightFilm) walkFilm();
+      });
       $('later').onclick = () => { $('gift').innerHTML = `<p class="small">${esc(tr('nLaterOk'))}</p>`; };
     }
     $('again').onclick = restart;
+    if ($('saveFilm')) $('saveFilm').onclick = () => window.NightFilm.save(film.blob, film.ext, tr('nFilmFile', { date: isoDate() }));
+  }
+  // 最後の通路を進む映像：額縁は新しい順（最後の通路の並びと同じ。0 がいま飾った額縁）
+  async function walkFilm() {
+    const F = frames().reverse().slice(0, PER).map(f => ({ k: f.k, art: f.id && Array.isArray(f.w) && f.w[0] ? safeArt(f.w[0].f) : '', th: f.id ? safeThumb(f.th) : '', rar: f.rar, n: f.id ? txt(f.name) : '' }));
+    const wasOn = on; if (wasOn) bgm(false);
+    try { await window.NightFilm.walk({ frames: F, tx: { loading: tr('nWalkLoading'), skip: tr('nFilmSkip'), close: tr('nWalkClose'), done: tr('nWalkDone', { name: F[0] ? F[0].n : '' }) } }); } catch (e) { /* 映像が無くても遊べる */ }
+    if (wasOn) bgm(true);
   }
   function restart() {
     $('morning').hidden = true; sceneOn = null; HAND = []; sel = []; dpick = []; aceI = -1;
@@ -770,7 +794,7 @@
   $('tonight').onclick = () => {
     HAND = dpick.map(i => Object.assign({}, ZK[i], { used: false, ace: i === aceI }));
     ROOM = tonight(new Date()); sel = []; cur = 0; at = 'door'; pos = 0; page = 0;
-    aceBack = false; busy = false; ended = false; endArm = false; keyed = false; witness = null; witnessMap = ''; hikariLit = null;
+    aceBack = false; busy = false; ended = false; endArm = false; keyed = false; witness = null; witnessMap = ''; witnessHues = null; hikariLit = null; film = null;
     $('trialNote').hidden = !trial;
     $('deck').hidden = true; preload(); draw(); glowUp(); sfx('send'); track('night_start');
   };
