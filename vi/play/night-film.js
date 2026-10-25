@@ -102,16 +102,23 @@
   const close = () => { if (box) box.hidden = true; };
 
   // ---- 音：その場で合成する（BGM と同じ音色・同じ調 Bb）。dests に、スピーカーと録画の両方をつなぐ ----
-  function score(ac, out, plan) {
+  // bp：AI の曲の設計図（最後の部屋だけ。無ければいつもの曲）{ tempo, key, inst:[bell|strings|organ|harp|voice], build:rise|calm|wave }
+  const KEY_SHIFT = { Bb: 0, C: 2, D: 4, Eb: -7, F: -5, G: -3 };
+  function score(ac, out, plan, bp) {
+    bp = bp || {};
+    const inst = Array.isArray(bp.inst) && bp.inst.length ? bp.inst : ['bell', 'strings'], build = bp.build || 'rise', shift = KEY_SHIFT[bp.key] || 0;
     const comp = ac.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 3; comp.connect(out);
-    const master = ac.createGain(); master.gain.value = .9; master.connect(comp);
+    const swell = ac.createGain(); swell.connect(comp);
+    const master = ac.createGain(); master.gain.value = build === 'calm' ? .75 : .9; master.connect(swell);
     const SR = ac.sampleRate, noise = ac.createBuffer(1, SR * 2, SR); { const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
     const ir = ac.createBuffer(2, SR * 3.5, SR);
     for (let c = 0; c < 2; c++) { const x = ir.getChannelData(c); for (let i = 0; i < x.length; i++) x[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / x.length, 3); }
     const rv = ac.createConvolver(); rv.buffer = ir; const wet = ac.createGain(); wet.gain.value = 1; wet.connect(rv); rv.connect(master);
-    const STEP = 60 / 96 / 4, echo = ac.createDelay(1); echo.delayTime.value = STEP * 3;
+    const STEP = 60 / (Number(bp.tempo) || 96) / 4, echo = ac.createDelay(1); echo.delayTime.value = STEP * 3;
     { const fb = ac.createGain(); fb.gain.value = .36; const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3200; echo.connect(lp); lp.connect(fb); fb.connect(echo); lp.connect(master); lp.connect(wet); }
-    const T0 = ac.currentTime + .08, N = n => 440 * Math.pow(2, (n - 69) / 12);
+    const T0 = ac.currentTime + .08, N = n => 440 * Math.pow(2, (n + shift - 69) / 12);
+    // 波（wave）は、全体の大きさが2回ふくらんでおさまる
+    if (build === 'wave') swell.gain.setValueAtTime(.7, T0), [[0, .7], [4, 1.05], [7.5, .75], [12, 1.1], [15.5, .85], [18, 1]].forEach(([t, v]) => swell.gain.linearRampToValueAtTime(v, T0 + t));
     const bell = (n, t0, d = 2.2, v = .14) => [[1, 1], [2.76, .35], [5.4, .12]].forEach(([m, a]) => {
       const t = t0 + T0, o = ac.createOscillator(), e = ac.createGain(); o.type = 'sine'; o.frequency.value = N(n) * m;
       e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v * a, t + .01); e.gain.exponentialRampToValueAtTime(.0001, t + d / m);
@@ -130,6 +137,29 @@
       e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .006); e.gain.exponentialRampToValueAtTime(.0001, t + .32);
       o.connect(e); o2.connect(e); e.connect(master); e.connect(echo); e.connect(wet); o.start(t); o2.start(t); o.stop(t + .36); o2.stop(t + .36);
     };
+    const organ = (ns, t, d, v) => {
+      t += T0; const e = ac.createGain(); e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .3); e.gain.setValueAtTime(v, t + d - .4); e.gain.exponentialRampToValueAtTime(.0001, t + d + .5);
+      ns.forEach(n => [[1, 1], [2, .5], [3, .3], [4, .15]].forEach(([m, a]) => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = N(n) * m; g.gain.value = a; o.connect(g); g.connect(e); o.start(t); o.stop(t + d + .6); }));
+      e.connect(master); e.connect(wet);
+    };
+    const voice = (ns, t, d, v) => {  // 声：のこぎりの音を、ア の口の形（2つの山）に通す。少しゆれる
+      t += T0; const e = ac.createGain(), f1 = ac.createBiquadFilter(), f2 = ac.createBiquadFilter(), lfo = ac.createOscillator(), lg = ac.createGain();
+      f1.type = f2.type = 'bandpass'; f1.frequency.value = 680; f1.Q.value = 5; f2.frequency.value = 1100; f2.Q.value = 7;
+      lfo.frequency.value = 5; lg.gain.value = 7; lfo.connect(lg); lfo.start(t); lfo.stop(t + d + .8);
+      e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v * 3, t + Math.min(1.4, d * .4)); e.gain.setValueAtTime(v * 3, t + d - .5); e.gain.exponentialRampToValueAtTime(.0001, t + d + .7);
+      ns.forEach(n => [-6, 6].forEach(dt => { const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = N(n); o.detune.value = dt; lg.connect(o.detune); o.connect(f1); o.connect(f2); o.start(t); o.stop(t + d + .8); }));
+      f1.connect(e); f2.connect(e); e.connect(master); e.connect(wet);
+    };
+    const harp = (n, t0, d = 1.6, v = .12) => {
+      const t = t0 + T0, o = ac.createOscillator(), o2 = ac.createOscillator(), e = ac.createGain(); o.type = 'triangle'; o.frequency.value = N(n); o2.frequency.value = N(n) * 2;
+      e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .005); e.gain.exponentialRampToValueAtTime(.0001, t + d);
+      o.connect(e); o2.connect(e); e.connect(master); e.connect(echo); e.connect(wet); o.start(t); o2.start(t); o.stop(t + d + .05); o2.stop(t + d + .05);
+    };
+    // 設計図の楽器で鳴らす：旋律は 鈴・ハープ、和音は 弦・オルガン・声。どちらも選ばれていなければ、鈴・弦を小さく
+    const MEL = inst.filter(x => x === 'bell' || x === 'harp'), PAD = inst.filter(x => x === 'strings' || x === 'organ' || x === 'voice');
+    const mel = (n, t, d, v) => { const k = MEL.length ? 1 / Math.sqrt(MEL.length) : .6; (MEL.length ? MEL : ['bell']).forEach(x => x === 'harp' ? harp(n, t, d * .7, v * k) : bell(n, t, d, v * k)); };
+    const pad = (ns, t, d, v, open) => { const k = PAD.length ? 1 / Math.sqrt(PAD.length) : .6; (PAD.length ? PAD : ['strings']).forEach(x => x === 'organ' ? organ(ns, t, d, v * k) : x === 'voice' ? voice(ns, t, d, v * k) : haze(ns, t, d, v * k, open)); };
+    const soft = build === 'calm' ? .35 : 1;  // 静か（calm）は、高まりと低い響きを小さく
     const sub = (n, t, v, d = STEP * 2) => { t += T0; const o = ac.createOscillator(), e = ac.createGain(); o.type = 'sine'; o.frequency.value = N(n); e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .03); e.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(e); e.connect(master); o.start(t); o.stop(t + d + .05); };
     const boom = (t, v) => { t += T0; const o = ac.createOscillator(), e = ac.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(32, t + .6); e.gain.setValueAtTime(v, t); e.gain.exponentialRampToValueAtTime(.0001, t + 1.6); o.connect(e); e.connect(master); e.connect(wet); o.start(t); o.stop(t + 1.7); };
     const riser = (t, d, v) => { t += T0; const s = ac.createBufferSource(), f = ac.createBiquadFilter(), e = ac.createGain(); s.buffer = noise; s.loop = true; f.type = 'bandpass'; f.Q.value = 2; f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(7000, t + d); e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + d); e.gain.exponentialRampToValueAtTime(.0001, t + d + .25); s.connect(f); f.connect(e); e.connect(master); e.connect(wet); s.start(t); s.stop(t + d + .3); };
@@ -137,11 +167,11 @@
       Eb: { b: 51, t: [58, 63, 67, 69], pad: [51, 55, 58, 62] }, Gm: { b: 43, t: [58, 62, 65, 67], pad: [43, 50, 53, 58] } };
     const ARP = [0, 1, 2, 3, 4, 3, 2, 1, 0, 2, 1, 3, 2, 4, 3, 1];
     const arp = (c, t0, t1, v0, v1, rate = 1) => { for (let t = t0, i = 0; t < t1; t += STEP / rate, i++) { const a = ARP[i % 16], k = (t - t0) / (t1 - t0); spark(a === 4 ? c.t[0] + 12 : c.t[a], t, v0 + (v1 - v0) * k); } };
-    plan({ bell, haze, spark, sub, boom, riser, arp, CH, STEP });
+    plan({ bell, haze, spark, sub, boom: (t, v) => boom(t, v * soft), riser: (t, d, v) => riser(t, d, v * soft), arp, CH, STEP, mel, pad });
     return { T0, stop: () => { master.gain.cancelScheduledValues(ac.currentTime); master.gain.setTargetAtTime(0, ac.currentTime, .15); } };
   }
   // 最後の部屋の曲（20秒）：光の扉 → 額縁が1つ灯るたびに鈴が1つ上へ → 光の粒が集まる → 天窓の光で和音がひらく
-  const ROOM_PLAN = ({ bell, haze, sub, boom, riser, arp, CH }) => {
+  const ROOM_PLAN = ({ mel: bell, pad: haze, sub, boom, riser, arp, CH }) => {
     haze(CH.Bb.pad.concat([69]), 0, 2.8, .03, 2600);
     [81, 77, 74].forEach((n, i) => bell(n, .2 + i * .25, 2.6, .07));
     const up = [58, 62, 65, 69, 70, 74, 77];
@@ -190,7 +220,23 @@
   };
 
   // ======== 1. 最後の部屋 ========
-  // o = { cards:[{art, th, rar, t, n}]（7体まで。★主が先）, hues:[色]（守り神の人生地図の色。無ければ金）, title, sub, tx:{play, skip, save, close, noRec, made} }
+  // o = { cards:[{art, th, rar, t, n}]（7体まで）, hues:[色]（守り神の人生地図の色。無ければ金）, title, sub, tx:{play, skip, save, close, noRec, made},
+  //       story:{title, lines:[精霊ごと], close, music}（AI が書いたその夜のお話。無ければ字幕なし・いつもの題と曲） }
+  // 字幕は録画に入るよう canvas に描く。幅に合わせて2行まで折り返す
+  function wrap(g, text, max) {
+    const out = [], words = /\s/.test(text) ? text.split(/(\s+)/) : [...text]; let line = '';
+    for (const w of words) { if (line && g.measureText(line + w).width > max) { out.push(line.trim()); line = w.trimStart(); } else line += w; }
+    if (line.trim()) out.push(line.trim());
+    if (out.length > 2) { out.length = 2; out[1] = out[1].replace(/.$/, '…'); }
+    return out;
+  }
+  function subtitle(g, W, H, text, a) {
+    if (!text || a <= 0) return;
+    g.font = `500 ${Math.round(W / 24)}px "Noto Serif JP", serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const ls = wrap(g, text, W * .84), lh = W / 24 * 1.45, y0 = H * .865 - (ls.length - 1) * lh / 2;
+    g.fillStyle = `rgba(8,8,14,${.55 * a})`; g.fillRect(W * .04, y0 - lh * .75, W * .92, lh * (ls.length + .5));
+    g.fillStyle = `rgba(250,236,200,${a})`; ls.forEach((l, k) => g.fillText(l, W / 2, y0 + k * lh));
+  }
   async function room(o) {
     const L = layer('room'), cv = L.cv, g = cv.getContext('2d');
     L.cap.textContent = o.tx.loading || '';
@@ -246,12 +292,22 @@
         const gr = g.createRadialGradient(ox, oy, 0, ox, oy, W * .3); gr.addColorStop(0, hues[Math.floor(hues.length / 2)]); gr.addColorStop(1, 'rgba(0,0,0,0)');
         g.globalAlpha = la * .35; g.fillStyle = gr; g.fillRect(0, 0, W, H); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
       }
-      // おわり：白い光に包まれて、題名
+      // AI のお話の字幕：額縁が灯るたびにその精霊の一言、天窓の光で結びの一言
+      const ST = o.story;
+      if (ST && f < 440) {
+        const i = Math.floor((f - 74) / 30), last = J.wins.length - 1;
+        if (f >= 74 && i >= 0 && i <= last && f < 300) { const s0 = 74 + i * 30, s1 = i === last ? 296 : s0 + 30; subtitle(g, W, H, ST.lines[i], clamp(Math.min((f - s0) / 6, (s1 - f) / 6))); }
+        if (f >= 318) subtitle(g, W, H, ST.close, clamp(Math.min((f - 318) / 10, (436 - f) / 10)));
+      }
+      // おわり：白い光に包まれて、題名（AI のお話があれば、その題。館の名前は小さく上に）
       const wa = clamp((f - 425) / 40);
       if (wa > 0) {
         g.fillStyle = `rgba(255,248,232,${wa * .88})`; g.fillRect(0, 0, W, H);
         g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = `rgba(122,86,30,${clamp((f - 440) / 24)})`;
-        g.font = `600 ${Math.round(W / 13)}px "Noto Serif JP", serif`; g.fillText(o.title, W / 2, H * .46);
+        const big = ST && ST.title ? ST.title : o.title; let fs = Math.round(W / 13);
+        g.font = `600 ${fs}px "Noto Serif JP", serif`; while (fs > W / 26 && g.measureText(big).width > W * .88) { fs -= 2; g.font = `600 ${fs}px "Noto Serif JP", serif`; }
+        g.fillText(big, W / 2, H * .46);
+        if (big !== o.title) { g.font = `500 ${Math.round(W / 30)}px "Noto Serif JP", serif`; g.fillText(o.title, W / 2, H * .395); }
         g.font = `500 ${Math.round(W / 26)}px "Noto Serif JP", serif`; g.fillText(o.sub, W / 2, H * .53);
       }
     }
@@ -273,7 +329,7 @@
       };
       const stopDraw = onFrames(v, t => draw(Math.floor(t * J.fps) + 1));
       btn(L, o.tx.skip, 'ghost nf-skip', () => finish(false));
-      if (A) { A.ac.resume(); S = score(A.ac, A.out, ROOM_PLAN); rec = recorder(cv, A.dest); }
+      if (A) { A.ac.resume(); S = score(A.ac, A.out, ROOM_PLAN, o.story && o.story.music); rec = recorder(cv, A.dest); }
       if (rec) { rec.ondataavailable = e => { if (e.data && e.data.size) parts.push(e.data); }; rec.start(500); }
       v.onended = () => { draw(J.n); setTimeout(() => finish(true), 900); };
       v.play().catch(() => finish(false));

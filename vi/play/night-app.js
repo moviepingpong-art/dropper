@@ -472,9 +472,28 @@
     return !!P && doorKeyOf(kind, P, file.name);
   }
 
+  // 最後の部屋のお話と曲の設計図を AI に頼む（2026-10-25〜。1晩に1回）。送るのは作品のファイル名・精霊の名前・言語だけ。
+  // 守り神・人生の記録・鍵の画像は送らない。12秒で答えが無い・うまくいかないときは null（いつものお話と曲で流す）
+  const AI_URL = 'https://ai.dropper-tools.com/monster';
+  async function nightStory() {
+    const cs = HAND.filter(c => c.art).map(c => ({ f: c.art, n: String(c.n || '').slice(0, 40) }));
+    if (trial || cs.length < 2) return null;
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 12000);
+    try {
+      const r = await fetch(AI_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctl.signal,
+        body: JSON.stringify({ kind: 'night', lang: window.LANG || 'ja', cards: cs }) });
+      const a = r.ok ? (await r.json()).answer : null;
+      if (!a || !a.title || !Array.isArray(a.lines)) return null;
+      // 字幕は、送った子（作品のある子）の順。作品の無い子には字幕を付けない
+      let k = 0; const lines = HAND.map(c => c.art ? String(a.lines[k++] || '') : '');
+      return { title: String(a.title), lines, close: String(a.close || ''), music: a.music || null };
+    } catch (e) { return null; } finally { clearTimeout(timer); }
+  }
+
   // 光の扉をくぐる。最後の部屋（灯さない。夜明けになる）
   async function enterLast(a) {
     busy = true; draw();
+    const story = window.NightFilm ? nightStory() : null;  // 光の扉の場面と同時に頼み、その間に書いてもらう
     $('msg').textContent = tr(a.isNew ? 'nKeyNew' : 'nKeyOk', { name: witness });
     sfx('light'); burst(.5, .4, 80);
     $('flash').classList.add('on');
@@ -486,7 +505,9 @@
     if (window.NightFilm) {
       const wasOn = on; if (wasOn) bgm(false);
       const cards = HAND.map(c => ({ art: c.art, th: c.th, rar: c.rarity, t: c.t, n: c.n }));
-      try { film = await window.NightFilm.room({ cards, hues: witnessHues, title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
+      $('msg').textContent = tr('nStoryWriting');
+      const st = await story;
+      try { film = await window.NightFilm.room({ cards, hues: witnessHues, story: st, title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
         tx: { loading: tr('nFilmLoading'), play: tr('nFilmPlay'), skip: tr('nFilmSkip'), save: tr('nFilmSave'), close: tr('nFilmClose'), made: tr('nFilmMade'), noRec: tr('nFilmNoRec') } }); } catch (e) { film = null; }
       if (wasOn) bgm(true);
     }

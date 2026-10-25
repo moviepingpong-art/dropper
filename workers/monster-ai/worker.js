@@ -6,6 +6,7 @@
 import './shim.js';
 import '../../play/monster-i18n.js'; // 頼み文の出どころ。ページの辞書と同じ物を使う（直したら出し直す）
 import { eventPrompt, schedulePrompt, HINTS } from './tool-prompts.js';
+import { nightPrompt, LANG_NAME, KEYS, INSTS, BUILDS } from './night-prompt.js';
 import MUSEUM from '../../play/museum/museum.json'; // 合体の材料。ページからは作品のファイル名だけを受け取り、中身はここから引く
 
 const I18N = globalThis.I18N;
@@ -38,6 +39,7 @@ export default {
     try { q = await req.json(); } catch (e) { return out({ error: 'bad' }, 400); }
     const kind = q && q.kind, lang = q && q.lang, image = q && q.image;
     if (kind === 'fuse') return fuse(req, env, q, out);
+    if (kind === 'night') return night(req, env, q, out);
     if (!['photo', 'life'].includes(kind) || !I18N[lang] || typeof image !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(image)) return out({ error: 'bad' }, 400);
     if (image.length > MAX_IMAGE) return out({ error: 'size' }, 413);
 
@@ -87,6 +89,53 @@ async function fuse(req, env, q, out) {
   } catch (e) { await add(env, day, who, -1); return out({ error: e.kind || 'busy' }, e.kind === 'bad' ? 502 : 503); }
   await add(env, day, 'tokens', a.tokens);
   return out({ answer: a.answer });
+}
+
+// 夜の美術館の最後の部屋（2026-10-25〜）。ページが送るのは言語と、その夜の精霊ごとの作品のファイル名・精霊の名前（2〜7体）だけ。
+// 守り神・人生の記録・利用者の画像は受け取らない。作品の題と由来は museum.json から引き、作品の絵（当方の CC0 の素材）を小さく見せて、
+// その夜の題・精霊ごとの一言・結びの一言と、曲の設計図を書かせる。答えはここで形を確かめ、決まった言葉の外は捨てる
+const MUSEUM_URL = 'https://dropper-tools.com/play/museum/';
+const clipText = (v, n) => typeof v === 'string' ? [...v.replace(/[\u0000-\u001f\u007f<>]/g, '').trim()].slice(0, n).join('') : '';
+async function night(req, env, q, out) {
+  const lang = q.lang, cs = q.cards;
+  if (!LANG_NAME[lang] || !I18N[lang] || !Array.isArray(cs) || cs.length < 2 || cs.length > 7
+    || !cs.every(c => c && typeof c.f === 'string' && WORKS.has(c.f) && typeof c.n === 'string' && c.n.length <= 40)) return out({ error: 'bad' }, 400);
+  const day = new Date().toISOString().slice(0, 10);
+  const used = await env.DB.prepare("SELECT n FROM counts WHERE day = ? AND k = 'tokens'").bind(day).first('n') || 0;
+  if (used + Number(env.RESERVE_TOKENS) > Number(env.DAILY_TOKEN_LIMIT)) return out({ error: 'quota' }, 429);
+  // 1人1日の数は、写真・人生の記録・合体と同じ数に入れる（ページは1晩に1回だけ頼む）
+  const who = 'ip:' + (await sha256(env.IP_SALT + day + (req.headers.get('CF-Connecting-IP') || ''))).slice(0, 16);
+  if (await add(env, day, who, 1) > Number(env.PER_IP_DAILY)) return out({ error: 'limit' }, 429);
+  const data = cs.map((c, i) => {
+    const w = WORKS.get(c.f), t = w.t[lang] || w.t.en;
+    return JSON.stringify({ no: i + 1, artwork: w.title, date: w.date, shows: t.motif, about: t.desc, spirit: clipText(c.n, 24) });
+  }).join('\n');
+  const content = [{ type: 'text', text: nightPrompt(lang, cs.length) + '\n\n' + data }]
+    .concat(cs.map(c => ({ type: 'image_url', image_url: { url: MUSEUM_URL + c.f, detail: 'low' } })));
+  let a;
+  try {
+    a = await call(env, effort => JSON.stringify(Object.assign({
+      model: env.OPENAI_MODEL,
+      messages: [{ role: 'user', content }],
+      response_format: { type: 'json_object' },
+      max_completion_tokens: 2500
+    }, effort ? { reasoning_effort: 'minimal' } : {})), WAIT);
+  } catch (e) { await add(env, day, who, -1); return out({ error: e.kind || 'busy' }, e.kind === 'bad' ? 502 : 503); }
+  await add(env, day, 'tokens', a.tokens);
+  const r = a.answer || {}, m = r.music || {};
+  const lines = Array.isArray(r.lines) ? r.lines.slice(0, cs.length).map(x => clipText(x, 60)) : [];
+  const inst = [...new Set(Array.isArray(m.inst) ? m.inst.filter(x => INSTS.includes(x)) : [])].slice(0, 3);
+  const answer = {
+    title: clipText(r.title, 30), lines, close: clipText(r.close, 70),
+    music: {
+      tempo: Math.max(66, Math.min(108, Math.round(Number(m.tempo)) || 84)),
+      key: KEYS.includes(m.key) ? m.key : 'Bb',
+      inst: inst.length >= 2 ? inst : ['bell', 'strings'],
+      build: BUILDS.includes(m.build) ? m.build : 'rise'
+    }
+  };
+  if (!answer.title || lines.length !== cs.length || lines.some(x => !x)) return out({ error: 'bad' }, 502);
+  return out({ answer });
 }
 
 // イベント・予定表。言語・種類（または年度）・ファイルの種類は URL で、ファイルそのもの（base64）は本文で受け取る。
