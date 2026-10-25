@@ -5,7 +5,7 @@
 // 最後の部屋の映像は、窓を「抜き」にしてあり、上半分が色・下半分が抜きの濃さ（lastroom.webm / .mp4。tools/blender/encode-film.sh）。その夜の作品・精霊は、ここで窓の下に描く。
 // 動画はこの端末の中だけで作る（canvas と、その場で合成した音を MediaRecorder で録る）。どこにも送らない
 (() => {
-  const GAL = 'gallery/', MUS = '/play/museum/';
+  const GAL = '/play/gallery/', MUS = '/play/museum/';
   // 額縁の絵の寸法（frame.py の JSON。night-app.js の FR と同じ数）
   const FR = {
     dawn: { w: 720, h: 1149, l: 141, t: 336, ww: 438, wh: 672, top: 208, s: { w: 300, h: 398, l: 59, t: 59, ww: 182, wh: 280, top: 6 } },
@@ -201,6 +201,7 @@
     const out = g.createImageData(W, H);
     const fcs = await Promise.all(J.wins.map((w, i) => o.cards[i] ? frameCanvas(Object.assign({ k: w.kind }, o.cards[i])) : frameCanvas({ k: w.kind, t: '光' })));
     const hues = (o.hues && o.hues.length ? o.hues : ['#f3d79a', '#f6e2b0', '#ffe9c0']);
+    const beam = document.createElement('canvas');
     function draw(f) {  // f：1〜n
       const F = J.f[Math.min(J.n, Math.max(1, f)) - 1];
       g.fillStyle = '#f7efe0'; g.fillRect(0, 0, W, H);
@@ -230,13 +231,20 @@
         g.fillText((c.ace ? '★ ' : '') + c.n, x, y); g.shadowBlur = 0;
       });
       // 天窓の光：守り神の人生地図の色（どの人生も同じ大きさ・同じ明るさ）
-      const la = clamp((f - 300) / 90) * .62;
+      const la = clamp((f - 300) / 90);
       if (la > 0 && F.oc[2]) {
-        const [ox, oy] = [F.oc[0] * W, F.oc[1] * H], R = H * (.25 + .5 * clamp((f - 300) / 180));
-        g.globalCompositeOperation = 'screen';
-        const gr = g.createRadialGradient(ox, oy, 0, ox, oy, R);
-        hues.forEach((h, k) => gr.addColorStop(k / Math.max(1, hues.length - 1) * .85, h)); gr.addColorStop(1, 'rgba(0,0,0,0)');
-        g.globalAlpha = la; g.fillStyle = gr; g.fillRect(0, 0, W, H); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+        // 天窓から床へ下りる光の柱。横に人生地図の色を並べ、上下と左右のはしは消える。天窓のまわりは小さくにじむだけ
+        const ox = F.oc[0] * W, oy = Math.max(0, F.oc[1] * H), bw = W * (.10 + .08 * clamp((f - 300) / 150));
+        beam.width = W; beam.height = H; const b = beam.getContext('2d'); b.clearRect(0, 0, W, H);
+        const gx = b.createLinearGradient(ox - bw, 0, ox + bw, 0); gx.addColorStop(0, 'rgba(0,0,0,0)');
+        hues.forEach((h, k) => gx.addColorStop(.15 + .7 * k / Math.max(1, hues.length - 1), h)); gx.addColorStop(1, 'rgba(0,0,0,0)');
+        b.fillStyle = gx; b.beginPath(); b.moveTo(ox - bw * .55, oy); b.lineTo(ox + bw * .55, oy); b.lineTo(ox + bw * 1.3, H); b.lineTo(ox - bw * 1.3, H); b.closePath(); b.fill();
+        b.globalCompositeOperation = 'destination-in';
+        const gy = b.createLinearGradient(0, oy, 0, H); gy.addColorStop(0, 'rgba(0,0,0,.9)'); gy.addColorStop(.55, 'rgba(0,0,0,.55)'); gy.addColorStop(1, 'rgba(0,0,0,0)');
+        b.fillStyle = gy; b.fillRect(0, 0, W, H); b.globalCompositeOperation = 'source-over';
+        g.globalCompositeOperation = 'screen'; g.globalAlpha = la * .7; g.drawImage(beam, 0, 0);
+        const gr = g.createRadialGradient(ox, oy, 0, ox, oy, W * .3); gr.addColorStop(0, hues[Math.floor(hues.length / 2)]); gr.addColorStop(1, 'rgba(0,0,0,0)');
+        g.globalAlpha = la * .35; g.fillStyle = gr; g.fillRect(0, 0, W, H); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
       }
       // おわり：白い光に包まれて、題名
       const wa = clamp((f - 425) / 40);
