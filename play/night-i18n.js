@@ -130,7 +130,7 @@
       nDoorAria: { silk: 'Silk の絵を選ぶ', hubble: 'ハッブルの写真を選ぶ', sky: '星空の画像を選ぶ' },
       nDoorSite: { silk: 'Silk', hubble: 'NASA', sky: 'TheSkyLive' },
       nDoorNote: '画像はこの端末の中で見分けるだけで、AI にも送らず、何も残しません。前に保存した同じ画像で、何度でも開きます。<br>※「{site}」の公式の機能ではありません。',
-      nDoorNo: 'この画像は鍵に合いませんでした。{site}で保存した画像だけが、この扉の鍵になります（ほかの画像は何も残さずに断ります）',
+      nDoorNo: 'この画像は鍵に合いませんでした。「{site}」で保存した画像だけが、この扉の鍵になります（ほかの画像は何も残さずに断ります）',
       nDoorOk: '鍵が開きました',
       nKeyLead: '光の扉の鍵は「<a href="https://1in8b.life/ja/" target="_blank" rel="noopener">80億分の1</a>」の人生の記録の画像です。まだ持っていない人は、リンク先で手に入れてから戻ってきてください。',
       nKeyAria: '人生の記録の画像を選ぶ',
