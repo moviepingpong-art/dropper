@@ -1542,18 +1542,19 @@
     el.classList.remove('hidden');
   }
 
-  // 目録は20体まで（2026-10-25〜、重吉さんの決め）。守り神は数えない（夜の光の扉の鍵を止めないため）。
+  // 目録は20体まで（2026-10-25〜、重吉さんの決め）。
   // いっぱいのときは新しく目覚める・結ぶ・受け継ぐを止めるだけで、前からいる子は消さない
   const DEX_MAX = 20;
-  const notGuardian = M => !(M.g && M.g.kind === '人間');
-  const dexCount = async () => (await DB.getAll('cards')).filter(notGuardian).length;
+  const dexCount = async () => (await DB.getAll('cards')).length;
   async function dexFull() {
     if ((await dexCount()) < DEX_MAX) return false;
     setStatus(tr('dexFull', { n: DEX_MAX })); return true;
   }
   async function renderDex() {
+    // 前は守り神も目録に入れていた。いまはその夜だけの立会人なので、残っている守り神はここで消す（2026-10-25〜）
+    for (const M of await DB.getAll('cards')) if (M.g && M.g.kind === '人間') await DB.del('cards', M.id);
     const cards = (await DB.getAll('cards')).sort((a, b) => b.serial - a.serial), g = $('dex'), framed = framesById();
-    $('dexCount').textContent = tr('dexCount', { n: cards.filter(notGuardian).length, max: DEX_MAX });
+    $('dexCount').textContent = tr('dexCount', { n: cards.length, max: DEX_MAX });
     g.innerHTML = '';
     for (const m of cards) {
       const b = document.createElement('button'); b.className = 'cardthumb'; b.type = 'button';
@@ -2122,10 +2123,9 @@
       try {
         const l = await loadPhoto(e.data.file), life = readLifeCard(l.img);
         if (!life) return reply({ ok: false });
-        const same = (await DB.getAll('cards')).find(M => isHuman(M) && M.life && M.life.age === life.age && M.life.avg === life.avg && M.life.joy === life.joy);
-        let M = same;
-        if (!M) { M = await build(l.bytes, l.img, printOf(fingerprint(l.bytes)), { kind: 'life', meas: lifeMeas(life), life }); await show(M, null); }
-        reply({ ok: true, isNew: !same, name: JSON.parse(JSON.stringify(M.name)), life: { joy: M.life.joy } });
+        // 守り神はその夜だけの立会人。目録には入れない（2026-10-25〜、重吉さんの決め）。名前と人生地図の色だけを返す
+        const M = await build(l.bytes, l.img, printOf(fingerprint(l.bytes)), { kind: 'life', meas: lifeMeas(life), life });
+        reply({ ok: true, name: JSON.parse(JSON.stringify(M.name)), life: { joy: M.life.joy } });
       } catch (err) { reply({ ok: false, err: true }); }
     });
     window.parent.postMessage({ type: 'lifeKeyReady' }, location.origin);

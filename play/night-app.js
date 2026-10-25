@@ -494,7 +494,7 @@
   async function enterLast(a) {
     busy = true; draw();
     const story = window.NightFilm ? nightStory() : null;  // 光の扉の場面と同時に頼み、その間に書いてもらう
-    $('msg').textContent = tr(a.isNew ? 'nKeyNew' : 'nKeyOk', { name: witness });
+    $('msg').textContent = tr('nKeyOk', { name: witness });
     sfx('light'); burst(.5, .4, 80);
     $('flash').classList.add('on');
     await wait(2400);
