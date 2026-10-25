@@ -543,6 +543,23 @@
     sfx(dawn ? 'dawn' : 'quiet'); if (dawn) burst(.5, .3, 120);
     track(dawn ? 'night_dawn' : 'night_quiet');
     $('end').className = 'end ' + k;
+    // 夜明けの画面は、朝の絵とお礼の言葉と小さな「もう一度挑戦する」だけ（2026-10-25 重吉さんの決め。動画は最後の部屋で保存する）。
+    // 金の額縁に飾る所は、小さな字で横に残す
+    if (dawn) {
+      $('end').className = 'end dawn solo';
+      $('end').innerHTML = `<canvas class="scene" id="scene" aria-hidden="true"></canvas><div class="endin">`
+        + `<p class="thanks">${tr('nThanksBye')}</p>`
+        + `<div class="mini" id="gift"><button class="lnk" id="again" type="button">${esc(tr('nRetry'))}</button>`
+        + (gift !== null ? `<span aria-hidden="true">・</span><button class="lnk" id="pickNow" type="button">${esc(tr('nPickGold'))}</button>` : '') + `</div></div>`;
+      $('morning').hidden = false;
+      startScene(k, lv, hikariLit);
+      if (gift !== null) $('pickNow').onclick = () => openPicker(gift, () => {
+        $('pickNow').previousElementSibling.remove(); $('pickNow').replaceWith(Object.assign(document.createElement('span'), { className: 'small', textContent: tr('nFramedOk') }));
+        if (lit === ROOM.length && window.NightFilm) walkFilm();
+      });
+      $('again').onclick = restart;
+      return;
+    }
     $('end').innerHTML = `<canvas class="scene" id="scene" aria-hidden="true"></canvas><div class="endin">`
       + `<h2>${esc(tr(dawn ? 'nDawnH' : 'nQuietH'))}</h2>`
       + (counts ? `<div class="lv">${esc(tr(dawn ? 'nLevelDawn' : 'nLevelQuiet', { n: count, stage: stages[st - 1] || '' }))}</div>`

@@ -226,6 +226,12 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .steps span{border:1px solid rgba(255,255,255,.2);padding:1px 6px;background:rgba(0,0,0,.25)}
 .steps span.on{border-color:var(--gold-soft);color:#fff2c4;background:rgba(201,164,92,.28)}
 .end p.hk{color:#fff2c4;font-size:14px}
+/* 夜明けは朝の絵とお礼だけ（2026-10-25〜） */
+.end.solo{max-width:900px;padding:0 0 22px;background:#0b0a0c}
+.end.solo .scene{width:100%;height:auto;aspect-ratio:1120/400;margin:0 0 18px}
+.end .thanks{font-size:clamp(18px,3.4vw,24px);color:#fff2c4;letter-spacing:.08em;line-height:1.9}
+.end .mini{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:13px;color:var(--mid)}
+.end .lnk{background:none;border:0;padding:4px 2px;color:var(--gold-soft);font:inherit;font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .lamps i.sp{border-radius:2px;transform:rotate(45deg)}
 .lamps i.sp.on{background:#fff2c4}
 .lifeband{width:min(100%,260px);height:10px;border-radius:5px;box-shadow:0 0 14px rgba(255,236,190,.35)}
@@ -404,8 +410,8 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 </div>
 
 <script src="monster-i18n.js?v=25"></script>
-<script src="night-i18n.js?v=15"></script>
+<script src="night-i18n.js?v=16"></script>
 <script src="night-film.js?v=10"></script>
-<script src="night-app.js?v=20"></script>
+<script src="night-app.js?v=21"></script>
 </body>
 </html>
