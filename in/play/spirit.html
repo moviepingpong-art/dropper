@@ -58,12 +58,6 @@ h1 span+span{color:var(--primary-soft)}
 .lead{margin:0 0 16px;color:var(--text-mid)}
 .lead:first-of-type{font-family:var(--serif);font-size:16.5px;line-height:2}
 .lead a{color:var(--primary-soft)}
-.drop{border:1px dashed var(--primary);border-radius:4px;background:var(--card);padding:36px 16px;text-align:center;cursor:pointer;transition:background .15s}
-.drop.over{background:var(--primary-pale)}
-.drop .big{font-size:40px;line-height:1}
-.drop b{display:block;font-size:17px;margin:10px 0 4px;font-family:var(--serif);font-weight:600}
-.drop small{color:var(--text-light)}
-.drop small b,.switch small b{display:inline;font-size:inherit;margin:0;font-family:inherit}
 .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
 button{font:inherit;font-family:var(--serif);font-weight:600;letter-spacing:.08em;border:1px solid var(--primary);border-radius:2px;padding:10px 22px;cursor:pointer;background:var(--primary);color:#1a1408}
 button:disabled{opacity:.45;cursor:default}
@@ -72,10 +66,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--primary-soft);o
 .hidden{display:none!important}
 .panel{margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:16px 18px}
 .panel h3,.dex h3,.about h3{font-family:var(--serif);font-weight:600;letter-spacing:.06em}
-.switch{display:flex;align-items:flex-start;gap:10px;cursor:pointer}
-.switch input{width:20px;height:20px;margin-top:4px;accent-color:var(--primary)}
-.switch b{display:block}
-.switch small{color:var(--text-mid)}
 .note{font-size:13px;color:var(--text-mid);margin:8px 0 0}
 /* 夜の美術館を灯す（night.html。前は対戦の battle.html）への入口。目録の見出しのすぐ下 */
 .battle-link{display:inline-block;margin:10px 0 0;padding:8px 18px;border-radius:2px;font-family:var(--serif);font-weight:600;font-size:14px;letter-spacing:.06em;color:var(--primary-soft);text-decoration:none;border:1px solid var(--primary)}
@@ -166,8 +156,6 @@ footer a{color:var(--primary-soft)}
 .egg[aria-pressed="true"] img{filter:none}
 .egg[aria-pressed="true"]::after{content:"✦";position:absolute;right:3px;top:1px;background:var(--primary);color:#1a1408;border-radius:50%;width:22px;height:22px;font-weight:700;line-height:22px;font-size:13px}
 .egg:focus-visible{outline:2px solid var(--primary-soft)}
-.drop.life{padding:18px 16px}
-.drop.life .big{font-size:28px}
 .works{max-width:600px;margin:10px auto 0;font-size:14px;color:var(--text-mid);text-align:left}
 .works p{margin:6px 0;padding:8px 12px;background:#e9e2cf;color:#2a2418;border-radius:2px;font-family:var(--serif)}
 .works p b{color:#2a2418}
@@ -183,7 +171,7 @@ footer a{color:var(--primary-soft)}
   <div class="shelf" data-i18n="shelf">DROPPER PLAYGROUND ／ ドロッパーの遊び場</div>
   <h1><span data-i18n="h1a">ともしびの</span><span data-i18n="h1b">美術館</span></h1>
   <p class="lead" data-i18n="lead">閉館後の美術館。世界の4つの美術館の作品から、くじで15点が並びます。えらんだ作品にひそむ精霊が、あなたの手で目を覚まします。壺にも、剣にも、花の絵にも。自分の写真やファイルは使いません。</p>
-  <p class="lead" data-i18n="lead2" data-i18n-html>「<a href="https://1in8b.life/ja/" target="_blank" rel="noopener">80億分の1</a>」の人生の記録の画像をドロップすると、その人生から<b>守り神</b>（人間のカード）が生まれます。※「80億分の1」の公式の機能ではありません。</p>
+  <p class="lead" data-i18n="lead2" data-i18n-html>「<a href="https://1in8b.life/ja/" target="_blank" rel="noopener">80億分の1</a>」の人生の記録の画像は、<a href="night.html">夜の美術館</a>の最後の扉の<b>鍵</b>になります。扉が開くと、その人生から<b>守り神</b>（人間のカード）が生まれて目録に入ります。※「80億分の1」の公式の機能ではありません。</p>
 
   <section class="panel pick" id="pick">
     <h3 data-i18n="pickTitle">🏛 美術館をえらぶ</h3>
@@ -201,24 +189,6 @@ footer a{color:var(--primary-soft)}
     </div>
     <p class="note" data-i18n="pickNote">作品は、メトロポリタン美術館・シカゴ美術館・クリーブランド美術館・デンマーク国立美術館が権利を放棄して公開している物（CC0）から選びました。人や文字・ロゴが写った物は外してあります。</p>
   </section>
-
-  <div class="drop life" id="drop" tabindex="0" role="button" aria-label="人生の記録の画像を選ぶ" data-i18n="dropAria" data-i18n-attr="aria-label">
-    <div class="big">🕯</div>
-    <b data-i18n="dropTitle">人生の記録の画像をドロップ（守り神）</b>
-    <small data-i18n="dropHint" data-i18n-html>自分でドロップできるのは「80億分の1」の人生の記録の画像だけです。それ以外の画像は、この端末の中で見分けて、何も残さずに断ります。</small>
-  </div>
-  <input type="file" id="file" accept="image/*" class="hidden">
-
-  <div class="panel">
-    <label class="switch">
-      <input type="checkbox" id="aiOn">
-      <span><b data-i18n="aiSwitch">人生の記録の文字を AI に読ませる（任意）</b>
-      <small data-i18n="aiSwitchHint" data-i18n-html>オンにすると、守り神のカードに、記録に書かれた名前・仕事・国などが入ります。オフのときは、画像はこの端末から出ません。結んだときの精霊の名前とお話は、このスイッチに関係なく AI が書きます（送るのは作品の番号だけです）。API キーはいりません。</small></span>
-    </label>
-    <div id="aiBox" class="hidden">
-      <p class="warn" data-i18n="aiWarn">⚠ オンのときは、縮めた人生の記録の画像を、ドロッパーの中継を通して OpenAI の AI に送ります。中継では保存しません。送った画像は、OpenAI が AI の改良に使うことがあります。</p>
-    </div>
-  </div>
 
   <p class="status" id="status" aria-live="polite"></p>
 
@@ -287,7 +257,7 @@ footer a{color:var(--primary-soft)}
   <footer><span data-i18n="footerBrand">ドロッパー</span> <a id="homeLink" href="https://dropper-tools.com/">dropper-tools.com</a>　｜　<a id="policyLink" href="/privacy.html#play" data-i18n="footerPolicy">プライバシーポリシー（遊び場）</a></footer>
 </div>
 <script>window.LANG = 'in';</script>
-<script src="monster-i18n.js?v=18"></script>
-<script src="monster-app.js?v=14"></script>
+<script src="monster-i18n.js?v=19"></script>
+<script src="monster-app.js?v=15"></script>
 </body>
 </html>

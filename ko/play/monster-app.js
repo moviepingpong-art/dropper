@@ -1845,10 +1845,9 @@
     if (!(await display(M))) return;
     scene(M.fusion ? 'bind' : 'awaken');
     const done = () => (note ? note + tr('statusSep') : '') + statusOf(M);
-    // AI に送る画像は、人生の記録（自分でドロップした物）だけ。美術館の作品は、名前・技・説明を前もって作ってある。
-    // 作品を合体したときだけ、作品のファイル名を中継に送り、AI に名前とお話を書いてもらう（スイッチに関係なく。画像は送らない）
-    if ($('aiOn').checked && img && img.__fromFile && M.source === 'life') await runAI(M, img, done);
-    else if (M.source === 'museum' && M.fusion && Array.isArray(M.works) && M.works.length > 1) await fuseAI(M, done);
+    // 画像は AI に送らない（2026-10-25 に人生の記録の AI スイッチをなくした）。美術館の作品は、名前・技・説明を前もって作ってある。
+    // 作品を合体したときだけ、作品のファイル名を中継に送り、AI に名前とお話を書いてもらう（画像は送らない）
+    if (M.source === 'museum' && M.fusion && Array.isArray(M.works) && M.works.length > 1) await fuseAI(M, done);
     else setStatus(done());
     // 待っている間に別のカードを開いていたら、この子の絵をいったん描き直してから図鑑に入れる
     if (current !== M) { const back = current; await display(M); await saveCard(M); return display(back); }
@@ -1904,22 +1903,9 @@
     if (meas.tall !== undefined) g.ry = (g.ry + 0.55 + meas.tall * 0.3) / 2;
     if (meas.wide !== undefined) g.rx = (g.rx + 0.62 + meas.wide * 0.3) / 2;
   }
-  // ---- 自分でドロップできるのは、人生の記録の画像だけ（2026-10-20〜）----
+  // ---- 人生の記録の画像を受け取るのは、夜の美術館の光の扉の鍵だけ（2026-10-25〜。下の「夜の美術館の光の扉の鍵」）----
   // 写真・文章・音声を自由に落とせると、人の顔や個人のことが書かれた物を誤って落とす心配があるため。
   // 人生の記録かどうかはこの端末の中で形を見て見分け、違えば何も残さずに断る。人生の記録は合体させない（人生どうしを強さで比べないため）
-  async function fromFiles(files) {
-    const f = [...files].find(x => x.type.startsWith('image/'));
-    if (!f) { setStatus(tr('lifeOnly')); return; }
-    const notes = [];
-    if (files.length > 1) notes.push(tr('noteLifeOne'));
-    setStatus(tr('hatching'));
-    let l;
-    try { l = await loadPhoto(f); } catch (e) { setStatus(e.message); return; }
-    const life = readLifeCard(l.img);
-    if (!life) { setStatus(tr('lifeOnly')); return; }
-    const M = await build(l.bytes, l.img, printOf(fingerprint(l.bytes)), { kind: 'life', meas: lifeMeas(life), life });
-    return show(M, l.img, notes.join(tr('noteSep')));
-  }
 
   // ---- 美術館の作品から生まれる（2026-10-20〜）----
   // 4館（メトロポリタン・シカゴ・クリーブランド・デンマーク国立）の、権利の切れた作品（CC0）から選んだ300点を /play/museum/ に置いてある。
@@ -2073,16 +2059,6 @@
   document.querySelectorAll('.museums button').forEach(b => b.addEventListener('click', () => deal(b.dataset.m)));
   $('reshuffle').addEventListener('click', () => { const on = document.querySelector('.museums button[aria-pressed="true"]'); deal(on ? on.dataset.m : 'all'); });
   $('hatch').addEventListener('click', hatch);
-  const drop = $('drop');
-  drop.addEventListener('click', () => $('file').click());
-  drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('file').click(); } });
-  $('file').addEventListener('change', e => { if (e.target.files.length) fromFiles(e.target.files); e.target.value = ''; });
-  ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
-  ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
-  drop.addEventListener('drop', e => { if (e.dataTransfer.files.length) fromFiles(e.dataTransfer.files); });
-  // 枠の外に落としたときは、ブラウザがファイルを開かないようにするだけ（読まない）
-  window.addEventListener('dragover', e => e.preventDefault());
-  window.addEventListener('drop', e => e.preventDefault());
   $('snd').addEventListener('click', () => { soundOn = !soundOn; $('snd').textContent = tr(soundOn ? 'sndOff' : 'sndOn'); });
   $('again').addEventListener('click', () => { $('pick').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
   $('save').addEventListener('click', () => {
@@ -2107,12 +2083,29 @@
       await saveCard(M, true);
     }
   });
-  $('aiOn').addEventListener('change', e => { $('aiBox').classList.toggle('hidden', !e.target.checked); });
   $('clearDex').addEventListener('click', async () => {
     if (!confirm(tr('clearConfirm'))) return;
     await DB.clear('cards'); await DB.clear('couples');
     slots.m = slots.f = null; renderSlots(); await renderDex();
   });
+  // ---- 夜の美術館の光の扉の鍵（night.html、2026-10-25〜。それまではこのページでドロップしていた） ----
+  // night.html が見えない枠でこのページを開き、落とされた人生の記録の画像を渡してくる（同じサイトの中だけ）。
+  // ここで見分けて（AI は使わない）、守り神を目録に入れ、名前と人生地図を返す。同じ人生の記録の守り神がもう目録にいれば、新しく作らない。画像は残さない
+  if (window.parent !== window) {
+    addEventListener('message', async e => {
+      if (e.origin !== location.origin || e.source !== window.parent || !e.data || e.data.type !== 'lifeKey' || !(e.data.file instanceof Blob)) return;
+      const reply = x => e.source.postMessage(Object.assign({ type: 'lifeKeyDone' }, x), location.origin);
+      try {
+        const l = await loadPhoto(e.data.file), life = readLifeCard(l.img);
+        if (!life) return reply({ ok: false });
+        const same = (await DB.getAll('cards')).find(M => isHuman(M) && M.life && M.life.age === life.age && M.life.avg === life.avg && M.life.joy === life.joy);
+        let M = same;
+        if (!M) { M = await build(l.bytes, l.img, printOf(fingerprint(l.bytes)), { kind: 'life', meas: lifeMeas(life), life }); await show(M, null); }
+        reply({ ok: true, isNew: !same, name: JSON.parse(JSON.stringify(M.name)), life: { joy: M.life.joy } });
+      } catch (err) { reply({ ok: false, err: true }); }
+    });
+    window.parent.postMessage({ type: 'lifeKeyReady' }, location.origin);
+  }
   window.applyI18n();
   renderSlots();
   renderDex();

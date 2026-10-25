@@ -2,6 +2,7 @@
 #   python3 hall.py -- <出力.png> [幅px] [サンプル数] [preview|empty]
 #   preview … 額縁にカードの見本をはめて撮る（見てもらう用）
 #   empty   … 額縁なしの通路だけ（ページで額縁とカードを重ねる用）。各枠の窓の四隅（画面上の位置）も JSON に書く
+#   door    … 額縁なしの通路の奥に、部屋の入口の木の扉（door.py）。夜の美術館の部屋1〜4の前
 import bpy, bmesh, math, sys, os, json
 from mathutils import Vector
 from bpy_extras.object_utils import world_to_camera_view
@@ -15,7 +16,7 @@ import frame as F
 sc = bpy.context.scene
 
 HW, WALL, LEN = 2.0, 2.8, 14.0          # 通路の半分の幅・壁の高さ・長さ
-SLOTS_Y = [2.5, 4.4]                    # 片側2つ、両側で4つ（重吉さんの選んだ「近く大きく」）
+SLOTS_Y = [2.5, 4.4, 6.3][:int(os.environ.get('SLOTS', 2))]  # 片側2つ＝両側で4つ（わたしの展示室）。SLOTS=3 で片側3つ＝6つ（夜の美術館の最後の通路）
 S = 1.1                                 # 額縁の大きさ（窓の高さ 0.85m）
 FZ = 1.5                                 # 額縁の中心の高さ
 
@@ -139,12 +140,16 @@ for i in range(16):
 # 奥：アーチの扉から朝の光
 END = LEN - 1.0
 plane((0, END + 0.02, WALL / 2 + 0.3), (2 * HW, WALL + 2), (math.radians(90), 0, 0), wall_m)
-door = emit_mat('dawnlight', (1.0, 0.78, 0.45), 6.0)
-plane((0, END, 1.05), (1.1, 2.1), (math.radians(90), 0, 0), door)
-bpy.ops.mesh.primitive_circle_add(vertices=32, radius=0.55, fill_type='NGON', location=(0, END, 2.1), rotation=(math.radians(90), 0, 0))
-bpy.context.object.data.materials.append(door)
-bpy.ops.object.light_add(type='AREA', location=(0, END - 0.3, 1.4)); L = bpy.context.object
-L.data.energy = 120; L.data.size = 1.2; L.data.color = (1.0, 0.8, 0.5); L.rotation_euler = (math.radians(90), 0, 0)
+if MODE == 'door':
+    import door as DOOR
+    DOOR.build(END, wall_m)
+else:
+    door = emit_mat('dawnlight', (1.0, 0.78, 0.45), 6.0)
+    plane((0, END, 1.05), (1.1, 2.1), (math.radians(90), 0, 0), door)
+    bpy.ops.mesh.primitive_circle_add(vertices=32, radius=0.55, fill_type='NGON', location=(0, END, 2.1), rotation=(math.radians(90), 0, 0))
+    bpy.context.object.data.materials.append(door)
+    bpy.ops.object.light_add(type='AREA', location=(0, END - 0.3, 1.4)); L = bpy.context.object
+    L.data.energy = 120; L.data.size = 1.2; L.data.color = (1.0, 0.8, 0.5); L.rotation_euler = (math.radians(90), 0, 0)
 
 # ---- 額縁を掛ける ----
 cards = sorted(p for p in os.listdir(HERE) if p.startswith('card') and p.endswith('.png'))
@@ -152,7 +157,7 @@ slots = []
 for side, sx in (('L', -1), ('R', 1)):
     for i, y in enumerate(SLOTS_Y):
         slots.append((side, sx, i, y))
-KINDS = ['dawn', 'quiet', 'quiet', 'dawn']
+KINDS = ['dawn', 'quiet', 'quiet', 'dawn', 'dawn', 'quiet']
 win_px = []
 for n, (side, sx, i, y) in enumerate(slots):
     kind = KINDS[n]
@@ -167,7 +172,7 @@ for n, (side, sx, i, y) in enumerate(slots):
         parent.scale = (S, S, S); parent.rotation_euler = rot; parent.location = loc
     # 額縁の下の真鍮の名札（字はページで重ねる）
     PZ = FZ - F.WH * S / 2 - 0.3
-    pl = box((sx * (HW - 0.012), y, PZ), (0.02, 0.56, 0.12), F.principled('brass', (0.78, 0.6, 0.32), metal=1.0, rough=0.35), bevel=0.006)
+    if MODE != 'door': box((sx * (HW - 0.012), y, PZ), (0.02, 0.56, 0.12), F.principled('brass', (0.78, 0.6, 0.32), metal=1.0, rough=0.35), bevel=0.006)
     # 額縁ごとの上からの灯り（絵を照らす小さなスポット）
     bpy.ops.object.light_add(type='SPOT', location=(sx * (HW - 0.9), y, WALL - 0.1))
     L = bpy.context.object; L.data.energy = 160; L.data.spot_size = math.radians(38); L.data.spot_blend = 0.6
@@ -184,7 +189,7 @@ w.node_tree.nodes['Background'].inputs['Strength'].default_value = 0.3
 bpy.ops.object.light_add(type='AREA', location=(0, 0.5, WALL + 1.2)); L = bpy.context.object
 L.data.energy = 60; L.data.size = 3; L.data.color = (0.75, 0.8, 1.0)
 
-bpy.ops.object.camera_add(location=(0, -0.9, 1.5), rotation=(math.radians(88), 0, 0))
+bpy.ops.object.camera_add(location=(0, float(os.environ.get('CAMY', -0.9)), 1.5), rotation=(math.radians(88), 0, 0))  # CAMY＝カメラの前後（扉の前に立つときは奥へ寄せる）
 cam = bpy.context.object; sc.camera = cam; cam.data.lens = 20
 sc.render.resolution_x = PX; sc.render.resolution_y = round(PX * 2 / 3)
 sc.render.engine = 'CYCLES'; sc.cycles.samples = SAMPLES; sc.cycles.use_denoising = True
@@ -195,11 +200,15 @@ sc.render.filepath = OUT
 bpy.ops.render.render(write_still=True)
 
 # 窓の四隅を画面の割合で（左上が 0,0）
+# vis＝窓がカメラの前にあって、画面に少しでも入るか（前に進んだ絵では、手前の枠が後ろへ回る）
 for s in win_px:
+    zs = []
     for k in ('corners', 'plate'):
         s[k] = []
         for c in s.pop(k + '_world'):
             p = world_to_camera_view(sc, cam, Vector(c))
-            s[k].append([round(p.x, 4), round(1 - p.y, 4)])
+            s[k].append([round(p.x, 4), round(1 - p.y, 4)]); zs.append(p.z)
+    xs = [q[0] for q in s['corners']]
+    s['vis'] = min(zs) > 0.05 and max(xs) > 0.02 and min(xs) < 0.98
 json.dump({'w': sc.render.resolution_x, 'h': sc.render.resolution_y, 'slots': win_px}, open(OUT.rsplit('.', 1)[0] + '.json', 'w'), ensure_ascii=False, indent=1)
 print('DONE')
