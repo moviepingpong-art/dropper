@@ -39,6 +39,12 @@
       const tw = bw * 2.788, thh = th.height * tw / th.width; g.drawImage(th, bx + (bw - tw) * .5, by + (bh - thh) * .224, tw, thh);
       g.restore(); g.drawImage(sm, x, y, S.w * k, S.h * k);
     }
+    if (o.glow) {  // 最後の部屋：額縁と作品のふちに、その精霊の属性の色の灯り（夜ごとに顔ぶれで色が変わる）
+      g.globalCompositeOperation = 'source-atop';
+      const cx = P.w / 2, cy = P.h / 2, gr = g.createRadialGradient(cx, cy, Math.min(P.ww, P.wh) * .35, cx, cy, Math.max(P.w, P.h) * .62);
+      gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, o.glow);
+      g.globalAlpha = .75; g.fillStyle = gr; g.fillRect(0, 0, P.w, P.h); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    }
     if (o.rar === 'gold' || o.rar === 'silver') {  // 金の光・銀の光の子は、額縁が箔で光る
       g.globalCompositeOperation = 'source-atop';
       const gr = g.createLinearGradient(0, 0, P.w, P.h); const col = o.rar === 'gold' ? '255,214,120' : '220,230,245';
@@ -166,25 +172,35 @@
     const CH = { Bb: { b: 46, t: [58, 62, 65, 69], pad: [46, 53, 57, 62] }, Cm: { b: 48, t: [60, 63, 67, 74], pad: [48, 55, 58, 63] },
       Eb: { b: 51, t: [58, 63, 67, 69], pad: [51, 55, 58, 62] }, Gm: { b: 43, t: [58, 62, 65, 67], pad: [43, 50, 53, 58] } };
     const ARP = [0, 1, 2, 3, 4, 3, 2, 1, 0, 2, 1, 3, 2, 4, 3, 1];
-    const arp = (c, t0, t1, v0, v1, rate = 1) => { for (let t = t0, i = 0; t < t1; t += STEP / rate, i++) { const a = ARP[i % 16], k = (t - t0) / (t1 - t0); spark(a === 4 ? c.t[0] + 12 : c.t[a], t, v0 + (v1 - v0) * k); } };
+    const arp = (c, t0, t1, v0, v1, rate = 1, pat = ARP) => { for (let t = t0, i = 0; t < t1; t += STEP / rate, i++) { const a = pat[i % pat.length], k = (t - t0) / (t1 - t0); spark(a === 4 ? c.t[0] + 12 : c.t[a], t, v0 + (v1 - v0) * k); } };
     plan({ bell, haze, spark, sub, boom: (t, v) => boom(t, v * soft), riser: (t, d, v) => riser(t, d, v * soft), arp, CH, STEP, mel, pad });
     return { T0, stop: () => { master.gain.cancelScheduledValues(ac.currentTime); master.gain.setTargetAtTime(0, ac.currentTime, .15); } };
   }
-  // 最後の部屋の曲（20秒）：光の扉 → 額縁が1つ灯るたびに鈴が1つ上へ → 光の粒が集まる → 天窓の光で和音がひらく
-  const ROOM_PLAN = ({ mel: bell, pad: haze, sub, boom, riser, arp, CH }) => {
+  // その夜のカードから決まる乱数（同じ夜の同じ7体なら同じ。カードか日付が1つ違えば別の曲・別の灯り）
+  function seeded(str) {
+    let h = 2166136261; for (const ch of String(str)) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); }
+    return () => { h += 0x6D2B79F5; let t = h; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  }
+  // 最後の部屋の曲（20秒）：光の扉 → 額縁が1つ灯るたびに鈴が1つ上へ → 光の粒が集まる → 天窓の光で和音がひらく。
+  // 旋律（灯るたびの7つの音・はじめと終わりの鈴）・和音の進み方・粒の音の並びは、その夜のカードから決める（rnd）。音が鳴る時刻は映像に合わせて同じ
+  const ROOM_PLAN = rnd => ({ mel: bell, pad: haze, sub, boom, riser, arp, CH }) => {
+    const pick = a => a[Math.floor(rnd() * a.length)];
+    const P = pick([['Gm', 'Cm', 'Eb', 'Gm'], ['Eb', 'Cm', 'Gm', 'Eb'], ['Cm', 'Eb', 'Gm', 'Cm'], ['Gm', 'Eb', 'Cm', 'Gm'], ['Eb', 'Gm', 'Cm', 'Eb'], ['Cm', 'Gm', 'Eb', 'Cm']]).map(k => CH[k]);
+    const SC = [58, 60, 62, 65, 67, 69, 70, 72, 74, 77, 79, 81, 82];
+    const up = []; for (let k = 0, i = Math.floor(rnd() * 3); k < 7; k++) { up.push(SC[i]); i = Math.min(SC.length - 1, i + 1 + (rnd() < .35 ? 1 : 0) - (rnd() < .15 && i > 0 ? 2 : 0)); }
+    const pat = []; for (let k = 0, a = 0; k < 16; k++) { pat.push(a); a = Math.max(0, Math.min(4, a + pick([-1, 1, 1, 2, -2]))); }
     haze(CH.Bb.pad.concat([69]), 0, 2.8, .03, 2600);
-    [81, 77, 74].forEach((n, i) => bell(n, .2 + i * .25, 2.6, .07));
-    const up = [58, 62, 65, 69, 70, 74, 77];
+    pick([[81, 77, 74], [74, 77, 81], [77, 81, 74], [82, 77, 74], [74, 70, 77]]).forEach((n, i) => bell(n, .2 + i * .25, 2.6, .07));
     up.forEach((n, i) => bell(n, 2.95 + i * 1.25, 2.8, .1));                       // 額縁が灯る（70コマ目から30コマごと）
-    haze(CH.Gm.pad, 2.8, 2.6, .018, 1200); haze(CH.Cm.pad, 5.3, 2.6, .02); haze(CH.Eb.pad, 7.8, 2.6, .022); haze(CH.Gm.pad, 10.3, 2.4, .022);
-    arp(CH.Gm, 3.2, 5.4, .008, .016); arp(CH.Cm, 5.4, 7.9, .016, .022); arp(CH.Eb, 7.9, 10.4, .022, .028); arp(CH.Gm, 10.4, 12.4, .028, .03);
-    for (let t = 4.2; t < 12.3; t += .625 * 2) sub((t < 5.4 ? CH.Gm.b : t < 7.9 ? CH.Cm.b : t < 10.4 ? CH.Eb.b : CH.Gm.b) - 12, t, .1);
-    haze(CH.Eb.pad.concat([70]), 12.3, 3.5, .026, 2000); arp(CH.Eb, 12.4, 15.6, .03, .05, 2);   // 光の粒が灯籠へ
+    haze(P[0].pad, 2.8, 2.6, .018, 1200); haze(P[1].pad, 5.3, 2.6, .02); haze(P[2].pad, 7.8, 2.6, .022); haze(P[3].pad, 10.3, 2.4, .022);
+    arp(P[0], 3.2, 5.4, .008, .016, 1, pat); arp(P[1], 5.4, 7.9, .016, .022, 1, pat); arp(P[2], 7.9, 10.4, .022, .028, 1, pat); arp(P[3], 10.4, 12.4, .028, .03, 1, pat);
+    for (let t = 4.2; t < 12.3; t += .625 * 2) sub((t < 5.4 ? P[0].b : t < 7.9 ? P[1].b : t < 10.4 ? P[2].b : P[3].b) - 12, t, .1);
+    haze(CH.Eb.pad.concat([70]), 12.3, 3.5, .026, 2000); arp(CH.Eb, 12.4, 15.6, .03, .05, 2, pat);   // 光の粒が灯籠へ
     riser(14.0, 1.8, .05);
     boom(15.8, .5); sub(CH.Bb.b - 12, 15.8, .3, 2.4);                                       // 天窓の光
     haze(CH.Bb.pad.concat([69, 74]), 15.8, 4.0, .036, 2800);
     [58, 62, 65, 69, 74, 77, 81].forEach((n, i) => bell(n, 15.8 + i * .08, 3.6, .1));
-    [[17.6, 70], [17.9, 74], [18.2, 77], [18.6, 82]].forEach(([t, n]) => bell(n, t, 2.4, .07));
+    [17.6, 17.9, 18.2, 18.6].forEach((t, k) => bell(pick([70, 72, 74, 77, 79, 81, 82, 84]), t, 2.4, .07));
   };
   // 最後の通路の曲（12秒）：額縁が掛かる鈴 → 歩く脈 → 光の扉で和音
   const WALK_PLAN = ({ bell, haze, sub, arp, riser, CH }) => {
@@ -245,8 +261,10 @@
     const W = J.w, H = J.h; cv.width = W; cv.height = H;
     const vc = document.createElement('canvas'); vc.width = W; vc.height = H * 2; const vg = vc.getContext('2d', { willReadFrequently: true });
     const out = g.createImageData(W, H);
-    const fcs = await Promise.all(J.wins.map((w, i) => o.cards[i] ? frameCanvas(Object.assign({ k: w.kind }, o.cards[i])) : frameCanvas({ k: w.kind, t: '光' })));
+    const fcs = await Promise.all(J.wins.map((w, i) => o.cards[i] ? frameCanvas(Object.assign({ k: w.kind, glow: TYC[o.cards[i].t] }, o.cards[i])) : frameCanvas({ k: w.kind, t: '光' })));
     const hues = (o.hues && o.hues.length ? o.hues : ['#f3d79a', '#f6e2b0', '#ffe9c0']);
+    const ths = await Promise.all(o.cards.map(c => img(c.th)));
+    const glowRnd = seeded('glow' + (o.seed || '')), glows = J.wins.map(() => ({ r: .55 + glowRnd() * .35, ph: glowRnd() * 6.28 }));
     const beam = document.createElement('canvas');
     function draw(f) {  // f：1〜n
       const F = J.f[Math.min(J.n, Math.max(1, f)) - 1];
@@ -266,6 +284,16 @@
       for (let i = 0; i < n; i += 4) { od[i] = d[i]; od[i + 1] = d[i + 1]; od[i + 2] = d[i + 2]; od[i + 3] = d[n + i]; }
       const tmp = draw.t || (draw.t = Object.assign(document.createElement('canvas'), { width: W, height: H }));
       tmp.getContext('2d').putImageData(out, 0, 0); g.drawImage(tmp, 0, 0);
+      // 灯った額縁のまわりに、その精霊の属性の色のうすい灯り（ゆっくりゆらぐ。大きさとゆらぎはその夜のカードから）。額縁そのものの色の灯りは frameCanvas の glow
+      g.globalCompositeOperation = 'screen';
+      F.w.forEach((q, i) => {
+        const c = o.cards[i]; if (!q[5] || !c || q[4] <= 0) return;
+        const cx = (q[0][0] + q[1][0] + q[2][0] + q[3][0]) / 4 * W, cy = (q[0][1] + q[1][1] + q[2][1] + q[3][1]) / 4 * H;
+        const sz = Math.hypot((q[1][0] - q[0][0]) * W, (q[1][1] - q[0][1]) * H) * (1.1 + glows[i].r), a = q[4] * (.24 + .08 * Math.sin(f / 9 + glows[i].ph));
+        const gr = g.createRadialGradient(cx, cy, sz * .15, cx, cy, sz); gr.addColorStop(0, TYC[c.t] || '#e8d79a'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+        g.globalAlpha = clamp(a); g.fillStyle = gr; g.fillRect(cx - sz, cy - sz, sz * 2, sz * 2);
+      });
+      g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
       // 灯った額縁の下に、その精霊の名前（灯ってから1.6秒）
       g.textAlign = 'center'; g.textBaseline = 'top';
       F.w.forEach((q, i) => {
@@ -309,6 +337,17 @@
         g.fillText(big, W / 2, H * .46);
         if (big !== o.title) { g.font = `500 ${Math.round(W / 30)}px "Noto Serif JP", serif`; g.fillText(o.title, W / 2, H * .395); }
         g.font = `500 ${Math.round(W / 26)}px "Noto Serif JP", serif`; g.fillText(o.sub, W / 2, H * .53);
+        // その夜の7体を小さく並べる（この動画だけの顔ぶれ）
+        const ta = clamp((f - 446) / 20), tw = Math.min(W * .11, W * .86 / Math.max(1, ths.length) - 6), th0 = tw * 1.45, gap = 6, tx0 = (W - (tw + gap) * ths.length + gap) / 2, ty = H * .68;
+        if (ta > 0) ths.forEach((im, k) => {
+          const x = tx0 + k * (tw + gap); g.globalAlpha = ta;
+          g.fillStyle = 'rgba(122,86,30,.25)'; g.fillRect(x - 1, ty - 1, tw + 2, th0 + 2);
+          if (im) { g.save(); g.beginPath(); g.rect(x, ty, tw, th0); g.clip(); cover(g, im, x, ty, tw, th0); g.restore(); }
+          else { g.fillStyle = TYC[o.cards[k].t] || '#8a96a6'; g.fillRect(x, ty, tw, th0); }
+          if (o.cards[k].no) { g.fillStyle = 'rgba(122,86,30,.9)'; g.font = `500 ${Math.round(W / 46)}px "Noto Serif JP", serif`; g.fillText('No.' + o.cards[k].no, x + tw / 2, ty + th0 + W / 40); }
+        });
+        g.globalAlpha = 1;
+        if (o.only) { g.fillStyle = `rgba(122,86,30,${ta})`; g.font = `500 ${Math.round(W / 30)}px "Noto Serif JP", serif`; g.fillText(o.only, W / 2, ty + th0 + W / 40 + W / 18); }
         if (o.congrats) { g.fillStyle = `rgba(122,86,30,${clamp((f - 452) / 20)})`; g.font = `600 ${Math.round(W / 20)}px "Noto Serif JP", serif`; g.fillText(o.congrats, W / 2, H * .62); }
       }
     }
@@ -330,7 +369,7 @@
       };
       const stopDraw = onFrames(v, t => draw(Math.floor(t * J.fps) + 1));
       btn(L, o.tx.skip, 'ghost nf-skip', () => finish(false));
-      if (A) { A.ac.resume(); S = score(A.ac, A.out, ROOM_PLAN, o.story && o.story.music); rec = recorder(cv, A.dest); }
+      if (A) { A.ac.resume(); S = score(A.ac, A.out, ROOM_PLAN(seeded(o.seed || '')), o.story && o.story.music); rec = recorder(cv, A.dest); }
       if (rec) { rec.ondataavailable = e => { if (e.data && e.data.size) parts.push(e.data); }; rec.start(500); }
       v.onended = () => { draw(J.n); setTimeout(() => finish(true), 900); };
       v.play().catch(() => finish(false));

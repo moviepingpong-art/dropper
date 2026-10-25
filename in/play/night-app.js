@@ -93,7 +93,7 @@
   function spirit(M) {
     const w = Array.isArray(M.works) && M.works[0];
     return {
-      id: M.id, t: TY[M.type] ? M.type : '鋼', n: txt(M.name), p: Math.round(Number(M.power) || 0),
+      id: M.id, no: Number(M.no) || 0, t: TY[M.type] ? M.type : '鋼', n: txt(M.name), p: Math.round(Number(M.power) || 0),
       art: w ? safeArt(w.f) : '', th: safeThumb(M.thumb), rarity: M.rarity === 'gold' || M.rarity === 'silver' ? M.rarity : 'normal', bug: !!M.bug, fusion: Number(M.fusion) || 0,
       framed: (frames().find(f => f.id === M.id) || {}).k || null
     };
@@ -504,10 +504,10 @@
     // 最後の部屋の映像（20秒）。その夜の7体（★主が先）の作品と精霊が、壁の額縁に灯る。保存できる動画にする（night-film.js）
     if (window.NightFilm) {
       const wasOn = on; if (wasOn) bgm(false);
-      const cards = HAND.map(c => ({ art: c.art, th: c.th, rar: c.rarity, t: c.t, n: c.n }));
+      const cards = HAND.map(c => ({ art: c.art, th: c.th, rar: c.rarity, t: c.t, n: c.n, no: c.no }));
       $('msg').textContent = tr('nStoryWriting');
       const st = await story;
-      try { film = await window.NightFilm.room({ cards, hues: witnessHues, story: st, congrats: tr('nFilmCongrats'), title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
+      try { film = await window.NightFilm.room({ cards, hues: witnessHues, story: st, seed: HAND.map(c => c.id).join('|') + '|' + isoDate(), congrats: tr('nFilmCongrats'), only: tr('nFilmOnly'), title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
         tx: { loading: tr('nFilmLoading'), play: tr('nFilmPlay'), skip: tr('nFilmSkip'), save: tr('nFilmSave'), close: tr('nFilmClose'), made: tr('nFilmMade'), noRec: tr('nFilmNoRec') } }); } catch (e) { film = null; }
       if (wasOn) bgm(true);
     }
