@@ -158,7 +158,7 @@
   let dpick = [];
   // at：'door'＝cur 番目の扉の前・'room'＝部屋の中・'lit'＝灯った部屋・'last'＝最後の通路（pos 0 入口／1 奥の2枚の前／2 光の扉の手前）
   let HAND = [], ROOM = [], sel = [], cur = 0, at = 'door', pos = 0, page = 0, busy = false, ended = false, endArm = false;
-  let keyed = false, witness = null, witnessMap = '', witnessHues = null, hikariLit = null, film = null, doorKeyed = [];
+  let keyed = false, doorPics = [], witness = null, witnessMap = '', witnessHues = null, witnessTh = '', hikariLit = null, film = null, doorKeyed = [];
   // 扉2〜4の鍵（2026-10-25〜、重吉さんの決め）：外のサイトで保存した画像。扉1は鍵なし。毎晩要るが、前に保存した同じ画像で何度でも開く
   const DOORKEY = [null, 'silk', 'hubble', 'sky'];
   const doorKey = () => at === 'door' && !doorKeyed[cur] ? DOORKEY[cur] || null : null;
@@ -199,7 +199,7 @@
     if (last) { fw.textContent = tr('nForward'); fw.onclick = forward; fw.hidden = pos >= 2 || busy || ended || keyed; }
     else if (at === 'door') { fw.textContent = tr('nOpenDoor'); fw.onclick = openDoor; fw.hidden = busy || ended || !!doorKey(); }
     else fw.hidden = true;
-    drawHall();
+    drawHall(); drawWalls();
     const dk = doorKey(), lightKey = last && pos === 2 && !keyed;
     $('roomBox').hidden = at !== 'room'; $('keyBox').hidden = !(lightKey || dk);
     // 鍵の箱は、扉2〜4と光の扉で同じものを使い、言葉だけ入れかえる
@@ -379,7 +379,7 @@
     const a = await askMaker(f);
     $('drop').classList.remove('busy');
     if (!a.ok) { $('msg').textContent = tr(a.err ? 'nKeyErr' : 'nKeyNo'); sfx('no'); return; }
-    keyed = true; witness = txt(a.name); witnessMap = a.life ? lifeGrad(a) : ''; witnessHues = a.life ? lifeHues(a) : null; track('night_key');
+    keyed = true; witness = txt(a.name); witnessMap = a.life ? lifeGrad(a) : ''; witnessHues = a.life ? lifeHues(a) : null; witnessTh = safeThumb(a.th); track('night_key');
     enterLast(a);
   }
   // 扉2〜4：落とされた画像を、この端末の中で形と色だけ見る（AI なし・どこにも送らない・残さない）。合えば扉を開ける
@@ -392,7 +392,7 @@
     $('drop').classList.remove('busy');
     if (doorKey() !== dk) return;
     if (!ok) { $('msg').textContent = tr('nDoorNo', { site }); sfx('no'); return; }
-    doorKeyed[cur] = true; sfx('light');
+    doorKeyed[cur] = true; doorPics[cur] = URL.createObjectURL(f); sfx('light');
     openDoor();
     setTimeout(() => { if (!ended) $('msg').textContent = tr('nDoorOk'); }, reduce ? 200 : 800);
   }
@@ -494,7 +494,7 @@
   async function enterLast(a) {
     busy = true; draw();
     const story = window.NightFilm ? nightStory() : null;  // 光の扉の場面と同時に頼み、その間に書いてもらう
-    $('msg').textContent = tr(a.isNew ? 'nKeyNew' : 'nKeyOk', { name: witness });
+    $('msg').textContent = tr('nKeyOk', { name: witness });
     sfx('light'); burst(.5, .4, 80);
     $('flash').classList.add('on');
     await wait(2400);
@@ -508,7 +508,7 @@
       const cards = HAND.map(c => ({ art: c.art, th: c.th, rar: c.rarity, t: c.t, n: c.n, no: c.no, kin: (c.par || []).length > 0, par: (c.par || []).map(id => HAND.findIndex(h => h.id === id)).filter(k => k >= 0) }));
       $('msg').textContent = tr('nStoryWriting');
       const st = await story;
-      try { film = await window.NightFilm.room({ cards, hues: witnessHues, story: st, seed: HAND.map(c => c.id).join('|') + '|' + isoDate(), congrats: tr('nFilmCongrats'), only: tr('nFilmOnly'), title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
+      try { film = await window.NightFilm.room({ cards, hues: witnessHues, guard: witness ? { th: witnessTh, n: witness, line: tr('nFilmGuard', { name: witness }) } : null, story: st, seed: HAND.map(c => c.id).join('|') + '|' + isoDate(), congrats: tr('nFilmCongrats'), only: tr('nFilmOnly'), title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
         tx: { loading: tr('nFilmLoading'), play: tr('nFilmPlay'), skip: tr('nFilmSkip'), save: tr('nFilmSave'), close: tr('nFilmClose'), made: tr('nFilmMade'), noRec: tr('nFilmNoRec') } }); } catch (e) { film = null; }
       if (wasOn) bgm(true);
     }
@@ -741,7 +741,29 @@
     const h = B.map((b, i) => b / A[i][i]);
     return `matrix3d(${h[0]},${h[3]},0,${h[6]},${h[1]},${h[4]},0,${h[7]},0,0,1,0,${h[2]},${h[5]},0,1)`;
   }
-  function fitHall() { $('stage').style.transform = `scale(${$('view').clientWidth / HW})`; }
+  // 扉2〜4の鍵の画像を、その部屋の3つの壁に映す（2026-10-25〜、重吉さんの決め）。画像はその夜の画面の中だけで、どこにも残さない
+  // 四隅は room.py の mask の JSON（絵の幅・高さを1とした値。左上・右上・右下・左下）。絵を作り直したら WALLS も直す
+  const WALLS = {
+    back: [[0.2474, 0.0514], [0.7526, 0.0514], [0.74, 0.6074], [0.26, 0.6074]],
+    left: [[-0.7142, -1.4565], [0.2474, 0.0514], [0.26, 0.6074], [-0.4701, 1.0935]],
+    right: [[0.7526, 0.0514], [1.7142, -1.4565], [1.4701, 1.0935], [0.74, 0.6074]]
+  };
+  const WW = { back: [700, 520], left: [550, 520], right: [550, 520] };
+  function drawWalls() {
+    const box = $('walls'), pic = (at === 'room' || at === 'lit') ? doorPics[cur] : null;
+    box.hidden = !pic; box.classList.toggle('lit', at === 'lit');
+    if (!pic) { box.replaceChildren(); delete box.dataset.pic; return; }
+    fitHall();
+    if (box.dataset.pic === pic) return;
+    box.dataset.pic = pic; box.replaceChildren();
+    for (const k of Object.keys(WALLS)) {
+      const [w, h] = WW[k], d = document.createElement('div');
+      d.style.width = w + 'px'; d.style.height = h + 'px'; d.style.backgroundImage = `url('${pic}')`;
+      d.style.transform = homography([[0, 0], [w, 0], [w, h], [0, h]], WALLS[k].map(([x, y]) => [x * 1200, y * 800]));
+      box.append(d);
+    }
+  }
+  function fitHall() { $('walls').style.transform = `scale(${$('view').clientWidth / 1200})`; $('stage').style.transform = `scale(${$('view').clientWidth / HW})`; }
   function drawHall() {
     const stage = $('stage'), labels = $('hLabels'); stage.replaceChildren(); labels.replaceChildren();
     if (at !== 'last') return;
@@ -766,7 +788,7 @@
     });
     fitHall();
   }
-  addEventListener('resize', () => { if (at === 'last') fitHall(); });
+  addEventListener('resize', () => { if (at === 'last' || !$('walls').hidden) fitHall(); });
   // 前の版で飾った子には作品の写しが無いので、目録にまだいれば足しておく
   async function fixFrames() {
     const R = loadRec(); if (!Array.isArray(R.frames) || !R.frames.some(f => f && f.id && !f.w)) return;
@@ -887,7 +909,7 @@
   $('tonight').onclick = () => {
     HAND = dpick.map(i => Object.assign({}, ZK[i], { used: false }));
     ROOM = tonight(new Date()); sel = []; cur = 0; at = 'door'; pos = 0; page = 0;
-    busy = false; ended = false; endArm = false; keyed = false; doorKeyed = []; witness = null; witnessMap = ''; witnessHues = null; hikariLit = null; film = null;
+    busy = false; ended = false; endArm = false; keyed = false; doorKeyed = []; doorPics.forEach(u => u && URL.revokeObjectURL(u)); doorPics = []; witness = null; witnessMap = ''; witnessHues = null; witnessTh = ''; hikariLit = null; film = null;
     $('trialNote').hidden = !trial;
     $('deck').hidden = true; preload(); draw(); glowUp(); sfx('send'); track('night_start');
   };

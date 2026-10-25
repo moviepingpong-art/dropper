@@ -1,5 +1,7 @@
 # 夜の美術館の部屋の中：石の部屋の真ん中に大きな燭台。灯る前（月の光だけ）と、灯った後の2枚を書き出す。
-#   python3 room.py -- <出力.png> [幅px] [サンプル数] [dark|lit]
+#   python3 room.py -- <出力.png> [幅px] [サンプル数] [dark|lit|mask]
+#   mask：壁（奥のアーチの中も）だけ白・ほかは黒の絵（扉2〜4の鍵の画像を壁に映すときの抜き。play/gallery/room-wallmask.png）と、
+#         3つの壁の四隅の位置（絵の幅・高さを1とした値）を出力.json に書く。night-app.js の WALLS に写す
 # 部屋ごとの違い（名前・好む属性の色）はページで重ねる。絵は5部屋とも同じ1組
 import bpy, bmesh, math, sys, os
 from mathutils import Vector
@@ -8,6 +10,7 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 a = sys.argv[sys.argv.index('--') + 1:]
 OUT = a[0]; PX = int(a[1]) if len(a) > 1 else 1200; SAMPLES = int(a[2]) if len(a) > 2 else 96
 LIT = (a[3] if len(a) > 3 else 'dark') == 'lit'
+MASK = (a[3] if len(a) > 3 else '') == 'mask'
 bpy.ops.wm.read_factory_settings(use_empty=True)
 import frame as F
 sc = bpy.context.scene
@@ -141,6 +144,25 @@ bpy.ops.object.camera_add(location=(0, -0.2, 1.55), rotation=(math.radians(86), 
 cam = bpy.context.object; sc.camera = cam; cam.data.lens = 18
 sc.render.resolution_x = PX; sc.render.resolution_y = round(PX * 2 / 3)
 sc.render.engine = 'CYCLES'; sc.cycles.samples = SAMPLES; sc.cycles.use_denoising = True; sc.cycles.max_bounces = 6
+if MASK:
+    import json
+    from bpy_extras.object_utils import world_to_camera_view as w2c
+    white, black = emit_mat('mw', (1, 1, 1), 1), emit_mat('mb', (0, 0, 0), 0)
+    for o in list(sc.objects):
+        if o.type == 'LIGHT' or o is fog: bpy.data.objects.remove(o); continue
+        if o.type != 'MESH': continue
+        isw = any(m and m.name in ('wall', 'niche') for m in o.data.materials)  # 奥のアーチの中も壁として映す
+        o.data.materials.clear(); o.data.materials.append(white if isw else black)
+    w.node_tree.nodes['Background'].inputs['Strength'].default_value = 0
+    sc.cycles.use_denoising = False; sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'None'
+    bpy.context.view_layer.update()
+    TOP, NEAR = RH + 1.6, 1.5
+    pr = lambda x, y, z: [round(v, 4) for v in ((lambda q: (q.x, 1 - q.y))(w2c(sc, cam, Vector((x, y, z)))))]
+    # 四隅は 左上・右上・右下・左下（画像の向きのまま貼る）
+    walls = {'back': [pr(-RW / 2, RD, TOP), pr(RW / 2, RD, TOP), pr(RW / 2, RD, 0), pr(-RW / 2, RD, 0)],
+             'left': [pr(-RW / 2, NEAR, TOP), pr(-RW / 2, RD, TOP), pr(-RW / 2, RD, 0), pr(-RW / 2, NEAR, 0)],
+             'right': [pr(RW / 2, RD, TOP), pr(RW / 2, NEAR, TOP), pr(RW / 2, NEAR, 0), pr(RW / 2, RD, 0)]}
+    json.dump(walls, open(os.path.splitext(OUT)[0] + '.json', 'w')); print(json.dumps(walls))
 sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'AgX - Medium High Contrast'
 sc.render.image_settings.file_format = 'PNG'; sc.render.filepath = OUT
 bpy.ops.render.render(write_still=True)
