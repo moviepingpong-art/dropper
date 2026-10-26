@@ -37,6 +37,7 @@
   // 目録の名前に、ページへの仕掛けが混ぜられていても文字として出す
   const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const safeThumb = s => (typeof s === 'string' && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(s) ? s : '');
+  const safeFig = s => (typeof s === 'string' && /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(s) ? s : '');
   const safeArt = f => (typeof f === 'string' && /^[\w.-]+\.(jpg|jpeg|png|webp)$/i.test(f) ? f : '');
   function track(name) { try { if (typeof gtag === 'function') gtag('event', name); } catch (e) { /* 計測が止められていても遊べる */ } }
   const wait = ms => new Promise(r => setTimeout(r, reduce ? Math.min(ms, 120) : ms));
@@ -94,7 +95,7 @@
     const w = Array.isArray(M.works) && M.works[0];
     return {
       id: M.id, no: Number(M.no) || 0, par: Array.isArray(M.parents) ? M.parents.filter(x => typeof x === 'string').slice(0, 2) : [], t: TY[M.type] ? M.type : '鋼', n: txt(M.name), p: Math.round(Number(M.power) || 0),
-      art: w ? safeArt(w.f) : '', th: safeThumb(M.thumb), rarity: M.rarity === 'gold' || M.rarity === 'silver' ? M.rarity : 'normal', bug: !!M.bug, fusion: Number(M.fusion) || 0,
+      art: w ? safeArt(w.f) : '', th: safeThumb(M.thumb), fig: safeFig(M.fig), rarity: M.rarity === 'gold' || M.rarity === 'silver' ? M.rarity : 'normal', bug: !!M.bug, fusion: Number(M.fusion) || 0,
       framed: (frames().find(f => f.id === M.id) || {}).k || null
     };
   }
@@ -647,7 +648,7 @@
     if (!mornImg[key]) { const im = new Image(); im.src = `${GAL}morning-${k}-${lv}.jpg`; mornImg[key] = im; }
     return mornImg[key];
   }
-  // 夜明けの画面の映像（5秒のループ。カメラが斜め上から正面・横へ回る。2026-10-25 重吉さんの決め）。
+  // 夜明けの画面の映像（10秒のループ。カメラが館のまわりをいろいろな角度からめぐる。2026-10-25、2026-10-26 に奥行きと長さを足した・重吉さんの決め）。
   // 絵は morning.py の FILM で書き出す（play/gallery/morning-dawn-film.{webm,mp4}）。太陽と扉の上の位置はコマごとに .json から読む
   let mornFilm = null;
   function mornVideo() {
@@ -669,7 +670,9 @@
     const pic = mornPic(k, lv);
     // 映像が流れていればそのコマを、まだなら静止画を描く
     const img = F ? { get complete() { return F.v.readyState >= 2 && !!F.m || pic.complete; }, get naturalWidth() { return F.v.readyState >= 2 && F.m ? F.v.videoWidth : pic.naturalWidth; }, get naturalHeight() { return F.v.readyState >= 2 && F.m ? F.v.videoHeight : pic.naturalHeight; },
-      get src() { return F.v.readyState >= 2 && F.m ? F.v : pic; }, get mark() { if (!(F.v.readyState >= 2 && F.m)) return null; const m = F.m.m[Math.floor(F.v.currentTime * F.m.fps) % F.m.m.length]; return m; } } : pic;
+      get src() { return F.v.readyState >= 2 && F.m ? F.v : pic; }, get mark() { if (!(F.v.readyState >= 2 && F.m)) return null; const m = F.m.m[Math.floor(F.v.currentTime * F.m.fps) % F.m.m.length]; return m; },
+      get frame() { return F.v.readyState >= 2 && F.m && Array.isArray(F.m.s) ? F.v.currentTime * F.m.fps : null; }, film: F } : pic;
+    if (F) guardSprites();
     const t0 = performance.now();
     const step = t => {
       if (sceneOn !== run || $('morning').hidden) return;
@@ -682,6 +685,48 @@
     // 動きを減らす設定では1枚だけ描く（絵が届いてから）
     if (reduce && !img.complete) img.addEventListener('load', () => requestAnimationFrame(step), { once: true });
     requestAnimationFrame(step);
+  }
+  // 夜明けの映像の中で、その夜の7体が館のまわりを舞って守る（2026-10-26〜、重吉さんの決め）。
+  // 道は morning.py が書いた .json の s（コマごとに7体の [x, y, 大きさ, 見えるか]）。姿はカードの小さな絵の精霊のところを丸く切り出す
+  let sprites = [];
+  function guardSprites() {
+    sprites = HAND.slice(0, 7).map(c => { const src = c.fig || c.th; if (!src) return null; const im = new Image(); im.src = src; im.fig = !!c.fig; return im; });
+  }
+  function drawGuards(g2, ix, iy, dw, img) {
+    const S = img.film && img.film.m && img.film.m.s, f = img.frame;
+    if (!S || f === null || !S.length) return;
+    const n = S.length, at = j => S[((Math.floor(f) - j) % n + n) % n];
+    g2.save(); g2.globalCompositeOperation = 'lighter';
+    // 光の尾（少し前のコマの位置をたどる）
+    for (let k = 0; k < 7; k++) for (let j = 12; j >= 1; j--) {
+      const q = at(j)[k], v = (at(j - 1)[k][3] + q[3]) / 2; if (!v) continue;
+      const r = q[2] * dw * (0.9 - j * 0.05), a = 0.28 * (1 - j / 13);
+      const g = g2.createRadialGradient(ix(q[0]), iy(q[1]), 0, ix(q[0]), iy(q[1]), r);
+      g.addColorStop(0, `rgba(255,240,200,${a})`); g.addColorStop(1, 'rgba(255,220,150,0)');
+      g2.fillStyle = g; g2.beginPath(); g2.arc(ix(q[0]), iy(q[1]), r, 0, 6.28); g2.fill();
+    }
+    g2.restore();
+    for (let k = 0; k < 7; k++) {
+      // 館の後ろへ回るときは、前後3コマの見え方で、ふっと消えて ふっと現れる
+      let v = 0; for (let j = -3; j <= 3; j++) v += at(j)[k][3]; v /= 7; if (v <= 0) continue;
+      const q = at(0)[k], x = ix(q[0]), y = iy(q[1]) + Math.sin(f / 9 + k) * 2, r = Math.max(6, q[2] * dw * 1.5), im = sprites[k];
+      g2.save(); g2.globalAlpha = v;
+      const halo = g2.createRadialGradient(x, y, r * 0.3, x, y, r * 1.8);
+      halo.addColorStop(0, 'rgba(255,244,214,.75)'); halo.addColorStop(1, 'rgba(255,230,170,0)');
+      g2.globalCompositeOperation = 'lighter'; g2.fillStyle = halo; g2.beginPath(); g2.arc(x, y, r * 1.8, 0, 6.28); g2.fill();
+      g2.globalCompositeOperation = 'source-over';
+      if (im && im.complete && im.naturalWidth && im.fig) {
+        // 姿だけの絵（地は透明。目録のページが作る M.fig）。羽ばたくように少し上下に伸び縮み
+        const z = r * 2.4, sy = 1 + 0.04 * Math.sin(f / 4 + k);
+        g2.drawImage(im, x - z / 2, y - z / 2 * sy, z, z * sy);
+      } else if (im && im.complete && im.naturalWidth) {
+        // 姿だけの絵が無い古いカードは、カードの小さな絵（180×276）の、精霊が立つあたり（真ん中・上から3割）
+        const cw = im.naturalWidth, cx = cw * 0.5, cy = im.naturalHeight * 0.315, hs = cw * 0.29;
+        g2.beginPath(); g2.arc(x, y, r, 0, 6.28); g2.clip();
+        g2.drawImage(im, cx - hs, cy - hs, hs * 2, hs * 2, x - r, y - r, r * 2, r * 2);
+      } else { g2.fillStyle = 'rgba(255,248,226,.9)'; g2.beginPath(); g2.arc(x, y, r * 0.5, 0, 6.28); g2.fill(); }
+      g2.restore();
+    }
   }
   function drawScene(g2, w, h, k, lv, hk, s, rnd, img) {
     // 絵を枠いっぱいに（はみ出しは切る）。ix, iy で絵の割合の位置を画面の位置にする
@@ -722,6 +767,7 @@
       if (lv >= 4) { g2.strokeStyle = 'rgba(30,22,26,.8)'; g2.lineWidth = 1.6; for (let i = 0; i < 6; i++) { const x = ((rnd(i, 4) * w + s * (20 + i * 4)) % (w + 40)) - 20, y = h * (.08 + rnd(i, 5) * .22), f = Math.sin(s * 6 + i) * 3; g2.beginPath(); g2.moveTo(x - 7, y - f); g2.quadraticCurveTo(x - 3, y - 4, x, y); g2.quadraticCurveTo(x + 3, y - 4, x + 7, y - f); g2.stroke(); } }
       // 光の間：扉の上から金の柱／空から銀の雨
       if (hk === 'gold') { const px = ix(door[0]), py = iy(door[1]), p = g2.createLinearGradient(px - 30, 0, px + 30, 0); p.addColorStop(0, 'rgba(255,220,120,0)'); p.addColorStop(.5, `rgba(255,236,170,${.55 + .15 * Math.sin(s * 2)})`); p.addColorStop(1, 'rgba(255,220,120,0)'); g2.save(); g2.globalCompositeOperation = 'lighter'; g2.fillStyle = p; g2.fillRect(px - 30, 0, 60, py); g2.restore(); }
+      if (img && img.film) drawGuards(g2, ix, iy, dw, img);
       if (hk === 'silver') { g2.strokeStyle = 'rgba(238,241,246,.6)'; g2.lineWidth = 1; for (let i = 0; i < 50; i++) { const x = rnd(i, 6) * w, y = ((rnd(i, 7) * h + s * 60) % h); g2.beginPath(); g2.moveTo(x, y); g2.lineTo(x, y + 8); g2.stroke(); } }
     } else {
       // 1 朝もや：ゆっくり流れる薄い帯
