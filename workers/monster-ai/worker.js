@@ -43,18 +43,14 @@ export default {
     if (!['photo', 'life'].includes(kind) || !I18N[lang] || typeof image !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(image)) return out({ error: 'bad' }, 400);
     if (image.length > MAX_IMAGE) return out({ error: 'size' }, 413);
 
-    const day = new Date().toISOString().slice(0, 10);
-    const used = await env.DB.prepare("SELECT n FROM counts WHERE day = ? AND k = 'tokens'").bind(day).first('n') || 0;
-    if (used + Number(env.RESERVE_TOKENS) > Number(env.DAILY_TOKEN_LIMIT)) return out({ error: 'quota' }, 429);
-    // 接続元はそのまま残さない。日ごとに変わる塩と混ぜて切り詰めた印だけで数え、翌日に消す
-    const who = 'ip:' + (await sha256(env.IP_SALT + day + (req.headers.get('CF-Connecting-IP') || ''))).slice(0, 16);
-    if (await add(env, day, who, 1) > Number(env.PER_IP_DAILY)) return out({ error: 'limit' }, 429);
+    const g = await gate(env, req, 'play', Number(env.RESERVE_TOKENS), 'ip', Number(env.PER_IP_DAILY));
+    if (g.error) return out({ error: g.error }, 429);
 
     const prompt = kind === 'life' ? I18N[lang].lifePrompt : I18N[lang].prompt;
     let a;
     try { a = await ask(env, prompt, image, kind === 'life' ? 'high' : 'low'); }
-    catch (e) { await add(env, day, who, -1); return out({ error: e.kind || 'busy' }, e.kind === 'bad' ? 502 : 503); }
-    await add(env, day, 'tokens', a.tokens);
+    catch (e) { await g.undo(); return out({ error: e.kind || 'busy' }, e.kind === 'bad' ? 502 : 503); }
+    await g.settle(a.tokens);
     return out({ answer: a.answer });
   },
   async scheduled(ev, env) {
@@ -67,12 +63,9 @@ export default {
 async function fuse(req, env, q, out) {
   const lang = q.lang, fs = q.works;
   if (!I18N[lang] || !Array.isArray(fs) || fs.length < 2 || fs.length > 3 || !fs.every(f => typeof f === 'string' && WORKS.has(f))) return out({ error: 'bad' }, 400);
-  const day = new Date().toISOString().slice(0, 10);
-  const used = await env.DB.prepare("SELECT n FROM counts WHERE day = ? AND k = 'tokens'").bind(day).first('n') || 0;
-  if (used + Number(env.RESERVE_TOKENS) > Number(env.DAILY_TOKEN_LIMIT)) return out({ error: 'quota' }, 429);
   // 1人1日の枚数は、写真・人生の記録と同じ数に入れる
-  const who = 'ip:' + (await sha256(env.IP_SALT + day + (req.headers.get('CF-Connecting-IP') || ''))).slice(0, 16);
-  if (await add(env, day, who, 1) > Number(env.PER_IP_DAILY)) return out({ error: 'limit' }, 429);
+  const g = await gate(env, req, 'play', Number(env.RESERVE_TOKENS), 'ip', Number(env.PER_IP_DAILY));
+  if (g.error) return out({ error: g.error }, 429);
   const works = fs.map((f, i) => {
     const w = WORKS.get(f), t = w.t[lang] || w.t.en;
     return `${i + 1}. ${w.title}（${w.date}）\n   ${t.name} / ${t.motif}\n   ${t.story}`;
@@ -86,8 +79,8 @@ async function fuse(req, env, q, out) {
       response_format: { type: 'json_object' },
       max_completion_tokens: 2000
     }, effort ? { reasoning_effort: 'minimal' } : {})), WAIT);
-  } catch (e) { await add(env, day, who, -1); return out({ error: e.kind || 'busy' }, e.kind === 'bad' ? 502 : 503); }
-  await add(env, day, 'tokens', a.tokens);
+  } catch (e) { await g.undo(); return out({ error: e.kind || 'busy' }, e.kind === 'bad' ? 502 : 503); }
+  await g.settle(a.tokens);
   return out({ answer: a.answer });
 }
 
@@ -100,12 +93,9 @@ async function night(req, env, q, out) {
   const lang = q.lang, cs = q.cards;
   if (!LANG_NAME[lang] || !I18N[lang] || !Array.isArray(cs) || cs.length < 2 || cs.length > 7
     || !cs.every(c => c && typeof c.f === 'string' && WORKS.has(c.f) && typeof c.n === 'string' && c.n.length <= 40)) return out({ error: 'bad' }, 400);
-  const day = new Date().toISOString().slice(0, 10);
-  const used = await env.DB.prepare("SELECT n FROM counts WHERE day = ? AND k = 'tokens'").bind(day).first('n') || 0;
-  if (used + Number(env.RESERVE_TOKENS) > Number(env.DAILY_TOKEN_LIMIT)) return out({ error: 'quota' }, 429);
-  // 1人1日の数は、写真・人生の記録・合体と同じ数に入れる（ページは1晩に1回だけ頼む）
-  const who = 'ip:' + (await sha256(env.IP_SALT + day + (req.headers.get('CF-Connecting-IP') || ''))).slice(0, 16);
-  if (await add(env, day, who, 1) > Number(env.PER_IP_DAILY)) return out({ error: 'limit' }, 429);
+  // 1人1日の数は、写真・合体とは別に数える（ページは1晩に1回だけ頼む。学校や携帯の回線では大勢が同じ接続元になるので、ゆるめ）
+  const g = await gate(env, req, 'play', Number(env.RESERVE_TOKENS), 'night', Number(env.PER_IP_NIGHT));
+  if (g.error) return out({ error: g.error }, 429);
   const data = cs.map((c, i) => {
     const w = WORKS.get(c.f), t = w.t[lang] || w.t.en;
     const d = { no: i + 1, artwork: w.title, date: w.date, shows: t.motif, about: t.desc, spirit: clipText(c.n, 24) };
@@ -123,8 +113,8 @@ async function night(req, env, q, out) {
       response_format: { type: 'json_object' },
       max_completion_tokens: 2500
     }, effort ? { reasoning_effort: 'minimal' } : {})), WAIT);
-  } catch (e) { await add(env, day, who, -1); return out({ error: e.kind || 'busy' }, e.kind === 'bad' ? 502 : 503); }
-  await add(env, day, 'tokens', a.tokens);
+  } catch (e) { await g.undo(); return out({ error: e.kind || 'busy' }, e.kind === 'bad' ? 502 : 503); }
+  await g.settle(a.tokens);
   const r = a.answer || {}, m = r.music || {};
   const lines = Array.isArray(r.lines) ? r.lines.slice(0, cs.length).map(x => clipText(x, 60)) : [];
   const inst = [...new Set(Array.isArray(m.inst) ? m.inst.filter(x => INSTS.includes(x)) : [])].slice(0, 3);
@@ -166,11 +156,8 @@ async function tool(req, env, url, out) {
   const name = isEvent ? 'event' : 'schedule';
   const reserve = Number(isEvent ? env.RESERVE_EVENT : env.RESERVE_SCHEDULE);
   const perIp = Number(isEvent ? env.PER_IP_EVENT : env.PER_IP_SCHEDULE);
-  const day = new Date().toISOString().slice(0, 10);
-  const used = await env.DB.prepare("SELECT n FROM counts WHERE day = ? AND k = 'tokens'").bind(day).first('n') || 0;
-  if (used + reserve > Number(env.DAILY_TOKEN_LIMIT)) return out({ error: 'quota' }, 429);
-  const who = name + ':' + (await sha256(env.IP_SALT + day + (req.headers.get('CF-Connecting-IP') || ''))).slice(0, 16);
-  if (await add(env, day, who, 1) > perIp) return out({ error: 'limit' }, 429);
+  const g = await gate(env, req, 'tool', reserve, name, perIp);
+  if (g.error) return out({ error: g.error }, 429);
 
   const MARK = '@@FILE@@';
   const part = mime === 'application/pdf'
@@ -190,9 +177,26 @@ async function tool(req, env, url, out) {
   };
   let a;
   try { a = await call(env, mk, TOOL_WAIT); }
-  catch (e) { await add(env, day, who, -1); return out({ error: e.kind || 'busy' }, e.kind === 'bad' ? 502 : 503); }
-  await add(env, day, 'tokens', a.tokens);
+  catch (e) { await g.undo(); return out({ error: e.kind || 'busy' }, e.kind === 'bad' ? 502 : 503); }
+  await g.settle(a.tokens);
   return out({ answer: a.answer });
+}
+
+// その日の上限と、接続元ごとの数を確かめる。上限は遊び場（play）と道具（tool）で分ける（遊び場が混んでも道具を止めないため）。
+// トークンは OpenAI に送る前に見込み（reserve）を先に足しておき、答えのあとで実際の数に直す。
+// 答えのあとに足すだけだと、同時に来た頼みが全部「まだ空いている」と見て、無料の枠を超えて送ってしまう（2026-10-26）。
+// 途中で切れて直せなかったときは見込みのまま残る（多めに数えるほうへ倒れる）
+async function gate(env, req, pool, reserve, tag, perIp) {
+  const day = new Date().toISOString().slice(0, 10), k = 'tokens:' + pool;
+  const limit = Number(pool === 'tool' ? env.TOOL_TOKEN_LIMIT : env.PLAY_TOKEN_LIMIT);
+  if (await add(env, day, k, reserve) > limit) { await add(env, day, k, -reserve); return { error: 'quota' }; }
+  // 接続元はそのまま残さない。日ごとに変わる塩と混ぜて切り詰めた印だけで数え、翌日に消す
+  const who = tag + ':' + (await sha256(env.IP_SALT + day + (req.headers.get('CF-Connecting-IP') || ''))).slice(0, 16);
+  if (await add(env, day, who, 1) > perIp) { await add(env, day, k, -reserve); return { error: 'limit' }; }
+  return {
+    settle: used => add(env, day, k, used - reserve),
+    undo: () => Promise.all([add(env, day, k, -reserve), add(env, day, who, -1)])
+  };
 }
 
 async function add(env, day, k, n) {
