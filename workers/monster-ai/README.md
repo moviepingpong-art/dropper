@@ -1,12 +1,14 @@
 # monster-ai — AI 中継（モンスタードロッパー・イベントドロッパー・予定表ドロッパー）
 
-道は3本。OpenAI のキーと、その日の全体の上限（`DAILY_TOKEN_LIMIT`）は3本で共通。
+道は3本。OpenAI のキーは共通。その日の上限は、遊び場（`/monster`、`PLAY_TOKEN_LIMIT`）と道具（`/event`・`/schedule`、`TOOL_TOKEN_LIMIT`）で分けてある（2026-10-26〜。遊び場が混んでも道具を止めないため）。
+
+**トークンは送る前に見込み（`RESERVE_*`）を先に足し、答えのあとで実際の数に直す**（`worker.js` の `gate()`）。答えのあとに足すだけだと、同時に来た頼みが全部「まだ空いている」と見て、無料の枠を超えて送ってしまうため。
 
 | 道 | 受け付ける生成元 | 受け取るもの | 1人1日 |
 |---|---|---|---|
 | `/monster` | `ALLOWED_ORIGINS`（dropper-tools.com） | JSON（`kind`・`lang`・縮めた画像） | `PER_IP_DAILY` |
 | `/monster`（`kind: 'fuse'`） | 同上 | JSON（`lang`・合体した作品のファイル名2〜3個）。画像は受け取らない | `PER_IP_DAILY`（上と同じ数に入る） |
-| `/monster`（`kind: 'night'`） | 同上 | JSON（`lang`・夜の美術館の最後の部屋の精霊ごとの作品のファイル名と名前 2〜7体）。中継が作品の絵の URL を付ける | `PER_IP_DAILY`（上と同じ数に入る） |
+| `/monster`（`kind: 'night'`） | 同上 | JSON（`lang`・夜の美術館の最後の部屋の精霊ごとの作品のファイル名と名前 2〜7体）。中継が作品の絵の URL を付ける | `PER_IP_NIGHT`（別に数える。1晩に1回で、同じ接続元の人が多いため） |
 | `/event` | `TOOL_ORIGINS`（app.dropper-tools.com） | URL に `lang`・`type`・`mime`、本文にファイル（PDF・画像）の base64 | `PER_IP_EVENT` |
 | `/schedule` | `TOOL_ORIGINS` | URL に `lang`・`fy`（年度、無くてよい）・`mime`、本文に base64 | `PER_IP_SCHEDULE` |
 
@@ -26,7 +28,7 @@
 - 頼み文は `play/monster-i18n.js` の `prompt` / `lifePrompt` を、出すときに一緒に取り込む
   → **頼み文を直したら、この Worker も出し直す**（出し直さないと前の頼み文のまま）
 - 画像も答えも保存しない。D1 に残すのは、その日に使ったトークン数と、接続元を切り詰めて混ぜた印ごとの枚数だけ（毎日消す）
-- OpenAI の「データ提供と引き換えの毎日の無料トークン」の中だけで動かす。その日の使用量が `DAILY_TOKEN_LIMIT` に近づいたら止める
+- OpenAI の「データ提供と引き換えの毎日の無料トークン」の中だけで動かす。その日の使用量が上限に近づいたら止める
 
 ## はじめて出すとき（重吉さんの作業）
 
@@ -36,7 +38,7 @@
 2. Billing で数ドル入れる（残高がプラスであることが無料トークンの条件。無料の枠の中なら減らない）
 3. Settings → Data controls → Sharing で、入力と出力の提供をオンにする（そのプロジェクトを選ぶ）。
    「You're eligible for free daily usage on traffic shared with OpenAI」と出ることを確かめる。
-   出ている1日の量（250万 か 1000万）で `wrangler.toml` の `DAILY_TOKEN_LIMIT` をその8割にする
+   出ている1日の量（250万 か 1000万）の8割を、`wrangler.toml` の `PLAY_TOKEN_LIMIT` と `TOOL_TOKEN_LIMIT` に分ける（合わせて8割）
 4. Limits で、月の支払いの上限を低く（例：5ドル）しておく
 5. そのプロジェクトで API キーを作る（あとで使う。ほかには貼らない）
 
