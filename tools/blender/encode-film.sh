@@ -2,7 +2,7 @@
 # 夜の美術館の映像を、ページが読む動画にする（2026-10-25〜）
 #   sh encode-film.sh room <lastroom.py の出力フォルダ>   … 上半分＝色・下半分＝抜きの濃さ（ページで額縁の窓の下に作品を描くため）→ play/gallery/lastroom.mp4・last.json
 #   sh encode-film.sh walk <lastwalk.py の出力フォルダ>   … そのまま → play/gallery/lastwalk.mp4・walk.json
-#   sh encode-film.sh morning <morning.py の FILM のフォルダ> … 夜明けの画面の10秒のループ → play/gallery/morning-dawn-film.mp4・.json
+#   sh encode-film.sh morning <morning.py の FILM のフォルダ> … 夜明けの画面の20秒（1回だけ流す） → play/gallery/morning-dawn-film.mp4・.json
 # 音は入れない（ページがその場で合成する）。H.264 の mp4 と VP9 の webm の2つ（オープニングと同じ。ページは webm を読めればそちら）
 set -e
 HERE=$(cd "$(dirname "$0")" && pwd); OUT="$HERE/../../play/gallery"
