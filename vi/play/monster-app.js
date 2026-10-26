@@ -1625,8 +1625,14 @@
   }
 
   // ---- 図鑑（この PC・スマホの中だけ。カードの中身ごと保存する。結婚に親の中身が要るため） ----
-  // LOOK：精霊の描き方の版。上げると、前からいるカードの小さな絵を目録のページで描き直す（2026-10-26 に光の輪・羽・虹を足して 2）
-  const LOOK = 2;
+  // LOOK：精霊の描き方の版。上げると、前からいるカードの小さな絵を目録のページで描き直す（2026-10-26 に光の輪・羽・虹を足して 2、姿だけの絵 fig を足して 3）
+  const LOOK = 3;
+  // 精霊の姿だけ（地は透明）。夜明けの映像で、館のまわりを舞う姿に使う（night-app.js の drawGuards）
+  function figOf(M) {
+    const t = document.createElement('canvas'); t.width = t.height = 160;
+    drawMonster(t.getContext('2d'), 80, 92, 50, M.g, M.gender);
+    return t.toDataURL('image/png');
+  }
   function thumbOf(cv = $('card')) {
     const t = document.createElement('canvas'); t.width = 180; t.height = 276;
     t.getContext('2d').drawImage(cv, 0, 0, 180, 276);
@@ -1636,7 +1642,7 @@
   function track(name) { try { if (typeof gtag === 'function') gtag('event', name); } catch (e) { /* 計測が止められていても遊べる */ } }
   async function saveCard(M, again) {
     if (!again) track(M.parents ? 'monster_child' : M.fusion ? 'monster_fuse' : 'monster_born');
-    M.thumb = thumbOf(); M.look = LOOK;
+    M.thumb = thumbOf(); M.fig = isHuman(M) ? '' : figOf(M); M.look = LOOK;
     await DB.put('cards', JSON.parse(JSON.stringify(M)));
     await renderDex();
   }
@@ -1680,7 +1686,7 @@
     // 描き方が変わる前のカードは、小さな絵を描き直す（夜の美術館のカードと映像も、この小さな絵を使うため）
     for (const M of await DB.getAll('cards')) if (M.look !== LOOK) {
       await loadFontsFor(M); const cv = document.createElement('canvas'); cv.width = 600; cv.height = 920;
-      drawCard(cv, M); M.thumb = thumbOf(cv); M.look = LOOK; await DB.put('cards', JSON.parse(JSON.stringify(M)));
+      drawCard(cv, M); M.thumb = thumbOf(cv); M.fig = figOf(M); M.look = LOOK; await DB.put('cards', JSON.parse(JSON.stringify(M)));
     }
     const cards = (await DB.getAll('cards')).sort((a, b) => b.serial - a.serial), g = $('dex'), framed = framesById();
     $('dexCount').textContent = tr('dexCount', { n: cards.length, max: DEX_MAX });

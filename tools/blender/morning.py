@@ -2,7 +2,7 @@
 #   python3 morning.py -- <dawn|quiet> <段階1-5> <出力.png> [幅px] [サンプル数]
 #   夜明け＝光が育つ（細い光→光の筋→金の粒→鳥が飛ぶ→館全体が金色）。太陽の高さと館の染まり方が段階で変わる
 #   静かな朝＝やすらぎが育つ（朝もや→花一輪→花びらが舞う→小鳥が鳴く→庭いっぱいの花）。花・枝の小鳥が段階で増える
-#   FILM=<フォルダ> を付けると、カメラが館のまわりを回る5秒のループ（120コマ）を書き出す（夜明けの画面の映像。2026-10-25 重吉さんの決め）
+#   FILM=<フォルダ> を付けると、カメラが館のまわりを回る10秒のループ（240コマ。2026-10-26 に5秒から伸ばし、館に奥行きを足した）を書き出す（夜明けの画面の映像。2026-10-25 重吉さんの決め）
 #     斜め上から入り、正面・横へ回って元の所へ戻る。できたコマは飛ばすので、止まっても同じ命令で続きから。CAMT=0.25 なら その1コマだけ試す
 #   動くもの（金の粒・飛ぶ鳥・舞う花びら・光の間の金の柱と銀の雨）はページの canvas が上に重ねる（night-app.js の drawScene）
 import bpy, math, sys, random, os
@@ -228,6 +228,36 @@ for sgn in (-1, 1):
         x = cx + (k - 2) * 2.0
         box((x, 0.3, TOP + 4.8), (0.25, 0.25, 0.3), ST)
         ball((x, 0.3, TOP + 5.15), (0.13, 0.13, 0.18), GILD if FEST else ST)   # 壺
+# 映像のときは館に奥行きを足す（2026-10-26 重吉さんの決め）：翼の棟が奥へ折れて中庭を囲み、円い屋根の後ろに長い展示の棟、いちばん奥に回廊の棟
+if os.environ.get('FILM'):
+    for sgn in (-1, 1):
+        ox = sgn * 10.5
+        box((ox, 10.0, TOP + 2.3), (3.6, 12.0, 4.6), WALL)                 # 奥へ折れる翼
+        box((ox, 10.0, TOP + 4.5), (3.9, 12.3, 0.25), ST, 0.01)            # 軒
+        box((ox, 10.0, TOP + 4.85), (3.8, 12.2, 0.1), ST)                 # 欄干の手すり
+        fx = ox + sgn * 1.81
+        for k in range(7):
+            y = 5.2 + k * 1.6
+            box((fx, y + 0.8, TOP + 2.3), (0.12, 0.3, 4.4), ST)              # 付け柱
+            box((fx, y, TOP + 1.6), (0.05, 0.7, 1.6), WIN)                    # 1階の窓
+            bpy.ops.mesh.primitive_cylinder_add(radius=0.35, depth=0.05, location=(fx, y, TOP + 2.4), rotation=(0, math.pi / 2, 0), vertices=24)
+            bpy.context.object.data.materials.append(GLASS)
+            box((fx, y, TOP + 3.65), (0.05, 0.55, 0.7), WIN)                  # 2階の小窓
+            box((fx, y, TOP + 4.8), (0.25, 0.25, 0.3), ST); ball((fx, y, TOP + 5.15), (0.13, 0.13, 0.18), GILD if FEST else ST)
+    # 円い屋根の後ろの長い展示の棟（高窓の列と、切妻の屋根）
+    box((0, 11.0, TOP + 2.9), (6.0, 9.0, 5.8), WALL)
+    for k in range(5):
+        for sgn in (-1, 1):
+            box((sgn * 3.01, 7.6 + k * 1.7, TOP + 4.6), (0.05, 0.8, 1.2), WIN)
+    bpy.ops.mesh.primitive_cylinder_add(radius=3.4, depth=9.2, location=(0, 11.0, TOP + 5.8), rotation=(math.pi / 2, 0, 0), vertices=3)
+    o = bpy.context.object; o.scale = (1, 0.5, 1); o.rotation_euler = (math.pi / 2, 0, 0); o.data.materials.append(ROOF)
+    # いちばん奥の回廊の棟（中庭を閉じる）
+    box((0, 17.0, TOP + 2.0), (24.6, 3.0, 4.0), WALL)
+    box((0, 17.0, TOP + 4.1), (24.9, 3.3, 0.25), ST, 0.01)
+    for k in range(16):
+        box((-11.25 + k * 1.5, 15.48, TOP + 1.5), (0.6, 0.05, 1.5), WIN)
+    # 中庭の噴水
+    cyl((0, 5.2 + 3.0, 0.3), 1.6, 0.6, ST, 32); cyl((0, 8.2, 0.62), 1.4, 0.06, mat('water', (0.2, 0.3, 0.4), 0.05, emit=(1.0, 0.8, 0.5), es=0.3), 32)
 # 大階段の両脇の台座と像（座る獅子のかわりに、外套をまとった立ち姿）
 for sgn in (-1, 1):
     x = sgn * (W2 + 1.6)
@@ -417,7 +447,7 @@ sc.render.engine = 'CYCLES'; sc.cycles.samples = SAMPLES; sc.cycles.use_denoisin
 sc.cycles.max_bounces = 6; sc.cycles.transparent_max_bounces = 32
 sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'AgX - Medium High Contrast'
 sc.render.image_settings.file_format = 'PNG'
-FILM = os.environ.get('FILM'); NF = 120
+FILM = os.environ.get('FILM'); NF = 240
 def glow_post(path):
     # 灯りのにじみ（明るい所をぼかして足す）。5段階目は強く、華やかに
     from PIL import Image, ImageFilter, ImageChops
@@ -427,12 +457,30 @@ def glow_post(path):
     k = [0.3, 0.35, 0.4, 0.5, 0.7][LV - 1]
     ImageChops.add(im, glow.point(lambda v: int(v * k))).save(path)
 def orbit(t):
-    # 0〜1 で1周する楕円：横は左右に ±32°、高さは 左上（高い）→正面（低い）→右（中ほど）→元へ
-    az = math.radians(-32 * math.cos(2 * math.pi * t))
-    h = 5.6 + 3.0 * math.cos(2 * math.pi * t) - 1.0 * math.sin(2 * math.pi * t)
-    r = 30 - 3.0 * math.sin(2 * math.pi * t) ** 2
-    co.location = (r * math.sin(az), -r * math.cos(az), h)
-    co.rotation_euler = (Vector((0, 0, 4.2)) - co.location).to_track_quat('-Z', 'Y').to_euler()
+    # 0〜1 で1周（10秒）：左の高い所から入り、左の横・正面の低い所・右の横・右の奥の高い所をめぐって元へ戻る（2026-10-26 重吉さんの決め）
+    a = 2 * math.pi * t
+    az = math.radians(-62 * math.cos(a) + 12 * math.sin(2 * a))
+    h = 6.8 + 3.2 * math.cos(2 * a) + 1.4 * math.sin(a)
+    r = 33 + 5.0 * math.cos(a) ** 2
+    C = Vector((0, 5.0, 0))
+    co.location = C + Vector((r * math.sin(az), -r * math.cos(az), h))
+    co.rotation_euler = (Vector((0, 5.0, 3.8)) - co.location).to_track_quat('-Z', 'Y').to_euler()
+    bpy.context.view_layer.update()   # これが無いと、画面の位置を前のコマのカメラで計算してしまう
+# 館のまわりを舞う精霊の道（7体。ページがその夜の7体をここに描く）。1周の間に整数回まわるので、ループの継ぎ目で途切れない
+SPIRITS = [(11, 9, 4.0, 1, 0.0), (13, 11, 6.5, -1, 0.9), (9.5, 8, 7.5, 1, 2.1), (15, 12, 3.2, -1, 3.0), (12, 10, 9.0, 1, 4.2), (10.5, 13, 5.0, 2, 5.0), (14, 9.5, 8.0, -2, 1.6)]
+def spirit_pos(j, t):
+    rx, ry, z, k, ph = SPIRITS[j]
+    a = 2 * math.pi * k * t + ph
+    return Vector((rx * math.cos(a), 5.0 + ry * math.sin(a), z + 0.8 * math.sin(4 * math.pi * t + j)))
+def spirits():
+    dg = bpy.context.evaluated_depsgraph_get(); out = []
+    for j in range(len(SPIRITS)):
+        p = spirit_pos(j, CUR_T); q = world_to_camera_view(sc, co, p)
+        d = (p - co.location).length
+        hit, loc, *_ = sc.ray_cast(dg, co.location, (p - co.location).normalized(), distance=d - 0.3)
+        size = 0.9 * cam.lens / (d * cam.sensor_width)                     # 1体の大きさ（絵の幅の割合）
+        out.append([round(q.x, 4), round(1 - q.y, 4), round(size, 4), 0 if hit or q.z < 0 else 1])
+    return out
 from bpy_extras.object_utils import world_to_camera_view
 def marks():
     # 太陽・扉の上の画面上の位置（割合）。動画ではコマごとに変わるので、ページはコマの番号で読む
@@ -443,9 +491,14 @@ def marks():
 if FILM:
     os.makedirs(FILM, exist_ok=True)
     import json
-    json.dump({'fps': 24, 'n': NF, 'm': [orbit(i / NF) or marks() for i in range(NF)]}, open(os.path.join(FILM, 'film.json'), 'w'))
+    M, S = [], []
+    for i in range(NF):
+        CUR_T = i / NF; orbit(CUR_T); M.append(marks()); S.append(spirits())
+    json.dump({'fps': 24, 'n': NF, 'm': M, 's': S}, open(os.path.join(FILM, 'film.json'), 'w'))
     one = os.environ.get('CAMT')
-    for i in ([None] if one else range(NF)):
+    sh = os.environ.get('SHARD')   # 「k/N」なら i%N==k のコマだけ（いくつも並べて走らせるとき）
+    kk, nn = map(int, sh.split('/')) if sh else (0, 1)
+    for i in ([None] if one else [i for i in range(NF) if i % nn == kk]):
         t = float(one) if one else i / NF
         f = os.path.join(FILM, f'test-{t:.2f}.png' if one else f'{i:04d}.png')
         if os.path.exists(f): continue
