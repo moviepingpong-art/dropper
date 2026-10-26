@@ -58,7 +58,7 @@
       pickTitle: '🏛 美術館をえらぶ',
       dexTitle: '📜 わたしの目録',
       clearDex: '目録を空にする',
-      battleLink: '目録の精霊たちと、夜の美術館を灯しにいく',
+      battleLink: '🌙 夜の美術館へ',
       // 夜の美術館を灯す（night.html）で額縁に飾った精霊の呼び名・名札・目録の印（2026-10-21〜。飾った記録は localStorage dropper-spirit-night）
       frameTitleDawn: '夜明けの守り手',
       frameTitleQuiet: '朝の語り手',
@@ -359,7 +359,7 @@
       pickTitle: '🏛 Choose a museum',
       dexTitle: '📜 My Catalogue',
       clearDex: 'Clear catalogue',
-      battleLink: 'Light the night museum with your spirits',
+      battleLink: '🌙 To the night museum',
       // 夜の美術館を灯す（night.html）で額縁に飾った精霊の呼び名・名札・目録の印（2026-10-21〜。飾った記録は localStorage dropper-spirit-night）
       frameTitleDawn: 'Keeper of Dawn',
       frameTitleQuiet: 'Teller of Morning',
@@ -658,7 +658,7 @@
       pickTitle: '🏛 Museum chuno',
       dexTitle: '📜 Mera Catalogue',
       clearDex: 'Catalogue khaali karo',
-      battleLink: 'Apne spirits ke saath raat ka museum roshan karo',
+      battleLink: '🌙 Raat ke museum chalo',
       dexNote: 'Card dabao to bada dikhega. Catalogue mein 20 spirits tak aa sakte hain. Cards sirf is PC ya phone mein save hote hain, koi aur unhe nahin dekh sakta.',
       dexEmpty: 'Abhi ek bhi spirit nahin hai.',
       marryTitle: '🕊 Rishta aur Virasat',
@@ -828,7 +828,7 @@
     pickTitle: '🏛 미술관 고르기',
     dexTitle: '📜 나의 목록',
     clearDex: '목록 비우기',
-    battleLink: '목록의 정령들과 밤의 미술관을 밝히러 가기',
+    battleLink: '🌙 밤의 미술관으로',
     // 夜の美術館を灯す（night.html）で額縁に飾った精霊の呼び名・名札・目録の印（2026-10-21〜。飾った記録は localStorage dropper-spirit-night）
     frameTitleDawn: '새벽의 수호자',
     frameTitleQuiet: '아침의 이야기꾼',
@@ -1090,7 +1090,7 @@
     pickTitle: '🏛 選擇美術館',
     dexTitle: '📜 我的目錄',
     clearDex: '清空目錄',
-    battleLink: '和目錄裡的精靈一起點亮夜之美術館',
+    battleLink: '🌙 前往夜之美術館',
     // 夜の美術館を灯す（night.html）で額縁に飾った精霊の呼び名・名札・目録の印（2026-10-21〜。飾った記録は localStorage dropper-spirit-night）
     frameTitleDawn: '黎明的守護者',
     frameTitleQuiet: '早晨的說書人',
@@ -1364,7 +1364,7 @@
     pickTitle: '🏛 Chọn bảo tàng',
     dexTitle: '📜 Danh mục của tôi',
     clearDex: 'Xóa danh mục',
-    battleLink: 'Cùng tinh linh thắp sáng bảo tàng đêm',
+    battleLink: '🌙 Đến bảo tàng đêm',
     // 夜の美術館を灯す（night.html）で額縁に飾った精霊の呼び名・名札・目録の印（2026-10-21〜。飾った記録は localStorage dropper-spirit-night）
     frameTitleDawn: 'Người giữ Bình minh',
     frameTitleQuiet: 'Người kể Buổi sáng',

@@ -247,8 +247,128 @@
     if (['monster', 'drawing', 'screen'].includes(shape)) return true;
     return shape === 'animal' && !['鳥', '魚', '虫', 'は虫類'].includes(g.animal);
   }
+  // ---- 精霊らしさ（2026-10-26〜）：いままでの姿はそのままに、うしろの光・足もとが光に溶けて浮く・頭の上のともしび・舞う粒 ----
+  // 姿は別の canvas に描いてから重ねる（足もとを透かすため）。光の色は属性、ともしびの形と粒の並びはその子の遺伝子から
   function drawMonster(c, cx, cy, R, g, gender) {
     if (shapeOf(g) === 'human') return drawHuman(c, cx, cy, R, g, gender);
+    const S = Math.ceil(R * 3), o = document.createElement('canvas'); o.width = o.height = S;
+    const k = o.getContext('2d'), ox = S / 2, oy = S / 2 - R * 0.08;
+    drawCreature(k, ox, oy, R, g);
+    // 足もと：下のほうを少しずつ透かす（光に溶けて浮いている）
+    const foot = hasBody(g) ? oy + R * 0.5 : oy + R * 0.35;
+    const fg = k.createLinearGradient(0, foot, 0, oy + R * 0.95);
+    fg.addColorStop(0, 'rgba(0,0,0,0)'); fg.addColorStop(1, 'rgba(0,0,0,1)');
+    k.globalCompositeOperation = 'destination-out'; k.fillStyle = fg; k.fillRect(0, foot, S, S - foot);
+    k.globalCompositeOperation = 'source-over';
+    const fr = (TYPES[g.type] || TYPES['光']).frame[0], rnd = rndOf(g);
+    c.save();
+    // うしろの光
+    const halo = c.createRadialGradient(cx, cy - R * 0.1, R * 0.2, cx, cy - R * 0.1, R * 1.25);
+    halo.addColorStop(0, fr + '66'); halo.addColorStop(1, fr + '00');
+    c.fillStyle = halo; c.fillRect(cx - R * 1.3, cy - R * 1.4, R * 2.6, R * 2.6);
+    // 放つ光の筋（天使のような輝き）
+    c.save(); c.translate(cx, cy - R * 0.15); c.globalCompositeOperation = 'lighter';
+    const rays = 10 + Math.floor(rnd() * 6), r0 = rnd() * 6.28;
+    for (let i = 0; i < rays; i++) {
+      const a = r0 + i * 6.28 / rays, L = R * (1.0 + rnd() * 0.35), w = 0.05 + rnd() * 0.05;
+      const rg = c.createLinearGradient(0, 0, Math.cos(a) * L, Math.sin(a) * L);
+      const hue = (i * 360 / rays + r0 * 57) % 360; // 虹の色を1本ずつ
+      rg.addColorStop(0, 'rgba(255,244,210,.22)'); rg.addColorStop(0.45, `hsla(${hue | 0},90%,75%,.16)`); rg.addColorStop(1, `hsla(${hue | 0},90%,75%,0)`);
+      c.fillStyle = rg; c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, L, a - w, a + w); c.closePath(); c.fill();
+    }
+    c.restore();
+    // 炎のようにゆらめく光
+    flames(c, cx, cy, R, fr, rnd, hasBody(g));
+    // 羽：3体に1体くらい（遺伝子で決まるので、同じ子はいつも同じ）。鳥はいつも
+    if (rnd() < 0.34 || g.animal === '鳥') wings(c, cx, cy - R * (hasBody(g) ? 0.05 : 0.1), R, fr, rnd);
+    // 足もとの光だまり（影ではなく光）
+    const pool = c.createRadialGradient(cx, cy + R * 0.95, 0, cx, cy + R * 0.95, R * 0.55);
+    pool.addColorStop(0, 'rgba(255,240,200,.45)'); pool.addColorStop(1, 'rgba(255,240,200,0)');
+    c.fillStyle = pool; c.beginPath(); c.ellipse(cx, cy + R * 0.95, R * 0.55, R * 0.14, 0, 0, 7); c.fill();
+    // うしろに虹のアーチ（色の並びはどの子も同じ、大きさと傾きはその子ごと）
+    { const rr = R * (0.88 + rnd() * 0.16), tl = (rnd() - 0.5) * 0.3; c.save(); c.globalAlpha = 0.38; c.lineWidth = R * 0.03;
+      ['#ff8a8a', '#ffc27a', '#fff59a', '#9af0a8', '#8ad4ff', '#b49aff'].forEach((col, j) => { c.strokeStyle = col; c.beginPath(); c.arc(cx, cy + R * 0.35, rr - j * R * 0.03, Math.PI + 0.12 + tl, -0.12 + tl); c.stroke(); });
+      c.restore(); }
+    // 姿（ふちにうっすら光）
+    c.shadowColor = fr; c.shadowBlur = R * 0.12;
+    c.drawImage(o, cx - ox, cy - S / 2);
+    c.shadowBlur = 0;
+    // 天使のような光の輪（頭の上に浮かぶ。大きさ・傾き・高さはその子ごと）
+    const top = cy - R * (hasBody(g) ? 0.22 + 0.66 * g.ry : g.ry) - R * (0.2 + rnd() * 0.1);
+    const hx = cx + (rnd() - 0.5) * R * 0.16, hw = R * (0.24 + rnd() * 0.1), tilt = (rnd() - 0.5) * 0.35;
+    c.save(); c.shadowColor = '#fff3c4'; c.shadowBlur = R * 0.15;
+    c.strokeStyle = 'rgba(255,236,170,.95)'; c.lineWidth = R * 0.055;
+    c.beginPath(); c.ellipse(hx, top, hw, hw * 0.28, tilt, 0, 7); c.stroke();
+    if (c.createConicGradient) { const cg = c.createConicGradient(tilt, hx, top); ['#ff8a8a', '#ffd27a', '#fff59a', '#9af0a8', '#8ad4ff', '#b49aff', '#ff8a8a'].forEach((col, j, a) => cg.addColorStop(j / (a.length - 1), col)); c.strokeStyle = cg; c.lineWidth = R * 0.03; c.beginPath(); c.ellipse(hx, top, hw * 0.92, hw * 0.25, tilt, 0, 7); c.stroke(); }
+    c.strokeStyle = '#fffbe8'; c.lineWidth = R * 0.012; c.beginPath(); c.ellipse(hx, top, hw, hw * 0.28, tilt, 0, 7); c.stroke();
+    c.fillStyle = '#fff'; c.beginPath(); for (let j = 0; j < 8; j++) { const b = j * Math.PI / 4, q = j % 2 ? R * 0.012 : R * 0.045; c.lineTo(hx + hw * 0.7 + Math.cos(b) * q, top - hw * 0.12 + Math.sin(b) * q); } c.fill();
+    c.restore();
+    // 舞う粒（形は属性で）
+    c.fillStyle = '#fff3c4';
+    const n = 7 + Math.floor(rnd() * 5);
+    for (let i = 0; i < n; i++) {
+      const a = rnd() * 6.28, r = R * (0.85 + rnd() * 0.4), px = cx + Math.cos(a) * r, py = cy - R * 0.05 + Math.sin(a) * r * 0.85, z = R * (0.012 + rnd() * 0.02);
+      c.globalAlpha = 0.35 + rnd() * 0.5; c.beginPath();
+      if (g.type === '水') c.ellipse(px, py, z * 0.7, z * 1.2, 0, 0, 7);
+      else if (g.type === '風') c.ellipse(px, py, z * 1.8, z * 0.5, a, 0, 7);
+      else if (g.type === '夢' || g.type === '光') { for (let j = 0; j < 8; j++) { const b = j * Math.PI / 4, q = j % 2 ? z * 0.4 : z * 1.6; c.lineTo(px + Math.cos(b) * q, py + Math.sin(b) * q); } }
+      else if (g.type === '森') c.ellipse(px, py, z * 1.4, z * 0.7, a, 0, 7);
+      else c.arc(px, py, z, 0, 7);
+      c.fill();
+    }
+    c.restore();
+  }
+  // 白い羽（体のうしろ）。羽先の数・開き方・大きさはその子ごと
+  function wings(c, cx, cy, R, fr, rnd) {
+    const n = 3 + Math.floor(rnd() * 2), lift = 0.45 + rnd() * 0.3, span = R * (0.58 + rnd() * 0.14);
+    c.save(); c.shadowColor = fr; c.shadowBlur = R * 0.12; c.lineJoin = 'round';
+    for (const s of [-1, 1]) {
+      const bx = cx + s * R * 0.22, by = cy - R * 0.1;            // つけ根
+      const tx = bx + s * span, ty = by - span * lift;             // 羽の先
+      const P = new Path2D();
+      P.moveTo(bx, by);
+      P.bezierCurveTo(bx + s * span * 0.2, by - span * (lift + 0.55), tx + s * span * 0.1, ty - span * 0.35, tx, ty); // 上のふち
+      // 下のふち：羽先をいくつかの丸い羽根に（外から内へ）
+      for (let i = 1; i <= n; i++) {
+        const t = i / n, x = tx + (bx - tx) * t, y = ty + (by + R * 0.12 - ty) * t + Math.sin(t * Math.PI) * span * 0.5;
+        const px = tx + (bx - tx) * (t - 0.5 / n), py = ty + (by + R * 0.12 - ty) * (t - 0.5 / n) + Math.sin((t - 0.5 / n) * Math.PI) * span * 0.5;
+        P.quadraticCurveTo(px + s * R * 0.02, py + R * 0.16, x, y);
+      }
+      P.closePath();
+      const gr = c.createLinearGradient(bx, by, tx, ty);
+      gr.addColorStop(0, 'rgba(255,255,255,.97)'); gr.addColorStop(0.6, 'rgba(255,248,230,.92)'); gr.addColorStop(0.8, 'rgba(220,235,255,.9)'); gr.addColorStop(0.9, 'rgba(255,225,245,.9)'); gr.addColorStop(1, 'rgba(230,255,225,.85)'); // 羽の先は虹色にきらめく
+      c.fillStyle = gr; c.fill(P);
+      c.shadowBlur = 0; c.strokeStyle = 'rgba(200,160,90,.75)'; c.lineWidth = Math.max(1, R * 0.012); c.stroke(P);
+      // 羽根のすじ
+      c.save(); c.clip(P); c.strokeStyle = 'rgba(200,165,100,.35)'; c.lineWidth = Math.max(1, R * 0.008);
+      for (let i = 1; i < n; i++) {
+        const t = i / n, x = tx + (bx - tx) * t, y = ty + (by + R * 0.12 - ty) * t + Math.sin(t * Math.PI) * span * 0.35;
+        c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo((x + bx) / 2, (y + by) / 2 - R * 0.12, bx + s * R * 0.08, by - R * 0.05); c.stroke();
+      }
+      c.restore(); c.shadowBlur = R * 0.12;
+    }
+    c.restore();
+  }
+  // 炎のようにゆらめく光（体のまわり、うしろ）。舌の数・長さはその子ごと、色は属性
+  function flames(c, cx, cy, R, fr, rnd, hb) {
+    const n = 6 + Math.floor(rnd() * 3), ex = R * 0.6, ey = R * (hb ? 0.78 : 0.62), y0 = cy + R * (hb ? 0.05 : 0);
+    c.save(); c.globalCompositeOperation = 'lighter'; c.shadowColor = fr; c.shadowBlur = R * 0.1;
+    for (let i = 0; i < n; i++) {
+      const a = Math.PI * (1.05 + 0.9 * (i / (n - 1))) + (rnd() - 0.5) * 0.15; // 上半分
+      const bx = cx + Math.cos(a) * ex, by = y0 + Math.sin(a) * ey;
+      const L = R * (0.2 + rnd() * 0.14), w = R * (0.13 + rnd() * 0.05);
+      const d = a + (-Math.PI / 2 - a) * 0.45;                    // 外へ、少し上へ
+      const tx = bx + Math.cos(d) * L, ty = by + Math.sin(d) * L, nx = -Math.sin(d) * w, ny = Math.cos(d) * w;
+      const gr = c.createLinearGradient(bx, by, tx, ty);
+      gr.addColorStop(0, 'rgba(255,250,225,.55)'); gr.addColorStop(0.5, fr + '88'); gr.addColorStop(1, fr + '00');
+      c.fillStyle = gr; c.beginPath(); c.moveTo(bx - nx, by - ny);
+      c.quadraticCurveTo(bx - nx * 1.6 + (tx - bx) * 0.5, by - ny * 1.2 + (ty - by) * 0.5, tx, ty);
+      c.quadraticCurveTo(bx + nx * 1.6 + (tx - bx) * 0.5, by + ny * 1.2 + (ty - by) * 0.5, bx + nx, by + ny);
+      c.closePath(); c.fill();
+    }
+    c.restore();
+  }
+  function drawCreature(c, cx, cy, R, g) {
     if (!hasBody(g)) return drawHead(c, cx, cy, R, g);
     const shape = shapeOf(g), HS = 0.66, hy = cy - R * 0.22;
     const main = css(g.main), dark = css(shade(g.main, -0.35)), outline = Math.max(2, R * HS * 0.035);
@@ -395,20 +515,21 @@
       c.fillStyle = '#fff'; c.beginPath(); c.arc(x, y, es, 0, 7); c.fill(); c.lineWidth = outline * 0.8; c.stroke();
       c.fillStyle = '#1a1a2e'; c.beginPath(); c.arc(x + es * 0.15, y + es * 0.1, es * 0.55, 0, 7); c.fill();
       c.fillStyle = '#fff'; c.beginPath(); c.arc(x + es * 0.32, y - es * 0.15, es * 0.2, 0, 7); c.fill();
+      c.beginPath(); c.arc(x - es * 0.12, y + es * 0.3, es * 0.1, 0, 7); c.fill();
     });
     if (shape === 'paper') { // めがね
       c.strokeStyle = '#1a1a2e'; c.lineWidth = outline * 0.9;
       xs.forEach(ex => { c.beginPath(); c.arc(cx + ex * rx, ey, es * 1.35, 0, 7); c.stroke(); });
       if (xs.length > 1) { c.beginPath(); c.moveTo(cx + xs[0] * rx + es * 1.35, ey); c.lineTo(cx + xs[1] * rx - es * 1.35, ey); c.stroke(); }
     }
-    if (g.cheeks) { c.fillStyle = 'rgba(255,110,150,.45)'; for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.6, ey + es * 1.6, es * 0.8, es * 0.45, 0, 0, 7); c.fill(); } }
+    // 精霊はみんなほっぺがほんのり（2026-10-26）
+    { c.fillStyle = g.cheeks ? 'rgba(255,120,160,.5)' : 'rgba(255,140,170,.3)'; for (const s of [-1, 1]) { c.beginPath(); c.ellipse(cx + s * rx * 0.6, ey + es * 1.6, es * 0.8, es * 0.45, 0, 0, 7); c.fill(); } }
     const my = ey + es * 2.1, mw = rx * 0.28;
     c.strokeStyle = '#1a1a2e'; c.lineWidth = outline;
     c.beginPath();
     if (g.mouth === 'smile' || g.mouth === 'fang') { c.arc(cx, my - mw * 0.5, mw, 0.2 * Math.PI, 0.8 * Math.PI); c.stroke(); }
-    if (g.mouth === 'fang') { c.fillStyle = '#fff'; c.beginPath(); c.moveTo(cx + mw * 0.3, my + mw * 0.38); c.lineTo(cx + mw * 0.5, my + mw * 0.75); c.lineTo(cx + mw * 0.65, my + mw * 0.3); c.fill(); }
     if (g.mouth === 'o') { c.fillStyle = '#7a1f2b'; c.ellipse(cx, my + mw * 0.2, mw * 0.32, mw * 0.4, 0, 0, 7); c.fill(); }
-    if (g.mouth === 'zig') { for (let i = 0; i <= 4; i++) c.lineTo(cx - mw + i * mw / 2, my + (i % 2 ? mw * 0.25 : 0)); c.stroke(); }
+    if (g.mouth === 'zig') { c.arc(cx, my - mw * 0.2, mw * 0.55, 0.15 * Math.PI, 0.85 * Math.PI); c.stroke(); } // 歯に見えるギザギザはやめて小さなほほえみ
     c.restore();
     // 画面のキャラは、描いたあとで粗いマス目（ドット絵）にする
     if (shape === 'screen' && !WITH_BODY) pixelate(c, cx - R * 1.3, cy - R * 1.3, R * 2.6, R * 2.6, Math.max(4, Math.round(R * 0.07)));
@@ -1380,7 +1501,8 @@
       c.fillStyle = bg; c.fillRect(ax, ay, aw, ah);
       drawHex(c, ax, ay, aw, ah, M);
     }
-    c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(W / 2, ay + ah - 34, 120, 14, 0, 0, 7); c.fill();
+    // 足もとの影は守り神だけ（精霊は浮いているので、光だまりを drawMonster が描く）
+    if (shapeOf(M.g) === 'human') { c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(W / 2, ay + ah - 34, 120, 14, 0, 0, 7); c.fill(); }
     // 精霊の姿は、やわらかい光をまとって描く
     c.save(); c.shadowColor = metal ? 'rgba(255,240,190,.75)' : 'rgba(255,230,170,.55)'; c.shadowBlur = 34;
     drawMonster(c, W / 2, ay + ah / 2 + 14, 150, M.g, M.gender);
@@ -1503,16 +1625,18 @@
   }
 
   // ---- 図鑑（この PC・スマホの中だけ。カードの中身ごと保存する。結婚に親の中身が要るため） ----
-  function thumbOf() {
+  // LOOK：精霊の描き方の版。上げると、前からいるカードの小さな絵を目録のページで描き直す（2026-10-26 に光の輪・羽・虹を足して 2）
+  const LOOK = 2;
+  function thumbOf(cv = $('card')) {
     const t = document.createElement('canvas'); t.width = 180; t.height = 276;
-    t.getContext('2d').drawImage($('card'), 0, 0, 180, 276);
+    t.getContext('2d').drawImage(cv, 0, 0, 180, 276);
     return t.toDataURL('image/jpeg', 0.75);
   }
   // アクセス解析のイベント。回数だけを送り、写真・名前・カードの中身は送らない（プライバシーポリシーに書いた約束）
   function track(name) { try { if (typeof gtag === 'function') gtag('event', name); } catch (e) { /* 計測が止められていても遊べる */ } }
   async function saveCard(M, again) {
     if (!again) track(M.parents ? 'monster_child' : M.fusion ? 'monster_fuse' : 'monster_born');
-    M.thumb = thumbOf();
+    M.thumb = thumbOf(); M.look = LOOK;
     await DB.put('cards', JSON.parse(JSON.stringify(M)));
     await renderDex();
   }
@@ -1553,6 +1677,11 @@
   async function renderDex() {
     // 前は守り神も目録に入れていた。いまはその夜だけの立会人なので、残っている守り神はここで消す（2026-10-25〜）
     for (const M of await DB.getAll('cards')) if (M.g && M.g.kind === '人間') await DB.del('cards', M.id);
+    // 描き方が変わる前のカードは、小さな絵を描き直す（夜の美術館のカードと映像も、この小さな絵を使うため）
+    for (const M of await DB.getAll('cards')) if (M.look !== LOOK) {
+      await loadFontsFor(M); const cv = document.createElement('canvas'); cv.width = 600; cv.height = 920;
+      drawCard(cv, M); M.thumb = thumbOf(cv); M.look = LOOK; await DB.put('cards', JSON.parse(JSON.stringify(M)));
+    }
     const cards = (await DB.getAll('cards')).sort((a, b) => b.serial - a.serial), g = $('dex'), framed = framesById();
     $('dexCount').textContent = tr('dexCount', { n: cards.length, max: DEX_MAX });
     g.innerHTML = '';
