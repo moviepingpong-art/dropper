@@ -648,12 +648,12 @@
     if (!mornImg[key]) { const im = new Image(); im.src = `${GAL}morning-${k}-${lv}.jpg`; mornImg[key] = im; }
     return mornImg[key];
   }
-  // 夜明けの画面の映像（10秒のループ。カメラが館のまわりをいろいろな角度からめぐる。2026-10-25、2026-10-26 に奥行きと長さを足した・重吉さんの決め）。
+  // 夜明けの画面の映像（20秒を1回だけ。カメラが館のまわりをいろいろな角度からめぐり、寄りと引きが1回ずつ。最後は光り輝いて薄れる。2026-10-25〜26 重吉さんの決め）。
   // 絵は morning.py の FILM で書き出す（play/gallery/morning-dawn-film.{webm,mp4}）。太陽と扉の上の位置はコマごとに .json から読む
   let mornFilm = null;
   function mornVideo() {
     if (mornFilm) return mornFilm;
-    const v = document.createElement('video'); v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'auto';
+    const v = document.createElement('video'); v.muted = true; v.loop = false; v.playsInline = true; // ループしない（2026-10-26 重吉さんの決め。最後は光り輝いて薄れる） v.preload = 'auto';
     v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
     v.src = GAL + 'morning-dawn-film.' + (v.canPlayType('video/webm; codecs="vp9"') ? 'webm' : 'mp4');
     mornFilm = { v, m: null };
@@ -670,8 +670,8 @@
     const pic = mornPic(k, lv);
     // 映像が流れていればそのコマを、まだなら静止画を描く
     const img = F ? { get complete() { return F.v.readyState >= 2 && !!F.m || pic.complete; }, get naturalWidth() { return F.v.readyState >= 2 && F.m ? F.v.videoWidth : pic.naturalWidth; }, get naturalHeight() { return F.v.readyState >= 2 && F.m ? F.v.videoHeight : pic.naturalHeight; },
-      get src() { return F.v.readyState >= 2 && F.m ? F.v : pic; }, get mark() { if (!(F.v.readyState >= 2 && F.m)) return null; const m = F.m.m[Math.floor(F.v.currentTime * F.m.fps) % F.m.m.length]; return m; },
-      get frame() { return F.v.readyState >= 2 && F.m && Array.isArray(F.m.s) ? F.v.currentTime * F.m.fps : null; }, film: F } : pic;
+      get src() { return F.v.readyState >= 2 && F.m ? F.v : pic; }, get mark() { if (!(F.v.readyState >= 2 && F.m)) return null; const m = F.m.m[Math.min(F.m.m.length - 1, Math.floor(F.v.currentTime * F.m.fps))]; return m; },
+      get frame() { return F.v.readyState >= 2 && F.m && Array.isArray(F.m.s) ? Math.min(F.m.s.length - 1, F.v.currentTime * F.m.fps) : null; }, film: F } : pic;
     if (F) guardSprites();
     const t0 = performance.now();
     const step = t => {
@@ -680,6 +680,19 @@
       if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
       const g2 = c.getContext('2d'); g2.setTransform(dpr, 0, 0, dpr, 0, 0);
       drawScene(g2, w, h, k, lv, hk, reduce ? 0 : (t - t0) / 1000, rnd, img);
+      // 映像の終わり：残り5秒で館が光り輝き、残り2秒からゆっくり薄れて消える（4秒かけて。消えたら描くのをやめる）
+      if (F && F.v.duration > 6 && F.v.readyState >= 2) {
+        const D = F.v.duration, e = F.v.currentTime;
+        if (F.v.ended && !run.endT) run.endT = t;
+        const glow = Math.min(1, Math.max(0, (e - (D - 5)) / 3)), out = Math.min(1, Math.max(0, ((run.endT ? 2 + (t - run.endT) / 1000 : e - (D - 2))) / 4));
+        if (glow > 0) {
+          const gl = g2.createRadialGradient(w / 2, h * 0.45, 0, w / 2, h * 0.45, Math.hypot(w, h) * 0.6);
+          gl.addColorStop(0, `rgba(255,246,220,${0.85 * glow})`); gl.addColorStop(0.5, `rgba(255,226,160,${0.55 * glow})`); gl.addColorStop(1, `rgba(255,210,140,${0.25 * glow})`);
+          g2.save(); g2.globalCompositeOperation = 'lighter'; g2.fillStyle = gl; g2.fillRect(0, 0, w, h); g2.restore();
+        }
+        if (out > 0) { g2.save(); g2.globalCompositeOperation = 'destination-out'; g2.fillStyle = `rgba(0,0,0,${out})`; g2.fillRect(0, 0, w, h); g2.restore(); }
+        if (out >= 1) return;
+      }
       if (!reduce) requestAnimationFrame(step);
     };
     // 動きを減らす設定では1枚だけ描く（絵が届いてから）
