@@ -39,7 +39,7 @@
 /* 夜の美術館：紺の地に金の灯り1色。見出し・部屋・名前は明朝（spirit.html と同じ見た目） */
 :root{
   --bg:#0b0d16; --wall:#121524; --card:#131624; --gold:#c9a45c; --gold-soft:#e6cf9a; --gold-pale:#2a2414;
-  --ink:#ece6d8; --mid:#b8b2a2; --dim:#8a8577; --line:#2a2c3a; --warm:#f1c7a0;
+  --ink:#ece6d8; --mid:#b8b2a2; --dim:#8a8577; --line:#2a2c3a; --warm:#f1c7a0; --ng:#e8806a;
   --serif:'Noto Serif JP',serif;
   color-scheme:dark;
 }
@@ -115,7 +115,32 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .drop{border:1px dashed var(--gold);border-radius:2px;padding:18px 12px;text-align:center;background:rgba(201,164,92,.06);cursor:pointer;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mid)}
 .drop b{font:600 16px var(--serif);color:var(--gold-soft);letter-spacing:.08em}
 .drop.over,.drop:focus-visible{background:rgba(201,164,92,.16);outline:none;border-style:solid}
-.drop.busy{opacity:.5;pointer-events:none}
+.drop.busy{pointer-events:none}
+/* 鍵を落としたあと：確かめ中は画像の上を光がなぞる・合えば金に光って印・合わなければ揺れて ✕（2026-10-26 重吉さんの決め） */
+.drop{position:relative;overflow:hidden}
+.drop .kfx{display:none;position:absolute;inset:0}
+.drop.read .kfx,.drop.ok .kfx,.drop.ng .kfx{display:block}
+.kpic{position:absolute;inset:0;background:#05060b center/cover no-repeat;opacity:.6;transition:opacity .4s,filter .4s}
+.drop.read .kpic::after{content:'';position:absolute;left:0;right:0;height:30%;background:linear-gradient(transparent,rgba(240,205,110,.55),transparent);animation:kscan 1s linear infinite}
+@keyframes kscan{from{top:-30%}to{top:100%}}
+.kmark{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transform:scale(0)}
+.kmark svg{width:34px;height:34px;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.drop.ok{border:2px solid var(--gold-soft);box-shadow:0 0 0 3px rgba(240,205,110,.22),0 0 30px rgba(240,205,110,.5)}
+.drop.ok .kpic{opacity:.85}
+.drop.ok .kmark{background:radial-gradient(circle,#f6dc8e,#c9a45c);box-shadow:0 0 26px rgba(246,220,142,.9);animation:kpop .45s cubic-bezier(.3,1.6,.5,1) forwards} .drop.ok .kmark svg{stroke:#1a1408}
+.drop.ng{border:2px solid var(--ng);animation:kshake .45s}
+.drop.ng .kpic{filter:grayscale(1) brightness(.45)}
+.drop.ng .kmark{background:rgba(20,10,10,.85);border:2px solid var(--ng);animation:kpop .3s ease-out forwards} .drop.ng .kmark svg{stroke:var(--ng)}
+@keyframes kpop{to{transform:scale(1)}}
+@keyframes kshake{0%,100%{transform:none}20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+.kres{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-family:var(--serif)}
+.kres b{font-size:16px;font-weight:600;letter-spacing:.06em} .kres.ok b{color:var(--gold-soft)} .kres.ng b{color:var(--ng)}
+.klike{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mid);font-family:inherit}
+.klike i{width:54px;height:40px;border:1px solid var(--line);flex:none}
+.lk-silk{background:radial-gradient(ellipse at 30% 50%,transparent 38%,rgba(120,200,255,.9) 40%,transparent 43%),radial-gradient(ellipse at 70% 50%,transparent 38%,rgba(120,200,255,.9) 40%,transparent 43%),radial-gradient(circle at 50% 50%,transparent 20%,rgba(255,120,220,.8) 22%,transparent 25%),#000}
+.lk-hubble{background:radial-gradient(circle at 30% 40%,#fff 0 1px,transparent 2px),radial-gradient(circle at 70% 25%,#fff 0 1px,transparent 2px),radial-gradient(circle at 60% 70%,#fff 0 1px,transparent 2px),radial-gradient(ellipse at 50% 55%,rgba(255,170,120,.85),rgba(120,80,200,.5) 35%,transparent 60%),#05060f}
+.lk-sky{background:radial-gradient(circle at 50% 55%,#132a5a 0 13px,#2c3f6c 14px,transparent 15px),#212121}
+@media (prefers-reduced-motion:reduce){.drop.ng{animation:none}.drop.read .kpic::after{animation:none}}
 /* 手もとの精霊 */
 .hand{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
 @media (max-width:640px){.hand{grid-template-columns:repeat(4,1fr)}}
@@ -345,7 +370,8 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
    </div>
    <div id="keyBox" hidden>
     <p class="keylead" id="keyLead"></p>
-    <div class="drop" id="drop" tabindex="0" role="button" data-i18n="nKeyAria" data-i18n-attr="aria-label"><b id="keyDrop" data-i18n="nKeyDrop">人生の記録の画像をドロップ</b><span data-i18n="nKeyDropSub">ここに落とすか、押して選ぶ</span></div>
+    <div class="drop" id="drop" tabindex="0" role="button" data-i18n="nKeyAria" data-i18n-attr="aria-label"><b id="keyDrop" data-i18n="nKeyDrop">人生の記録の画像をドロップ</b><span data-i18n="nKeyDropSub">ここに落とすか、押して選ぶ</span><div class="kfx" aria-hidden="true"><i class="kpic" id="kpic"></i><span class="kmark" id="kmark"></span></div></div>
+    <div class="kres" id="kres" role="status" hidden><b id="kresT"></b><span class="klike" id="klike" hidden><i></i><small id="klikeT"></small></span></div>
     <input type="file" id="file" accept="image/*" hidden>
     <p class="note" id="keyNote" data-i18n="nKeyNote" data-i18n-html></p>
    </div>
@@ -450,8 +476,8 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 </div>
 
 <script src="monster-i18n.js?v=25"></script>
-<script src="night-i18n.js?v=17"></script>
+<script src="night-i18n.js?v=18"></script>
 <script src="night-film.js?v=11"></script>
-<script src="night-app.js?v=24"></script>
+<script src="night-app.js?v=25"></script>
 </body>
 </html>
