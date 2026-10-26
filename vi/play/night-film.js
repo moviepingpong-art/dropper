@@ -230,11 +230,16 @@
     const st = cv.captureStream(24); if (dest) dest.stream.getAudioTracks().forEach(t => st.addTrack(t));
     try { const r = new MediaRecorder(st, { mimeType: type, videoBitsPerSecond: 6e6 }); r.ext = type.startsWith('video/mp4') ? 'mp4' : 'webm'; return r; } catch (e) { return null; }
   }
+  // 同じ動画は1回だけ読む（最後の通路に入ったときに warm() で先に読みはじめる。2026-10-26）
+  const VID = {};
   function videoEl(base) {
+    if (VID[base]) return VID[base];
     const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto';
     v.src = base + (v.canPlayType('video/webm; codecs="vp9"') ? '.webm' : '.mp4');
-    return new Promise((ok, ng) => { v.oncanplaythrough = () => ok(v); v.onerror = () => ng(new Error('video')); v.load(); });
+    const p = new Promise((ok, ng) => { v.oncanplaythrough = () => { v.oncanplaythrough = null; ok(v); }; v.onerror = () => { delete VID[base]; ng(new Error('video')); }; v.load(); });
+    return (VID[base] = p);
   }
+  const warm = () => { videoEl(GAL + 'lastroom').catch(() => {}); getJSON(GAL + 'last.json').catch(() => {}); };
   const onFrames = (v, fn) => {  // コマが変わるたびに描く
     let stop = false;
     if (v.requestVideoFrameCallback) { const cb = (_, m) => { if (stop) return; fn(m.mediaTime); v.requestVideoFrameCallback(cb); }; v.requestVideoFrameCallback(cb); }
@@ -498,5 +503,5 @@
     });
   }
 
-  window.NightFilm = { room, walk, save };
+  window.NightFilm = { room, walk, save, warm };
 })();

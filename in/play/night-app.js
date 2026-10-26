@@ -169,10 +169,12 @@
     b.className = 'sp' + (opts.sel ? ' sel' : '') + (opts.rest ? ' rest' : '') + (opts.on ? ' on' : '');
     if (opts.rest) b.dataset.rest = tr('nRest');
     if (opts.n) b.dataset.n = opts.n;
-    const bg = c.art ? `background-image:url('/play/museum/${c.art}')` : c.th ? `background-image:url('${c.th}')` : `background:linear-gradient(${TY[c.t]},#0b0d16)`;
+    // 奥に生まれた作品の絵（暗く）、手前に精霊の姿（カードの小さな絵の姿の窓を切り出す。額縁の .fsw と同じ）。2026-10-26 重吉さんの決め
+    const bg = c.art ? `background-image:linear-gradient(rgba(6,7,12,.3),rgba(6,7,12,.6)),url('/play/museum/${c.art}')` : `background:linear-gradient(${TY[c.t]},#0b0d16)`;
+    const fig = c.th ? `<i class="fig${c.art ? '' : ' solo'}" style="background-image:url('${c.th}')"></i>` : '';
     b.innerHTML = (c.framed && opts.keeper !== false ? `<span class="keeper ${c.framed}">${esc(tr('nKeeper'))}</span>` : '')
       + (c.rarity !== 'normal' ? `<span class="rar ${c.rarity}">${esc(tr(RARE[c.rarity][0]))}</span>` : '')
-      + `<div class="fr" style="${bg}">${c.art || c.th ? '' : `<span class="ty">${esc(txt({ ty: c.t }))}</span>`}</div>`
+      + `<div class="fr" style="${bg}">${fig || (c.art ? '' : `<span class="ty">${esc(txt({ ty: c.t }))}</span>`)}</div>`
       + `<div class="nm">${esc(c.n)}</div><div class="meta"><span>${esc(txt({ ty: c.t }))}</span><b>✦${c.p}</b></div>`;
     b.setAttribute('aria-label', `${c.n} ${txt({ ty: c.t })} ${tr('nPower')} ${c.p}${opts.rest ? ' ' + tr('nRest') : ''}`);
     return b;
@@ -295,7 +297,11 @@
   }
   function advance() {
     if (cur < ROOM.length - 1) walk(1, () => { cur++; at = 'door'; });
-    else walk(1, () => { at = 'last'; pos = 0; page = 0; fixFrames(); });
+    else walk(1, () => {
+      at = 'last'; pos = 0; page = 0; fixFrames();
+      // 最後の通路に入ったら、お話を頼み、最後の部屋の動画を先に読む（扉をくぐってから待たないように。2026-10-26）
+      if (window.NightFilm) { if (!storyP) storyP = nightStory(); if (window.NightFilm.warm) window.NightFilm.warm(); }
+    });
   }
   function forward() { if (pos < 2) walk(1, () => { pos++; }); }
   $('go').onclick = async () => {
@@ -475,6 +481,7 @@
   // 最後の部屋のお話と曲の設計図を AI に頼む（2026-10-25〜。1晩に1回）。送るのは作品のファイル名・精霊の名前・言語だけ。
   // 守り神・人生の記録・鍵の画像は送らない。12秒で答えが無い・うまくいかないときは null（いつものお話と曲で流す）
   const AI_URL = 'https://ai.dropper-tools.com/monster';
+  let storyP = null;  // 1晩に1回。もう一度挑戦するときに空にする
   async function nightStory() {
     const cs = HAND.filter(c => c.art).map(c => ({ f: c.art, n: String(c.n || '').slice(0, 40), rar: c.rarity === 'gold' || c.rarity === 'silver' ? c.rarity : '', kin: (c.par || []).length > 0 }));
     if (trial || cs.length < 2) return null;
@@ -493,7 +500,7 @@
   // 光の扉をくぐる。最後の部屋（灯さない。夜明けになる）
   async function enterLast(a) {
     busy = true; draw();
-    const story = window.NightFilm ? nightStory() : null;  // 光の扉の場面と同時に頼み、その間に書いてもらう
+    const story = window.NightFilm ? (storyP || nightStory()) : null;  // 最後の通路で頼んだお話（まだなら、いま頼む）
     $('msg').textContent = tr('nKeyOk', { name: witness });
     sfx('light'); burst(.5, .4, 80);
     $('flash').classList.add('on');
@@ -600,7 +607,7 @@
       bgm(false); const g = master.gain, t = ac.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + .5);
       setTimeout(() => { if (!on || timer) return; g.cancelScheduledValues(ac.currentTime); g.setValueAtTime(.8, ac.currentTime); bgm(true); }, 1600);
     }
-    $('morning').hidden = true; sceneOn = null; if (mornFilm) mornFilm.v.pause(); HAND = []; sel = []; dpick = [];
+    $('morning').hidden = true; sceneOn = null; storyP = null; if (mornFilm) mornFilm.v.pause(); HAND = []; sel = []; dpick = [];
     reloadDex().then(() => { $('deck').hidden = false; drawDeck(); });
   }
 
@@ -949,7 +956,7 @@
     ROOM = tonight(new Date()); sel = []; cur = 0; at = 'door'; pos = 0; page = 0;
     busy = false; ended = false; endArm = false; keyed = false; doorKeyed = []; doorPics.forEach(u => u && URL.revokeObjectURL(u)); doorPics = []; witness = null; witnessMap = ''; witnessHues = null; witnessTh = ''; hikariLit = null; film = null;
     $('trialNote').hidden = !trial;
-    $('deck').hidden = true; preload(); draw(); glowUp(); sfx('send'); track('night_start');
+    $('deck').hidden = true; storyP = null; preload(); draw(); glowUp(); sfx('send'); track('night_start');
   };
 
   // ---- 背景：紺の闇に、金の灯りの粒がただよう。灯った部屋が増えるほど、粒が増えて明るくなる ----
