@@ -204,6 +204,7 @@
     drawHall(); drawWalls();
     const dk = doorKey(), lightKey = last && pos === 2 && !keyed;
     $('roomBox').hidden = at !== 'room'; $('keyBox').hidden = !(lightKey || dk);
+    if (fxFor && fxFor !== keyTarget()) keyFx(null);  // 別の扉に来たら、前の鍵の見た目を消す
     // 鍵の箱は、扉2〜4と光の扉で同じものを使い、言葉だけ入れかえる
     if (dk) {
       $('keyLead').innerHTML = D('nDoorLead')[dk]; $('keyDrop').textContent = D('nDoorDrop')[dk];
@@ -376,15 +377,34 @@
       maker.contentWindow.postMessage({ type: 'lifeKey', file }, location.origin);
     });
   }
+  // 鍵の箱の見た目：read 確かめ中／ok 合った／ng 合わなかった／null もとに戻す。落とした画像は画面に出すだけで、戻すときに捨てる
+  let fxUrl = null, fxFor = null;
+  const MARK = { ok: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>', ng: '<svg viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>' };
+  const keyTarget = () => { const dk = doorKey(); return dk ? dk + cur : at === 'last' && pos === 2 && !keyed ? 'life' : null; };
+  function keyFx(st, f) {
+    const d = $('drop'), r = $('kres');
+    d.classList.remove('read', 'ok', 'ng');
+    if (!st) { if (fxUrl) { URL.revokeObjectURL(fxUrl); fxUrl = null; } $('kpic').style.backgroundImage = ''; r.hidden = true; fxFor = null; return; }
+    fxFor = keyTarget();
+    if (f) { if (fxUrl) URL.revokeObjectURL(fxUrl); fxUrl = URL.createObjectURL(f); $('kpic').style.backgroundImage = `url('${fxUrl}')`; }
+    else if (st === 'ng') $('kpic').style.backgroundImage = '';
+    void d.offsetWidth; d.classList.add(st);
+    $('kmark').innerHTML = MARK[st] || '';
+    r.hidden = st === 'read'; r.className = 'kres ' + st;
+    $('kresT').textContent = st === 'ok' ? tr('nKeyFit') : st === 'ng' ? tr('nKeyMiss') : '';
+    const dk = doorKey(), lk = $('klike'); lk.hidden = !(st === 'ng' && dk);
+    if (dk) { lk.firstElementChild.className = 'lk-' + dk; $('klikeT').textContent = tr('nKeyLike', { site: D('nDoorSite')[dk] }); }
+  }
   async function useKey(files) {
     if (doorKey()) return useDoorKey(files);
     if (busy || ended || keyed || at !== 'last' || pos !== 2) return;
     const f = [...files].find(x => x.type.startsWith('image/'));
-    if (!f) { $('msg').textContent = tr('nKeyNo'); sfx('no'); return; }
-    $('drop').classList.add('busy'); $('msg').textContent = tr('nKeyReading');
+    if (!f) { keyFx('ng'); $('msg').textContent = tr('nKeyNo'); sfx('no'); return; }
+    keyFx('read', f); $('drop').classList.add('busy'); $('msg').textContent = tr('nKeyReading');
     const a = await askMaker(f);
     $('drop').classList.remove('busy');
-    if (!a.ok) { $('msg').textContent = tr(a.err ? 'nKeyErr' : 'nKeyNo'); sfx('no'); return; }
+    if (!a.ok) { keyFx('ng'); $('msg').textContent = tr(a.err ? 'nKeyErr' : 'nKeyNo'); sfx('no'); return; }
+    keyFx('ok'); await wait(900);
     keyed = true; witness = txt(a.name); witnessMap = a.life ? lifeGrad(a) : ''; witnessHues = a.life ? lifeHues(a) : null; witnessTh = safeThumb(a.th); track('night_key');
     enterLast(a);
   }
@@ -392,13 +412,14 @@
   async function useDoorKey(files) {
     const dk = doorKey(); if (busy || ended || !dk) return;
     const f = [...files].find(x => x.type.startsWith('image/')), site = D('nDoorSite')[dk];
-    if (!f) { $('msg').textContent = tr('nDoorNo', { site }); sfx('no'); return; }
-    $('drop').classList.add('busy'); $('msg').textContent = tr('nKeyReading');
+    if (!f) { keyFx('ng'); $('msg').textContent = tr('nDoorNo', { site }); sfx('no'); return; }
+    keyFx('read', f); $('drop').classList.add('busy'); $('msg').textContent = tr('nKeyReading');
     const ok = await doorKeyFits(dk, f).catch(() => false);
     $('drop').classList.remove('busy');
     if (doorKey() !== dk) return;
-    if (!ok) { $('msg').textContent = tr('nDoorNo', { site }); sfx('no'); return; }
-    doorKeyed[cur] = true; doorPics[cur] = URL.createObjectURL(f); sfx('light');
+    if (!ok) { keyFx('ng'); $('msg').textContent = tr('nDoorNo', { site }); sfx('no'); return; }
+    keyFx('ok'); sfx('light'); busy = true; await wait(900); busy = false;
+    doorKeyed[cur] = true; doorPics[cur] = URL.createObjectURL(f);
     openDoor();
     setTimeout(() => { if (!ended) $('msg').textContent = tr('nDoorOk'); }, reduce ? 200 : 800);
   }
@@ -607,7 +628,7 @@
       bgm(false); const g = master.gain, t = ac.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + .5);
       setTimeout(() => { if (!on || timer) return; g.cancelScheduledValues(ac.currentTime); g.setValueAtTime(.8, ac.currentTime); bgm(true); }, 1600);
     }
-    $('morning').hidden = true; sceneOn = null; storyP = null; if (mornFilm) mornFilm.v.pause(); HAND = []; sel = []; dpick = [];
+    $('morning').hidden = true; sceneOn = null; storyP = null; keyFx(null); if (mornFilm) mornFilm.v.pause(); HAND = []; sel = []; dpick = [];
     reloadDex().then(() => { $('deck').hidden = false; drawDeck(); });
   }
 
