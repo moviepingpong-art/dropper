@@ -428,9 +428,14 @@
     }
     v.currentTime = 0; await new Promise(r => { v.onseeked = r; setTimeout(r, 400); }); draw(1);
     L.cap.textContent = '';
+    // 今夜は AI のお話が付いたか（付かない夜は、字幕なし・いつもの題と曲）を、押す前に一言で見せる
+    if (o.tx.ai) {
+      const b = document.createElement('span'), h = document.createElement('b'), sm = document.createElement('small');
+      b.className = 'nf-ai' + (o.story ? ' on' : ''); h.textContent = o.tx.ai; sm.textContent = o.tx.aiSub || ''; b.append(h, sm); L.cap.append(b);
+    }
     // 押してから始める（音を出すには、押した手が要る）
     await new Promise(r => btn(L, o.tx.play, '', r));
-    L.btns.replaceChildren();
+    L.btns.replaceChildren(); L.cap.textContent = '';
     const A = audio(); let S = null, rec = null, parts = [], done = false, blob = null;
     return new Promise(resolve => {
       const finish = async (all) => {
