@@ -625,6 +625,7 @@
   }
   function restart() {
     // もう一度挑戦するときは、曲も始めの静かな所からかけ直す（2026-10-25。前は朝の曲が続いたままだった）
+    dawnMus = null; liftOv = null;
     if (on && ac) {
       bgm(false); const g = master.gain, t = ac.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + .5);
       setTimeout(() => { if (!on || timer) return; g.cancelScheduledValues(ac.currentTime); g.setValueAtTime(.8, ac.currentTime); bgm(true); }, 1600);
@@ -653,7 +654,7 @@
   let mornFilm = null;
   function mornVideo() {
     if (mornFilm) return mornFilm;
-    const v = document.createElement('video'); v.muted = true; v.loop = false; v.playsInline = true; // ループしない（2026-10-26 重吉さんの決め。最後は光り輝いて薄れる） v.preload = 'auto';
+    const v = document.createElement('video'); v.muted = true; v.loop = false; v.playsInline = true; v.preload = 'auto';  // ループしない（2026-10-26 重吉さんの決め。最後は光り輝いて薄れる）
     v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
     v.src = GAL + 'morning-dawn-film.' + (v.canPlayType('video/webm; codecs="vp9"') ? 'webm' : 'mp4');
     mornFilm = { v, m: null };
@@ -666,6 +667,7 @@
     sceneOn = run;
     const rnd = (i, j) => { const x = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return x - Math.floor(x); };
     const F = film && !reduce ? mornVideo() : null;
+    if (F) dawnMus = null;
     if (F) { F.v.currentTime = 0; F.v.play().catch(() => {}); }
     const pic = mornPic(k, lv);
     // 映像が流れていればそのコマを、まだなら静止画を描く
@@ -684,6 +686,9 @@
       if (F && F.v.duration > 6 && F.v.readyState >= 2) {
         const D = F.v.duration, e = F.v.currentTime;
         if (F.v.ended && !run.endT) run.endT = t;
+        // 曲も映像に合わせる（始まり・光り輝く・薄れる）
+        const ph = e >= D - 2 || F.v.ended ? 'out' : e >= D - 5 ? 'glow' : e > 0 && !F.v.paused ? 'start' : null;
+        if (ph && ph !== dawnMus && (ph !== 'start' || !dawnMus)) { if (ph !== 'start' && !dawnMus) dawnMusic('start', e, D); dawnMus = ph; dawnMusic(ph, e, D); }
         const glow = Math.min(1, Math.max(0, (e - (D - 5)) / 3)), out = Math.min(1, Math.max(0, ((run.endT ? 2 + (t - run.endT) / 1000 : e - (D - 2))) / 4));
         if (glow > 0) {
           const gl = g2.createRadialGradient(w / 2, h * 0.45, 0, w / 2, h * 0.45, Math.hypot(w, h) * 0.6);
@@ -1155,7 +1160,7 @@
   const lift = bar => { const b = bar % 48; return b < 8 ? .2 : b < 16 ? .4 : b < 24 ? .6 : b < 40 ? 1 : .35; };
   function sched() {
     while (nextT < ac.currentTime + .25) {
-      const t = nextT, i = step % 16, barN = Math.floor(step / 16), c = CH[Math.floor(barN / 2) % 4], L = lift(barN);
+      const t = nextT, i = step % 16, barN = Math.floor(step / 16), c = CH[Math.floor(barN / 2) % 4], L = liftOv ? liftOv(barN) : lift(barN);
       if (i === 0 && barN % 2 === 0) haze(c.pad.map(N), t, STEP * 32, .016 + .006 * L);
       const a = ARP[i]; spark(N(a === 4 ? c.t[0] + 12 : c.t[a]), t, (.022 + .02 * L) * (i % 4 === 0 ? 1.3 : 1));
       if (L >= .4 && i % 2 === 0) sub(N(c.b - 12), t, (i % 4 === 0 ? .16 : .09) * Math.min(1, L + .2));
@@ -1165,6 +1170,16 @@
       if (L >= 1 && i === 0) bell(N(c.mel[barN % 2]), t, 3.6, .05, wet), bell(N(c.mel[barN % 2]), t, 3.6, .035, bgmGain);
       nextT += STEP; step++;
     }
+  }
+  // 夜明けの映像に合わせた曲（2026-10-26 重吉さんの決め）：映像が始まると頭から（静か→満ちる）、館が光り輝くところでいちばん満ち、
+  // 薄れるのに合わせて4秒で小さくして止める。もう一度挑戦するときは restart() がいつもの曲に戻す
+  let liftOv = null, dawnMus = null;
+  function dawnMusic(k, e, D) {
+    if (!on || !ac) return;
+    const g = master.gain, t = ac.currentTime;
+    if (k === 'start') { bgm(false); g.cancelScheduledValues(t); g.setValueAtTime(.8, t); const B = STEP * 16; liftOv = bar => { const x = bar * B; return x < 5 ? .2 : x < 10 ? .4 : x < D - 5 ? .6 : 1; }; bgm(true); }
+    else if (k === 'glow') sfx('dawn');
+    else if (k === 'out') { g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + 4); setTimeout(() => { if (dawnMus === 'out') { bgm(false); liftOv = null; } }, 4100); }
   }
   function bgm(play) { if (play) { nextT = ac.currentTime + .05; step = 0; timer = setInterval(sched, 60); } else { clearInterval(timer); timer = null; } }
   function sfx(k) {
