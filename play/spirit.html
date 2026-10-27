@@ -173,6 +173,17 @@ footer a{color:var(--primary-soft)}
 .film-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:18px;padding:14px 30px}
 @media (max-width:480px){.film-play{font-size:15px;padding:9px 20px}}
 .film-skip{position:absolute;right:16px;bottom:16px;background:rgba(0,0,0,.4)}
+/* オープニングの前の物語（2026-10-27〜）：夜空の上を文が下から上へ流れ、最後に「ようこそ」が浮かんでから映像へ。文は辞書の story* */
+.story{position:absolute;inset:0;background:radial-gradient(ellipse 90% 60% at 50% 110%,#16203a 0%,#070a16 55%,#020308 100%);opacity:1;transition:opacity 1.2s}
+.story.out{opacity:0}
+.story canvas{position:absolute;inset:0;width:100%;height:100%}
+.story-view{position:absolute;inset:0;overflow:hidden;-webkit-mask-image:linear-gradient(transparent 0,#000 22%,#000 70%,transparent 100%);mask-image:linear-gradient(transparent 0,#000 22%,#000 70%,transparent 100%)}
+.story-roll{position:absolute;left:0;right:0;top:100%;text-align:center;font-family:var(--serif);font-weight:500;color:#e9dfc6;font-size:clamp(17px,2.6vw,26px);line-height:2.3;letter-spacing:.12em;padding:0 16px;word-break:auto-phrase;text-shadow:0 0 12px rgba(230,190,110,.25);will-change:transform}
+.story-roll p{margin:0 0 2.2em}
+.story-roll .voice{color:#f3d98c;font-size:1.3em;line-height:2;text-shadow:0 0 18px rgba(240,200,110,.6),0 0 40px rgba(240,190,90,.3);margin:1em 0 3em}
+.story-roll .you{color:#f3d98c}
+.story-wel{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-family:var(--serif);font-weight:500;font-size:clamp(22px,4vw,40px);letter-spacing:.2em;padding:0 16px;word-break:auto-phrase;color:#ead7a4;text-shadow:0 0 18px rgba(230,190,110,.55),0 0 46px rgba(230,180,90,.25);opacity:0}
+@media (max-width:520px){.story-roll{font-size:15.5px;letter-spacing:.05em;line-height:2.2}.story-wel{font-size:19px;letter-spacing:.08em}}
 .film-again{display:inline-block;margin:0 0 14px;background:none;border:0;padding:0;color:var(--primary-soft);font-size:13.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 @media (max-width:480px){.eggs{grid-template-columns:repeat(3,1fr)}}
 </style>
@@ -260,11 +271,12 @@ footer a{color:var(--primary-soft)}
 <div class="film hidden" id="film" role="dialog" aria-modal="true" aria-label="オープニングの映像" data-i18n="filmAria" data-i18n-attr="aria-label">
   <video id="filmV" playsinline preload="none"></video>
   <div class="film-title" id="filmT"></div>
+  <div class="story hidden" id="story"><canvas id="storySky"></canvas><div class="story-view"><div class="story-roll" id="storyRoll"></div></div><div class="story-wel" id="storyWel"></div></div>
   <button class="film-play hidden" id="filmPlay" type="button" data-i18n="filmPlay">▶ はじめる</button>
   <button class="film-skip sub" id="filmSkip" type="button" data-i18n="filmSkip">とばす ›</button>
 </div>
 <script>window.LANG = 'ja';</script>
-<script src="monster-i18n.js?v=26"></script>
-<script src="monster-app.js?v=23"></script>
+<script src="monster-i18n.js?v=27"></script>
+<script src="monster-app.js?v=24"></script>
 </body>
 </html>

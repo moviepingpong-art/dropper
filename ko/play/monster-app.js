@@ -1971,23 +1971,77 @@
       const end = () => {
         if (over) return; over = true;
         v.pause(); v.removeAttribute('src'); v.load(); v.ontimeupdate = v.onended = null;
-        box.classList.add('hidden'); t.classList.remove('on'); document.removeEventListener('keydown', key); done();
+        if (tale) tale.stop(); box.classList.add('hidden'); t.classList.remove('on'); document.removeEventListener('keydown', key); done();
       };
-      const key = e => { if (e.key === 'Escape') end(); };
-      const start = () => { play.classList.add('hidden'); v.muted = !soundOn; v.play().catch(() => { v.muted = true; v.play().catch(end); }); };
+      const key = e => { if (e.key === 'Escape') skip(); };
+      const roll = () => { v.muted = !soundOn; v.play().catch(() => { v.muted = true; v.play().catch(end); }); };
+      // 物語の間の「とばす」は物語だけを飛ばして映像へ。映像の間は終わり
+      let tale = null;
+      const skip = () => { if (tale) tale.stop(); else end(); };
+      const start = () => {
+        play.classList.add('hidden');
+        if (!opt.story) return roll();
+        tale = story(); tale.done.then(() => { tale = null; if (!over) roll(); });
+      };
       box.classList.remove('hidden'); box.classList.toggle('silver', !!opt.silver);
       t.className = 'film-title' + (kind === 'special' ? ' name' : ''); t.textContent = opt.title || '';
       v.poster = F.poster || ''; v.src = F.src + (v.canPlayType('video/webm; codecs="vp9, opus"') ? '.webm' : '.mp4'); // WebM が軽い。読めない端末（古い Safari）は MP4
       v.ontimeupdate = () => t.classList.toggle('on', v.currentTime >= F.at && v.currentTime < F.off);
       v.onended = end; v.onerror = end;
-      $('filmSkip').onclick = end; document.addEventListener('keydown', key);
+      $('filmSkip').onclick = skip; document.addEventListener('keydown', key);
       if (opt.tap) { play.classList.remove('hidden'); play.onclick = start; play.focus(); } else start();
     });
+  }
+  // オープニングの前の物語（2026-10-27〜、重吉さんの決め）：美術館で眠る作品の物語が夜空の上をゆっくり流れ、
+  // 最後に「ようこそ」が浮かんで消えてから映像に入る。文は辞書の story（段落）・storyVoice（金の大きな一言）・story2・storyEnd（2行目が金）・storyWelcome。
+  // 速さは行の高さで決める（言語で文の長さが違っても、同じ速さで読める）。動きを減らす設定では、灯りを止めて文だけ流す
+  function story() {
+    const box = $('story'), cv = $('storySky'), roll = $('storyRoll'), wel = $('storyWel'), cx = cv.getContext('2d');
+    const P = (a, cls) => a.map(x => `<p${cls ? ` class="${cls}"` : ''}>${esc(x).replace(/\n/g, '<br>')}</p>`).join('');
+    const E = D('storyEnd');
+    roll.innerHTML = P(D('story')) + P([tr('storyVoice')], 'voice') + P(D('story2')) + `<p>${esc(E[0])}<br><span class="you">${esc(E[1])}</span></p>`;
+    wel.textContent = tr('storyWelcome');
+    box.classList.remove('hidden', 'out');
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches, dpr = devicePixelRatio || 1;
+    let W, H, stars, motes, raf = 0, fin, over = false;
+    const done = new Promise(r => { fin = r; });
+    let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    const size = () => {
+      W = cv.width = innerWidth * dpr; H = cv.height = innerHeight * dpr; s = 7;
+      stars = Array.from({ length: 220 }, () => [rnd() * W, rnd() * H * .8, rnd() * 1.4 + .3, rnd() * 6.28]);
+      motes = Array.from({ length: 26 }, () => [rnd() * W, rnd(), rnd() * 2.2 + 1, rnd() * 6.28, rnd() * .5 + .5]);
+    };
+    size(); addEventListener('resize', size);
+    const lh = parseFloat(getComputedStyle(roll).lineHeight) || 40;
+    const dist = () => innerHeight + roll.offsetHeight, dur = dist() / (lh * .9), WEL = [dur, dur + 2.5, dur + 5, dur + 6.5];
+    const t0 = performance.now();
+    const frame = n => {
+      const t = (n - t0) / 1000, tt = still ? 0 : t;
+      cx.clearRect(0, 0, W, H);
+      for (const [x, y, r, p] of stars) { cx.globalAlpha = .35 + .35 * Math.sin(tt * 1.3 + p); cx.fillStyle = '#fff6e0'; cx.beginPath(); cx.arc(x, y, r * dpr * .6, 0, 7); cx.fill(); }
+      // 下から上がる小さな灯り（作品にやどる思い）
+      for (const [x, y0, r, p, sp] of motes) {
+        const y = H * (1.05 - ((y0 + tt * .012 * sp) % 1.1)), gx = x + Math.sin(tt * .4 + p) * 18 * dpr, R = r * 7 * dpr;
+        const g = cx.createRadialGradient(gx, y, 0, gx, y, R); g.addColorStop(0, 'rgba(255,214,130,.9)'); g.addColorStop(1, 'rgba(255,190,90,0)');
+        cx.globalAlpha = .5 + .3 * Math.sin(tt * 2 + p); cx.fillStyle = g; cx.beginPath(); cx.arc(gx, y, R, 0, 7); cx.fill();
+      }
+      cx.globalAlpha = 1;
+      roll.style.transform = `translateY(${-Math.min(t / dur, 1) * dist()}px)`;
+      wel.style.opacity = t < WEL[0] ? 0 : t < WEL[1] ? (t - WEL[0]) / (WEL[1] - WEL[0]) : t < WEL[2] ? 1 : Math.max(0, 1 - (t - WEL[2]) / (WEL[3] - WEL[2]));
+      if (t >= WEL[3]) stop(); else raf = requestAnimationFrame(frame);
+    };
+    const stop = () => {
+      if (over) return; over = true;
+      cancelAnimationFrame(raf); raf = 0; removeEventListener('resize', size);
+      box.classList.add('out'); setTimeout(() => box.classList.add('hidden'), 1200); fin();
+    };
+    raf = requestAnimationFrame(frame);
+    return { done, stop };
   }
   const INTRO = 'dropper-spirit-intro';
   function opening() {
     try { localStorage.setItem(INTRO, '1'); } catch (e) { /* 覚えられなくても見られる */ }
-    return film('opening', { tap: true, title: tr('h1a') + tr('h1b') });
+    return film('opening', { tap: true, story: true, title: tr('h1a') + tr('h1b') });
   }
   async function show(M, img, note) {
     M.serial = await nextSerial();
