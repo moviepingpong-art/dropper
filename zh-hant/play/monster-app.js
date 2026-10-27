@@ -2013,7 +2013,15 @@
     };
     size(); addEventListener('resize', size);
     const lh = parseFloat(getComputedStyle(roll).lineHeight) || 40;
-    const dist = () => innerHeight + roll.offsetHeight, dur = dist() / (lh * .9), WEL = [dur, dur + 2.5, dur + 5, dur + 6.5];
+    const dist = () => innerHeight + roll.offsetHeight, dur = dist() / (lh * .9);
+    // 文の y（流れの中の位置）が、画面の上から f の所に来る時刻
+    const at = (y, f = .55) => dur * (innerHeight * (1 - f) + y) / dist();
+    const ps = [...roll.children], mid = p => p.offsetTop + p.offsetHeight / 2;
+    const cue = ps.map(p => at(mid(p))), last = ps[ps.length - 1];
+    // 「ようこそ」は流れの終わりを待たず、最後の段落が上のほうへ抜けていくところで重ねて浮かべる（2026-10-27 重吉さん）
+    const w0 = at(mid(last), .3), WEL = [w0, w0 + 2.5, w0 + 5, w0 + 6.5];
+    const list = ps[1], you = last.querySelector('.you');
+    const music = storyMusic(cue, [1, 2, 3, 4].map(i => at(list.offsetTop + list.offsetHeight * (i + .5) / 5)), at(you.offsetTop + lh / 2), WEL);
     const t0 = performance.now();
     const frame = n => {
       const t = (n - t0) / 1000, tt = still ? 0 : t;
@@ -2032,11 +2040,94 @@
     };
     const stop = () => {
       if (over) return; over = true;
-      cancelAnimationFrame(raf); raf = 0; removeEventListener('resize', size);
+      cancelAnimationFrame(raf); raf = 0; removeEventListener('resize', size); music.fade();
       box.classList.add('out'); setTimeout(() => box.classList.add('hidden'), 1200); fin();
     };
     raf = requestAnimationFrame(frame);
     return { done, stop };
+  }
+  // 物語の曲（2026-10-27〜、重吉さんの決め）：映像の曲（共有フォルダ sacred/pr4/scripts/cue.html）と同じ音色・同じ調で、文に合わせて鳴らす。
+  // 段落が画面の真ん中あたりに来る時刻（cue）に合わせて和音を移す：眠る作品＝Gm → 人のそばの日々＝Bb（品の一行ごとに鈴）→ 作った人＝Eb →
+  // 収蔵庫で眠る＝Cm から暗く → 間をあけて「もう一度だけ」＝Cm9 の高まりと鈴の旋律 → 灯り＝Eb の粒 → 閉館の鐘（低い鈴）と目覚め＝Gm の粒が速まる →
+  // 精霊＝Eb → 「あなたです」で Bbmaj7 が満ちる → 「ようこそ」の Bb の和音を映像の始め（同じ Bb の和音）へ重ねて渡す
+  function storyMusic(cue, lines, youAt, WEL) {
+    const none = { fade() {} };
+    if (!soundOn) return none;
+    let ac;
+    try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return none; }
+    const T0 = ac.currentTime + .15, SR = ac.sampleRate;
+    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 3; comp.connect(ac.destination);
+    const master = ac.createGain(); master.gain.value = 1; master.connect(comp);
+    const ir = ac.createBuffer(2, SR * 3.5, SR);
+    for (let c = 0; c < 2; c++) { const x = ir.getChannelData(c); for (let i = 0; i < x.length; i++) x[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / x.length, 3); }
+    const rv = ac.createConvolver(); rv.buffer = ir; const wet = ac.createGain(); wet.connect(rv); rv.connect(master);
+    const noise = ac.createBuffer(1, SR * 2, SR); { const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    const STEP = 60 / 103 / 2;
+    const echo = ac.createDelay(1); echo.delayTime.value = STEP * 1.5;
+    { const fb = ac.createGain(); fb.gain.value = .35; const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3200; echo.connect(lp); lp.connect(fb); fb.connect(echo); lp.connect(master); lp.connect(wet); }
+    const N = n => 440 * Math.pow(2, (n - 69) / 12), at = t => T0 + Math.max(0, t);
+    const bell = (n, t, d = 3, v = .07) => [[1, 1], [2.76, .35], [5.4, .12]].forEach(([m, a]) => {
+      const o = ac.createOscillator(), e = ac.createGain(), s = at(t); o.type = 'sine'; o.frequency.value = N(n) * m;
+      e.gain.setValueAtTime(.0001, s); e.gain.exponentialRampToValueAtTime(v * a, s + .01); e.gain.exponentialRampToValueAtTime(.0001, s + d / m);
+      o.connect(e); e.connect(master); e.connect(wet); o.start(s); o.stop(s + d + .05);
+    });
+    const haze = (ns, t0, t1, v, open = 1500) => {
+      const s = at(t0), d = Math.max(1, at(t1) - s), e = ac.createGain(), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = .4;
+      lp.frequency.setValueAtTime(450, s); lp.frequency.linearRampToValueAtTime(open, s + d * .6); lp.frequency.linearRampToValueAtTime(700, s + d);
+      e.gain.setValueAtTime(.0001, s); e.gain.exponentialRampToValueAtTime(v, s + Math.min(2.5, d * .4)); e.gain.setValueAtTime(v, s + d - .8); e.gain.exponentialRampToValueAtTime(.0001, s + d + 1.5);
+      ns.forEach(n => [-9, 9].forEach(dt => { const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = N(n); o.detune.value = dt; o.connect(lp); o.start(s); o.stop(s + d + 1.6); }));
+      lp.connect(e); e.connect(master); e.connect(wet);
+    };
+    const spark = (n, t, v) => {
+      const o = ac.createOscillator(), o2 = ac.createOscillator(), e = ac.createGain(), s = at(t);
+      o.type = 'triangle'; o.frequency.value = N(n); o2.type = 'sine'; o2.frequency.value = N(n) * 2;
+      e.gain.setValueAtTime(.0001, s); e.gain.exponentialRampToValueAtTime(v, s + .006); e.gain.exponentialRampToValueAtTime(.0001, s + .4);
+      o.connect(e); o2.connect(e); e.connect(master); e.connect(echo); e.connect(wet); o.start(s); o2.start(s); o.stop(s + .45); o2.stop(s + .45);
+    };
+    const sub = (n, t, v, d) => {
+      const o = ac.createOscillator(), e = ac.createGain(), s = at(t); o.type = 'sine'; o.frequency.value = N(n);
+      e.gain.setValueAtTime(.0001, s); e.gain.exponentialRampToValueAtTime(v, s + .4); e.gain.exponentialRampToValueAtTime(.0001, s + d);
+      o.connect(e); e.connect(master); o.start(s); o.stop(s + d + .05);
+    };
+    const riser = (t, d, v) => {
+      const src = ac.createBufferSource(), f = ac.createBiquadFilter(), e = ac.createGain(), s = at(t); src.buffer = noise; src.loop = true;
+      f.type = 'bandpass'; f.Q.value = 2; f.frequency.setValueAtTime(400, s); f.frequency.exponentialRampToValueAtTime(6000, s + d);
+      e.gain.setValueAtTime(.0001, s); e.gain.exponentialRampToValueAtTime(v, s + d); e.gain.exponentialRampToValueAtTime(.0001, s + d + .3);
+      src.connect(f); f.connect(e); e.connect(master); e.connect(wet); src.start(s); src.stop(s + d + .35);
+    };
+    const CH = { Bb: { b: 46, t: [58, 62, 65, 69], pad: [46, 53, 57, 62] }, Cm: { b: 48, t: [60, 63, 67, 74], pad: [48, 55, 58, 63] },
+      Eb: { b: 51, t: [58, 63, 67, 69], pad: [51, 55, 58, 62] }, Gm: { b: 43, t: [58, 62, 65, 67], pad: [43, 50, 53, 58] } };
+    const ARP = [0, 1, 2, 3, 4, 3, 2, 1, 0, 2, 1, 3, 2, 4, 3, 1];
+    const arp = (c, t0, t1, v0, v1, r0 = 1, r1 = r0) => { for (let t = t0, i = 0; t < t1; i++) { const k = (t - t0) / (t1 - t0), a = ARP[i % 16]; spark(a === 4 ? c.t[0] + 12 : c.t[a], t, v0 + (v1 - v0) * k); t += STEP / (r0 + (r1 - r0) * k); } };
+    const c = cue, y = youAt;
+    // 眠る作品
+    haze(CH.Gm.pad, 0, c[1] - 1, .016, 900); bell(74, c[0] - 1.5, 3.4, .05); bell(70, c[0] + .5, 3.4, .045);
+    // 人のそばの日々：品の一行ごとに鈴
+    haze(CH.Bb.pad, c[1] - 1.5, c[2] - 1, .02, 1400); [65, 69, 70, 74].forEach((n, i) => bell(n, lines[i] - .2, 3, .055)); sub(CH.Bb.b - 12, c[1] - 1, .08, 4);
+    // 作った人・受けついだ人
+    haze(CH.Eb.pad, c[2] - 1.5, c[3] - 1, .021, 1600); bell(67, c[2] - .4, 3.2, .05); bell(70, c[2] + 1, 3.2, .045);
+    // 収蔵庫で眠る：音が下がり、こもっていく
+    haze(CH.Cm.pad, c[3] - 1.5, c[4] - 2, .018, 800); [74, 72, 70, 67].forEach((n, i) => bell(n, c[3] - 1 + i * 1.3, 3.4, .045 - i * .006));
+    // 「もう一度だけ、だれかに、見てほしい」：ひと呼吸の間のあと、Cm9 がふくらみ、高い鈴が問いかける
+    haze(CH.Cm.pad.concat([74]), c[4] - 1, c[5] - .5, .032, 2000); sub(CH.Cm.b - 12, c[4] - 1, .1, 5);
+    [[70, -.6], [74, .3], [77, 1.2], [75, 2.6], [74, 3.6]].forEach(([n, d]) => bell(n, c[4] + d, 3.6, .07));
+    // 灯りになって、ともりつづけた
+    haze(CH.Eb.pad, c[5] - 1.5, c[6] - 1, .022, 1700); arp(CH.Eb, c[5] - .5, c[6] - 1.4, .004, .012, .5);
+    // 閉館の鐘 → 灯りが目を覚ます（粒が速まる）
+    bell(46, c[6] - 1, 6, .12); bell(58, c[6] - 1, 5, .05);
+    haze(CH.Gm.pad, c[6] - .5, c[7] - .8, .022, 1500); arp(CH.Gm, c[6] + .8, c[7] - .6, .008, .028, .5, 1.6);
+    // 精霊たち
+    haze(CH.Eb.pad, c[7] - 1, c[8] - 1, .027, 2400); arp(CH.Eb, c[7] - .6, c[8] - 1.6, .028, .02, 1.6, 1); [70, 74, 77, 81].forEach((n, i) => bell(n, c[7] - .4 + i * .18, 3, .06));
+    // 待っていたのは…… → あなたです：Bbmaj7 が満ちる
+    haze(CH.Gm.pad, c[8] - 1.5, y, .018, 1000); riser(y - 1.8, 1.8, .035);
+    haze(CH.Bb.pad.concat([69, 74]), y, WEL[0] + 1, .038, 2600); sub(CH.Bb.b - 12, y, .22, 3);
+    [58, 62, 65, 69, 74, 77, 81].forEach((n, i) => bell(n, y + i * .08, 3.6, .075));
+    // ようこそ：映像の始めと同じ Bb の和音を、映像の中へ重ねて渡す
+    haze(CH.Bb.pad, WEL[0], WEL[3] + 2.5, .024, 1300); bell(81, WEL[1] - .5, 4, .045); bell(77, WEL[1] + .3, 4, .04);
+    let gone = false;
+    const end = (d) => { if (gone) return; gone = true; const s = ac.currentTime; master.gain.cancelScheduledValues(s); master.gain.setValueAtTime(master.gain.value, s); master.gain.linearRampToValueAtTime(.0001, s + d); setTimeout(() => ac.close().catch(() => {}), d * 1000 + 300); };
+    // 最後まで流れたときは、和音を映像の中で 3 秒かけて消す。とばしたときは 1 秒で消す
+    return { fade() { end(ac.currentTime - T0 >= WEL[3] - .1 ? 3 : 1); } };
   }
   const INTRO = 'dropper-spirit-intro';
   function opening() {
