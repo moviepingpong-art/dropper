@@ -1970,8 +1970,12 @@
       let over = false;
       const end = () => {
         if (over) return; over = true;
-        v.pause(); v.removeAttribute('src'); v.load(); v.ontimeupdate = v.onended = null;
-        if (tale) tale.stop(); box.classList.add('hidden'); t.classList.remove('on'); document.removeEventListener('keydown', key); done();
+        // ページへはぱっと切りかえず、1.2 秒かけて溶かす（2026-10-27 重吉さん）
+        if (tale) tale.stop(); document.removeEventListener('keydown', key); box.classList.add('gone');
+        setTimeout(() => {
+          v.pause(); v.removeAttribute('src'); v.load(); v.ontimeupdate = v.onended = null;
+          box.classList.add('hidden'); box.classList.remove('gone'); t.classList.remove('on'); done();
+        }, 1200);
       };
       const key = e => { if (e.key === 'Escape') skip(); };
       const roll = () => { v.muted = !soundOn; v.play().catch(() => { v.muted = true; v.play().catch(end); }); };
@@ -1994,13 +1998,37 @@
   }
   // オープニングの前の物語（2026-10-27〜、重吉さんの決め）：美術館で眠る作品の物語が夜空の上をゆっくり流れ、
   // 最後に「ようこそ」が浮かんで消えてから映像に入る。文は辞書の story（段落）・storyVoice（金の大きな一言）・story2・storyEnd（2行目が金）・storyWelcome。
-  // 速さは行の高さで決める（言語で文の長さが違っても、同じ速さで読める）。動きを減らす設定では、灯りを止めて文だけ流す
+  // 段落ごとに声（OpenAI の gpt-4o-mini-tts の sage・speed 1.1 で前もって作り、音量をそろえた play/voice/<言語>/p1〜p9.mp3。in は en）を読み、段落の真ん中が画面の真ん中に来るのを声の真ん中に合わせる。
+  // 音を止めているときも同じ時間で流す（読む速さを声にそろえる）。声の長さは VOICE（ffprobe で測った秒）。段落の数を変えたら声と VOICE と GAP も直す。
+  // 「ようこそ」の少し前までは、奥に4館の建物の写真（STORY_BG）を名前と撮った人の表示つきでうっすら動かし、順に替えて消す。
+  // 動きを減らす設定では、灯りと写真の動きを止めて文だけ流す
+  const VOICE = {
+    ja: [6.02, 8.57, 4.46, 6.98, 3.89, 5.88, 5.93, 4.06, 4.97], en: [6.19, 9.89, 4.46, 6.79, 4.66, 4.82, 5.21, 3.43, 4.42],
+    ko: [4.92, 8.33, 5.33, 5.78, 4.8, 5.57, 4.56, 2.93, 4.34], 'zh-hant': [6.48, 9.53, 5.38, 6.94, 4.42, 6.7, 5.42, 4.06, 4.46],
+    vi: [5.06, 8.33, 5.33, 6.65, 4.61, 6.65, 4.06, 3.43, 4.3]
+  };
+  // 段落のあとの間（秒）。「もう一度だけ」の前と「閉館の夜」の前は長めに
+  const GAP = [1, .8, .6, 1.3, 1, 1.2, .7, .8];
+  // 写真は Wikimedia Commons から（作者名とライセンスを出す約束）。名前は辞書の storyMuseums（同じ並び）
+  const STORY_BG = [
+    { f: 'met', by: 'Martin Furtschegger', lic: 'CC BY 3.0', url: 'https://commons.wikimedia.org/wiki/File:Das_Metropolitan_Museum_auf_der_5_th_Avenue_beim_Central_Park_-_panoramio.jpg' },
+    { f: 'chi', by: 'Beyond My Ken', lic: 'CC BY-SA 4.0', url: 'https://commons.wikimedia.org/wiki/File:Art_Institute_of_Chicago_from_across_Michigan_Avenue.jpg' },
+    { f: 'cle', by: 'Erik Drost', lic: 'CC BY 2.0', url: 'https://commons.wikimedia.org/wiki/File:Art_museum_and_lagoon.jpg' },
+    { f: 'smk', by: 'Nahid V', lic: 'CC BY 2.0', url: 'https://commons.wikimedia.org/wiki/File:The_Danish_National_Gallery_-_Copenhagen_(14756983766).jpg' }
+  ];
+  const voiceLang = () => VOICE[window.LANG] ? window.LANG : window.LANG === 'ja' || !window.LANG ? 'ja' : 'en';
+  // 声のファイルは「はじめる」を押す前から読みはじめる（押してから待たないように）
+  let voicePre = null;
+  const preVoice = () => voicePre || (voicePre = Promise.all(VOICE[voiceLang()].map((_, i) =>
+    fetch(`/play/voice/${voiceLang()}/p${i + 1}.mp3`).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null))));
   function story() {
-    const box = $('story'), cv = $('storySky'), roll = $('storyRoll'), wel = $('storyWel'), cx = cv.getContext('2d');
+    const box = $('story'), cv = $('storySky'), roll = $('storyRoll'), wel = $('storyWel'), bg = $('storyBg'), cx = cv.getContext('2d');
     const P = (a, cls) => a.map(x => `<p${cls ? ` class="${cls}"` : ''}>${esc(x).replace(/\n/g, '<br>')}</p>`).join('');
-    const E = D('storyEnd');
+    const E = D('storyEnd'), MU = D('storyMuseums');
     roll.innerHTML = P(D('story')) + P([tr('storyVoice')], 'voice') + P(D('story2')) + `<p>${esc(E[0])}<br><span class="you">${esc(E[1])}</span></p>`;
     wel.textContent = tr('storyWelcome');
+    bg.innerHTML = STORY_BG.map((b, i) => `<figure><img src="/play/gallery/story/${b.f}.jpg" alt=""><figcaption><b>${esc(MU[i] || '')}</b>` +
+      `<a href="${b.url}" target="_blank" rel="noopener">Photo: ${esc(b.by)} / ${b.lic}</a></figcaption></figure>`).join('');
     box.classList.remove('hidden', 'out');
     const still = matchMedia('(prefers-reduced-motion: reduce)').matches, dpr = devicePixelRatio || 1;
     let W, H, stars, motes, raf = 0, fin, over = false;
@@ -2013,18 +2041,41 @@
     };
     size(); addEventListener('resize', size);
     const lh = parseFloat(getComputedStyle(roll).lineHeight) || 40;
-    const dist = () => innerHeight + roll.offsetHeight, dur = dist() / (lh * .9);
+    const ps = [...roll.children], mid = p => p.offsetTop + p.offsetHeight / 2, last = ps[ps.length - 1];
+    // 声の始まり（vs）と長さ（vl）。段落の真ん中が画面の真ん中に来るのは、声の真ん中
+    const vl = VOICE[voiceLang()], vs = [];
+    vl.forEach((l, i) => vs.push(i ? vs[i - 1] + vl[i - 1] + GAP[i - 1] : 4.5));
+    // 流れの位置（文の上端が画面の下から上がった量）を時刻の関数にする。始めは下のぼかしの中から（最初の段落が速く上がらないように。2026-10-27 重吉さん）。節は段落ごとで、間はなめらかにつなぐ（単調な3次の補間）
+    const K = [[0, innerHeight * .12], ...ps.map((p, i) => [vs[i] + vl[i] / 2, innerHeight / 2 + mid(p)])];
+    const n = K.length, m = K.map((_, i) => {
+      const d0 = i ? (K[i][1] - K[i - 1][1]) / (K[i][0] - K[i - 1][0]) : null, d1 = i < n - 1 ? (K[i + 1][1] - K[i][1]) / (K[i + 1][0] - K[i][0]) : null;
+      return d0 == null ? d1 : d1 == null ? d0 : 2 / (1 / d0 + 1 / d1);
+    });
+    const pos = t => {
+      if (t >= K[n - 1][0]) return K[n - 1][1] + m[n - 1] * (t - K[n - 1][0]);
+      let i = 0; while (t > K[i + 1][0]) i++;
+      const h = K[i + 1][0] - K[i][0], u = (t - K[i][0]) / h, u2 = u * u, u3 = u2 * u;
+      return (2 * u3 - 3 * u2 + 1) * K[i][1] + (u3 - 2 * u2 + u) * h * m[i] + (-2 * u3 + 3 * u2) * K[i + 1][1] + (u3 - u2) * h * m[i + 1];
+    };
     // 文の y（流れの中の位置）が、画面の上から f の所に来る時刻
-    const at = (y, f = .55) => dur * (innerHeight * (1 - f) + y) / dist();
-    const ps = [...roll.children], mid = p => p.offsetTop + p.offsetHeight / 2;
-    const cue = ps.map(p => at(mid(p))), last = ps[ps.length - 1];
-    // 「ようこそ」は流れの終わりを待たず、最後の段落が上のほうへ抜けていくところで重ねて浮かべる（2026-10-27 重吉さん）
-    const w0 = at(mid(last), .3), WEL = [w0, w0 + 2.5, w0 + 5, w0 + 6.5];
+    const at = (y, f = .55) => { const want = innerHeight * (1 - f) + y; let a = 0, b = 400; for (let k = 0; k < 40; k++) { const c = (a + b) / 2; if (pos(c) < want) a = c; else b = c; } return a; };
+    const cue = ps.map(p => at(mid(p)));
+    // 「ようこそ」は流れの終わりを待たず、最後の声が終わり、最後の段落が少し上へ抜けたところで重ねて浮かべる（2026-10-27 重吉さん）
+    const w0 = Math.max(vs[8] + vl[8] + .4, at(mid(last), .36)), WEL = [w0, w0 + 2.5, w0 + 5, w0 + 6.5];
     const list = ps[1], you = last.querySelector('.you');
-    const music = storyMusic(cue, [1, 2, 3, 4].map(i => at(list.offsetTop + list.offsetHeight * (i + .5) / 5)), at(you.offsetTop + lh / 2), WEL);
+    const music = storyMusic(cue, [1, 2, 3, 4].map(i => at(list.offsetTop + list.offsetHeight * (i + .5) / 5)), at(you.offsetTop + lh / 2), WEL, { vs, vl });
+    // 「ようこそ」の前に、素材集の本物の作品（CC0）が小さな額のように光りながら舞い上がる（2026-10-27 重吉さん）。
+    // 「精霊たちです」の声の少し前から、「ようこそ」のあいだに薄れて消える。絵は毎回くじで14点
+    const F0 = vs[7] - 1.5, F1 = WEL[2], arts = [];
+    loadMuseum().then(m => shuffle(m).slice(0, 14).forEach((w, i) => {
+      const im = new Image(); im.src = MUSEUM_BASE + w.f;
+      arts.push({ im, x: (.06 + .88 * ((i * .618) % 1)), t0: F0 + i * .55, sp: 7 + (i % 4) * 1.3, p: i * 1.7, sz: .8 + (i * .37 % .5) });
+    })).catch(() => {});
+    // 写真：1館ずつ、声の始まりから「ようこそ」の少し前まで（2026-10-27 重吉さん）。2.5 秒かけて重ねて替え、最後は消える
+    const figs = [...bg.children], B0 = 1, B1 = w0 - 2.2, BT = (B1 - B0) / figs.length, XF = 2.5;
     const t0 = performance.now();
-    const frame = n => {
-      const t = (n - t0) / 1000, tt = still ? 0 : t;
+    const frame = now => {
+      const t = (now - t0) / 1000, tt = still ? 0 : t;
       cx.clearRect(0, 0, W, H);
       for (const [x, y, r, p] of stars) { cx.globalAlpha = .35 + .35 * Math.sin(tt * 1.3 + p); cx.fillStyle = '#fff6e0'; cx.beginPath(); cx.arc(x, y, r * dpr * .6, 0, 7); cx.fill(); }
       // 下から上がる小さな灯り（作品にやどる思い）
@@ -2034,7 +2085,31 @@
         cx.globalAlpha = .5 + .3 * Math.sin(tt * 2 + p); cx.fillStyle = g; cx.beginPath(); cx.arc(gx, y, R, 0, 7); cx.fill();
       }
       cx.globalAlpha = 1;
-      roll.style.transform = `translateY(${-Math.min(t / dur, 1) * dist()}px)`;
+      if (t > F0 && t < F1) {
+        const env = Math.min(1, (t - F0) / 1.5) * (t < WEL[0] ? 1 : Math.max(0, 1 - (t - WEL[0]) / (F1 - WEL[0])));
+        const base = Math.min(W, H) * (W > H ? .11 : .16);
+        for (const a of arts) {
+          if (!a.im.complete || !a.im.naturalWidth || t < a.t0) continue;
+          const u = (t - a.t0) / a.sp; if (u > 1) continue;
+          const k = Math.max(a.im.naturalWidth, a.im.naturalHeight), w = a.im.naturalWidth / k * base * a.sz, h = a.im.naturalHeight / k * base * a.sz;
+          const x = a.x * W + Math.sin(tt * .7 + a.p) * W * .04, y = H * (1.1 - 1.3 * u), r = still ? 0 : Math.sin(tt * .5 + a.p) * .22;
+          cx.save(); cx.translate(x, y); cx.rotate(r);
+          cx.globalAlpha = env * Math.min(1, u * 5, (1 - u) * 4) * .9;
+          cx.shadowColor = 'rgba(255,200,110,.9)'; cx.shadowBlur = 26 * dpr;
+          cx.fillStyle = '#c9a45a'; cx.fillRect(-w / 2 - 3 * dpr, -h / 2 - 3 * dpr, w + 6 * dpr, h + 6 * dpr);
+          cx.shadowBlur = 0; cx.drawImage(a.im, -w / 2, -h / 2, w, h);
+          cx.restore();
+        }
+        cx.globalAlpha = 1;
+      }
+      figs.forEach((f, i) => {
+        const a = B0 + i * BT - (i ? XF / 2 : 0), b = B0 + (i + 1) * BT + XF / 2, u = Math.min(1, Math.max(0, (t - a) / (b - a)));
+        const o = t < a || t > b ? 0 : Math.min(1, (t - a) / XF, (b - t) / XF);
+        f.style.opacity = o;
+        // ゆっくり寄りながら横へ流れる（館ごとに向きを変える）
+        if (!still && o) f.firstChild.style.transform = `scale(${1.12 - .08 * u}) translateX(${(i % 2 ? 1 : -1) * (2 - 4 * u)}%)`;
+      });
+      roll.style.transform = `translateY(${-pos(t)}px)`;
       wel.style.opacity = t < WEL[0] ? 0 : t < WEL[1] ? (t - WEL[0]) / (WEL[1] - WEL[0]) : t < WEL[2] ? 1 : Math.max(0, 1 - (t - WEL[2]) / (WEL[3] - WEL[2]));
       if (t >= WEL[3]) stop(); else raf = requestAnimationFrame(frame);
     };
@@ -2050,7 +2125,8 @@
   // 段落が画面の真ん中あたりに来る時刻（cue）に合わせて和音を移す：眠る作品＝Gm → 人のそばの日々＝Bb（品の一行ごとに鈴）→ 作った人＝Eb →
   // 収蔵庫で眠る＝Cm から暗く → 間をあけて「もう一度だけ」＝Cm9 の高まりと鈴の旋律 → 灯り＝Eb の粒 → 閉館の鐘（低い鈴）と目覚め＝Gm の粒が速まる →
   // 精霊＝Eb → 「あなたです」で Bbmaj7 が満ちる → 「ようこそ」の Bb の和音を映像の始め（同じ Bb の和音）へ重ねて渡す
-  function storyMusic(cue, lines, youAt, WEL) {
+  // 声（voice の vs＝始まり・vl＝長さ）は曲と同じ AudioContext で時刻どおりに鳴らし、読んでいるあいだは曲を半分ほどに下げる
+  function storyMusic(cue, lines, youAt, WEL, voice) {
     const none = { fade() {} };
     if (!soundOn) return none;
     let ac;
@@ -2124,14 +2200,26 @@
     [58, 62, 65, 69, 74, 77, 81].forEach((n, i) => bell(n, y + i * .08, 3.6, .075));
     // ようこそ：映像の始めと同じ Bb の和音を、映像の中へ重ねて渡す
     haze(CH.Bb.pad, WEL[0], WEL[3] + 2.5, .024, 1300); bell(81, WEL[1] - .5, 4, .045); bell(77, WEL[1] + .3, 4, .04);
+    // 声：読みこみが遅れて始まりに間に合わなかった段落は、その段落だけ読まない（文は先へ流れているため）
+    const vg = ac.createGain(); vg.gain.value = .95; vg.connect(ac.destination);
+    voice.vs.forEach((v, i) => { master.gain.setTargetAtTime(.45, at(v - .4), .15); master.gain.setTargetAtTime(1, at(v + voice.vl[i]), .5); });
+    preVoice().then(bufs => bufs.forEach((b, i) => b && ac.decodeAudioData(b.slice(0)).then(buf => {
+      if (gone || ac.currentTime > at(voice.vs[i]) - .05) return;
+      const src = ac.createBufferSource(); src.buffer = buf; src.connect(vg); src.start(at(voice.vs[i]));
+    }).catch(() => {})));
     let gone = false;
-    const end = (d) => { if (gone) return; gone = true; const s = ac.currentTime; master.gain.cancelScheduledValues(s); master.gain.setValueAtTime(master.gain.value, s); master.gain.linearRampToValueAtTime(.0001, s + d); setTimeout(() => ac.close().catch(() => {}), d * 1000 + 300); };
+    const end = (d) => {
+      if (gone) return; gone = true; const s = ac.currentTime;
+      [master, vg].forEach(g => { g.gain.cancelScheduledValues(s); g.gain.setValueAtTime(g.gain.value, s); g.gain.linearRampToValueAtTime(.0001, s + d); });
+      setTimeout(() => ac.close().catch(() => {}), d * 1000 + 300);
+    };
     // 最後まで流れたときは、和音を映像の中で 3 秒かけて消す。とばしたときは 1 秒で消す
     return { fade() { end(ac.currentTime - T0 >= WEL[3] - .1 ? 3 : 1); } };
   }
   const INTRO = 'dropper-spirit-intro';
   function opening() {
     try { localStorage.setItem(INTRO, '1'); } catch (e) { /* 覚えられなくても見られる */ }
+    if (soundOn) preVoice();
     return film('opening', { tap: true, story: true, title: tr('h1a') + tr('h1b') });
   }
   async function show(M, img, note) {
