@@ -2,7 +2,7 @@
 #   python3 morning.py -- <dawn|quiet> <段階1-5> <出力.png> [幅px] [サンプル数]
 #   夜明け＝光が育つ（細い光→光の筋→金の粒→鳥が飛ぶ→館全体が金色）。太陽の高さと館の染まり方が段階で変わる
 #   静かな朝＝やすらぎが育つ（朝もや→花一輪→花びらが舞う→小鳥が鳴く→庭いっぱいの花）。花・枝の小鳥が段階で増える
-#   FILM=<フォルダ> を付けると、カメラが館のまわりを回る10秒のループ（240コマ。2026-10-26 に5秒から伸ばし、館に奥行きを足した）を書き出す（夜明けの画面の映像。2026-10-25 重吉さんの決め）
+#   FILM=<フォルダ> を付けると、カメラが館のまわりを回る20秒の映像（480コマ。2026-10-26 に5秒→10秒→20秒（半分の速さ）にし、館に奥行きと、寄り1回・引き1回のズームを足した。ページは1回だけ流し、ループしない）を書き出す（夜明けの画面の映像。2026-10-25 重吉さんの決め）
 #     斜め上から入り、正面・横へ回って元の所へ戻る。できたコマは飛ばすので、止まっても同じ命令で続きから。CAMT=0.25 なら その1コマだけ試す
 #   動くもの（金の粒・飛ぶ鳥・舞う花びら・光の間の金の柱と銀の雨）はページの canvas が上に重ねる（night-app.js の drawScene）
 import bpy, math, sys, random, os
@@ -447,7 +447,7 @@ sc.render.engine = 'CYCLES'; sc.cycles.samples = SAMPLES; sc.cycles.use_denoisin
 sc.cycles.max_bounces = 6; sc.cycles.transparent_max_bounces = 32
 sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'AgX - Medium High Contrast'
 sc.render.image_settings.file_format = 'PNG'
-FILM = os.environ.get('FILM'); NF = 240
+FILM = os.environ.get('FILM'); NF = 480
 def glow_post(path):
     # 灯りのにじみ（明るい所をぼかして足す）。5段階目は強く、華やかに
     from PIL import Image, ImageFilter, ImageChops
@@ -457,14 +457,19 @@ def glow_post(path):
     k = [0.3, 0.35, 0.4, 0.5, 0.7][LV - 1]
     ImageChops.add(im, glow.point(lambda v: int(v * k))).save(path)
 def orbit(t):
-    # 0〜1 で1周（10秒）：左の高い所から入り、左の横・正面の低い所・右の横・右の奥の高い所をめぐって元へ戻る（2026-10-26 重吉さんの決め）
+    # 0〜1 で1周（20秒。2026-10-26 に半分の速さに）：左の高い所から入り、左の横・正面の低い所・右の横・右奥の高い所をめぐって元へ戻る。
+    # 途中でズームの寄り（破風と館の名）と引き（館ぜんたい）を1回ずつ入れる（重吉さんの決め）
     a = 2 * math.pi * t
     az = math.radians(-62 * math.cos(a) + 12 * math.sin(2 * a))
     h = 6.8 + 3.2 * math.cos(2 * a) + 1.4 * math.sin(a)
     r = 33 + 5.0 * math.cos(a) ** 2
     C = Vector((0, 5.0, 0))
     co.location = C + Vector((r * math.sin(az), -r * math.cos(az), h))
-    co.rotation_euler = (Vector((0, 5.0, 3.8)) - co.location).to_track_quat('-Z', 'Y').to_euler()
+    # ズーム：寄り1回（正面の上から破風と館の名へ。レンズ 30 → 56）・引き1回（正面の低い所から館ぜんたいへ → 22）。重吉さんの決め
+    z = math.sin(a)
+    cam.lens = 30 + (26 * z if z > 0 else 8 * z)
+    look = Vector((0, 5.0, 3.8)).lerp(Vector((0, 0.0, TOP + 5.2)), max(0.0, z) ** 1.5)
+    co.rotation_euler = (look - co.location).to_track_quat('-Z', 'Y').to_euler()
     bpy.context.view_layer.update()   # これが無いと、画面の位置を前のコマのカメラで計算してしまう
 # 館のまわりを舞う精霊の道（7体。ページがその夜の7体をここに描く）。1周の間に整数回まわるので、ループの継ぎ目で途切れない
 SPIRITS = [(11, 9, 4.0, 1, 0.0), (13, 11, 6.5, -1, 0.9), (9.5, 8, 7.5, 1, 2.1), (15, 12, 3.2, -1, 3.0), (12, 10, 9.0, 1, 4.2), (10.5, 13, 5.0, 2, 5.0), (14, 9.5, 8.0, -2, 1.6)]

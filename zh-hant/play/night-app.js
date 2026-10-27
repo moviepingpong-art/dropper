@@ -538,7 +538,7 @@
       $('msg').textContent = tr('nStoryWriting');
       const st = await story;
       try { film = await window.NightFilm.room({ cards, hues: witnessHues, guard: witness ? { th: witnessTh, n: witness, line: tr('nFilmGuard', { name: witness }) } : null, story: st, seed: HAND.map(c => c.id).join('|') + '|' + isoDate(), congrats: tr('nFilmCongrats'), only: tr('nFilmOnly'), title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
-        tx: { loading: tr('nFilmLoading'), play: tr('nFilmPlay'), skip: tr('nFilmSkip'), save: tr('nFilmSave'), close: tr('nFilmClose'), made: tr('nFilmMade'), noRec: tr('nFilmNoRec') } }); } catch (e) { film = null; }
+        tx: { modeAuto: tr('nModeAuto'), modePic: tr('nModePic'), picDrop: tr('nPicDrop'), picNote: tr('nPicNote'), ai: tr(st ? 'nAiYes' : trial ? 'nAiTrial' : 'nAiNo'), aiSub: tr(st ? 'nAiYesSub' : 'nAiNoSub'), loading: tr('nFilmLoading'), play: tr('nFilmPlay'), skip: tr('nFilmSkip'), save: tr('nFilmSave'), close: tr('nFilmClose'), made: tr('nFilmMade'), noRec: tr('nFilmNoRec') } }); } catch (e) { film = null; }
       if (wasOn) bgm(true);
     }
     busy = false; morning();
@@ -625,6 +625,7 @@
   }
   function restart() {
     // もう一度挑戦するときは、曲も始めの静かな所からかけ直す（2026-10-25。前は朝の曲が続いたままだった）
+    dawnMus = null; liftOv = null;
     if (on && ac) {
       bgm(false); const g = master.gain, t = ac.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + .5);
       setTimeout(() => { if (!on || timer) return; g.cancelScheduledValues(ac.currentTime); g.setValueAtTime(.8, ac.currentTime); bgm(true); }, 1600);
@@ -648,12 +649,12 @@
     if (!mornImg[key]) { const im = new Image(); im.src = `${GAL}morning-${k}-${lv}.jpg`; mornImg[key] = im; }
     return mornImg[key];
   }
-  // 夜明けの画面の映像（10秒のループ。カメラが館のまわりをいろいろな角度からめぐる。2026-10-25、2026-10-26 に奥行きと長さを足した・重吉さんの決め）。
+  // 夜明けの画面の映像（20秒を1回だけ。カメラが館のまわりをいろいろな角度からめぐり、寄りと引きが1回ずつ。最後は光り輝いて薄れる。2026-10-25〜26 重吉さんの決め）。
   // 絵は morning.py の FILM で書き出す（play/gallery/morning-dawn-film.{webm,mp4}）。太陽と扉の上の位置はコマごとに .json から読む
   let mornFilm = null;
   function mornVideo() {
     if (mornFilm) return mornFilm;
-    const v = document.createElement('video'); v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'auto';
+    const v = document.createElement('video'); v.muted = true; v.loop = false; v.playsInline = true; v.preload = 'auto';  // ループしない（2026-10-26 重吉さんの決め。最後は光り輝いて薄れる）
     v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
     v.src = GAL + 'morning-dawn-film.' + (v.canPlayType('video/webm; codecs="vp9"') ? 'webm' : 'mp4');
     mornFilm = { v, m: null };
@@ -666,12 +667,13 @@
     sceneOn = run;
     const rnd = (i, j) => { const x = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return x - Math.floor(x); };
     const F = film && !reduce ? mornVideo() : null;
+    if (F) dawnMus = null;
     if (F) { F.v.currentTime = 0; F.v.play().catch(() => {}); }
     const pic = mornPic(k, lv);
     // 映像が流れていればそのコマを、まだなら静止画を描く
     const img = F ? { get complete() { return F.v.readyState >= 2 && !!F.m || pic.complete; }, get naturalWidth() { return F.v.readyState >= 2 && F.m ? F.v.videoWidth : pic.naturalWidth; }, get naturalHeight() { return F.v.readyState >= 2 && F.m ? F.v.videoHeight : pic.naturalHeight; },
-      get src() { return F.v.readyState >= 2 && F.m ? F.v : pic; }, get mark() { if (!(F.v.readyState >= 2 && F.m)) return null; const m = F.m.m[Math.floor(F.v.currentTime * F.m.fps) % F.m.m.length]; return m; },
-      get frame() { return F.v.readyState >= 2 && F.m && Array.isArray(F.m.s) ? F.v.currentTime * F.m.fps : null; }, film: F } : pic;
+      get src() { return F.v.readyState >= 2 && F.m ? F.v : pic; }, get mark() { if (!(F.v.readyState >= 2 && F.m)) return null; const m = F.m.m[Math.min(F.m.m.length - 1, Math.floor(F.v.currentTime * F.m.fps))]; return m; },
+      get frame() { return F.v.readyState >= 2 && F.m && Array.isArray(F.m.s) ? Math.min(F.m.s.length - 1, F.v.currentTime * F.m.fps) : null; }, film: F } : pic;
     if (F) guardSprites();
     const t0 = performance.now();
     const step = t => {
@@ -680,6 +682,22 @@
       if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
       const g2 = c.getContext('2d'); g2.setTransform(dpr, 0, 0, dpr, 0, 0);
       drawScene(g2, w, h, k, lv, hk, reduce ? 0 : (t - t0) / 1000, rnd, img);
+      // 映像の終わり：残り5秒で館が光り輝き、残り2秒からゆっくり薄れて消える（4秒かけて。消えたら描くのをやめる）
+      if (F && F.v.duration > 6 && F.v.readyState >= 2) {
+        const D = F.v.duration, e = F.v.currentTime;
+        if (F.v.ended && !run.endT) run.endT = t;
+        // 曲も映像に合わせる（始まり・光り輝く・薄れる）
+        const ph = e >= D - 2 || F.v.ended ? 'out' : e >= D - 5 ? 'glow' : e > 0 && !F.v.paused ? 'start' : null;
+        if (ph && ph !== dawnMus && (ph !== 'start' || !dawnMus)) { if (ph !== 'start' && !dawnMus) dawnMusic('start', e, D); dawnMus = ph; dawnMusic(ph, e, D); }
+        const glow = Math.min(1, Math.max(0, (e - (D - 5)) / 3)), out = Math.min(1, Math.max(0, ((run.endT ? 2 + (t - run.endT) / 1000 : e - (D - 2))) / 4));
+        if (glow > 0) {
+          const gl = g2.createRadialGradient(w / 2, h * 0.45, 0, w / 2, h * 0.45, Math.hypot(w, h) * 0.6);
+          gl.addColorStop(0, `rgba(255,246,220,${0.85 * glow})`); gl.addColorStop(0.5, `rgba(255,226,160,${0.55 * glow})`); gl.addColorStop(1, `rgba(255,210,140,${0.25 * glow})`);
+          g2.save(); g2.globalCompositeOperation = 'lighter'; g2.fillStyle = gl; g2.fillRect(0, 0, w, h); g2.restore();
+        }
+        if (out > 0) { g2.save(); g2.globalCompositeOperation = 'destination-out'; g2.fillStyle = `rgba(0,0,0,${out})`; g2.fillRect(0, 0, w, h); g2.restore(); }
+        if (out >= 1) return;
+      }
       if (!reduce) requestAnimationFrame(step);
     };
     // 動きを減らす設定では1枚だけ描く（絵が届いてから）
@@ -1142,7 +1160,7 @@
   const lift = bar => { const b = bar % 48; return b < 8 ? .2 : b < 16 ? .4 : b < 24 ? .6 : b < 40 ? 1 : .35; };
   function sched() {
     while (nextT < ac.currentTime + .25) {
-      const t = nextT, i = step % 16, barN = Math.floor(step / 16), c = CH[Math.floor(barN / 2) % 4], L = lift(barN);
+      const t = nextT, i = step % 16, barN = Math.floor(step / 16), c = CH[Math.floor(barN / 2) % 4], L = liftOv ? liftOv(barN) : lift(barN);
       if (i === 0 && barN % 2 === 0) haze(c.pad.map(N), t, STEP * 32, .016 + .006 * L);
       const a = ARP[i]; spark(N(a === 4 ? c.t[0] + 12 : c.t[a]), t, (.022 + .02 * L) * (i % 4 === 0 ? 1.3 : 1));
       if (L >= .4 && i % 2 === 0) sub(N(c.b - 12), t, (i % 4 === 0 ? .16 : .09) * Math.min(1, L + .2));
@@ -1152,6 +1170,16 @@
       if (L >= 1 && i === 0) bell(N(c.mel[barN % 2]), t, 3.6, .05, wet), bell(N(c.mel[barN % 2]), t, 3.6, .035, bgmGain);
       nextT += STEP; step++;
     }
+  }
+  // 夜明けの映像に合わせた曲（2026-10-26 重吉さんの決め）：映像が始まると頭から（静か→満ちる）、館が光り輝くところでいちばん満ち、
+  // 薄れるのに合わせて4秒で小さくして止める。もう一度挑戦するときは restart() がいつもの曲に戻す
+  let liftOv = null, dawnMus = null;
+  function dawnMusic(k, e, D) {
+    if (!on || !ac) return;
+    const g = master.gain, t = ac.currentTime;
+    if (k === 'start') { bgm(false); g.cancelScheduledValues(t); g.setValueAtTime(.8, t); const B = STEP * 16; liftOv = bar => { const x = bar * B; return x < 5 ? .2 : x < 10 ? .4 : x < D - 5 ? .6 : 1; }; bgm(true); }
+    else if (k === 'glow') sfx('dawn');
+    else if (k === 'out') { g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + 4); setTimeout(() => { if (dawnMus === 'out') { bgm(false); liftOv = null; } }, 4100); }
   }
   function bgm(play) { if (play) { nextT = ac.currentTime + .05; step = 0; timer = setInterval(sched, 60); } else { clearInterval(timer); timer = null; } }
   function sfx(k) {
