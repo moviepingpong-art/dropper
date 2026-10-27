@@ -681,6 +681,13 @@
       const w = c.clientWidth, h = c.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
       if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
       const g2 = c.getContext('2d'); g2.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // 映像が薄れて消えたあとは、朝の静止画をゆっくり浮かべて残す（額縁を飾って戻ったときに真っ黒にならないように。2026-10-27）
+      if (run.stillT) {
+        drawScene(g2, w, h, k, lv, hk, (t - t0) / 1000, rnd, pic);
+        const a = 1 - Math.min(1, (t - run.stillT) / 2500);
+        if (a > 0) { g2.save(); g2.globalCompositeOperation = 'destination-out'; g2.fillStyle = `rgba(0,0,0,${a})`; g2.fillRect(0, 0, w, h); g2.restore(); }
+        requestAnimationFrame(step); return;
+      }
       drawScene(g2, w, h, k, lv, hk, reduce ? 0 : (t - t0) / 1000, rnd, img);
       // 映像の終わり：残り5秒で館が光り輝き、残り2秒からゆっくり薄れて消える（4秒かけて。消えたら描くのをやめる）
       if (F && F.v.duration > 6 && F.v.readyState >= 2) {
@@ -696,7 +703,7 @@
           g2.save(); g2.globalCompositeOperation = 'lighter'; g2.fillStyle = gl; g2.fillRect(0, 0, w, h); g2.restore();
         }
         if (out > 0) { g2.save(); g2.globalCompositeOperation = 'destination-out'; g2.fillStyle = `rgba(0,0,0,${out})`; g2.fillRect(0, 0, w, h); g2.restore(); }
-        if (out >= 1) return;
+        if (out >= 1) { run.stillT = t; F.v.pause(); }
       }
       if (!reduce) requestAnimationFrame(step);
     };
