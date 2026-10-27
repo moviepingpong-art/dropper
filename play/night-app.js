@@ -584,7 +584,8 @@
       startScene(k, lv, hikariLit, true);
       if (gift !== null) $('pickNow').onclick = () => openPicker(gift, () => {
         $('pickNow').previousElementSibling.remove(); $('pickNow').replaceWith(Object.assign(document.createElement('span'), { className: 'small', textContent: tr('nFramedOk') }));
-        if (lit === ROOM.length && window.NightFilm) walkFilm();
+        // 額縁を飾って通路から戻ったら、夜明けの映像を曲と一緒に頭からもう一度流す（2026-10-27 重吉さんの決め）
+        if (lit === ROOM.length && window.NightFilm) walkFilm(() => startScene(k, lv, hikariLit, true)); else startScene(k, lv, hikariLit, true);
       });
       $('again').onclick = restart;
       return;
@@ -609,7 +610,7 @@
       $('pickNow').onclick = () => openPicker(gift, () => {
         $('gift').innerHTML = `<p>${esc(tr('nFramedOk'))}</p>`;
         // 4つの部屋を灯した朝（4段階目）に飾ったときだけ、最後の通路を進む映像で額縁が通路に掛かる（2026-10-25 重吉さんの決め）
-        if (lit === ROOM.length && window.NightFilm) walkFilm();
+        if (lit === ROOM.length && window.NightFilm) walkFilm(() => startScene(k, lv, null));
       });
       $('later').onclick = () => { $('gift').innerHTML = `<p class="small">${esc(tr('nLaterOk'))}</p>`; };
     }
@@ -617,11 +618,14 @@
     if ($('saveFilm')) $('saveFilm').onclick = () => window.NightFilm.save(film.blob, film.ext, tr('nFilmFile', { date: isoDate() }));
   }
   // 最後の通路を進む映像：額縁は新しい順（最後の通路の並びと同じ。0 がいま飾った額縁）
-  async function walkFilm() {
+  async function walkFilm(back) {
     const F = frames().reverse().slice(0, PER).map(f => ({ k: f.k, art: f.id && Array.isArray(f.w) && f.w[0] ? safeArt(f.w[0].f) : '', th: f.id ? safeThumb(f.th) : '', rar: f.rar, n: f.id ? txt(f.name) : '' }));
-    const wasOn = on; if (wasOn) bgm(false);
+    // 通路の映像のあいだは、朝の場面（映像と曲）を止めておく。戻ったら back() が始めから流し直す
+    sceneOn = null; if (mornFilm) mornFilm.v.pause(); dawnMus = null; liftOv = null;
+    const wasOn = on; if (wasOn) { bgm(false); master.gain.cancelScheduledValues(ac.currentTime); master.gain.setValueAtTime(.8, ac.currentTime); }
     try { await window.NightFilm.walk({ frames: F, tx: { loading: tr('nWalkLoading'), skip: tr('nFilmSkip'), close: tr('nWalkClose'), done: tr('nWalkDone', { name: F[0] ? F[0].n : '' }) } }); } catch (e) { /* 映像が無くても遊べる */ }
     if (wasOn) bgm(true);
+    if (back && !$('morning').hidden) back();
   }
   function restart() {
     // もう一度挑戦するときは、曲も始めの静かな所からかけ直す（2026-10-25。前は朝の曲が続いたままだった）
