@@ -530,7 +530,7 @@
     // 金の光・銀の光の子を連れた夜は、夜明けに金の柱／銀の雨（もとの「光の間」の光）
     hikariLit = HAND.some(c => c.rarity === 'gold') ? 'gold' : HAND.some(c => c.rarity === 'silver') ? 'silver' : null;
     $('flash').classList.remove('on');
-    // 最後の部屋の映像（20秒）。その夜の7体（★主が先）の作品と精霊が、壁の額縁に灯る。保存できる動画にする（night-film.js）
+    // 最後の部屋の映像（40秒）。その夜の7体（★主が先）の作品と精霊が、壁の額縁に灯る。保存できる動画にする（night-film.js）
     if (window.NightFilm) {
       const wasOn = on; if (wasOn) bgm(false);
       // 縁の子は kin、親もその夜の7体にいれば par にその番号（光の糸でつなぐ）

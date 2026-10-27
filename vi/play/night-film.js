@@ -1,5 +1,5 @@
 // 夜の美術館を灯す：2つの映像（2026-10-25〜、重吉さんの決め）
-//  1. 最後の部屋（20秒・縦9:16）…光の扉の鍵で最後の部屋に入ったら流す。BGM つきの動画にして、保存できる（特典）
+//  1. 最後の部屋（40秒・縦9:16）…光の扉の鍵で最後の部屋に入ったら流す。BGM つきの動画にして、保存できる（特典）
 //  2. 最後の通路を進む（10秒・横3:2）…4段階目の朝に精霊を額縁に飾ったときだけ流す。保存はしない
 // 絵は Blender で前もって書き出した物（tools/blender/lastroom.py・lastwalk.py）。額縁の窓の四隅はコマごとに JSON にある。
 // 最後の部屋の映像は、窓を「抜き」にしてあり、上半分が色・下半分が抜きの濃さ（lastroom.webm / .mp4。tools/blender/encode-film.sh）。その夜の作品・精霊は、ここで窓の下に描く。
@@ -89,8 +89,8 @@
     }
     g.setTransform(1, 0, 0, 1, 0, 0);
   }
-  // 床（lastroom.py の FLOOR_R と部屋の半径 RR）と、明るく灯った床の色（この色のとき画像をそのままの明るさで出す）
-  const FL_IN = 1.1, FL_OUT = 4.2, FL_LIT = [78, 60, 45];
+  // 明るく灯った壁の色（この色のとき画像をそのままの明るさで出す）
+  const WL_LIT = [78, 60, 45];
   // 額縁の絵の窓（px）→ 画面の窓の四隅、の写し
   const winMap = (P, q, W, H) => homography([[P.l, P.t], [P.l + P.ww, P.t], [P.l + P.ww, P.t + P.wh], [P.l, P.t + P.wh]], q.slice(0, 4).map(([x, y]) => [x * W, y * H]));
 
@@ -112,9 +112,11 @@
   // ---- 音：その場で合成する（BGM と同じ音色・同じ調 Bb）。dests に、スピーカーと録画の両方をつなぐ ----
   // bp：AI の曲の設計図（最後の部屋だけ。無ければいつもの曲）{ tempo, key, inst:[bell|strings|organ|harp|voice], build:rise|calm|wave }
   const KEY_SHIFT = { Bb: 0, C: 2, D: 4, Eb: -7, F: -5, G: -3 };
-  function score(ac, out, plan, bp) {
+  // base：曲を書いた調（最後の部屋の曲は D）。AI の調へは近いほうへ移す。len：曲の長さ（秒。波の形をのばす）
+  function score(ac, out, plan, bp, base = 'Bb', len = 20) {
     bp = bp || {};
-    const inst = Array.isArray(bp.inst) && bp.inst.length ? bp.inst : ['bell', 'strings'], build = bp.build || 'rise', shift = KEY_SHIFT[bp.key] || 0;
+    const inst = Array.isArray(bp.inst) && bp.inst.length ? bp.inst : ['bell', 'strings'], build = bp.build || 'rise';
+    const shift = bp.key in KEY_SHIFT ? (((KEY_SHIFT[bp.key] - KEY_SHIFT[base]) % 12 + 18) % 12) - 6 : 0;
     const comp = ac.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 3; comp.connect(out);
     const swell = ac.createGain(); swell.connect(comp);
     const master = ac.createGain(); master.gain.value = build === 'calm' ? .75 : .9; master.connect(swell);
@@ -126,7 +128,7 @@
     { const fb = ac.createGain(); fb.gain.value = .36; const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3200; echo.connect(lp); lp.connect(fb); fb.connect(echo); lp.connect(master); lp.connect(wet); }
     const T0 = ac.currentTime + .08, N = n => 440 * Math.pow(2, (n + shift - 69) / 12);
     // 波（wave）は、全体の大きさが2回ふくらんでおさまる
-    if (build === 'wave') swell.gain.setValueAtTime(.7, T0), [[0, .7], [4, 1.05], [7.5, .75], [12, 1.1], [15.5, .85], [18, 1]].forEach(([t, v]) => swell.gain.linearRampToValueAtTime(v, T0 + t));
+    if (build === 'wave') swell.gain.setValueAtTime(.7, T0), [[0, .7], [4, 1.05], [7.5, .75], [12, 1.1], [15.5, .85], [18, 1]].forEach(([t, v]) => swell.gain.linearRampToValueAtTime(v, T0 + t * len / 20));
     const bell = (n, t0, d = 2.2, v = .14) => [[1, 1], [2.76, .35], [5.4, .12]].forEach(([m, a]) => {
       const t = t0 + T0, o = ac.createOscillator(), e = ac.createGain(); o.type = 'sine'; o.frequency.value = N(n) * m;
       e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v * a, t + .01); e.gain.exponentialRampToValueAtTime(.0001, t + d / m);
@@ -163,6 +165,30 @@
       e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .005); e.gain.exponentialRampToValueAtTime(.0001, t + d);
       o.connect(e); o2.connect(e); e.connect(master); e.connect(echo); e.connect(wet); o.start(t); o2.start(t); o.stop(t + d + .05); o2.stop(t + d + .05);
     };
+    // 合唱（「ウー」と「アー」の口の形。4人分すこしずつずらす）と、ひとりの高い声（少年のソプラノの代わり。音から音へなめらかにつなぐ）。2026-10-27〜 最後の部屋の曲
+    const choir = (ns, t, d, v, vow = 'oo') => {
+      t += T0; const FM = vow === 'oo' ? [[350, 6, 1], [700, 8, .5], [2600, 10, .08]] : [[750, 6, 1], [1150, 8, .6], [2800, 10, .1]];
+      const e = ac.createGain(); e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + Math.min(1.6, d * .45)); e.gain.setValueAtTime(v, t + d - .6); e.gain.exponentialRampToValueAtTime(.0001, t + d + 1.2);
+      const fs = FM.map(([f, q, a]) => { const b = ac.createBiquadFilter(); b.type = 'bandpass'; b.frequency.value = f; b.Q.value = q; const g = ac.createGain(); g.gain.value = a * 3; b.connect(g); g.connect(e); return b; });
+      ns.forEach(n => [-11, -4, 3, 10].forEach(dt => {
+        const o = ac.createOscillator(), l = ac.createOscillator(), lg = ac.createGain(); o.type = 'sawtooth'; o.frequency.value = N(n); o.detune.value = dt;
+        l.frequency.value = 4.6 + Math.random(); lg.gain.value = 9; l.connect(lg); lg.connect(o.detune); fs.forEach(b => o.connect(b));
+        o.start(t); o.stop(t + d + 1.3); l.start(t); l.stop(t + d + 1.3);
+      }));
+      e.connect(master); e.connect(wet);
+    };
+    const solo = (line, v) => {  // line：[[音, 始まり, 長さ], …]
+      const o = ac.createOscillator(), o2 = ac.createOscillator(), l = ac.createOscillator(), lg = ac.createGain(), e = ac.createGain(), lp = ac.createBiquadFilter();
+      o.type = 'triangle'; o2.type = 'sine'; l.frequency.value = 5.2; lg.gain.value = 0; l.connect(lg); lg.connect(o.detune); lg.connect(o2.detune);
+      lp.type = 'lowpass'; lp.frequency.value = 2400; o.connect(lp); o2.connect(lp); lp.connect(e); e.gain.value = .0001; e.connect(master); e.connect(wet);
+      line.forEach(([n, t, d]) => {
+        t += T0; o.frequency.setTargetAtTime(N(n), t, .06); o2.frequency.setTargetAtTime(N(n) * 2, t, .06);
+        e.gain.setTargetAtTime(v, t, .18); e.gain.setTargetAtTime(v * .55, t + d * .7, .3); lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(14, t + Math.min(.9, d * .5));
+      });
+      const z = line[line.length - 1], te = T0 + z[1] + z[2]; e.gain.setTargetAtTime(.0001, te, .5);
+      [o, o2, l].forEach(x => { x.start(T0 + line[0][1]); x.stop(te + 3); });
+    };
+    const bass = (n, t, d, v) => { t += T0; const o = ac.createOscillator(), e = ac.createGain(); o.type = 'sine'; o.frequency.value = N(n); e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .6); e.gain.setValueAtTime(v, t + d - .4); e.gain.exponentialRampToValueAtTime(.0001, t + d + .6); o.connect(e); e.connect(master); o.start(t); o.stop(t + d + .7); };
     // 設計図の楽器で鳴らす：旋律は 鈴・ハープ、和音は 弦・オルガン・声。どちらも選ばれていなければ、鈴・弦を小さく
     const MEL = inst.filter(x => x === 'bell' || x === 'harp'), PAD = inst.filter(x => x === 'strings' || x === 'organ' || x === 'voice');
     const mel = (n, t, d, v) => { const k = MEL.length ? 1 / Math.sqrt(MEL.length) : .6; (MEL.length ? MEL : ['bell']).forEach(x => x === 'harp' ? harp(n, t, d * .7, v * k) : bell(n, t, d, v * k)); };
@@ -175,7 +201,7 @@
       Eb: { b: 51, t: [58, 63, 67, 69], pad: [51, 55, 58, 62] }, Gm: { b: 43, t: [58, 62, 65, 67], pad: [43, 50, 53, 58] } };
     const ARP = [0, 1, 2, 3, 4, 3, 2, 1, 0, 2, 1, 3, 2, 4, 3, 1];
     const arp = (c, t0, t1, v0, v1, rate = 1, pat = ARP) => { for (let t = t0, i = 0; t < t1; t += STEP / rate, i++) { const a = pat[i % pat.length], k = (t - t0) / (t1 - t0); spark(a === 4 ? c.t[0] + 12 : c.t[a], t, v0 + (v1 - v0) * k); } };
-    plan({ bell, haze, spark, sub, boom: (t, v) => boom(t, v * soft), riser: (t, d, v) => riser(t, d, v * soft), arp, CH, STEP, mel, pad, voice, harp });
+    plan({ bell, haze, spark, sub, boom: (t, v) => boom(t, v * soft), riser: (t, d, v) => riser(t, d, v * soft), arp, CH, STEP, mel, pad, voice, harp, choir, solo, bass, organ, inst });
     return { T0, stop: () => { master.gain.cancelScheduledValues(ac.currentTime); master.gain.setTargetAtTime(0, ac.currentTime, .15); } };
   }
   // その夜のカードから決まる乱数（同じ夜の同じ7体なら同じ。カードか日付が1つ違えば別の曲・別の灯り）
@@ -183,33 +209,51 @@
     let h = 2166136261; for (const ch of String(str)) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); }
     return () => { h += 0x6D2B79F5; let t = h; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   }
-  // 最後の部屋の曲（20秒）：光の扉 → 額縁が1つ灯るたびに鈴が1つ上へ → 光の粒が集まる → 天窓の光で和音がひらく。
-  // 旋律（灯るたびの7つの音・はじめと終わりの鈴）・和音の進み方・粒の音の並びは、その夜のカードから決める（rnd）。音が鳴る時刻は映像に合わせて同じ
+  // 最後の部屋の曲（40秒・ニ長調・2026-10-27〜 重吉さんの決め。参考にした曲の雰囲気：少年合唱と弦の、静かに始まって満ち、やさしく終わる曲。曲そのものは写していない）
+  // 入口（0〜5秒）は遠くの合唱「ウー」とハープ → 額縁が1つ灯るたびに1小節（3.125秒）、和音が変わり鈴が鳴る。2つ目からひとりの声が旋律を歌う →
+  // 光の粒が灯籠へ（G → A で高まる）→ 天窓の光で D の和音がひらき、鈴が降りて消える。時刻は lastroom.py の LIT0・GAP（120コマ・75コマ）に合わせる
+  // 旋律・和音の進み方・ハープの並び・灯るたびの鈴の音は、その夜のカードから決める（rnd）。AI の設計図の楽器は色として足す（オルガン・鈴・ハープ・声）
   // sp：精霊ごとの特別（rar 金の光・銀の光／kin 縁から生まれた子）。額縁が灯る時刻に、金＝声の和音、銀＝高い鈴の連なり、縁の子＝2つの旋律が重なる
-  const ROOM_PLAN = (rnd, sp = []) => ({ mel: bell, pad: haze, sub, boom, riser, arp, CH, voice, harp }) => {
-    const pick = a => a[Math.floor(rnd() * a.length)];
-    const P = pick([['Gm', 'Cm', 'Eb', 'Gm'], ['Eb', 'Cm', 'Gm', 'Eb'], ['Cm', 'Eb', 'Gm', 'Cm'], ['Gm', 'Eb', 'Cm', 'Gm'], ['Eb', 'Gm', 'Cm', 'Eb'], ['Cm', 'Gm', 'Eb', 'Cm']]).map(k => CH[k]);
-    const SC = [58, 60, 62, 65, 67, 69, 70, 72, 74, 77, 79, 81, 82];
-    const up = []; for (let k = 0, i = Math.floor(rnd() * 3); k < 7; k++) { up.push(SC[i]); i = Math.min(SC.length - 1, i + 1 + (rnd() < .35 ? 1 : 0) - (rnd() < .15 && i > 0 ? 2 : 0)); }
-    const pat = []; for (let k = 0, a = 0; k < 16; k++) { pat.push(a); a = Math.max(0, Math.min(4, a + pick([-1, 1, 1, 2, -2]))); }
-    haze(CH.Bb.pad.concat([69]), 0, 2.8, .03, 2600);
-    pick([[81, 77, 74], [74, 77, 81], [77, 81, 74], [82, 77, 74], [74, 70, 77]]).forEach((n, i) => bell(n, .2 + i * .25, 2.6, .07));
-    up.forEach((n, i) => bell(n, 2.95 + i * 1.25, 2.8, .1));                       // 額縁が灯る（70コマ目から30コマごと）
-    sp.forEach((c, i) => {
-      if (!c) return; const t = 2.95 + i * 1.25;
-      if (c.rar === 'gold') { voice([70, 74, 77], t + .05, 1.7, .022); bell(82, t + .12, 3.2, .07); }
-      else if (c.rar === 'silver') [86, 89, 91, 94, 98].forEach((n, k) => bell(n, t + .08 + k * .07, 1.8, .05));
-      if (c.kin) { [70, 74, 72, 77].forEach((n, k) => harp(n, t + .1 + k * .18, 1.2, .07)); [65, 69, 70, 74].forEach((n, k) => bell(n, t + .19 + k * .18, 1.8, .05)); }
+  const ROOM_PLAN = (rnd, sp = []) => ({ bell, harp, voice, choir, solo, bass, haze: strings, organ, inst }) => {
+    const pick = a => a[Math.floor(rnd() * a.length)], L0 = 5, BAR = 3.125, BEAT = BAR / 4, has = x => inst.includes(x);
+    const C = { D: [50, 57, 62, 66, 69], Bm: [47, 54, 59, 62, 66], G: [43, 55, 59, 62, 67], A: [45, 57, 61, 64, 69], DF: [42, 57, 62, 66, 69], Em: [40, 55, 59, 64, 67],
+      Asus: [45, 57, 62, 64, 69], AC: [49, 57, 61, 64, 69], Fm: [42, 54, 61, 66, 69], Gm6: [43, 55, 58, 62, 64] };
+    const P = pick([['D', 'Bm', 'G', 'A', 'DF', 'Em', 'Asus'], ['D', 'AC', 'Bm', 'Fm', 'G', 'DF', 'Asus'], ['D', 'G', 'Bm', 'A', 'G', 'Em', 'Asus']]);
+    // 旋律：小節ごとに、その和音の中の音から2つ（長い音・短い音）。上がっていく線で、最後は高い所で長くのばす
+    const tones = k => C[k].slice(2).map(n => n + 12).concat(C[k].slice(2).map(n => n + 24)).filter(n => n >= 66 && n <= 81).sort((a, b) => a - b);
+    let cur = 69; const line = [];
+    P.forEach((k, i) => {
+      if (i < 1) return; const ts = tones(k), near = ts.reduce((a, b) => Math.abs(b - cur - (i > 3 ? 2 : 0)) < Math.abs(a - cur - (i > 3 ? 2 : 0)) ? b : a, ts[0]);
+      const t = L0 + i * BAR, two = rnd() < .7; line.push([near, t, two ? 1.5 : 3]); cur = near;
+      if (two) { const nx = pick(ts.filter(n => n !== near)) || near; line.push([nx, t + 1.56, 1.4]); cur = nx; }
     });
-    haze(P[0].pad, 2.8, 2.6, .018, 1200); haze(P[1].pad, 5.3, 2.6, .02); haze(P[2].pad, 7.8, 2.6, .022); haze(P[3].pad, 10.3, 2.4, .022);
-    arp(P[0], 3.2, 5.4, .008, .016, 1, pat); arp(P[1], 5.4, 7.9, .016, .022, 1, pat); arp(P[2], 7.9, 10.4, .022, .028, 1, pat); arp(P[3], 10.4, 12.4, .028, .03, 1, pat);
-    for (let t = 4.2; t < 12.3; t += .625 * 2) sub((t < 5.4 ? P[0].b : t < 7.9 ? P[1].b : t < 10.4 ? P[2].b : P[3].b) - 12, t, .1);
-    haze(CH.Eb.pad.concat([70]), 12.3, 3.5, .026, 2000); arp(CH.Eb, 12.4, 15.6, .03, .05, 2, pat);   // 光の粒が灯籠へ
-    riser(14.0, 1.8, .05);
-    boom(15.8, .5); sub(CH.Bb.b - 12, 15.8, .3, 2.4);                                       // 天窓の光
-    haze(CH.Bb.pad.concat([69, 74]), 15.8, 4.0, .036, 2800);
-    [58, 62, 65, 69, 74, 77, 81].forEach((n, i) => bell(n, 15.8 + i * .08, 3.6, .1));
-    [17.6, 17.9, 18.2, 18.6].forEach((t, k) => bell(pick([70, 72, 74, 77, 79, 81, 82, 84]), t, 2.4, .07));
+    line.push([pick([74, 78]), L0 + 7 * BAR, 1.6], [pick([76, 78]), L0 + 7 * BAR + 1.6, 1.6], [76, L0 + 8 * BAR, 3.2], [78, L0 + 9 * BAR, 1.6], [81, L0 + 9 * BAR + 1.6, 4.2]);
+    const hp = pick([[0, 1, 2, 3], [3, 2, 1, 0], [0, 2, 1, 3], [1, 3, 0, 2]]), cv = has('voice') ? 1.35 : 1;
+    choir([62, 66, 69], 0, 5.2, .012 * cv, 'oo'); bass(38, .5, 4.6, .05);
+    pick([[74, 78, 81, 86], [86, 81, 78, 74], [78, 81, 86, 90]]).forEach((n, i) => harp(n, .4 + i * .35, 3, .05));
+    P.forEach((k, i) => {
+      const t = L0 + i * BAR, c = C[k], g = Math.min(1, .45 + i * .09);
+      choir(c.slice(1, 4), t, BAR + .2, .014 * g * cv, i < 3 ? 'oo' : 'ah');
+      strings(c.slice(1), t, BAR + .1, .012 * g, 1200 + i * 200);
+      if (has('organ')) organ(c.slice(1, 4), t, BAR, .008 * g);
+      bass(c[0] - 12 + (c[0] < 44 ? 12 : 0), t, BAR, .07 * g);
+      bell(pick(c.slice(2)) + 24, t + .05, 3.4, has('bell') ? .07 : .05);                            // 灯った合図
+      hp.forEach((h, b) => harp(c[1 + ((h + i) % 4)] + 12, t + b * BEAT + BEAT / 2, 1.8, (.03 + .005 * i) * (has('harp') ? 1.4 : 1)));
+      const c2 = sp[i];
+      if (!c2) return;
+      if (c2.rar === 'gold') { voice([74, 78, 81], t + .05, 1.7, .02); bell(86, t + .12, 3.2, .07); }
+      else if (c2.rar === 'silver') [90, 93, 95, 98, 102].forEach((n, q) => bell(n, t + .08 + q * .07, 1.8, .05));
+      if (c2.kin) { [74, 78, 76, 81].forEach((n, q) => harp(n, t + .1 + q * .18, 1.2, .07)); [69, 73, 74, 78].forEach((n, q) => bell(n, t + .19 + q * .18, 1.8, .05)); }
+    });
+    solo(line, .05);
+    const t2 = L0 + 7 * BAR;                                                                        // 光の粒が灯籠へ
+    choir([59, 62, 67, 71], t2, BAR, .02 * cv, 'ah'); strings([55, 59, 62, 67, 71], t2, BAR, .016, 2400); bass(31, t2, BAR, .08);
+    choir([61, 64, 69, 73], t2 + BAR, BAR, .022 * cv, 'ah'); strings([57, 61, 64, 69, 73], t2 + BAR, BAR, .018, 2800); bass(33, t2 + BAR, BAR, .08);
+    for (let k = 0; k < 16; k++) harp([74, 76, 78, 81, 83, 85, 86, 88][k % 8], t2 + BAR + k * BEAT / 4, 1.2, .025 + k * .002);
+    const t3 = t2 + 2 * BAR;                                                                        // 天窓の光
+    choir([62, 66, 69, 74, 78], t3, 5.5, .026 * cv, 'ah'); strings([50, 57, 62, 66, 69, 74], t3, 5.5, .02, 3000); bass(38, t3, 5.5, .1);
+    if (has('organ')) organ([50, 57, 62, 66], t3, 5.5, .012);
+    [86, 81, 78, 74, 69, 66, 62].forEach((n, i) => bell(n, t3 + .1 + i * .22, 4, .06));
   };
   // 最後の通路の曲（12秒）：額縁が掛かる鈴 → 歩く脈 → 光の扉で和音
   const WALK_PLAN = ({ bell, haze, sub, arp, riser, CH }) => {
@@ -288,14 +332,20 @@
       q.setTransform(1, 0, 0, .75, 0, 30); const m = q.createRadialGradient(160, 160, 80, 160, 160, 158); m.addColorStop(0, '#000'); m.addColorStop(1, 'rgba(0,0,0,0)');
       q.fillStyle = m; q.fillRect(0, 0, 320, 320); q.setTransform(1, 0, 0, 1, 0, 0);
     }
-    // 好きな画像（2026-10-27〜、重吉さんの決め）：1枚を、真ん中の円を除いた床一面に貼る。画像はこの端末の中だけで、どこにも送らない。
-    // 床の所は、動画の抜きの濃さが 128（encode-film.sh room の床の抜き）。床の上の点は last.json の fl（画面→床の写し）で求める
-    const TS = 1024;
+    // 好きな画像（2026-10-27〜、重吉さんの決め）：1枚を、柱と柱のあいだの壁ごとに壁いっぱいに貼る（はみ出しは切る）。画像はこの端末の中だけで、どこにも送らない。
+    // 壁の所は、動画の抜きの濃さが 128（encode-film.sh wall）。壁の上の点は last.json の cam（カメラの位置と光線の向き）と円い壁の交わりで求める
+    const RR = J.rr || 4.2, WALL = J.wall || 4.4, BAYS = J.bays || 8, A0 = J.a0 || -Math.PI / 2, SB = 2 * Math.PI / BAYS;
+    const TW = 768, TH = Math.round(TW * WALL / (SB * RR));  // 柱と柱のあいだの壁1枚の形
     let tex = null, picURL = null;
     function setPic(im) {
       if (!im) { tex = null; return; }
-      const c = document.createElement('canvas'); c.width = c.height = TS; const q = c.getContext('2d', { willReadFrequently: true }); cover(q, im, 0, 0, TS, TS); tex = q.getImageData(0, 0, TS, TS).data;
+      const c = document.createElement('canvas'); c.width = TW; c.height = TH; const q = c.getContext('2d', { willReadFrequently: true }); cover(q, im, 0, 0, TW, TH); tex = q.getImageData(0, 0, TW, TH).data;
     }
+    // 20秒のときの時刻（コマ）→ この映像のコマ（lastroom.py の T と同じ。2026-10-27 に40秒にした）
+    const L0 = J.lit0 || 70, GP = J.gap || 30;
+    const T = f => { if (!J.lit0) return f; const P = [[0, 70, 0, L0], [70, 280, L0, L0 + 7 * GP], [280, 380, L0 + 7 * GP, Math.round(J.n * 795 / 960)], [380, 480, Math.round(J.n * 795 / 960), J.n]];
+      for (const [a0, a1, b0, b1] of P) if (f <= a1) return b0 + (f - a0) * (b1 - b0) / (a1 - a0); return J.n; };
+    const K = GP / 30, lit = i => L0 + i * GP;  // 額縁 i が灯るコマ
     if (o.pic) setPic(await img(o.pic));
     const glowRnd = seeded('glow' + (o.seed || '')), glows = J.wins.map(() => ({ r: .55 + glowRnd() * .35, ph: glowRnd() * 6.28 }));
     const beam = document.createElement('canvas');
@@ -314,20 +364,23 @@
       // Blender の絵：上半分の色に、下半分の濃さを抜きとして入れて重ねる
       vg.drawImage(v, 0, 0, W, H * 2);
       const d = vg.getImageData(0, 0, W, H * 2).data, od = out.data, n = W * H * 4;
-      const fl = F.fl;
+      const C = F.cam;
       for (let i = 0, p = 0; i < n; i += 4, p++) {
         const a = d[n + i]; od[i] = d[i]; od[i + 1] = d[i + 1]; od[i + 2] = d[i + 2]; od[i + 3] = a;
-        if (!fl || a < 40 || a > 215) continue;
-        // 床の印（128）と、そのふちのまじり。カメラの前で、真ん中の円と壁のあいだの床だけ
-        const u = (p % W + .5) / W, v = ((p / W | 0) + .5) / H, Z = fl[6] * u + fl[7] * v + fl[8];
-        if (Z <= 0) continue;
-        const x = (fl[0] * u + fl[1] * v + fl[2]) / Z, y = (fl[3] * u + fl[4] * v + fl[5]) / Z, r2 = x * x + y * y;
-        if (r2 < FL_IN * FL_IN || r2 > FL_OUT * FL_OUT) continue;
+        if (!C || a < 40 || a > 215) continue;
+        // 壁の印（128）と、そのふちのまじり。画面の点からの光線が円い壁に当たる所
         od[i + 3] = 255;
         if (!tex) continue;
-        // 画像は部屋の床いっぱい（壁から壁）。明るさと色は、絵の床の明るさに合わせる（灯り・影・燭台の色が画像にのる）
-        const w = clamp(1 - Math.abs(a - 128) / 88), tx = Math.min(TS - 1, Math.max(0, (x / FL_OUT * .5 + .5) * TS | 0)), ty = Math.min(TS - 1, Math.max(0, (.5 - y / FL_OUT * .5) * TS | 0)), k = (ty * TS + tx) * 4;
-        for (let c = 0; c < 3; c++) od[i + c] = d[i + c] * (1 - w) + Math.min(255, tex[k + c] * d[i + c] / FL_LIT[c]) * w;
+        const u = (p % W + .5) / W, v = ((p / W | 0) + .5) / H;
+        const dx = C[3] * u + C[6] * v + C[9], dy = C[4] * u + C[7] * v + C[10], dz = C[5] * u + C[8] * v + C[11];
+        const qa = dx * dx + dy * dy, qb = C[0] * dx + C[1] * dy, qc = C[0] * C[0] + C[1] * C[1] - RR * RR, sq = qb * qb - qa * qc;
+        if (qa <= 0 || sq < 0) continue;
+        const t = (-qb + Math.sqrt(sq)) / qa, X = C[0] + t * dx, Y = C[1] + t * dy, Z = C[2] + t * dz;
+        let th = Math.atan2(Y, X) - A0 + SB / 2; th -= Math.floor(th / (2 * Math.PI)) * 2 * Math.PI;
+        const tu = (th % SB) / SB, tx = Math.min(TW - 1, Math.max(0, tu * TW | 0)), ty = Math.min(TH - 1, Math.max(0, (1 - Z / WALL) * TH | 0)), k = (ty * TW + tx) * 4;
+        // 明るさと色は、絵の壁の明るさに合わせる（灯り・影・燭台の色が画像にのる）
+        const w = clamp(1 - Math.abs(a - 128) / 88);
+        for (let c = 0; c < 3; c++) od[i + c] = d[i + c] * (1 - w) + Math.min(255, tex[k + c] * d[i + c] / WL_LIT[c]) * w;
       }
       const tmp = draw.t || (draw.t = Object.assign(document.createElement('canvas'), { width: W, height: H }));
       tmp.getContext('2d').putImageData(out, 0, 0); g.drawImage(tmp, 0, 0);
@@ -348,7 +401,7 @@
       g.globalCompositeOperation = 'screen';
       F.w.forEach((q, i) => {
         const c = o.cards[i]; if (!c || !q[5] || (c.rar !== 'gold' && c.rar !== 'silver' && !c.kin)) return;
-        const age = f - (70 + i * 30); if (age < -8 || age > 52) return;
+        const age = (f - lit(i)) / K; if (age < -8 || age > 52) return;
         const k = clamp(Math.min((age + 8) / 10, (52 - age) / 14)), [cx, cy] = ctr(q);
         const fw = Math.hypot((q[1][0] - q[0][0]) * W, (q[1][1] - q[0][1]) * H), fh = Math.hypot((q[3][0] - q[0][0]) * W, (q[3][1] - q[0][1]) * H);
         if (c.rar === 'gold') {
@@ -369,10 +422,10 @@
         }
       });
       // 縁の糸：子の額縁が灯ってから、天窓の光まで
-      if (f < 330) F.w.forEach((q, i) => {
+      if (f < T(330)) F.w.forEach((q, i) => {
         const c = o.cards[i]; if (!c || !q[5] || !Array.isArray(c.par) || !c.par.length) return;
-        const age = f - (70 + i * 30); if (age < 18) return;
-        const a = clamp(Math.min((age - 18) / 16, (330 - f) / 24)) * (.55 + .15 * Math.sin(f / 6)), [x1, y1] = ctr(q);
+        const age = (f - lit(i)) / K; if (age < 18) return;
+        const a = clamp(Math.min((age - 18) / 16, (T(330) - f) / 24)) * (.55 + .15 * Math.sin(f / 6)), [x1, y1] = ctr(q);
         c.par.forEach(pi => {
           const pq = F.w[pi]; if (!pq) return;
           // 親の額縁が画面の外なら、その方へ画面のはしまで糸をのばす
@@ -386,17 +439,17 @@
       g.textAlign = 'center'; g.textBaseline = 'top';
       F.w.forEach((q, i) => {
         const c = o.cards[i]; if (!q[5] || !c || !c.n) return;
-        const age = f - (70 + i * 30); if (age < 4 || age > 60) return;
+        const age = (f - lit(i)) / K; if (age < 4 || age > 60) return;
         const a = clamp(Math.min((age - 4) / 8, (60 - age) / 10)), x = (q[2][0] + q[3][0]) / 2 * W, y = Math.max(q[2][1], q[3][1]) * H + 10;
         if (y > H - 30 || x < 20 || x > W - 20) return;
         g.font = `600 ${Math.round(W / 24)}px "Noto Serif JP", serif`; g.fillStyle = `rgba(246,226,170,${a})`; g.shadowColor = 'rgba(0,0,0,.8)'; g.shadowBlur = 6;
         g.fillText((c.ace ? '★ ' : '') + c.n, x, y); g.shadowBlur = 0;
       });
       // 天窓の光：守り神の人生地図の色（どの人生も同じ大きさ・同じ明るさ）
-      const la = clamp((f - 300) / 90);
+      const la = clamp((f - T(300)) / (T(390) - T(300)));
       if (la > 0 && F.oc[2]) {
         // 天窓から床へ下りる光の柱。横に人生地図の色を並べ、上下と左右のはしは消える。天窓のまわりは小さくにじむだけ
-        const ox = F.oc[0] * W, oy = Math.max(0, F.oc[1] * H), bw = W * (.10 + .08 * clamp((f - 300) / 150));
+        const ox = F.oc[0] * W, oy = Math.max(0, F.oc[1] * H), bw = W * (.10 + .08 * clamp((f - T(300)) / (T(450) - T(300))));
         beam.width = W; beam.height = H; const b = beam.getContext('2d'); b.clearRect(0, 0, W, H);
         const gx = b.createLinearGradient(ox - bw, 0, ox + bw, 0); gx.addColorStop(0, 'rgba(0,0,0,0)');
         hues.forEach((h, k) => gx.addColorStop(.15 + .7 * k / Math.max(1, hues.length - 1), h)); gx.addColorStop(1, 'rgba(0,0,0,0)');
@@ -408,11 +461,11 @@
         const gr = g.createRadialGradient(ox, oy, 0, ox, oy, W * .3); gr.addColorStop(0, hues[Math.floor(hues.length / 2)]); gr.addColorStop(1, 'rgba(0,0,0,0)');
         g.globalAlpha = la * .35; g.fillStyle = gr; g.fillRect(0, 0, W, H); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
         // 光の柱の中に守り神が現れ、名前が下に出る（どの人生も同じ大きさ・同じ明るさ）
-        const ga = clamp((f - 330) / 50);
+        const ga = clamp((f - T(330)) / (T(380) - T(330)));
         if (G && ga > 0) {
           const gw = W * .46, gh = gw * .75, gx0 = ox - gw / 2, gy0 = H * .5 - gh / 2 - (1 - ga) * H * .03;
           if (gcv) { g.globalAlpha = ga; g.drawImage(gcv, gx0, gy0, gw, gh); g.globalAlpha = 1; }
-          const na = clamp((f - 350) / 20);
+          const na = clamp((f - T(350)) / (T(370) - T(350)));
           if (G.n && na > 0) {
             g.textAlign = 'center'; g.textBaseline = 'top'; g.font = `600 ${Math.round(W / 20)}px "Noto Serif JP", serif`;
             g.fillStyle = `rgba(255,240,205,${na})`; g.shadowColor = 'rgba(0,0,0,.8)'; g.shadowBlur = 8; g.fillText(G.n, ox, gy0 + gh + 6); g.shadowBlur = 0;
@@ -421,23 +474,23 @@
       }
       // AI のお話の字幕：額縁が灯るたびにその精霊の一言、天窓の光で結びの一言
       const ST = o.story;
-      if (ST && f < 440) {
-        const i = Math.floor((f - 74) / 30), last = J.wins.length - 1;
-        if (f >= 74 && i >= 0 && i <= last && f < 300) { const s0 = 74 + i * 30, s1 = i === last ? 296 : s0 + 30; subtitle(g, W, H, ST.lines[i], clamp(Math.min((f - s0) / 6, (s1 - f) / 6))); }
-        if (f >= 318) subtitle(g, W, H, ST.close, clamp(Math.min((f - 318) / 10, (436 - f) / 10)));
+      if (ST && f < T(440)) {
+        const i = Math.floor((f - lit(0) - 4) / GP), last = J.wins.length - 1;
+        if (f >= lit(0) + 4 && i >= 0 && i <= last && f < T(300)) { const s0 = lit(i) + 4, s1 = i === last ? T(296) : s0 + GP; subtitle(g, W, H, ST.lines[i], clamp(Math.min((f - s0) / 8, (s1 - f) / 8))); }
+        if (f >= T(318)) subtitle(g, W, H, ST.close, clamp(Math.min((f - T(318)) / 12, (T(436) - f) / 12)));
       }
       // おわり：白い光に包まれて、題名（AI のお話があれば、その題。館の名前は小さく上に）
-      const wa = clamp((f - 425) / 40);
+      const wa = clamp((f - T(425)) / 40);
       if (wa > 0) {
         g.fillStyle = `rgba(255,248,232,${wa * .88})`; g.fillRect(0, 0, W, H);
-        g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = `rgba(122,86,30,${clamp((f - 440) / 24)})`;
+        g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = `rgba(122,86,30,${clamp((f - T(440)) / 24)})`;
         const big = ST && ST.title ? ST.title : o.title; let fs = Math.round(W / 13);
         g.font = `600 ${fs}px "Noto Serif JP", serif`; while (fs > W / 26 && g.measureText(big).width > W * .88) { fs -= 2; g.font = `600 ${fs}px "Noto Serif JP", serif`; }
         g.fillText(big, W / 2, H * .46);
         if (big !== o.title) { g.font = `500 ${Math.round(W / 30)}px "Noto Serif JP", serif`; g.fillText(o.title, W / 2, H * .395); }
         g.font = `500 ${Math.round(W / 26)}px "Noto Serif JP", serif`; g.fillText(o.sub, W / 2, H * .53);
         // その夜の7体を小さく並べる（この動画だけの顔ぶれ）
-        const ta = clamp((f - 446) / 20), tw = Math.min(W * .11, W * .86 / Math.max(1, ths.length) - 6), th0 = tw * 1.45, gap = 6, tx0 = (W - (tw + gap) * ths.length + gap) / 2, ty = H * .68;
+        const ta = clamp((f - T(446)) / 20), tw = Math.min(W * .11, W * .86 / Math.max(1, ths.length) - 6), th0 = tw * 1.45, gap = 6, tx0 = (W - (tw + gap) * ths.length + gap) / 2, ty = H * .68;
         if (ta > 0) ths.forEach((im, k) => {
           const x = tx0 + k * (tw + gap); g.globalAlpha = ta;
           g.fillStyle = 'rgba(122,86,30,.25)'; g.fillRect(x - 1, ty - 1, tw + 2, th0 + 2);
@@ -448,7 +501,7 @@
         g.globalAlpha = 1;
         if (o.only) { g.fillStyle = `rgba(122,86,30,${ta})`; g.font = `500 ${Math.round(W / 30)}px "Noto Serif JP", serif`; g.fillText(o.only, W / 2, ty + th0 + W / 40 + W / 18); }
         if (G && G.line) { g.fillStyle = `rgba(122,86,30,${ta})`; g.font = `500 ${Math.round(W / 32)}px "Noto Serif JP", serif`; g.fillText(G.line, W / 2, ty + th0 + W / 40 + W / 18 * 2); }
-        if (o.congrats) { g.fillStyle = `rgba(122,86,30,${clamp((f - 452) / 20)})`; g.font = `600 ${Math.round(W / 20)}px "Noto Serif JP", serif`; g.fillText(o.congrats, W / 2, H * .62); }
+        if (o.congrats) { g.fillStyle = `rgba(122,86,30,${clamp((f - T(452)) / 20)})`; g.font = `600 ${Math.round(W / 20)}px "Noto Serif JP", serif`; g.fillText(o.congrats, W / 2, H * .62); }
       }
     }
     v.currentTime = 0; await new Promise(r => { v.onseeked = r; setTimeout(r, 400); }); draw(1);
@@ -494,7 +547,7 @@
       };
       const stopDraw = onFrames(v, t => draw(Math.floor(t * J.fps) + 1));
       btn(L, o.tx.skip, 'ghost nf-skip', () => finish(false));
-      if (A) { A.ac.resume(); S = score(A.ac, A.out, ROOM_PLAN(seeded(o.seed || ''), o.cards.map(c => ({ rar: c.rar, kin: !!c.kin }))), o.story && o.story.music); rec = recorder(cv, A.dest); }
+      if (A) { A.ac.resume(); S = score(A.ac, A.out, ROOM_PLAN(seeded(o.seed || ''), o.cards.map(c => ({ rar: c.rar, kin: !!c.kin }))), o.story && o.story.music, 'D', J.n / J.fps); rec = recorder(cv, A.dest); }
       if (rec) { rec.ondataavailable = e => { if (e.data && e.data.size) parts.push(e.data); }; rec.start(500); }
       v.onended = () => { draw(J.n); setTimeout(() => finish(true), 900); };
       v.play().catch(() => finish(false));
