@@ -1,7 +1,7 @@
 #!/bin/sh
 # 夜の美術館の映像を、ページが読む動画にする（2026-10-25〜）
 #   sh encode-film.sh room <lastroom.py の出力フォルダ>   … 上半分＝色・下半分＝抜きの濃さ（ページで額縁の窓の下に作品を描くため）→ play/gallery/lastroom.mp4・last.json
-#   sh encode-film.sh floor <MASK=1 lastroom.py の出力フォルダ> … いまの lastroom の動画の抜きの濃さに、床の所を 128 で入れる（2026-10-27〜。好きな画像を床に貼るため）
+#   sh encode-film.sh wall <MASK=1 lastroom.py の出力フォルダ> … いまの lastroom の動画の抜きの濃さに、柱と柱のあいだの壁の所を 128 で入れる（2026-10-27〜。好きな画像を壁に貼るため。前は床）
 #   sh encode-film.sh walk <lastwalk.py の出力フォルダ>   … そのまま → play/gallery/lastwalk.mp4・walk.json
 #   sh encode-film.sh morning <morning.py の FILM のフォルダ> … 夜明けの画面の20秒（1回だけ流す） → play/gallery/morning-dawn-film.mp4・.json
 # 音は入れない（ページがその場で合成する）。H.264 の mp4 と VP9 の webm の2つ（オープニングと同じ。ページは webm を読めればそちら）
@@ -13,7 +13,7 @@ case "$1" in
         ffmpeg -y -framerate 24 -i "$2/f%04d.png" -filter_complex "[0:v]split[a][b];[a]format=rgb24[c];[b]alphaextract,format=gray[m];[c][m]vstack,format=yuv420p" \
           -c:v libvpx-vp9 -crf 32 -b:v 0 -row-mt 1 -an "$OUT/lastroom.webm"
         cp "$2/last.json" "$OUT/last.json" ;;
-  floor) T=$(mktemp -d); F="[0:v]split[a][b];[a]crop=iw:ih/2:0:0[c];[b]crop=iw:ih/2:0:ih/2,format=gray[al];[1:v]format=gray[m];[al][m]blend=all_expr='if(gt(B,127),128,A)'[o];[c][o]vstack,format=yuv420p"
+  wall) T=$(mktemp -d); F="[0:v]split[a][b];[a]crop=iw:ih/2:0:0[c];[b]crop=iw:ih/2:0:ih/2,format=gray[al];[1:v]format=gray[m];[al][m]blend=all_expr='if(gt(B,127),128,A)'[o];[c][o]vstack,format=yuv420p"
         ffmpeg -y -i "$OUT/lastroom.mp4" -framerate 24 -i "$2/m%04d.png" -filter_complex "$F" -c:v libx264 -crf 21 -preset slow -an -movflags +faststart "$T/lastroom.mp4"
         ffmpeg -y -i "$OUT/lastroom.mp4" -framerate 24 -i "$2/m%04d.png" -filter_complex "$F" -c:v libvpx-vp9 -crf 32 -b:v 0 -row-mt 1 -an "$T/lastroom.webm"
         mv "$T/lastroom.mp4" "$T/lastroom.webm" "$OUT/"; cp "$2/last.json" "$OUT/last.json" ;;
