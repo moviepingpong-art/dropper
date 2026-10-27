@@ -89,6 +89,8 @@
     }
     g.setTransform(1, 0, 0, 1, 0, 0);
   }
+  // 床（lastroom.py の FLOOR_R と部屋の半径 RR）と、明るく灯った床の色（この色のとき画像をそのままの明るさで出す）
+  const FL_IN = 1.1, FL_OUT = 4.2, FL_LIT = [78, 60, 45];
   // 額縁の絵の窓（px）→ 画面の窓の四隅、の写し
   const winMap = (P, q, W, H) => homography([[P.l, P.t], [P.l + P.ww, P.t], [P.l + P.ww, P.t + P.wh], [P.l, P.t + P.wh]], q.slice(0, 4).map(([x, y]) => [x * W, y * H]));
 
@@ -286,6 +288,15 @@
       q.setTransform(1, 0, 0, .75, 0, 30); const m = q.createRadialGradient(160, 160, 80, 160, 160, 158); m.addColorStop(0, '#000'); m.addColorStop(1, 'rgba(0,0,0,0)');
       q.fillStyle = m; q.fillRect(0, 0, 320, 320); q.setTransform(1, 0, 0, 1, 0, 0);
     }
+    // 好きな画像（2026-10-27〜、重吉さんの決め）：1枚を、真ん中の円を除いた床一面に貼る。画像はこの端末の中だけで、どこにも送らない。
+    // 床の所は、動画の抜きの濃さが 128（encode-film.sh room の床の抜き）。床の上の点は last.json の fl（画面→床の写し）で求める
+    const TS = 1024;
+    let tex = null, picURL = null;
+    function setPic(im) {
+      if (!im) { tex = null; return; }
+      const c = document.createElement('canvas'); c.width = c.height = TS; const q = c.getContext('2d', { willReadFrequently: true }); cover(q, im, 0, 0, TS, TS); tex = q.getImageData(0, 0, TS, TS).data;
+    }
+    if (o.pic) setPic(await img(o.pic));
     const glowRnd = seeded('glow' + (o.seed || '')), glows = J.wins.map(() => ({ r: .55 + glowRnd() * .35, ph: glowRnd() * 6.28 }));
     const beam = document.createElement('canvas');
     function draw(f) {  // f：1〜n
@@ -303,7 +314,21 @@
       // Blender の絵：上半分の色に、下半分の濃さを抜きとして入れて重ねる
       vg.drawImage(v, 0, 0, W, H * 2);
       const d = vg.getImageData(0, 0, W, H * 2).data, od = out.data, n = W * H * 4;
-      for (let i = 0; i < n; i += 4) { od[i] = d[i]; od[i + 1] = d[i + 1]; od[i + 2] = d[i + 2]; od[i + 3] = d[n + i]; }
+      const fl = F.fl;
+      for (let i = 0, p = 0; i < n; i += 4, p++) {
+        const a = d[n + i]; od[i] = d[i]; od[i + 1] = d[i + 1]; od[i + 2] = d[i + 2]; od[i + 3] = a;
+        if (!fl || a < 40 || a > 215) continue;
+        // 床の印（128）と、そのふちのまじり。カメラの前で、真ん中の円と壁のあいだの床だけ
+        const u = (p % W + .5) / W, v = ((p / W | 0) + .5) / H, Z = fl[6] * u + fl[7] * v + fl[8];
+        if (Z <= 0) continue;
+        const x = (fl[0] * u + fl[1] * v + fl[2]) / Z, y = (fl[3] * u + fl[4] * v + fl[5]) / Z, r2 = x * x + y * y;
+        if (r2 < FL_IN * FL_IN || r2 > FL_OUT * FL_OUT) continue;
+        od[i + 3] = 255;
+        if (!tex) continue;
+        // 画像は部屋の床いっぱい（壁から壁）。明るさと色は、絵の床の明るさに合わせる（灯り・影・燭台の色が画像にのる）
+        const w = clamp(1 - Math.abs(a - 128) / 88), tx = Math.min(TS - 1, Math.max(0, (x / FL_OUT * .5 + .5) * TS | 0)), ty = Math.min(TS - 1, Math.max(0, (.5 - y / FL_OUT * .5) * TS | 0)), k = (ty * TS + tx) * 4;
+        for (let c = 0; c < 3; c++) od[i + c] = d[i + c] * (1 - w) + Math.min(255, tex[k + c] * d[i + c] / FL_LIT[c]) * w;
+      }
       const tmp = draw.t || (draw.t = Object.assign(document.createElement('canvas'), { width: W, height: H }));
       tmp.getContext('2d').putImageData(out, 0, 0); g.drawImage(tmp, 0, 0);
       // 灯った額縁のまわりに、その精霊の属性の色のうすい灯り（ゆっくりゆらぐ。大きさとゆらぎはその夜のカードから）。額縁そのものの色の灯りは frameCanvas の glow
@@ -433,9 +458,29 @@
       const b = document.createElement('span'), h = document.createElement('b'), sm = document.createElement('small');
       b.className = 'nf-ai' + (o.story ? ' on' : ''); h.textContent = o.tx.ai; sm.textContent = o.tx.aiSub || ''; b.append(h, sm); L.cap.append(b);
     }
+    // おまかせ／好きな画像を床に（2026-10-27〜、重吉さんの決め）。選んだ画像は、すぐ床に映して見せる
+    if (o.tx.modeAuto) {
+      const p = document.createElement('div'); p.className = 'nf-pick';
+      p.innerHTML = '<div class="nf-modes"><button type="button" class="nf-mode on" data-m="auto"></button><button type="button" class="nf-mode" data-m="pic"></button></div>'
+        + '<div class="nf-drop" role="button" tabindex="0" hidden><b></b><small></small><input type="file" accept="image/*" hidden></div>';
+      const [ma, mp] = p.querySelectorAll('.nf-mode'), dz = p.querySelector('.nf-drop'), fi = dz.querySelector('input');
+      ma.textContent = o.tx.modeAuto; mp.textContent = o.tx.modePic; dz.querySelector('b').textContent = o.tx.picDrop; dz.querySelector('small').textContent = o.tx.picNote || '';
+      const mode = m => { ma.classList.toggle('on', m === 'auto'); mp.classList.toggle('on', m === 'pic'); dz.hidden = m !== 'pic'; if (m === 'auto') { setPic(null); dz.classList.remove('has'); } draw(1); };
+      ma.onclick = () => mode('auto'); mp.onclick = () => mode('pic');
+      const use = async f => {
+        if (!f || !/^image\//.test(f.type)) return;
+        if (picURL) URL.revokeObjectURL(picURL);
+        picURL = URL.createObjectURL(f); setPic(await img(picURL)); dz.classList.add('has'); draw(1);
+      };
+      dz.onclick = () => fi.click(); dz.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fi.click(); } };
+      fi.onchange = () => { use(fi.files[0]); fi.value = ''; };
+      dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); }; dz.ondragleave = () => dz.classList.remove('over');
+      dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); use(e.dataTransfer.files[0]); };
+      L.cap.append(p); cv.parentNode.classList.add('pick');  // 選ぶあいだは絵を小さくして、選ぶ所とボタンを入れる
+    }
     // 押してから始める（音を出すには、押した手が要る）
     await new Promise(r => btn(L, o.tx.play, '', r));
-    L.btns.replaceChildren(); L.cap.textContent = '';
+    L.btns.replaceChildren(); L.cap.textContent = ''; cv.parentNode.classList.remove('pick');
     const A = audio(); let S = null, rec = null, parts = [], done = false, blob = null;
     return new Promise(resolve => {
       const finish = async (all) => {
@@ -445,7 +490,7 @@
         draw(J.n); L.btns.replaceChildren();
         if (blob) { L.cap.textContent = o.tx.made; btn(L, o.tx.save, '', () => save(blob, rec.ext, o.file)); }
         else if (all && !rec) L.cap.textContent = o.tx.noRec;
-        btn(L, o.tx.close, 'ghost', () => { close(); resolve(blob ? { blob, ext: rec.ext } : null); });
+        btn(L, o.tx.close, 'ghost', () => { close(); if (picURL) URL.revokeObjectURL(picURL); resolve(blob ? { blob, ext: rec.ext } : null); });
       };
       const stopDraw = onFrames(v, t => draw(Math.floor(t * J.fps) + 1));
       btn(L, o.tx.skip, 'ghost nf-skip', () => finish(false));

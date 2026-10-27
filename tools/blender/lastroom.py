@@ -63,10 +63,11 @@ box((x * 0.995, y * 0.995, 1.25), (1.5, 0.05, 2.5), door)
 bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=0.75, depth=0.05, location=(x * 0.995, y * 0.995, 2.5), rotation=(math.radians(90), 0, 0))
 bpy.context.object.data.materials.append(door)
 # 床：石の円い敷きと、真ん中に金の象眼の輪
-plane((0, 0, 0), (RR * 2.2, RR * 2.2), (0, 0, 0), floorm)
+plane((0, 0, 0), (RR * 2.2, RR * 2.2), (0, 0, 0), floorm); bpy.context.object['floor'] = 1
 for r in (1.2, 2.6):
     bpy.ops.mesh.primitive_torus_add(major_radius=r, minor_radius=0.03, major_segments=96, minor_segments=6, location=(0, 0, 0.0))
     bpy.context.object.scale = (1, 1, 0.15); bpy.context.object.data.materials.append(gold)
+    if r > 2: bpy.context.object['floor'] = 1  # 外の輪は、画像を映す床に含める（真ん中の円の輪は残す）
 # 屋根：半球。てっぺんに天窓（月の光が入る）
 bpy.ops.mesh.primitive_uv_sphere_add(radius=RR, segments=96, ring_count=48, location=(0, 0, WALL))
 dome = bpy.context.object
@@ -214,6 +215,20 @@ sc.render.film_transparent = True
 sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'AgX - Medium High Contrast'
 sc.render.image_settings.file_format = 'PNG'; sc.render.image_settings.color_mode = 'RGBA'
 
+# 床の写し（2026-10-27〜）：画面の点（絵の割合）→ 床の上の点（m、部屋の真ん中が 0）。コマごとに 3×3 の8つの数。
+# 利用者の画像を、真ん中の円（FLOOR_R より内）を除いた床一面に映すため。ページは床の抜き（MASK）の所だけ、この写しで画像を貼る
+FLOOR_R = 1.2
+
+
+def floor_map():  # 床 (x,y,1) → 画面 (u·z, v·z, z) は線形なので3点で決まる。その逆を書く（ページで z>0 ＝カメラの前、を見分けられる）
+    import numpy as np
+    a = []
+    for x_, y_ in ((0, 0), (1, 0), (0, 1)):
+        q = world_to_camera_view(sc, co, Vector((x_, y_, 0))); a.append(np.array([q.x * q.z, (1 - q.y) * q.z, q.z]))
+    G = np.column_stack([a[1] - a[0], a[2] - a[0], a[0]])
+    return [round(float(c), 6) for c in np.linalg.inv(G).ravel()]
+
+
 # 窓の四隅（絵の割合。左上・右上・右下・左下）・灯りの強さ（0〜1）・見えるか、と天窓の真ん中を、コマごとに書く
 out = {'w': PX, 'h': sc.render.resolution_y, 'fps': 24, 'n': N, 'wins': [{'i': w_['i'], 'kind': w_['kind']} for w_ in wins], 'f': []}
 for f in range(1, N + 1):
@@ -224,8 +239,30 @@ for f in range(1, N + 1):
         b = max(0.0, min(1.0, (f - w_['f0']) / 10))
         fr.append([[round(q.x, 4), round(1 - q.y, 4)] for q in cs] + [round(b, 2), 1 if vis else 0])
     oc = world_to_camera_view(sc, co, Vector((0, 0, WALL + RR * 0.94)))
-    out['f'].append({'w': fr, 'oc': [round(oc.x, 4), round(1 - oc.y, 4), 1 if oc.z > 0 else 0]})
+    out['f'].append({'w': fr, 'oc': [round(oc.x, 4), round(1 - oc.y, 4), 1 if oc.z > 0 else 0], 'fl': floor_map()})
 json.dump(out, open(os.path.join(OUTD, 'last.json'), 'w'), separators=(',', ':'))
+# 床の抜き（MASK=1）：画像を映す床だけ白、ほかは黒の白黒の絵。encode-film.sh room が、透明の度合いの絵に灰色として重ねる
+if os.environ.get('MASK'):
+    blk = emit_mat('mblack', (0, 0, 0), 1.0); wht = bpy.data.materials.new('mwhite'); wht.use_nodes = True; nt = wht.node_tree
+    nt.nodes.remove(nt.nodes['Principled BSDF']); em = nt.nodes.new('ShaderNodeEmission'); geo = nt.nodes.new('ShaderNodeNewGeometry')
+    ln = nt.nodes.new('ShaderNodeVectorMath'); ln.operation = 'LENGTH'; sep = nt.nodes.new('ShaderNodeSeparateXYZ'); cm = nt.nodes.new('ShaderNodeCombineXYZ')
+    gt = nt.nodes.new('ShaderNodeMath'); gt.operation = 'GREATER_THAN'; gt.inputs[1].default_value = FLOOR_R
+    nt.links.new(geo.outputs['Position'], sep.inputs[0]); nt.links.new(sep.outputs[0], cm.inputs[0]); nt.links.new(sep.outputs[1], cm.inputs[1])
+    nt.links.new(cm.outputs[0], ln.inputs[0]); nt.links.new(ln.outputs['Value'], gt.inputs[0]); nt.links.new(gt.outputs[0], em.inputs['Strength'])
+    em.inputs['Color'].default_value = (1, 1, 1, 1); nt.links.new(em.outputs[0], nt.nodes['Material Output'].inputs[0])
+    for ob in sc.objects:
+        if ob.type == 'LIGHT': ob.hide_render = True
+        if ob.type != 'MESH': continue
+        for sl in ob.material_slots:
+            if sl.material and sl.material.name != 'hold': sl.material = wht if ob.get('floor') else blk
+        if not ob.material_slots: ob.data.materials.append(wht if ob.get('floor') else blk)
+    sc.world.node_tree.nodes['Background'].inputs['Strength'].default_value = 0
+    sc.render.film_transparent = False; sc.cycles.samples = 4; sc.cycles.use_denoising = False; sc.cycles.max_bounces = 0
+    sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'None'
+    sc.render.image_settings.color_mode = 'BW'
+    for f in range(F0, F1 + 1):
+        sc.frame_set(f); sc.render.filepath = os.path.join(OUTD, f'm{f:04d}.png'); bpy.ops.render.render(write_still=True)
+    sys.exit(0)
 if SAMPLES > 0:
     for f in range(F0, F1 + 1):
         sc.frame_set(f); sc.render.filepath = os.path.join(OUTD, f'f{f:04d}.png')
