@@ -1,5 +1,5 @@
 # 最後の部屋（5つ目）の映像：円い部屋の壁に7つの額縁。カメラが部屋に入り、額縁が1つずつ灯り、
-# 光の粒が真ん中のともしびに集まって、天窓から光の柱が降りる（20秒・縦9:16・24コマ）。オープニングの作りを最後の部屋に置きかえた。
+# 光の粒が真ん中のともしびに集まって、天窓から光の柱が降りる（40秒・縦9:16・24コマ）。オープニングの作りを最後の部屋に置きかえた。
 #   python3 lastroom.py -- <出力フォルダ/> [幅px] [サンプル数] [最初のコマ] [最後のコマ]
 #   python3 lastroom.py -- <出力フォルダ/> 540 0        … 書き出さずに、窓の四隅（コマごと）の JSON だけを書く
 # 額縁の窓は「抜き」（holdout）で透明にしてある。その夜の作品はページが窓の四隅（last.json）に合わせて下に描く。
@@ -11,7 +11,12 @@ from bpy_extras.object_utils import world_to_camera_view
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 a = sys.argv[sys.argv.index('--') + 1:]
 OUTD = a[0]; PX = int(a[1]) if len(a) > 1 else 540; SAMPLES = int(a[2]) if len(a) > 2 else 24
-N = 480
+N = 960                        # 40秒（2026-10-27 に20秒から2倍に。額縁をゆっくり見られるように・重吉さんの決め）
+# 20秒のときのコマ → 40秒のコマ。入口 0〜70→0〜120・額縁 70〜280→120〜645（30コマごと→75コマごと）・光の粒 280〜380→645〜795・天窓 380〜480→795〜960
+def T(f):
+    for a0, a1, b0, b1 in ((0, 70, 0, 120), (70, 280, 120, 645), (280, 380, 645, 795), (380, 480, 795, 960)):
+        if f <= a1: return round(b0 + (f - a0) * (b1 - b0) / (a1 - a0))
+    return N
 F0 = int(a[3]) if len(a) > 3 else 1; F1 = int(a[4]) if len(a) > 4 else N
 os.makedirs(OUTD, exist_ok=True)
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -51,23 +56,34 @@ pil = F.principled('pillar', (0.30, 0.25, 0.19), rough=0.75)
 gold = F.gold_mat('gold', worn=True)
 ang = lambda i: math.radians(-90 + i * 360 / BAYS)  # 0番（入口）がカメラの後ろ（-Y）
 bpy.ops.mesh.primitive_cylinder_add(vertices=96, radius=RR, depth=WALL, location=(0, 0, WALL / 2))
-cyl = bpy.context.object; cyl.data.materials.append(wallm)
+cyl = bpy.context.object; cyl.data.materials.append(wallm); cyl['wall'] = 1  # 利用者の画像を映す壁（柱・帯・額縁は別の物なので入らない）
 bm = bmesh.new(); bm.from_mesh(cyl.data)
 bmesh.ops.delete(bm, geom=[f for f in bm.faces if abs(f.normal.z) > 0.9], context='FACES')
 bmesh.ops.reverse_faces(bm, faces=bm.faces[:]); bm.to_mesh(cyl.data); bm.free()
+if os.environ.get('WALLPIC'):  # 見本：柱と柱のあいだの壁ごとに、1枚の画像を壁いっぱいに（はみ出しは切る）
+    im = bpy.data.images.load(os.environ['WALLPIC']); ia = im.size[0] / im.size[1]; pa = (2 * math.pi * RR / BAYS) / WALL
+    su, sv = (pa / ia, 1) if ia > pa else (1, ia / pa)
+    bm = bmesh.new(); bm.from_mesh(cyl.data); uvl = bm.loops.layers.uv.verify(); st = 2 * math.pi / BAYS
+    for f in bm.faces:
+        c = f.calc_center_median(); b = math.floor(((math.atan2(c.y, c.x) - ang(0) + st / 2) % (2 * math.pi)) / st)
+        for lp in f.loops:
+            co_ = lp.vert.co; u = (((math.atan2(co_.y, co_.x) - ang(b) + math.pi) % (2 * math.pi)) - math.pi) / st + .5
+            lp[uvl].uv = ((u - .5) * su + .5, (co_.z + WALL / 2) / WALL * sv + (1 - sv) / 2)
+    bm.to_mesh(cyl.data); bm.free()
+    wm = F.principled('wallpic', (1, 1, 1), rough=0.8); nt = wm.node_tree; tx = nt.nodes.new('ShaderNodeTexImage'); tx.image = im
+    nt.links.new(tx.outputs['Color'], nt.nodes['Principled BSDF'].inputs['Base Color']); cyl.data.materials[0] = wm
 # 入口：壁に光の扉（アーチの形の明るい面）
 door = emit_mat('door', (1.0, 0.93, 0.8), 0.0)
-key(door.node_tree.nodes['Emission'].inputs['Strength'], [(1, 30.0), (40, 30.0), (90, 6.0)])
+key(door.node_tree.nodes['Emission'].inputs['Strength'], [(1, 30.0), (T(40), 30.0), (T(90), 6.0)])
 x, y = RR * math.cos(ang(0)), RR * math.sin(ang(0))
 box((x * 0.995, y * 0.995, 1.25), (1.5, 0.05, 2.5), door)
 bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=0.75, depth=0.05, location=(x * 0.995, y * 0.995, 2.5), rotation=(math.radians(90), 0, 0))
 bpy.context.object.data.materials.append(door)
 # 床：石の円い敷きと、真ん中に金の象眼の輪
-plane((0, 0, 0), (RR * 2.2, RR * 2.2), (0, 0, 0), floorm); bpy.context.object['floor'] = 1
+plane((0, 0, 0), (RR * 2.2, RR * 2.2), (0, 0, 0), floorm)
 for r in (1.2, 2.6):
     bpy.ops.mesh.primitive_torus_add(major_radius=r, minor_radius=0.03, major_segments=96, minor_segments=6, location=(0, 0, 0.0))
     bpy.context.object.scale = (1, 1, 0.15); bpy.context.object.data.materials.append(gold)
-    if r > 2: bpy.context.object['floor'] = 1  # 外の輪は、画像を映す床に含める（真ん中の円の輪は残す）
 # 屋根：半球。てっぺんに天窓（月の光が入る）
 bpy.ops.mesh.primitive_uv_sphere_add(radius=RR, segments=96, ring_count=48, location=(0, 0, WALL))
 dome = bpy.context.object
@@ -87,7 +103,7 @@ for _ in range(140):
     p_ = Vector((math.cos(th) * math.cos(ph), math.sin(th) * math.cos(ph), math.sin(ph))) * (RR - 0.03) + Vector((0, 0, WALL))
     F.sphere(p_, random.uniform(0.012, 0.03), star, seg=8)
 sky = emit_mat('oculus', (0.75, 0.82, 1.0), 0.0)
-key(sky.node_tree.nodes['Emission'].inputs['Strength'], [(1, 1.5), (300, 1.5), (380, 14.0), (480, 18.0)])
+key(sky.node_tree.nodes['Emission'].inputs['Strength'], [(1, 1.5), (T(300), 1.5), (T(380), 14.0), (N, 18.0)])
 bpy.ops.mesh.primitive_circle_add(vertices=48, radius=RR * 0.40, fill_type='NGON', location=(0, 0, WALL + RR * 0.93))
 bpy.context.object.data.materials.append(sky)
 bpy.ops.mesh.primitive_torus_add(major_radius=RR * 0.345, minor_radius=0.09, major_segments=64, minor_segments=8, location=(0, 0, WALL + RR * 0.935))
@@ -116,7 +132,7 @@ nt.nodes.remove(nt.nodes['Principled BSDF']); ho = nt.nodes.new('ShaderNodeHoldo
 FR = {'dawn': dict(w=720, h=1149, l=141, t=336, ww=438, wh=672, top=208, s=dict(w=300, h=398, l=59, t=59, ww=182, wh=280, top=6)),
       'quiet': dict(w=720, h=968, l=128, t=128, ww=464, wh=711, top=14, s=dict(w=300, h=403, l=53, t=53, ww=193, wh=296, top=6))}
 SMALL = 0.26
-LIT0, GAP = 70, 30            # 1つ目の額縁が灯るコマ・次までのコマ数
+LIT0, GAP = 120, 75           # 1つ目の額縁が灯るコマ・次までのコマ数
 wins = []
 for i in range(1, BAYS):
     t = ang(i); x, y = (RR - 0.03) * math.cos(t), (RR - 0.03) * math.sin(t)
@@ -134,7 +150,7 @@ for i in range(1, BAYS):
     bpy.ops.object.light_add(type='SPOT', location=((RR - 1.3) * math.cos(t), (RR - 1.3) * math.sin(t), WALL - 0.2))
     L = bpy.context.object; L.data.spot_size = math.radians(40); L.data.spot_blend = 0.7; L.data.color = (1.0, 0.85, 0.62); L.data.shadow_soft_size = 0.15
     L.rotation_euler = (Vector((x, y, FZ)) - L.location).to_track_quat('-Z', 'Y').to_euler()
-    keyp(L.data, 'energy', [(1, 0.0), (f0, 0.0), (f0 + 10, 420.0), (N, 420.0)])
+    keyp(L.data, 'energy', [(1, 0.0), (f0, 0.0), (f0 + 16, 420.0), (N, 420.0)])
     sc.frame_set(1)
     wins.append({'i': i, 'kind': 'dawn' if i % 2 else 'quiet', 'f0': f0, 'obj': parent,
                  'corners': [Vector((x, y, FZ)) + Vector((-math.sin(t) * sx * F.WW * S / 2, math.cos(t) * sx * F.WW * S / 2, sz * F.WH * S / 2)) for sx, sz in [(1, 1), (-1, 1), (-1, -1), (1, -1)]]})
@@ -150,20 +166,20 @@ for k in range(6):  # 金の桟
     t_ = k * math.pi / 3
     box((0.26 * math.cos(t_), 0.26 * math.sin(t_), 1.34), (0.035, 0.035, 0.64), gold)
 flame = emit_mat('lflame', (1.0, 0.62, 0.25), 0.0)
-key(flame.node_tree.nodes['Emission'].inputs['Strength'], [(1, 25.0), (300, 40.0), (380, 160.0), (N, 260.0)])
+key(flame.node_tree.nodes['Emission'].inputs['Strength'], [(1, 25.0), (T(300), 40.0), (T(380), 160.0), (N, 260.0)])
 F.sphere((0, 0, 1.3), 0.07, flame, scale=(1, 1, 1.9), seg=16)
 for z in (1.04, 1.66):
     bpy.ops.mesh.primitive_cylinder_add(vertices=6, radius=0.32, depth=0.06, location=(0, 0, z)); bpy.context.object.data.materials.append(gold)
 bpy.ops.mesh.primitive_cone_add(vertices=6, radius1=0.32, depth=0.3, location=(0, 0, 1.84)); bpy.context.object.data.materials.append(gold)
 bpy.ops.object.light_add(type='POINT', location=(0, 0, 1.34)); LL = bpy.context.object
 LL.data.color = (1.0, 0.72, 0.4); LL.data.shadow_soft_size = 0.25
-keyp(LL.data, 'energy', [(1, 15.0), (300, 40.0), (380, 900.0), (N, 1400.0)])
+keyp(LL.data, 'energy', [(1, 15.0), (T(300), 40.0), (T(380), 900.0), (N, 1400.0)])
 # 光の粒：額縁から灯籠へ流れる（7本×10粒）。そのあと天窓へのぼる
 mote = emit_mat('mote', (1.0, 0.8, 0.45), 30.0)
 for w in wins:
     c = sum(w['corners'], Vector()) / 4
     for j in range(10):
-        s0 = 290 + j * 4 + random.randint(0, 8); s1 = s0 + 55
+        s0 = 290 + j * 4 + random.randint(0, 8); s1 = T(s0 + 55); s0 = T(s0)
         bpy.ops.mesh.primitive_uv_sphere_add(radius=0.025, segments=10, ring_count=6, location=c); o = bpy.context.object; o.data.materials.append(mote)
         mid = c.lerp(Vector((0, 0, 1.4)), 0.5) + Vector((random.uniform(-.4, .4), random.uniform(-.4, .4), random.uniform(.3, 1.0)))
         keyp(o, 'scale', [(1, (0, 0, 0)), (s0 - 1, (0, 0, 0)), (s0, (1, 1, 1)), (s1, (1, 1, 1)), (s1 + 1, (0, 0, 0))])
@@ -176,14 +192,14 @@ bpy.context.object.data.materials.append(fog)
 if os.environ.get('NOFOG'): bpy.data.objects.remove(bpy.context.object)  # もやは重い。光の柱はページが重ねるので、本番は抜く
 bpy.ops.object.light_add(type='SPOT', location=(0, 0, WALL + RR * 0.93)); SP = bpy.context.object
 SP.rotation_euler = (0, 0, 0); SP.data.spot_size = math.radians(30); SP.data.spot_blend = 0.4; SP.data.color = (0.85, 0.9, 1.0)
-keyp(SP.data, 'energy', [(1, 200.0), (300, 200.0), (380, 4000.0), (N, 9000.0)])
+keyp(SP.data, 'energy', [(1, 200.0), (T(300), 200.0), (T(380), 4000.0), (N, 9000.0)])
 w = bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True
 w.node_tree.nodes['Background'].inputs['Color'].default_value = (0.01, 0.012, 0.02, 1); w.node_tree.nodes['Background'].inputs['Strength'].default_value = 0.05
 bpy.ops.object.light_add(type='AREA', location=(0, 0, WALL + 1.5)); A = bpy.context.object; A.data.size = 4; A.data.color = (0.7, 0.78, 1.0)
 keyp(A.data, 'energy', [(1, 25.0), (N, 40.0)])
 
-# ---- カメラ：入口から入り（0〜3秒）、部屋の中をゆっくり回って額縁を順に見て（3〜12.5秒）、
-#      真ん中の灯籠と天窓を見上げる（12.5〜20秒） ----
+# ---- カメラ：入口から入り（0〜5秒）、部屋の中をゆっくり回って額縁を1つずつ前で止まって見て（5〜27秒）、
+#      真ん中の灯籠と天窓を見上げる（27〜40秒） ----
 cam = bpy.data.cameras.new('cam'); cam.sensor_width = 36; cam.sensor_fit = 'VERTICAL'; cam.sensor_height = 36
 co = bpy.data.objects.new('cam', cam); sc.collection.objects.link(co); sc.camera = co
 tgt = bpy.data.objects.new('tgt', None); sc.collection.objects.link(tgt)
@@ -196,9 +212,11 @@ def pol(r, t, z): return Vector((r * math.cos(t), r * math.sin(t), z))
 CK = [(1, pol(RR - 0.4, ang(0), 1.6), pol(0, 0, 1.6), 22)]  # 入口の内側。灯籠の向こうの壁を見る
 for i in range(1, BAYS):  # 額縁 i が灯るころ、部屋の真ん中の近くから、その額縁と両どなりを見る（ゆっくり回る）
     f0 = LIT0 + (i - 1) * GAP
-    CK.append((f0 + 6, pol(0.95, ang(i) + math.radians(90), 1.6), pol(RR, ang(i), FZ - 0.05), 20))
-CK += [(330, pol(2.6, ang(7) + math.radians(40), 1.3), pol(0, 0, 1.5), 20),
-       (400, pol(2.3, ang(8) + math.radians(40), 0.9), pol(0, 0, 3.2), 18),
+    # 40秒（2026-10-27〜）：額縁の前で止まって、ゆっくり回りながら少し寄る（約2.3秒）。次の額縁へは約0.9秒で移る
+    CK.append((f0 + 4, pol(0.95, ang(i) + math.radians(84), 1.6), pol(RR, ang(i), FZ - 0.05), 21))
+    CK.append((f0 + GAP - 18, pol(0.95, ang(i) + math.radians(96), 1.6), pol(RR, ang(i), FZ - 0.05), 23))
+CK += [(T(330), pol(2.6, ang(7) + math.radians(40), 1.3), pol(0, 0, 1.5), 20),
+       (T(400), pol(2.3, ang(8) + math.radians(40), 0.9), pol(0, 0, 3.2), 18),
        (N, pol(1.6, ang(8) + math.radians(70), 0.7), pol(0, 0, WALL + RR * 0.9), 16)]
 for f, p, t, lens in CK:
     co.location = p; co.keyframe_insert('location', frame=f); tgt.location = t; tgt.keyframe_insert('location', frame=f)
@@ -215,47 +233,35 @@ sc.render.film_transparent = True
 sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'AgX - Medium High Contrast'
 sc.render.image_settings.file_format = 'PNG'; sc.render.image_settings.color_mode = 'RGBA'
 
-# 床の写し（2026-10-27〜）：画面の点（絵の割合）→ 床の上の点（m、部屋の真ん中が 0）。コマごとに 3×3 の8つの数。
-# 利用者の画像を、真ん中の円（FLOOR_R より内）を除いた床一面に映すため。ページは床の抜き（MASK）の所だけ、この写しで画像を貼る
-FLOOR_R = 1.2
-
-
-def floor_map():  # 床 (x,y,1) → 画面 (u·z, v·z, z) は線形なので3点で決まる。その逆を書く（ページで z>0 ＝カメラの前、を見分けられる）
-    import numpy as np
-    a = []
-    for x_, y_ in ((0, 0), (1, 0), (0, 1)):
-        q = world_to_camera_view(sc, co, Vector((x_, y_, 0))); a.append(np.array([q.x * q.z, (1 - q.y) * q.z, q.z]))
-    G = np.column_stack([a[1] - a[0], a[2] - a[0], a[0]])
-    return [round(float(c), 6) for c in np.linalg.inv(G).ravel()]
+# 壁の写し（2026-10-27〜）：画面の点（絵の割合 u, v。左上が 0）→ カメラから出る光線の向き d = D·(u, v, 1)。コマごとにカメラの位置 C（3つ）と D（3×3）。
+# ページは壁の抜き（MASK）の所だけ、C + s·d と円い壁（半径 RR）の交わりから、柱と柱のあいだの壁のどこかを出して、利用者の画像を貼る
+def cam_ray():
+    fr = co.data.view_frame(scene=sc); M = co.matrix_world; C = M.translation
+    tr, br, bl, tl = [M @ p_ - C for p_ in fr]  # view_frame は 右上・右下・左下・左上
+    return [round(x, 5) for x in (*C, *(tr - tl), *(bl - tl), *tl)]
 
 
 # 窓の四隅（絵の割合。左上・右上・右下・左下）・灯りの強さ（0〜1）・見えるか、と天窓の真ん中を、コマごとに書く
-out = {'w': PX, 'h': sc.render.resolution_y, 'fps': 24, 'n': N, 'wins': [{'i': w_['i'], 'kind': w_['kind']} for w_ in wins], 'f': []}
+out = {'w': PX, 'h': sc.render.resolution_y, 'fps': 24, 'n': N, 'lit0': LIT0, 'gap': GAP, 'rr': RR, 'wall': WALL, 'bays': BAYS, 'a0': round(ang(0), 6), 'wins': [{'i': w_['i'], 'kind': w_['kind']} for w_ in wins], 'f': []}
 for f in range(1, N + 1):
     sc.frame_set(f); fr = []
     for w_ in wins:
         cs = [world_to_camera_view(sc, co, p) for p in w_['corners']]
         vis = all(q.z > 0.05 for q in cs) and max(q.x for q in cs) > -0.05 and min(q.x for q in cs) < 1.05
-        b = max(0.0, min(1.0, (f - w_['f0']) / 10))
+        b = max(0.0, min(1.0, (f - w_['f0']) / 16))
         fr.append([[round(q.x, 4), round(1 - q.y, 4)] for q in cs] + [round(b, 2), 1 if vis else 0])
     oc = world_to_camera_view(sc, co, Vector((0, 0, WALL + RR * 0.94)))
-    out['f'].append({'w': fr, 'oc': [round(oc.x, 4), round(1 - oc.y, 4), 1 if oc.z > 0 else 0], 'fl': floor_map()})
+    out['f'].append({'w': fr, 'oc': [round(oc.x, 4), round(1 - oc.y, 4), 1 if oc.z > 0 else 0], 'cam': cam_ray()})
 json.dump(out, open(os.path.join(OUTD, 'last.json'), 'w'), separators=(',', ':'))
-# 床の抜き（MASK=1）：画像を映す床だけ白、ほかは黒の白黒の絵。encode-film.sh room が、透明の度合いの絵に灰色として重ねる
-if os.environ.get('MASK'):
-    blk = emit_mat('mblack', (0, 0, 0), 1.0); wht = bpy.data.materials.new('mwhite'); wht.use_nodes = True; nt = wht.node_tree
-    nt.nodes.remove(nt.nodes['Principled BSDF']); em = nt.nodes.new('ShaderNodeEmission'); geo = nt.nodes.new('ShaderNodeNewGeometry')
-    ln = nt.nodes.new('ShaderNodeVectorMath'); ln.operation = 'LENGTH'; sep = nt.nodes.new('ShaderNodeSeparateXYZ'); cm = nt.nodes.new('ShaderNodeCombineXYZ')
-    gt = nt.nodes.new('ShaderNodeMath'); gt.operation = 'GREATER_THAN'; gt.inputs[1].default_value = FLOOR_R
-    nt.links.new(geo.outputs['Position'], sep.inputs[0]); nt.links.new(sep.outputs[0], cm.inputs[0]); nt.links.new(sep.outputs[1], cm.inputs[1])
-    nt.links.new(cm.outputs[0], ln.inputs[0]); nt.links.new(ln.outputs['Value'], gt.inputs[0]); nt.links.new(gt.outputs[0], em.inputs['Strength'])
-    em.inputs['Color'].default_value = (1, 1, 1, 1); nt.links.new(em.outputs[0], nt.nodes['Material Output'].inputs[0])
+# 壁の抜き（MASK=1）：画像を映す壁だけ白、ほかは黒の白黒の絵。encode-film.sh wall が、透明の度合いの絵に灰色（128）として重ねる
+if os.environ.get('MASK'):  # 壁の抜き：画像を映す壁だけ白、ほかは黒
+    blk = emit_mat('mblack', (0, 0, 0), 1.0); wht = emit_mat('mwhite', (1, 1, 1), 1.0)
     for ob in sc.objects:
         if ob.type == 'LIGHT': ob.hide_render = True
         if ob.type != 'MESH': continue
         for sl in ob.material_slots:
-            if sl.material and sl.material.name != 'hold': sl.material = wht if ob.get('floor') else blk
-        if not ob.material_slots: ob.data.materials.append(wht if ob.get('floor') else blk)
+            if sl.material and sl.material.name != 'hold': sl.material = wht if ob.get('wall') else blk
+        if not ob.material_slots: ob.data.materials.append(wht if ob.get('wall') else blk)
     sc.world.node_tree.nodes['Background'].inputs['Strength'].default_value = 0
     sc.render.film_transparent = False; sc.cycles.samples = 4; sc.cycles.use_denoising = False; sc.cycles.max_bounces = 0
     sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'None'
@@ -264,6 +270,6 @@ if os.environ.get('MASK'):
         sc.frame_set(f); sc.render.filepath = os.path.join(OUTD, f'm{f:04d}.png'); bpy.ops.render.render(write_still=True)
     sys.exit(0)
 if SAMPLES > 0:
-    for f in range(F0, F1 + 1):
+    for f in range(F0, F1 + 1, int(os.environ.get('EVERY', 1))):  # EVERY=24 で1秒に1コマだけ（カメラの動きの試し）
         sc.frame_set(f); sc.render.filepath = os.path.join(OUTD, f'f{f:04d}.png')
         bpy.ops.render.render(write_still=True)
