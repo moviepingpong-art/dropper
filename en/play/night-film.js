@@ -336,17 +336,33 @@
     // 壁の所は、動画の抜きの濃さが 128（encode-film.sh wall）。壁の上の点は last.json の cam（カメラの位置と光線の向き）と円い壁の交わりで求める
     const RR = J.rr || 4.2, WALL = J.wall || 4.4, BAYS = J.bays || 8, A0 = J.a0 || -Math.PI / 2, SB = 2 * Math.PI / BAYS;
     const TW = 768, TH = Math.round(TW * WALL / (SB * RR));  // 柱と柱のあいだの壁1枚の形
-    let tex = null, picURL = null;
-    function setPic(im) {
-      if (!im) { tex = null; return; }
-      const c = document.createElement('canvas'); c.width = TW; c.height = TH; const q = c.getContext('2d', { willReadFrequently: true }); cover(q, im, 0, 0, TW, TH); tex = q.getImageData(0, 0, TW, TH).data;
+    let texs = null, picURL = null;
+    const texOf = im => { const c = document.createElement('canvas'); c.width = TW; c.height = TH; const q = c.getContext('2d', { willReadFrequently: true }); cover(q, im, 0, 0, TW, TH); return q.getImageData(0, 0, TW, TH).data; };
+    function setPic(im) { texs = im ? [texOf(im)] : null; }
+    // おまかせ（2026-10-28〜、重吉さんの決め）：その夜の7体の作品を、石の壁の色の上に金色の淡い模様として重ねる。
+    // 地は WL_LIT（絵の壁の色）なので、作品の無い所はもとの石の壁のまま。壁ごとに並びをずらす
+    const autoArts = (await Promise.all(o.cards.map(c => img(c.art ? MUS + c.art : '')))).filter(Boolean);
+    function autoTex(b) {
+      const c = document.createElement('canvas'); c.width = TW; c.height = TH; const q = c.getContext('2d', { willReadFrequently: true });
+      q.fillStyle = `rgb(${WL_LIT.join(',')})`; q.fillRect(0, 0, TW, TH);
+      const n = autoArts.length, cols = 3, cw = TW / cols * 1.15, rows = Math.ceil(TH / (cw * .9)) + 1;
+      q.filter = 'sepia(.55) saturate(1.1) brightness(1.05)'; q.globalCompositeOperation = 'source-over';
+      for (let r = 0; r < rows; r++) for (let k = -1; k <= cols; k++) {
+        const im = autoArts[(b * 3 + r * 2 + k + 7 * n) % n], x = k * TW / cols + (r % 2 ? TW / cols / 2 : 0) - cw * .075, y = r * cw * .9 - cw * .3;
+        q.globalAlpha = .62; q.save(); q.beginPath(); q.rect(x, y, cw, cw * .9); q.clip(); cover(q, im, x, y, cw, cw * .9); q.restore();
+      }
+      q.filter = 'none'; q.globalCompositeOperation = 'source-over';
+      const e = q.createRadialGradient(TW / 2, TH / 2, Math.min(TW, TH) * .25, TW / 2, TH / 2, Math.max(TW, TH) * .7);  // ふちは石の壁へ溶かす
+      e.addColorStop(0, 'rgba(0,0,0,0)'); e.addColorStop(1, `rgba(${WL_LIT.join(',')},.7)`); q.globalAlpha = 1; q.fillStyle = e; q.fillRect(0, 0, TW, TH);
+      return q.getImageData(0, 0, TW, TH).data;
     }
+    const setAuto = () => { texs = autoArts.length ? Array.from({ length: BAYS }, (_, b) => autoTex(b)) : null; };
     // 20秒のときの時刻（コマ）→ この映像のコマ（lastroom.py の T と同じ。2026-10-27 に40秒にした）
     const L0 = J.lit0 || 70, GP = J.gap || 30;
     const T = f => { if (!J.lit0) return f; const P = [[0, 70, 0, L0], [70, 280, L0, L0 + 7 * GP], [280, 380, L0 + 7 * GP, Math.round(J.n * 795 / 960)], [380, 480, Math.round(J.n * 795 / 960), J.n]];
       for (const [a0, a1, b0, b1] of P) if (f <= a1) return b0 + (f - a0) * (b1 - b0) / (a1 - a0); return J.n; };
     const K = GP / 30, lit = i => L0 + i * GP;  // 額縁 i が灯るコマ
-    if (o.pic) setPic(await img(o.pic));
+    if (o.pic) setPic(await img(o.pic)); else setAuto();
     const glowRnd = seeded('glow' + (o.seed || '')), glows = J.wins.map(() => ({ r: .55 + glowRnd() * .35, ph: glowRnd() * 6.28 }));
     const beam = document.createElement('canvas');
     function draw(f) {  // f：1〜n
@@ -370,14 +386,14 @@
         if (!C || a < 40 || a > 215) continue;
         // 壁の印（128）と、そのふちのまじり。画面の点からの光線が円い壁に当たる所
         od[i + 3] = 255;
-        if (!tex) continue;
+        if (!texs) continue;
         const u = (p % W + .5) / W, v = ((p / W | 0) + .5) / H;
         const dx = C[3] * u + C[6] * v + C[9], dy = C[4] * u + C[7] * v + C[10], dz = C[5] * u + C[8] * v + C[11];
         const qa = dx * dx + dy * dy, qb = C[0] * dx + C[1] * dy, qc = C[0] * C[0] + C[1] * C[1] - RR * RR, sq = qb * qb - qa * qc;
         if (qa <= 0 || sq < 0) continue;
         const t = (-qb + Math.sqrt(sq)) / qa, X = C[0] + t * dx, Y = C[1] + t * dy, Z = C[2] + t * dz;
         let th = Math.atan2(Y, X) - A0 + SB / 2; th -= Math.floor(th / (2 * Math.PI)) * 2 * Math.PI;
-        const tu = (th % SB) / SB, tx = Math.min(TW - 1, Math.max(0, tu * TW | 0)), ty = Math.min(TH - 1, Math.max(0, (1 - Z / WALL) * TH | 0)), k = (ty * TW + tx) * 4;
+        const tex = texs[Math.floor(th / SB) % texs.length], tu = (th % SB) / SB, tx = Math.min(TW - 1, Math.max(0, tu * TW | 0)), ty = Math.min(TH - 1, Math.max(0, (1 - Z / WALL) * TH | 0)), k = (ty * TW + tx) * 4;
         // 明るさと色は、絵の壁の明るさに合わせる（灯り・影・燭台の色が画像にのる）
         const w = clamp(1 - Math.abs(a - 128) / 88);
         for (let c = 0; c < 3; c++) od[i + c] = d[i + c] * (1 - w) + Math.min(255, tex[k + c] * Math.min(1.3, d[i + c] / WL_LIT[c])) * w;  // 灯籠のそばの明るい石で白く飛ばないように
@@ -518,7 +534,7 @@
         + '<div class="nf-drop" role="button" tabindex="0" hidden><b></b><small></small><input type="file" accept="image/*" hidden></div>';
       const [ma, mp] = p.querySelectorAll('.nf-mode'), dz = p.querySelector('.nf-drop'), fi = dz.querySelector('input');
       ma.textContent = o.tx.modeAuto; mp.textContent = o.tx.modePic; dz.querySelector('b').textContent = o.tx.picDrop; dz.querySelector('small').textContent = o.tx.picNote || '';
-      const mode = m => { ma.classList.toggle('on', m === 'auto'); mp.classList.toggle('on', m === 'pic'); ma.setAttribute('aria-pressed', m === 'auto'); mp.setAttribute('aria-pressed', m === 'pic'); dz.hidden = m !== 'pic'; if (m === 'auto') { setPic(null); dz.classList.remove('has'); } draw(1); };
+      const mode = m => { ma.classList.toggle('on', m === 'auto'); mp.classList.toggle('on', m === 'pic'); ma.setAttribute('aria-pressed', m === 'auto'); mp.setAttribute('aria-pressed', m === 'pic'); dz.hidden = m !== 'pic'; if (m === 'auto') { setAuto(); dz.classList.remove('has'); } draw(1); };
       ma.onclick = () => mode('auto'); mp.onclick = () => mode('pic');
       const use = async f => {
         if (!f || !/^image\//.test(f.type)) return;
