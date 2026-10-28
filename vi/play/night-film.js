@@ -346,14 +346,14 @@
       const c = document.createElement('canvas'); c.width = TW; c.height = TH; const q = c.getContext('2d', { willReadFrequently: true });
       q.fillStyle = `rgb(${WL_LIT.join(',')})`; q.fillRect(0, 0, TW, TH);
       const n = autoArts.length, cols = 3, cw = TW / cols * 1.15, rows = Math.ceil(TH / (cw * .9)) + 1;
-      q.filter = 'grayscale(1) sepia(.8) brightness(1.1)'; q.globalCompositeOperation = 'soft-light';
+      q.filter = 'sepia(.55) saturate(1.1) brightness(1.05)'; q.globalCompositeOperation = 'source-over';
       for (let r = 0; r < rows; r++) for (let k = -1; k <= cols; k++) {
         const im = autoArts[(b * 3 + r * 2 + k + 7 * n) % n], x = k * TW / cols + (r % 2 ? TW / cols / 2 : 0) - cw * .075, y = r * cw * .9 - cw * .3;
-        q.globalAlpha = .4; q.save(); q.beginPath(); q.rect(x, y, cw, cw * .9); q.clip(); cover(q, im, x, y, cw, cw * .9); q.restore();
+        q.globalAlpha = .62; q.save(); q.beginPath(); q.rect(x, y, cw, cw * .9); q.clip(); cover(q, im, x, y, cw, cw * .9); q.restore();
       }
       q.filter = 'none'; q.globalCompositeOperation = 'source-over';
       const e = q.createRadialGradient(TW / 2, TH / 2, Math.min(TW, TH) * .25, TW / 2, TH / 2, Math.max(TW, TH) * .7);  // ふちは石の壁へ溶かす
-      e.addColorStop(0, 'rgba(0,0,0,0)'); e.addColorStop(1, `rgba(${WL_LIT.join(',')},1)`); q.globalAlpha = 1; q.fillStyle = e; q.fillRect(0, 0, TW, TH);
+      e.addColorStop(0, 'rgba(0,0,0,0)'); e.addColorStop(1, `rgba(${WL_LIT.join(',')},.7)`); q.globalAlpha = 1; q.fillStyle = e; q.fillRect(0, 0, TW, TH);
       return q.getImageData(0, 0, TW, TH).data;
     }
     const setAuto = () => { texs = autoArts.length ? Array.from({ length: BAYS }, (_, b) => autoTex(b)) : null; };
