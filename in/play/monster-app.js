@@ -1406,7 +1406,7 @@
     }));
     return ART.get(f);
   }
-  function drawArtBack(c, x, y, w, h, imgs) {
+  function drawArtBack(c, x, y, w, h, imgs, bright) {
     c.save(); roundRect(c, x, y, w, h, 4); c.clip();
     c.fillStyle = '#05060b'; c.fillRect(x, y, w, h);
     // 2〜3点の結びは、作品を縦の帯に並べる
@@ -1417,13 +1417,15 @@
       c.drawImage(im, x + sw * i + (sw - dw) / 2, y + (h - dh) / 2, dw, dh); c.restore();
     });
     // 閉館後の暗さと、上からの灯り
-    c.fillStyle = 'rgba(8,10,20,.58)'; c.fillRect(x, y, w, h);
+    // 作品だけを見せる絵（点滅の片方）は、暗さを薄くして作品がよく見えるように
+    c.fillStyle = bright ? 'rgba(8,10,20,.10)' : 'rgba(8,10,20,.58)'; c.fillRect(x, y, w, h);
     const sp = c.createRadialGradient(x + w / 2, y + h * 0.42, 10, x + w / 2, y + h * 0.42, w * 0.55);
-    sp.addColorStop(0, 'rgba(255,232,180,.30)'); sp.addColorStop(1, 'rgba(255,232,180,0)');
+    sp.addColorStop(0, bright ? 'rgba(255,232,180,.12)' : 'rgba(255,232,180,.30)'); sp.addColorStop(1, 'rgba(255,232,180,0)');
     c.fillStyle = sp; c.fillRect(x, y, w, h);
     c.restore();
   }
-  function drawCard(cv, M) {
+  // artOnly：精霊を描かず、作品を明るくした絵（開いたカードの点滅の片方。blink()）
+  function drawCard(cv, M, artOnly) {
     // 化けさせるときに画素を読むので、最初から CPU で描く（途中で描き方が切り替わると、同じ写真でも色が1目盛りずれる）
     const c = cv.getContext('2d', { willReadFrequently: true }), W = cv.width, H = cv.height, T = TYPES[M.type];
     c.clearRect(0, 0, W, H);
@@ -1494,7 +1496,7 @@
     c.fillStyle = '#2b2418'; c.fillRect(ax - 8, ay - 8, aw + 16, ah + 16);
     c.strokeStyle = line; c.lineWidth = 1.5; c.strokeRect(ax - 8.5, ay - 8.5, aw + 17, ah + 17); c.strokeRect(ax - 0.5, ay - 0.5, aw + 1, ah + 1);
     const imgs = (Array.isArray(M.works) ? M.works : []).map(w => typeof w.f === 'string' && ARTI.get(w.f)).filter(Boolean);
-    if (imgs.length) drawArtBack(c, ax, ay, aw, ah, imgs);
+    if (imgs.length) drawArtBack(c, ax, ay, aw, ah, imgs, artOnly);
     else {
       const bg = c.createRadialGradient(W / 2, ay + ah * 0.42, 20, W / 2, ay + ah / 2, aw * 0.7);
       bg.addColorStop(0, '#3a3a52'); bg.addColorStop(1, '#10121d');
@@ -1504,9 +1506,11 @@
     // 足もとの影は守り神だけ（精霊は浮いているので、光だまりを drawMonster が描く）
     if (shapeOf(M.g) === 'human') { c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(W / 2, ay + ah - 34, 120, 14, 0, 0, 7); c.fill(); }
     // 精霊の姿は、やわらかい光をまとって描く
-    c.save(); c.shadowColor = metal ? 'rgba(255,240,190,.75)' : 'rgba(255,230,170,.55)'; c.shadowBlur = 34;
-    drawMonster(c, W / 2, ay + ah / 2 + 14, 150, M.g, M.gender);
-    c.restore();
+    if (!artOnly) {
+      c.save(); c.shadowColor = metal ? 'rgba(255,240,190,.75)' : 'rgba(255,230,170,.55)'; c.shadowBlur = 34;
+      drawMonster(c, W / 2, ay + ah / 2 + 14, 150, M.g, M.gender);
+      c.restore();
+    }
     // 横ずれの線はゆらぎの子だけ（2026-10-16 本人の指示。ふつうのカードは人の顔などにかかって気になるため）
     const bug = sfc32(M.fp[3], M.fp[2], M.fp[1], M.fp[0]); // 体の形とは別の並び（説明の文字化けにも使う）
     if (bugR) glitchArt(c, ax, ay, aw, ah, bug, false);
@@ -1633,11 +1637,44 @@
     drawMonster(t.getContext('2d'), 80, 92, 50, M.g, M.gender);
     return t.toDataURL('image/png');
   }
-  function thumbOf(cv = $('card')) {
+  function thumbOf(cv = blinkBase || $('card')) {
     const t = document.createElement('canvas'); t.width = 180; t.height = 276;
     t.getContext('2d').drawImage(cv, 0, 0, 180, 276);
     return t.toDataURL('image/jpeg', 0.75);
   }
+  // 開いたカードの精霊がゆっくり点滅して、奥の作品が見える（2026-10-28 重吉さんの決め。4秒で1周）。
+  // 精霊のいる絵（blinkBase）と作品だけの明るい絵を、絵の窓の中だけで入れかえる。小さな絵・保存はいつも精霊のいる絵から
+  // 動きを減らす設定では点滅させず、カードの絵を押したときだけ入れかえる
+  let blinkBase = null, blinkArt = null, blinkRaf = 0, blinkOn = false;
+  const BLINK = 4000, BLINK_BOX = [46, 132, 508, 330];
+  function blinkAlpha(t) { // 0＝精霊 1＝作品。精霊1.4秒 → 0.6秒で薄れる → 作品1.4秒 → 0.6秒で戻る
+    const u = (t % BLINK) / BLINK * 4;
+    if (u < 1.4) return 0;
+    if (u < 2) return (1 - Math.cos((u - 1.4) / 0.6 * Math.PI)) / 2;
+    if (u < 3.4) return 1;
+    return (1 + Math.cos((u - 3.4) / 0.6 * Math.PI)) / 2;
+  }
+  function blinkPaint(a) {
+    const c = $('card').getContext('2d', { willReadFrequently: true }), [x, y, w, h] = BLINK_BOX;
+    c.drawImage(blinkBase, x, y, w, h, x, y, w, h);
+    if (a > 0) { c.globalAlpha = a; c.drawImage(blinkArt, x, y, w, h, x, y, w, h); c.globalAlpha = 1; }
+  }
+  function blink(M) {
+    cancelAnimationFrame(blinkRaf); blinkBase = blinkArt = null; blinkOn = false;
+    const cv = $('card');
+    if (isHuman(M) || !(Array.isArray(M.works) && M.works.some(w => typeof w.f === 'string' && ARTI.get(w.f)))) return;
+    blinkBase = document.createElement('canvas'); blinkBase.width = cv.width; blinkBase.height = cv.height;
+    blinkBase.getContext('2d').drawImage(cv, 0, 0);
+    blinkArt = document.createElement('canvas'); blinkArt.width = cv.width; blinkArt.height = cv.height;
+    drawCard(blinkArt, M, true);
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const t0 = performance.now(), step = now => { blinkPaint(blinkAlpha(now - t0)); blinkRaf = requestAnimationFrame(step); };
+    blinkRaf = requestAnimationFrame(step);
+  }
+  $('card').addEventListener('click', () => {
+    if (!blinkArt || !matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    blinkOn = !blinkOn; blinkPaint(blinkOn ? 1 : 0);
+  });
   // アクセス解析のイベント。回数だけを送り、写真・名前・カードの中身は送らない（プライバシーポリシーに書いた約束）
   function track(name) { try { if (typeof gtag === 'function') gtag('event', name); } catch (e) { /* 計測が止められていても遊べる */ } }
   async function saveCard(M, again) {
@@ -1855,7 +1892,7 @@
     current = M;
     await loadFontsFor(M);
     if (current !== M) return false;
-    drawCard($('card'), M);
+    drawCard($('card'), M); blink(M);
     showFrame(M);
     showWorks(M);
     $('stage').classList.remove('hidden');
@@ -1913,7 +1950,7 @@
       const kind = life ? 'Life' : 'Photo';
       const type = txt({ ty: M.type }), chara = charaOf(M.g), as = chara ? tr('aiAs', { chara, type }) : tr('aiAsType', { type });
       aiShow(M, 'ok', tr('aiDone' + kind, { sec }), (life ? tr('aiDoneLifeHint') : tr(M.motif ? 'aiResult' + kind : 'aiResultPlain', { motif: txt(M.motif), as }) + tr(M.strong ? 'aiStrong' : 'aiBoost', { power: M.power })));
-      if (current === M) { await loadFontsFor(M); drawCard($('card'), M); setStatus(done()); }
+      if (current === M) { await loadFontsFor(M); drawCard($('card'), M); blink(M); setStatus(done()); }
       return true;
     } catch (e) {
       clearInterval(iv);
@@ -2454,7 +2491,7 @@
     await DB.del('cards', M.id);
     if (slots.m && slots.m.id === M.id) slots.m = null;
     if (slots.f && slots.f.id === M.id) slots.f = null;
-    current = null; $('stage').classList.add('hidden'); renderSlots(); await renderDex();
+    current = null; cancelAnimationFrame(blinkRaf); $('stage').classList.add('hidden'); renderSlots(); await renderDex();
     setStatus(tr('deleted', { name: nameOf(M) }));
   });
   $('cand').addEventListener('click', async () => {
