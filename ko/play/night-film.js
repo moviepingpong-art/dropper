@@ -362,7 +362,7 @@
     const T = f => { if (!J.lit0) return f; const P = [[0, 70, 0, L0], [70, 280, L0, L0 + 7 * GP], [280, 380, L0 + 7 * GP, Math.round(J.n * 795 / 960)], [380, 480, Math.round(J.n * 795 / 960), J.n]];
       for (const [a0, a1, b0, b1] of P) if (f <= a1) return b0 + (f - a0) * (b1 - b0) / (a1 - a0); return J.n; };
     const K = GP / 30, lit = i => L0 + i * GP;  // 額縁 i が灯るコマ
-    if (o.pic) setPic(await img(o.pic)); else setAuto();
+    if (o.pic) setPic(await img(o.pic));
     const glowRnd = seeded('glow' + (o.seed || '')), glows = J.wins.map(() => ({ r: .55 + glowRnd() * .35, ph: glowRnd() * 6.28 }));
     const beam = document.createElement('canvas');
     function draw(f) {  // f：1〜n
@@ -530,11 +530,13 @@
     // おまかせ／好きな画像を床に（2026-10-27〜、重吉さんの決め）。選んだ画像は、すぐ床に映して見せる
     if (o.tx.modeAuto) {
       const p = document.createElement('div'); p.className = 'nf-pick';
-      p.innerHTML = '<div class="nf-modes"><button type="button" class="nf-mode on" data-m="auto" aria-pressed="true"></button><button type="button" class="nf-mode" data-m="pic" aria-pressed="false"></button></div>'
+      p.innerHTML = '<div class="nf-modes"><button type="button" class="nf-mode" data-m="auto" aria-pressed="false"></button><button type="button" class="nf-mode" data-m="pic" aria-pressed="false"></button></div>'
         + '<div class="nf-drop" role="button" tabindex="0" hidden><b></b><small></small><input type="file" accept="image/*" hidden></div>';
       const [ma, mp] = p.querySelectorAll('.nf-mode'), dz = p.querySelector('.nf-drop'), fi = dz.querySelector('input');
       ma.textContent = o.tx.modeAuto; mp.textContent = o.tx.modePic; dz.querySelector('b').textContent = o.tx.picDrop; dz.querySelector('small').textContent = o.tx.picNote || '';
-      const mode = m => { ma.classList.toggle('on', m === 'auto'); mp.classList.toggle('on', m === 'pic'); ma.setAttribute('aria-pressed', m === 'auto'); mp.setAttribute('aria-pressed', m === 'pic'); dz.hidden = m !== 'pic'; if (m === 'auto') { setAuto(); dz.classList.remove('has'); } draw(1); };
+      // はじめはどちらも選ばない（石の壁のまま）。選んだボタンをもう一度押すと外す（2026-10-28 重吉さんの決め）
+      let cur = null;
+      const mode = m => { if (m === cur) m = null; cur = m; ma.classList.toggle('on', m === 'auto'); mp.classList.toggle('on', m === 'pic'); ma.setAttribute('aria-pressed', m === 'auto'); mp.setAttribute('aria-pressed', m === 'pic'); dz.hidden = m !== 'pic'; if (m === 'auto') setAuto(); else setPic(null); dz.classList.remove('has'); draw(1); };
       ma.onclick = () => mode('auto'); mp.onclick = () => mode('pic');
       const use = async f => {
         if (!f || !/^image\//.test(f.type)) return;
