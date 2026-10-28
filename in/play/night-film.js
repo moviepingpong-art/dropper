@@ -12,23 +12,34 @@
     quiet: { w: 720, h: 968, l: 128, t: 128, ww: 464, wh: 711, top: 14, s: { w: 300, h: 403, l: 53, t: 53, ww: 193, wh: 296, top: 6 } }
   };
   const SMALL = 0.26;
+  const FS = 0.5;  // 映像に描く額縁の canvas の大きさ（額縁の絵の半分。映像の中の額縁は大きくても幅200ほど）
   const TYC = { 炎: '#c8553d', 水: '#3d7fc8', 森: '#4f9a52', 雷: '#d6b740', 風: '#8fc7b8', 土: '#9a7448', 光: '#e8d79a', 闇: '#5b4a8a', 夢: '#c37fb4', 鋼: '#8a96a6' };
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const img = src => new Promise(ok => { if (!src) return ok(null); const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; });
   const getJSON = u => fetch(u).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
   const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+  // 使い終わった canvas を空にする（iPhone の Safari は canvas の使える量に上限があり、もう一度挑戦すると足りなくなるため）
+  const free = (...cs) => cs.flat().forEach(c => { if (c && c.getContext) { c.width = 0; c.height = 0; } });
 
   // ---- 額縁の絵を1枚の canvas に：窓いっぱいの作品・額縁・上のふちの小さな額縁と精霊（night-app.js の fbox と同じ並び） ----
   function cover(g, im, x, y, w, h) {
     const s = Math.max(w / im.width, h / im.height), iw = im.width * s, ih = im.height * s;
     g.drawImage(im, x + (w - iw) / 2, y + (h - ih) / 2, iw, ih);
   }
-  async function frameCanvas(o) {
-    const P = FR[o.k] || FR.dawn, S = P.s, c = document.createElement('canvas'); c.width = P.w; c.height = P.h;
-    const g = c.getContext('2d');
+  // s＝縮める割合（2026-10-28〜。iPhone の Safari は canvas の使える量が少なく、大きいまま7枚作ると描かれない額縁が出た）。
+  // 縮めても、額縁の絵の座標（lw・lh）で描けるようにしておく（warp がこの大きさで四隅を写す）
+  async function frameCanvas(o, s = 1) {
+    const P = FR[o.k] || FR.dawn, S = P.s, c = document.createElement('canvas'); c.width = Math.round(P.w * s); c.height = Math.round(P.h * s); c.lw = P.w; c.lh = P.h;
+    const g = c.getContext('2d'); g.scale(c.width / P.w, c.height / P.h);
     const [big, sm, art, th] = await Promise.all([img(`${GAL}frame-${o.k}.webp`), img(`${GAL}frame-${o.k}-s.webp`), img(o.art ? MUS + o.art : ''), img(o.th)]);
     g.save(); g.beginPath(); g.rect(P.l - 2, P.t - 2, P.ww + 4, P.wh + 4); g.clip();
     if (art) cover(g, art, P.l - 2, P.t - 2, P.ww + 4, P.wh + 4);
+    else if (o.empty) {  // まだ飾っていない額縁（最後の通路）：斜めの縞と「空き」の字
+      g.fillStyle = '#140b0e'; g.fillRect(P.l, P.t, P.ww, P.wh); g.fillStyle = '#1a0f12';
+      for (let x = -P.wh; x < P.ww; x += 36) { g.beginPath(); g.moveTo(P.l + x, P.t + P.wh); g.lineTo(P.l + x + 18, P.t + P.wh); g.lineTo(P.l + x + 18 + P.wh, P.t); g.lineTo(P.l + x + P.wh, P.t); g.closePath(); g.fill(); }
+      g.fillStyle = '#8f8576'; g.font = '500 44px "Noto Serif JP", serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(o.empty, P.l + P.ww / 2, P.t + P.wh / 2);
+    }
+    else if (th && o.thWin) cover(g, th, P.l - 2, P.t - 2, P.ww + 4, P.wh + 4);  // 作品の写しの無い古い額縁は、カードの小さな絵を窓に
     else { const gr = g.createLinearGradient(0, P.t, 0, P.t + P.wh); gr.addColorStop(0, TYC[o.t] || '#8a96a6'); gr.addColorStop(1, '#0d0f19'); g.fillStyle = gr; g.fillRect(P.l, P.t, P.ww, P.wh); }
     g.restore();
     if (big) g.drawImage(big, 0, 0, P.w, P.h);
@@ -51,6 +62,7 @@
       gr.addColorStop(0, `rgba(${col},0)`); gr.addColorStop(.45, `rgba(${col},.28)`); gr.addColorStop(.55, `rgba(${col},.05)`); gr.addColorStop(1, `rgba(${col},0)`);
       g.fillStyle = gr; g.fillRect(0, 0, P.w, P.h); g.globalCompositeOperation = 'source-over';
     }
+    if (o.dim) { g.globalCompositeOperation = 'source-atop'; g.fillStyle = `rgba(0,0,0,${o.dim})`; g.fillRect(0, 0, P.w, P.h); g.globalCompositeOperation = 'source-over'; }
     return c;
   }
 
@@ -81,8 +93,8 @@
     g.drawImage(im, 0, 0); g.restore();
   }
   function warp(g, im, map, n = 8) {
-    const W = im.width, H = im.height, P = [];
-    for (let j = 0; j <= n; j++) { P.push([]); for (let i = 0; i <= n; i++) P[j].push([[W * i / n, H * j / n], map(W * i / n, H * j / n)]); }
+    const W = im.lw || im.width, H = im.lh || im.height, kx = im.width / W, ky = im.height / H, P = [];  // map は額縁の絵の座標、切り出しは canvas の画素
+    for (let j = 0; j <= n; j++) { P.push([]); for (let i = 0; i <= n; i++) P[j].push([[W * i / n * kx, H * j / n * ky], map(W * i / n, H * j / n)]); }
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
       const a = P[j][i], b = P[j][i + 1], c = P[j + 1][i + 1], d = P[j + 1][i];
       tri(g, im, a[0], b[0], c[0], a[1], b[1], c[1]); tri(g, im, a[0], c[0], d[0], a[1], c[1], d[1]);
@@ -319,7 +331,7 @@
     const W = J.w, H = J.h; cv.width = W; cv.height = H;
     const vc = document.createElement('canvas'); vc.width = W; vc.height = H * 2; const vg = vc.getContext('2d', { willReadFrequently: true });
     const out = g.createImageData(W, H);
-    const fcs = await Promise.all(J.wins.map((w, i) => o.cards[i] ? frameCanvas(Object.assign({ k: w.kind, glow: TYC[o.cards[i].t] }, o.cards[i])) : frameCanvas({ k: w.kind, t: '光' })));
+    const fcs = await Promise.all(J.wins.map((w, i) => o.cards[i] ? frameCanvas(Object.assign({ k: w.kind, glow: TYC[o.cards[i].t] }, o.cards[i]), FS) : frameCanvas({ k: w.kind, t: '光' }, FS)));
     const hues = (o.hues && o.hues.length ? o.hues : ['#f3d79a', '#f6e2b0', '#ffe9c0']);
     const ths = await Promise.all(o.cards.map(c => img(c.dx || c.th))); // 終わりの7体の並びは、作品が見える目録の小さな絵（2026-10-28）
     // その夜だけの守り神の姿（カードの小さな絵の、姿の窓の真ん中）。光の柱の中に、ふちをぼかして出す
@@ -561,7 +573,7 @@
         draw(J.n); L.btns.replaceChildren();
         if (blob) { L.cap.textContent = o.tx.made; btn(L, o.tx.save, '', () => save(blob, rec.ext, o.file)); }
         else if (all && !rec) L.cap.textContent = o.tx.noRec;
-        btn(L, o.tx.close, 'ghost', () => { close(); if (picURL) URL.revokeObjectURL(picURL); resolve(blob ? { blob, ext: rec.ext } : null); });
+        btn(L, o.tx.close, 'ghost', () => { close(); if (picURL) URL.revokeObjectURL(picURL); free(fcs, vc, draw.t); draw.t = null; resolve(blob ? { blob, ext: rec.ext } : null); });
       };
       const stopDraw = onFrames(v, t => draw(Math.floor(t * J.fps) + 1));
       btn(L, o.tx.skip, 'ghost nf-skip', () => finish(false));
@@ -571,8 +583,15 @@
       v.play().catch(() => finish(false));
     });
   }
+  // スマホ（iPhone・iPad・Android）は、ダウンロードの形では動画を写真に入れにくい（iPhone は別の画面が開くだけ）。
+  // 共有の画面を出して「ビデオを保存」などから写真・ギャラリーへ（2026-10-28 重吉さん）。共有できないときと PC は、いままでのダウンロード
   function save(blob, ext, name) {
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${name || 'lantern-museum'}.${ext}`;
+    const fn = `${name || 'lantern-museum'}.${ext}`, mobile = /iP(hone|ad|od)|Android/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (mobile && navigator.share && window.File) {
+      const f = new File([blob], fn, { type: blob.type || (ext === 'mp4' ? 'video/mp4' : 'video/webm') });
+      if (!navigator.canShare || navigator.canShare({ files: [f] })) { navigator.share({ files: [f] }).catch(() => {}); return; }
+    }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fn;
     document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
   }
 
@@ -584,7 +603,7 @@
     let J, v;
     try { [J, v] = await Promise.all([getJSON(GAL + 'walk.json'), videoEl(GAL + 'lastwalk')]); } catch (e) { close(); return; }
     const W = J.w, H = J.h; cv.width = W; cv.height = H;
-    const fcs = await Promise.all(J.slots.map((s, i) => o.frames[i] ? frameCanvas(o.frames[i]) : null));
+    const fcs = await Promise.all(J.slots.map((s, i) => o.frames[i] ? frameCanvas(o.frames[i], FS) : null));
     let glow = 0;
     function draw(f) {
       const F = J.f[Math.min(J.n, Math.max(1, f)) - 1];
@@ -610,7 +629,7 @@
       const finish = () => {
         if (done) return; done = true; stopDraw(); v.pause(); if (S) S.stop(); setTimeout(() => A && A.ac.close(), 800);
         draw(J.n); L.btns.replaceChildren(); L.cap.textContent = o.tx.done;
-        btn(L, o.tx.close, '', () => { close(); resolve(); });
+        btn(L, o.tx.close, '', () => { close(); free(fcs); resolve(); });
       };
       btn(L, o.tx.skip, 'ghost nf-skip', finish);
       if (A) { A.ac.resume(); S = score(A.ac, A.out, WALK_PLAN); }
@@ -624,5 +643,5 @@
     });
   }
 
-  window.NightFilm = { room, walk, save, warm };
+  window.NightFilm = { room, walk, save, warm, frameCanvas, warp, homography };
 })();

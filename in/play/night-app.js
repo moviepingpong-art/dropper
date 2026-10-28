@@ -951,20 +951,36 @@
     }
   }
   function fitHall() { $('walls').style.transform = `scale(${$('view').clientWidth / 1200})`; $('stage').style.transform = `scale(${$('view').clientWidth / HW})`; }
-  function drawHall() {
-    const stage = $('stage'), labels = $('hLabels'); stage.replaceChildren(); labels.replaceChildren();
-    if (at !== 'last') return;
+  // 額縁は canvas に描く（2026-10-28〜）。前は額縁の要素を CSS の matrix3d でゆがめて影をつけていたが、iPhone の Safari では描かれなかった。
+  // 描き方は最後の部屋の映像と同じ（night-film.js の frameCanvas・warp）。押す所は、額縁の四隅を囲む透明のボタン
+  const HK = 0.75, hallCache = new Map();  // canvas は通路の絵の 3/4 の細かさ。額縁の絵は飾った子ごとに覚えておく
+  let hallTok = 0;
+  function hallFrame(f) {
+    const key = f.id ? [f.id, f.k, f.rar || ''].join('|') : 'empty|' + f.k;
+    if (!hallCache.has(key)) {
+      const art = f.id && Array.isArray(f.w) && f.w[0] ? safeArt(f.w[0].f) : '', th = f.id ? safeThumb(f.th) : '';
+      hallCache.set(key, window.NightFilm.frameCanvas(f.id ? { k: f.k, art, th, thWin: !art, rar: f.rar, dim: .16 } : { k: f.k, empty: tr('nEmptyFrame'), dim: .16 }, .4));
+    }
+    return hallCache.get(key);
+  }
+  async function drawHall() {
+    const stage = $('stage'), labels = $('hLabels'), tok = ++hallTok; stage.replaceChildren(); labels.replaceChildren();
+    if (at !== 'last' || !window.NightFilm || !window.NightFilm.frameCanvas) return;
     const F = frames().map((f, i) => [f, i]).reverse(), pages = Math.max(1, Math.ceil(F.length / PER));
     page = Math.min(page, pages - 1);
+    const cv = document.createElement('canvas'); cv.className = 'hcv'; cv.width = HW * HK; cv.height = HH * HK; stage.append(cv);
+    const g = cv.getContext('2d'), list = [];
     LAST[pos].forEach((S, j) => {
       const e = F[page * PER + j]; if (!e || !S.v) return;
       const [f, fi] = e, P = FR[f.k], b = document.createElement('button'); b.type = 'button'; b.className = 'hf';
-      b.style.width = P.w + 'px'; b.style.height = P.h + 'px';
-      b.style.transform = homography([[P.l, P.t], [P.l + P.ww, P.t], [P.l + P.ww, P.t + P.wh], [P.l, P.t + P.wh]], S.c.map(([x, y]) => [x * HW, y * HH]));
-      b.innerHTML = fbox(f);
+      // 窓の四隅から、額縁の絵ぜんたいの四隅まで広げた所を押せるように
+      const m = window.NightFilm.homography([[P.l, P.t], [P.l + P.ww, P.t], [P.l + P.ww, P.t + P.wh], [P.l, P.t + P.wh]], S.c.map(([x, y]) => [x * HW, y * HH]));
+      const cs = [[0, 0], [P.w, 0], [P.w, P.h], [0, P.h]].map(([x, y]) => m(x, y)), bx = cs.map(p => p[0]), by = cs.map(p => p[1]);
+      const x0 = Math.min(...bx), y0 = Math.min(...by);
+      b.style.cssText = `left:${x0}px;top:${y0}px;width:${Math.max(...bx) - x0}px;height:${Math.max(...by) - y0}px`;
       b.setAttribute('aria-label', f.id ? txt(f.name) : tr('nEmptyFrame') + ' ' + tr('nTapToPick'));
       b.onclick = () => { if (busy) return; f.id ? openView(f) : openPicker(fi, draw); };
-      stage.append(b);
+      stage.append(b); list.push([f, m, cs]);
       // 名札は近い組とその次の組だけ（遠い組の名札は重なって読めない。前に進むと見える）
       if (S.p[0] < 0.02 || S.p[0] > 0.98 || (j >> 1) - NEAR[pos] > 1) return;
       const l = document.createElement('span');
@@ -974,6 +990,15 @@
       labels.append(l);
     });
     fitHall();
+    const ims = await Promise.all(list.map(([f]) => hallFrame(f).catch(() => null)));
+    if (tok !== hallTok) return;
+    // 奥の額縁から描く（手前が上に重なる）。壁に落ちる影は、額縁の形の暗いぼかし
+    for (let i = list.length - 1; i >= 0; i--) {
+      const [f, m, cs] = list[i], im = ims[i]; if (!im) continue;
+      g.save(); g.scale(HK, HK); g.fillStyle = 'rgba(0,0,0,.55)'; g.shadowColor = 'rgba(0,0,0,.7)'; g.shadowBlur = 14 * HK; g.shadowOffsetX = 10 * HK; g.shadowOffsetY = 16 * HK;
+      g.beginPath(); cs.forEach((p, k) => k ? g.lineTo(...p) : g.moveTo(...p)); g.closePath(); g.globalAlpha = .5; g.fill(); g.restore();
+      window.NightFilm.warp(g, im, (x, y) => m(x, y).map(v => v * HK));
+    }
   }
   addEventListener('resize', () => { if (at === 'last' || !$('walls').hidden) fitHall(); });
   // 前の版で飾った子には作品の写しが無いので、目録にまだいれば足しておく
