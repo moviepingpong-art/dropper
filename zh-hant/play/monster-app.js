@@ -1972,6 +1972,21 @@
   // ---- 目覚め・結びの場面（2026-10-21〜）。暗がりに灯り → 光の粒 → 姿。結びは光の糸 ----
   // 音は鈴のような短い余韻。ボタンを押して生まれたときだけ鳴る（図鑑から開いたときは鳴らさない）。止めるボタンは覚えない
   let soundOn = true, AC = null;
+  // iPhone はふつう、Web Audio（曲・声・鈴）を消音スイッチに従わせる。映像（video）の音は従わないので、
+  // 映像を一度流したあとでだけ声が出る、ということが起きていた（ホーム画面から開いて「もう一度見る」の1回目は無音、2回目は出る。2026-10-28 重吉さん）。
+  // 映像と同じ「再生」の扱いにして、押したときから鳴るようにする。新しい Safari は audioSession、古いものは無音の audio を押した中で1回鳴らす
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* 無い端末はそのまま */ }
+  let unlocked = false;
+  function unlockAudio() {
+    if (unlocked || !soundOn) return; unlocked = true;
+    try {
+      const n = 800, b = new ArrayBuffer(44 + n * 2), d = new DataView(b), w = (o, x) => [...x].forEach((c, i) => d.setUint8(o + i, c.charCodeAt(0)));
+      w(0, 'RIFF'); d.setUint32(4, 36 + n * 2, true); w(8, 'WAVEfmt '); d.setUint32(16, 16, true); d.setUint16(20, 1, true); d.setUint16(22, 1, true);
+      d.setUint32(24, 8000, true); d.setUint32(28, 16000, true); d.setUint16(32, 2, true); d.setUint16(34, 16, true); w(36, 'data'); d.setUint32(40, n * 2, true);
+      const a = new Audio(URL.createObjectURL(new Blob([b], { type: 'audio/wav' }))); a.setAttribute('playsinline', '');
+      a.play().catch(() => {});
+    } catch (e) { /* 鳴らせなくても遊べる */ }
+  }
   function chime(kind) {
     if (!soundOn) return;
     try {
@@ -2028,7 +2043,7 @@
       let tale = null;
       const skip = () => { if (tale) tale.stop(); else end(); };
       const start = () => {
-        play.classList.add('hidden');
+        play.classList.add('hidden'); unlockAudio();
         if (!opt.story) return roll();
         tale = story(); tale.done.then(() => { tale = null; if (!over) roll(); });
       };
@@ -2176,6 +2191,7 @@
     if (!soundOn) return none;
     let ac;
     try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return none; }
+    if (ac.state !== 'running') ac.resume().catch(() => {}); // 押した中で作っても止まったまま始まる端末がある
     const T0 = ac.currentTime + .15, SR = ac.sampleRate;
     const comp = ac.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 3; comp.connect(ac.destination);
     const master = ac.createGain(); master.gain.value = 1; master.connect(comp);
