@@ -90,7 +90,7 @@
     g.setTransform(1, 0, 0, 1, 0, 0);
   }
   // 明るく灯った壁の色（この色のとき画像をそのままの明るさで出す）
-  const WL_LIT = [78, 60, 45];
+  const WL_LIT = [72, 54, 38];  // 2026-10-27 の40秒の絵で、灯った壁の色（明るいほうから15%くらい）
   // 額縁の絵の窓（px）→ 画面の窓の四隅、の写し
   const winMap = (P, q, W, H) => homography([[P.l, P.t], [P.l + P.ww, P.t], [P.l + P.ww, P.t + P.wh], [P.l, P.t + P.wh]], q.slice(0, 4).map(([x, y]) => [x * W, y * H]));
 
@@ -380,7 +380,7 @@
         const tu = (th % SB) / SB, tx = Math.min(TW - 1, Math.max(0, tu * TW | 0)), ty = Math.min(TH - 1, Math.max(0, (1 - Z / WALL) * TH | 0)), k = (ty * TW + tx) * 4;
         // 明るさと色は、絵の壁の明るさに合わせる（灯り・影・燭台の色が画像にのる）
         const w = clamp(1 - Math.abs(a - 128) / 88);
-        for (let c = 0; c < 3; c++) od[i + c] = d[i + c] * (1 - w) + Math.min(255, tex[k + c] * d[i + c] / WL_LIT[c]) * w;
+        for (let c = 0; c < 3; c++) od[i + c] = d[i + c] * (1 - w) + Math.min(255, tex[k + c] * Math.min(1.3, d[i + c] / WL_LIT[c])) * w;  // 灯籠のそばの明るい石で白く飛ばないように
       }
       const tmp = draw.t || (draw.t = Object.assign(document.createElement('canvas'), { width: W, height: H }));
       tmp.getContext('2d').putImageData(out, 0, 0); g.drawImage(tmp, 0, 0);
