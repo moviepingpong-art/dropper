@@ -95,7 +95,7 @@
     const w = Array.isArray(M.works) && M.works[0];
     return {
       id: M.id, no: Number(M.no) || 0, par: Array.isArray(M.parents) ? M.parents.filter(x => typeof x === 'string').slice(0, 2) : [], t: TY[M.type] ? M.type : '鋼', n: txt(M.name), p: Math.round(Number(M.power) || 0),
-      art: w ? safeArt(w.f) : '', th: safeThumb(M.thumb), fig: safeFig(M.fig), rarity: M.rarity === 'gold' || M.rarity === 'silver' ? M.rarity : 'normal', bug: !!M.bug, fusion: Number(M.fusion) || 0,
+      art: w ? safeArt(w.f) : '', th: safeThumb(M.thumb), dx: safeThumb(M.dex), fig: safeFig(M.fig), rarity: M.rarity === 'gold' || M.rarity === 'silver' ? M.rarity : 'normal', bug: !!M.bug, fusion: Number(M.fusion) || 0,
       framed: (frames().find(f => f.id === M.id) || {}).k || null
     };
   }
@@ -614,7 +614,7 @@
     if (window.NightFilm) {
       const wasOn = on; if (wasOn) bgm(false);
       // 縁の子は kin、親もその夜の7体にいれば par にその番号（光の糸でつなぐ）
-      const cards = HAND.map(c => ({ art: c.art, th: c.th, rar: c.rarity, t: c.t, n: c.n, no: c.no, kin: (c.par || []).length > 0, par: (c.par || []).map(id => HAND.findIndex(h => h.id === id)).filter(k => k >= 0) }));
+      const cards = HAND.map(c => ({ art: c.art, th: c.th, dx: c.dx, rar: c.rarity, t: c.t, n: c.n, no: c.no, kin: (c.par || []).length > 0, par: (c.par || []).map(id => HAND.findIndex(h => h.id === id)).filter(k => k >= 0) }));
       $('msg').textContent = tr('nStoryWriting');
       const st = await story;
       try { film = await window.NightFilm.room({ cards, hues: witnessHues, guard: witness ? { th: witnessTh, n: witness, line: tr('nFilmGuard', { name: witness }) } : null, story: st, seed: HAND.map(c => c.id).join('|') + '|' + isoDate(), congrats: tr('nFilmCongrats'), only: tr('nFilmOnly'), title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
@@ -1048,7 +1048,7 @@
     $('pickNone').hidden = cards.length > 0;
     $('pickGrid').replaceChildren(...cards.map(M => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'th';
-      b.style.backgroundImage = `url('${safeThumb(M.thumb)}')`;
+      b.style.backgroundImage = `url('${safeThumb(M.dex) || safeThumb(M.thumb)}')`; // 目録と同じ、作品が見える小さな絵（2026-10-28）
       const fr = F.find(x => x.id === M.id);
       b.innerHTML = (fr ? `<span class="mk ${fr.k}">${esc(tr(fr.k === 'dawn' ? 'frameMarkDawn' : 'frameMarkQuiet'))}</span>` : '') + `<span class="lbl">${esc(txt(M.name))}</span>`;
       b.setAttribute('aria-label', txt(M.name) + (fr ? ' ' + tr('nPickDone') : ''));
