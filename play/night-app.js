@@ -161,7 +161,7 @@
   let HAND = [], ROOM = [], sel = [], cur = 0, at = 'door', pos = 0, page = 0, busy = false, ended = false, endArm = false;
   let keyed = false, doorPics = [], witness = null, witnessMap = '', witnessHues = null, witnessTh = '', hikariLit = null, film = null, doorKeyed = [];
   // 扉2〜4の鍵（2026-10-25〜、重吉さんの決め）：外のサイトで保存した画像。扉1は鍵なし。毎晩要るが、前に保存した同じ画像で何度でも開く
-  const DOORKEY = [null, 'silk', 'hubble', 'sky'];
+  const DOORKEY = [null, 'fluid', 'hubble', 'sky'];
   const doorKey = () => at === 'door' && !doorKeyed[cur] ? DOORKEY[cur] || null : null;
 
   function cardEl(c, opts = {}) {
@@ -505,7 +505,7 @@
     setTimeout(() => { if (!ended) $('msg').textContent = tr('nDoorOk'); }, reduce ? 200 : 800);
   }
   // ---- 扉2〜4の鍵：外のサイトで保存した画像（2026-10-25〜）。AI なしで、この端末の中で形と色だけを見る。画像は残さない ----
-  // silk＝Silk（weavesilk.com）の絵：ほとんど真っ黒の地に光る線、左右対称（絵は毎回ちがう）
+  // fluid＝Fluid Simulation（paveldogreat.github.io/WebGL-Fluid-Simulation、Pavel Dobryakov さん）の「take screenshot」の画像（2026-10-28〜。Silk はスマホでアプリの店へ飛ぶので差しかえた）
   // hubble＝NASA「ハッブルがあなたの誕生日に見たもの」：ファイル名が「june-1-2003-…」の形。名前が変わっていても、暗い宇宙の写真なら通す（重吉さんの決め）
   // sky＝TheSkyLive の「あなたの星空」（Dark）：灰色の地の上に、大きな紺の丸い星図
   const MONTHS = /^(january|february|march|april|may|june|july|august|september|october|november|december)-\d{1,2}-\d{4}-/i;
@@ -524,26 +524,24 @@
   }
   function doorKeyOf(kind, P, name) {
     const { w, h, d } = P, n = w * h, mx = i => Math.max(d[i], d[i + 1], d[i + 2]), mn = i => Math.min(d[i], d[i + 1], d[i + 2]);
-    if (kind === 'silk') {
-      let black = 0, bright = 0, pair = 0, hue = 0;
-      const lit = (x, y) => mx((y * w + x) * 4) > 90;
+    if (kind === 'fluid') {
+      // 「take screenshot」の名前（fluid.png・fluid (1).png など）なら通す
+      if (/^fluid[\s_-]*(\(\d+\)|\d+)?\.png$/i.test(name || '')) return true;
+      // 名前が変わっていたら：保存の大きさは短い辺がいつも512（端末の画面の縦横比のまま）。そのうえで、なめらかで色のある絵
+      const { rw, rh } = P, s = Math.min(rw, rh), l = Math.max(rw, rh);
+      if (s !== 512 || l / s > 3) return false;
+      let color = 0, diff = 0;
       for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
         const i = (y * w + x) * 4;
-        if (mx(i) < 16) black++;
-        if (lit(x, y)) {
-          bright++;
-          if (mx(i) - mn(i) > 40) hue++;
-          const m = w - 1 - x; // 左右を裏返した所（1つずれまで見る）
-          if (lit(m, y) || (m > 0 && lit(m - 1, y)) || (m < w - 1 && lit(m + 1, y))) pair++;
-        }
+        if (mx(i) > 40 && mx(i) - mn(i) > 25) color++;
+        if (x + 1 < w) diff += Math.abs(d[i] - d[i + 4]) + Math.abs(d[i + 1] - d[i + 5]) + Math.abs(d[i + 2] - d[i + 6]);
       }
-      // 線は細く、色がついている（白い彫刻を黒い地で撮った写真を通さないため）
-      return black / n > 0.55 && bright / n > 0.002 && bright / n < 0.2 && hue / bright > 0.3 && pair / bright > 0.7;
+      return color / n > 0.03 && diff / ((w - 1) * h) < 24;
     }
     if (kind === 'hubble') {
       if (MONTHS.test(name || '')) return true;
-      // 名前が変わっていたら：宇宙らしい暗さ（黒に近い所が多い・茶色い暗さではない）と、色のある光。Silk と星空の画像はそれぞれの扉の鍵なので通さない
-      if (doorKeyOf('silk', P) || doorKeyOf('sky', P)) return false;
+      // 名前が変わっていたら：宇宙らしい暗さ（黒に近い所が多い・茶色い暗さではない）と、色のある光。光の流れと星空の画像はそれぞれの扉の鍵なので通さない
+      if (doorKeyOf('fluid', P) || doorKeyOf('sky', P)) return false;
       let sum = 0, dark = 0, vdark = 0, warm = 0, color = 0, bright = 0;
       for (let i = 0; i < d.length; i += 4) {
         const v = mx(i); sum += (d[i] + d[i + 1] + d[i + 2]) / 3;
