@@ -321,7 +321,7 @@
     const out = g.createImageData(W, H);
     const fcs = await Promise.all(J.wins.map((w, i) => o.cards[i] ? frameCanvas(Object.assign({ k: w.kind, glow: TYC[o.cards[i].t] }, o.cards[i])) : frameCanvas({ k: w.kind, t: '光' })));
     const hues = (o.hues && o.hues.length ? o.hues : ['#f3d79a', '#f6e2b0', '#ffe9c0']);
-    const ths = await Promise.all(o.cards.map(c => img(c.th)));
+    const ths = await Promise.all(o.cards.map(c => img(c.dx || c.th))); // 終わりの7体の並びは、作品が見える目録の小さな絵（2026-10-28）
     // その夜だけの守り神の姿（カードの小さな絵の、姿の窓の真ん中）。光の柱の中に、ふちをぼかして出す
     const G = o.guard || null, gim = G ? await img(G.th) : null, gcv = gim ? document.createElement('canvas') : null;
     if (gcv) {

@@ -1424,8 +1424,9 @@
     c.fillStyle = sp; c.fillRect(x, y, w, h);
     c.restore();
   }
-  // artOnly：精霊を描かず、作品を明るくした絵（開いたカードの点滅の片方。blink()）
-  function drawCard(cv, M, artOnly) {
+  // mode 'art'：精霊を描かず、作品を明るくした絵（開いたカードの点滅の片方。blink()）
+  // mode 'small'：作品を明るく、精霊を小さく左下に（目録の小さな絵 dexOf()。2026-10-28 重吉さんの決め）
+  function drawCard(cv, M, mode) {
     // 化けさせるときに画素を読むので、最初から CPU で描く（途中で描き方が切り替わると、同じ写真でも色が1目盛りずれる）
     const c = cv.getContext('2d', { willReadFrequently: true }), W = cv.width, H = cv.height, T = TYPES[M.type];
     c.clearRect(0, 0, W, H);
@@ -1496,7 +1497,7 @@
     c.fillStyle = '#2b2418'; c.fillRect(ax - 8, ay - 8, aw + 16, ah + 16);
     c.strokeStyle = line; c.lineWidth = 1.5; c.strokeRect(ax - 8.5, ay - 8.5, aw + 17, ah + 17); c.strokeRect(ax - 0.5, ay - 0.5, aw + 1, ah + 1);
     const imgs = (Array.isArray(M.works) ? M.works : []).map(w => typeof w.f === 'string' && ARTI.get(w.f)).filter(Boolean);
-    if (imgs.length) drawArtBack(c, ax, ay, aw, ah, imgs, artOnly);
+    if (imgs.length) drawArtBack(c, ax, ay, aw, ah, imgs, !!mode);
     else {
       const bg = c.createRadialGradient(W / 2, ay + ah * 0.42, 20, W / 2, ay + ah / 2, aw * 0.7);
       bg.addColorStop(0, '#3a3a52'); bg.addColorStop(1, '#10121d');
@@ -1506,9 +1507,10 @@
     // 足もとの影は守り神だけ（精霊は浮いているので、光だまりを drawMonster が描く）
     if (shapeOf(M.g) === 'human') { c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(W / 2, ay + ah - 34, 120, 14, 0, 0, 7); c.fill(); }
     // 精霊の姿は、やわらかい光をまとって描く
-    if (!artOnly) {
+    if (mode !== 'art') {
       c.save(); c.shadowColor = metal ? 'rgba(255,240,190,.75)' : 'rgba(255,230,170,.55)'; c.shadowBlur = 34;
-      drawMonster(c, W / 2, ay + ah / 2 + 14, 150, M.g, M.gender);
+      if (mode === 'small') drawMonster(c, ax + 130, ay + ah - 112, 92, M.g, M.gender);
+      else drawMonster(c, W / 2, ay + ah / 2 + 14, 150, M.g, M.gender);
       c.restore();
     }
     // 横ずれの線はゆらぎの子だけ（2026-10-16 本人の指示。ふつうのカードは人の顔などにかかって気になるため）
@@ -1629,13 +1631,19 @@
   }
 
   // ---- 図鑑（この PC・スマホの中だけ。カードの中身ごと保存する。結婚に親の中身が要るため） ----
-  // LOOK：精霊の描き方の版。上げると、前からいるカードの小さな絵を目録のページで描き直す（2026-10-26 に光の輪・羽・虹を足して 2、姿だけの絵 fig を足して 3）
-  const LOOK = 3;
+  // LOOK：精霊の描き方の版。上げると、前からいるカードの小さな絵を目録のページで描き直す（2026-10-26 に光の輪・羽・虹を足して 2、姿だけの絵 fig を足して 3、2026-10-28 に目録用の絵 dex を足して 4）
+  const LOOK = 4;
   // 精霊の姿だけ（地は透明）。夜明けの映像で、館のまわりを舞う姿に使う（night-app.js の drawGuards）
   function figOf(M) {
     const t = document.createElement('canvas'); t.width = t.height = 160;
     drawMonster(t.getContext('2d'), 80, 92, 50, M.g, M.gender);
     return t.toDataURL('image/png');
+  }
+  // 目録の小さな絵（作品を明るく・精霊を小さく左下に）。thumb は精霊が真ん中のまま（夜の美術館・額縁・映像が姿の窓を切り出すため）
+  function dexOf(M) {
+    if (isHuman(M) || !(Array.isArray(M.works) && M.works.some(w => typeof w.f === 'string' && ARTI.get(w.f)))) return '';
+    const cv = document.createElement('canvas'); cv.width = 600; cv.height = 920;
+    drawCard(cv, M, 'small'); return thumbOf(cv);
   }
   function thumbOf(cv = blinkBase || $('card')) {
     const t = document.createElement('canvas'); t.width = 180; t.height = 276;
@@ -1666,7 +1674,7 @@
     blinkBase = document.createElement('canvas'); blinkBase.width = cv.width; blinkBase.height = cv.height;
     blinkBase.getContext('2d').drawImage(cv, 0, 0);
     blinkArt = document.createElement('canvas'); blinkArt.width = cv.width; blinkArt.height = cv.height;
-    drawCard(blinkArt, M, true);
+    drawCard(blinkArt, M, 'art');
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const t0 = performance.now(), step = now => { blinkPaint(blinkAlpha(now - t0)); blinkRaf = requestAnimationFrame(step); };
     blinkRaf = requestAnimationFrame(step);
@@ -1679,7 +1687,7 @@
   function track(name) { try { if (typeof gtag === 'function') gtag('event', name); } catch (e) { /* 計測が止められていても遊べる */ } }
   async function saveCard(M, again) {
     if (!again) track(M.parents ? 'monster_child' : M.fusion ? 'monster_fuse' : 'monster_born');
-    M.thumb = thumbOf(); M.fig = isHuman(M) ? '' : figOf(M); M.look = LOOK;
+    M.thumb = thumbOf(); M.fig = isHuman(M) ? '' : figOf(M); M.dex = dexOf(M); M.look = LOOK;
     await DB.put('cards', JSON.parse(JSON.stringify(M)));
     await renderDex();
   }
@@ -1723,7 +1731,7 @@
     // 描き方が変わる前のカードは、小さな絵を描き直す（夜の美術館のカードと映像も、この小さな絵を使うため）
     for (const M of await DB.getAll('cards')) if (M.look !== LOOK) {
       await loadFontsFor(M); const cv = document.createElement('canvas'); cv.width = 600; cv.height = 920;
-      drawCard(cv, M); M.thumb = thumbOf(cv); M.fig = figOf(M); M.look = LOOK; await DB.put('cards', JSON.parse(JSON.stringify(M)));
+      drawCard(cv, M); M.thumb = thumbOf(cv); M.fig = figOf(M); M.dex = dexOf(M); M.look = LOOK; await DB.put('cards', JSON.parse(JSON.stringify(M)));
     }
     const cards = (await DB.getAll('cards')).sort((a, b) => b.serial - a.serial), g = $('dex'), framed = framesById();
     $('dexCount').textContent = tr('dexCount', { n: cards.length, max: DEX_MAX });
@@ -1733,7 +1741,7 @@
       const fr = framed.get(m.id);
       if (fr) { b.classList.add('framed', fr.k); const mk = document.createElement('span'); mk.className = 'fmark'; mk.textContent = tr(fr.k === 'dawn' ? 'frameMarkDawn' : 'frameMarkQuiet'); b.appendChild(mk); }
       b.title = `No.${m.no} ${nameOf(m)}`;
-      const i = new Image(); i.src = m.thumb; i.alt = tr('dexAlt', { name: nameOf(m), gender: tr(m.gender === 'm' ? 'male' : 'female'), gen: m.gen }); b.appendChild(i);
+      const i = new Image(); i.src = safeThumb(m.dex) || m.thumb; i.alt = tr('dexAlt', { name: nameOf(m), gender: tr(m.gender === 'm' ? 'male' : 'female'), gen: m.gen }); b.appendChild(i);
       const tag = document.createElement('span'); tag.className = 'tag';
       tag.innerHTML = `<span>${m.gender === 'm' ? '♂' : '♀'}</span>` + (Number(m.gen) > 1 ? `<span>${esc(tr('genTag', { gen: Number(m.gen) }))}</span>` : '');
       b.appendChild(tag);
@@ -2433,7 +2441,7 @@
     for (const [k, el, label] of [['m', $('slotM'), tr('husband')], ['f', $('slotF'), tr('wife')]]) {
       const c = slots[k];
       el.classList.toggle('on', !!c);
-      el.innerHTML = `<span class="sym ${k}">${k === 'm' ? '♂' : '♀'}</span>` + (c ? `<img src="${safeThumb(c.thumb)}" alt=""><span>${esc(tr('slotFilled', { label, name: nameOf(c) }))}</span>` : `<span>${esc(tr('slotEmpty', { label }))}</span>`);
+      el.innerHTML = `<span class="sym ${k}">${k === 'm' ? '♂' : '♀'}</span>` + (c ? `<img src="${safeThumb(c.dex) || safeThumb(c.thumb)}" alt=""><span>${esc(tr('slotFilled', { label, name: nameOf(c) }))}</span>` : `<span>${esc(tr('slotEmpty', { label }))}</span>`);
     }
     $('wed').disabled = !(slots.m && slots.f);
   }
@@ -2446,7 +2454,7 @@
       if (!m || !f) continue;
       const row = document.createElement('div'); row.className = 'couple';
       const mn = esc(nameOf(m)), fn = esc(nameOf(f));
-      row.innerHTML = `<img src="${safeThumb(m.thumb)}" alt="${mn}"><span>${mn} ♂</span><span>💍</span><img src="${safeThumb(f.thumb)}" alt="${fn}"><span>${fn} ♀</span><span class="kids">${esc(tr('kidsCount', { n: Number(cp.children.length) }))}</span>`;
+      row.innerHTML = `<img src="${safeThumb(m.dex) || safeThumb(m.thumb)}" alt="${mn}"><span>${mn} ♂</span><span>💍</span><img src="${safeThumb(f.dex) || safeThumb(f.thumb)}" alt="${fn}"><span>${fn} ♀</span><span class="kids">${esc(tr('kidsCount', { n: Number(cp.children.length) }))}</span>`;
       const b = document.createElement('button'); b.type = 'button';
       b.textContent = tr(cp.children.length >= 3 ? 'kidsMax' : 'haveChild');
       b.disabled = cp.children.length >= 3;
