@@ -316,7 +316,9 @@
     sel = []; draw();
     await lightScene(R, cs, P);
     R.lit = true;
-    at = 'lit'; busy = false; draw(); glowUp(); burst(.5, .35, 60); sfx('lit');
+    at = 'lit'; draw(); $('vlit').classList.remove('on'); glowUp(); sfx('lit');
+    await riteScene(cs);
+    busy = false; draw(); burst(.5, .35, 60);
   };
   $('endbtn').onclick = () => {
     if (busy || ended) return;
@@ -353,6 +355,82 @@
       setTimeout(() => { $('lt').addEventListener('click', done); addEventListener('keydown', done); }, 300);
     });
     $('lt').hidden = true;
+  }
+
+  // ---- 灯った部屋で：部屋の真ん中に送った精霊の作品が浮かび、その上を精霊が舞ってから作品へ還る（2026-10-28 重吉さんの決め）----
+  // 精霊1体に作品1枚（送った数だけ並ぶ）。絵の上の canvas に描くだけで、何も残さない。動きを減らす設定では飛ばす
+  const RITE = { 1: [600], 2: [455, 745], 3: [350, 600, 850] }, RITE_Y = 400, RITE_H = 190;
+  function riteImg(src) { return new Promise(ok => { if (!src) return ok(null); const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = src; }); }
+  async function riteScene(cs) {
+    if (reduce || !cs.length) return;
+    const cv = $('rite'), g = cv.getContext('2d'), v = $('view');
+    const arts = await Promise.all(cs.map(c => riteImg(c.art ? '/play/museum/' + c.art : ''))), figs = await Promise.all(cs.map(c => riteImg(c.fig || c.th)));
+    const W = v.clientWidth, H = v.clientHeight, dpr = Math.min(2, devicePixelRatio || 1), k = W / 1200;
+    cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr * k, 0, 0, dpr * k, 0, 0); cv.hidden = false;
+    const xs = RITE[cs.length] || RITE[3], dust = [];
+    const box = cs.map((c, i) => {
+      const a = arts[i], ar = a ? Math.min(1.5, Math.max(.6, a.naturalWidth / a.naturalHeight)) : .8;
+      const h = cs.length > 2 && ar > 1 ? RITE_H * .82 : RITE_H, w = Math.min(h * ar, cs.length > 2 ? 210 : 280);
+      return { x: xs[i], w, h: w / ar, c, a, f: figs[i], ph: i * 2.1 };
+    });
+    const T0 = 900, T1 = 3600, T2 = 4700, T3 = 6600, ease = x => x < 0 ? 0 : x > 1 ? 1 : x * x * (3 - 2 * x);
+    let sucked = 0;
+    return new Promise(done => {
+      const t0 = performance.now();
+      const frame = now => {
+        const t = now - t0;
+        g.clearRect(0, 0, 1200, 800);
+        box.forEach((B, i) => {
+          const appear = ease(t / T0), fade = 1 - ease((t - T2 - 500) / (T3 - T2 - 500)), bob = Math.sin(t / 700 + B.ph) * 5;
+          const cx = B.x, cy = RITE_Y + bob, al = appear * fade;
+          if (al <= 0) return;
+          // 床の光だまり
+          g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = al * .55;
+          let rg = g.createRadialGradient(cx, 610, 0, cx, 610, B.w * .8); rg.addColorStop(0, '#ffd890'); rg.addColorStop(1, 'rgba(255,200,120,0)');
+          g.fillStyle = rg; g.beginPath(); g.ellipse(cx, 610, B.w * .8, 26, 0, 0, 6.28); g.fill();
+          // 作品のうしろの後光（精霊が還ると強くなる）
+          const absorb = ease((t - T1 - 700 - i * 160) / 500), glow = .45 + .9 * absorb * (1 - ease((t - T2 - 200) / 900));
+          g.globalAlpha = al * Math.min(1, glow);
+          rg = g.createRadialGradient(cx, cy, 0, cx, cy, Math.max(B.w, B.h) * .95); rg.addColorStop(0, 'rgba(255,236,190,.95)'); rg.addColorStop(.5, 'rgba(255,200,110,.35)'); rg.addColorStop(1, 'rgba(255,190,90,0)');
+          g.fillStyle = rg; g.fillRect(cx - B.w * 1.2, cy - B.h * 1.2, B.w * 2.4, B.h * 2.4); g.restore();
+          // 作品と金の縁（浮かびながら少し大きくなって現れる）
+          const s = .86 + .14 * appear, w = B.w * s, h = B.h * s;
+          g.save(); g.globalAlpha = al; g.shadowColor = 'rgba(255,210,130,.9)'; g.shadowBlur = 22;
+          g.fillStyle = '#2b2418'; g.fillRect(cx - w / 2 - 7, cy - h / 2 - 7, w + 14, h + 14); g.shadowBlur = 0;
+          g.strokeStyle = '#c9a45c'; g.lineWidth = 2; g.strokeRect(cx - w / 2 - 6, cy - h / 2 - 6, w + 12, h + 12);
+          if (B.a) g.drawImage(B.a, cx - w / 2, cy - h / 2, w, h); else { const lg = g.createLinearGradient(0, cy - h / 2, 0, cy + h / 2); lg.addColorStop(0, TY[B.c.t] || '#5b6778'); lg.addColorStop(1, '#0b0d16'); g.fillStyle = lg; g.fillRect(cx - w / 2, cy - h / 2, w, h); }
+          if (absorb > 0) { g.globalCompositeOperation = 'lighter'; g.globalAlpha = al * absorb * (1 - ease((t - T2) / 900)) * .7; g.fillStyle = '#ffe9b8'; g.fillRect(cx - w / 2, cy - h / 2, w, h); }
+          g.restore();
+          // 精霊：上から降りてきて作品の上を舞い、渦を描いて小さくなりながら作品へ
+          const st = T0 * .6 + i * 220, sp = t - st;
+          if (sp < 0) return;
+          const into = ease((t - T1 - i * 160) / 900);
+          if (into >= 1) { if (!B.done) { B.done = true; sucked++; for (let n = 0; n < 26; n++) { const q = Math.random() * 6.28, vv = .6 + Math.random() * 2.2; dust.push({ x: cx, y: cy, vx: Math.cos(q) * vv, vy: Math.sin(q) * vv - 1, l: 1 }); } sfx(sucked === 1 ? 'light' : 'pick'); } return; }
+          const ang = sp / 520 + B.ph, rx = (B.w * .5 + 40) * (1 - into), ry = 30 * (1 - into);
+          const hy = cy - B.h / 2 - 75 + (B.h / 2 + 75) * into, down = 1 - ease(sp / 900);
+          const sx = cx + Math.cos(ang) * rx, sy = hy + Math.sin(ang) * ry - down * 260;
+          (B.tr = B.tr || []).push([sx, sy]); if (B.tr.length > 18) B.tr.shift();
+          g.save(); g.globalCompositeOperation = 'lighter';
+          B.tr.forEach(([x, y], n) => { const a = n / B.tr.length; g.globalAlpha = a * .5; g.fillStyle = '#ffdca0'; g.beginPath(); g.arc(x, y, 2 + a * 7 * (1 - into * .7), 0, 6.28); g.fill(); });
+          const z = 150 * (1 - into * .9) * (B.c.fig ? 1 : .8);
+          g.globalAlpha = .8; rg = g.createRadialGradient(sx, sy, 0, sx, sy, z * .75); rg.addColorStop(0, 'rgba(255,240,200,.9)'); rg.addColorStop(1, 'rgba(255,210,140,0)');
+          g.fillStyle = rg; g.beginPath(); g.arc(sx, sy, z * .75, 0, 6.28); g.fill(); g.restore();
+          if (B.f) {
+            g.save(); g.globalAlpha = 1 - into * .5;
+            if (B.c.fig) g.drawImage(B.f, sx - z / 2, sy - z / 2, z, z);
+            else { g.beginPath(); g.arc(sx, sy, z * .38, 0, 6.28); g.clip(); const fw = B.f.naturalWidth, fh = B.f.naturalHeight; g.drawImage(B.f, fw * .32, fh * .14, fw * .36, fw * .36, sx - z * .38, sy - z * .38, z * .76, z * .76); }
+            g.restore();
+          }
+        });
+        // 還ったときの光の粒
+        g.save(); g.globalCompositeOperation = 'lighter';
+        for (const d of dust) { d.x += d.vx; d.y += d.vy; d.vy -= .02; d.l -= .014; if (d.l > 0) { g.globalAlpha = d.l; g.fillStyle = '#ffe2a6'; g.beginPath(); g.arc(d.x, d.y, 2.4, 0, 6.28); g.fill(); } }
+        g.restore();
+        if (t > T2 - 300 && !$('vlit').classList.contains('on')) $('vlit').classList.add('on');
+        if (t < T3) requestAnimationFrame(frame); else { cv.hidden = true; g.clearRect(0, 0, 1200, 800); done(); }
+      };
+      requestAnimationFrame(frame);
+    });
   }
 
   // ---- 光の扉の鍵：「80億分の1」の人生の記録の画像（2026-10-25〜。それまでは目録のページの最初でドロップしていた） ----
