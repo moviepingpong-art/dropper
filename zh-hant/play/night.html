@@ -75,7 +75,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 @keyframes arrive{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
 .vimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .vimg.lit{animation:litup 1.4s ease-out}
-/* 扉2〜4の鍵の画像を、その部屋の壁に映す（壁の形は Blender の抜き room-wallmask.png・四隅は night-app.js の WALLS）。その夜だけ・残さない */
+/* 扉3の鍵の画像を、その部屋の壁に映す（壁の形は Blender の抜き room-wallmask.png・四隅は night-app.js の WALLS）。その夜だけ・残さない */
 .walls{position:absolute;left:0;top:0;width:1200px;height:800px;transform-origin:0 0;pointer-events:none;opacity:.82;transition:opacity 1.2s;
   -webkit-mask:url(/play/gallery/room-wallmask.png) 0 0/1200px 800px no-repeat;mask:url(/play/gallery/room-wallmask.png) 0 0/1200px 800px no-repeat}
 .walls.lit{opacity:.68}
@@ -141,9 +141,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .kres b{font-size:16px;font-weight:600;letter-spacing:.06em} .kres.ok b{color:var(--gold-soft)} .kres.ng b{color:var(--ng)}
 .klike{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mid);font-family:inherit}
 .klike i{width:54px;height:40px;border:1px solid var(--line);flex:none}
-.lk-fluid{background:radial-gradient(ellipse at 30% 35%,rgba(255,80,200,.9),transparent 45%),radial-gradient(ellipse at 70% 45%,rgba(60,200,255,.9),transparent 45%),radial-gradient(ellipse at 45% 75%,rgba(255,200,60,.85),transparent 45%),#000}
 .lk-hubble{background:radial-gradient(circle at 30% 40%,#fff 0 1px,transparent 2px),radial-gradient(circle at 70% 25%,#fff 0 1px,transparent 2px),radial-gradient(circle at 60% 70%,#fff 0 1px,transparent 2px),radial-gradient(ellipse at 50% 55%,rgba(255,170,120,.85),rgba(120,80,200,.5) 35%,transparent 60%),#05060f}
-.lk-sky{background:radial-gradient(circle at 50% 55%,#132a5a 0 13px,#2c3f6c 14px,transparent 15px),#212121}
 @media (prefers-reduced-motion:reduce){.drop.ng{animation:none}.drop.read .kpic::after{animation:none}}
 /* 手もとの精霊 */
 .hand{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
@@ -404,7 +402,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
   <ol class="map">
    <li><i style="background-image:url(/play/gallery/map-seven.jpg)"></i><b data-i18n="nMap1">7体えらぶ</b></li>
    <li><i style="background-image:url(/play/gallery/map-door.jpg)"></i><b data-i18n="nMap2">扉1</b></li>
-   <li><i style="background-image:url(/play/gallery/map-wall.jpg)"><u><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"/><path d="M12 12h9M18 12v3.5M21 12v2.5"/></svg></u></i><b data-i18n="nMap3">扉2〜4</b><small data-i18n="nMap3s">画像が鍵。壁に映る</small></li>
+   <li><i style="background-image:url(/play/gallery/map-wall.jpg)"><u><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"/><path d="M12 12h9M18 12v3.5M21 12v2.5"/></svg></u></i><b data-i18n="nMap3">扉2〜4</b><small data-i18n="nMap3s">扉3は画像が鍵。壁に映る</small></li>
    <li><i style="background-image:url(/play/gallery/map-light.jpg)"><u><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"/><path d="M12 12h9M18 12v3.5M21 12v2.5"/></svg></u></i><b data-i18n="nMap4">光の扉</b><small data-i18n="nMap4s">80億分の1が鍵。守り神が一緒に</small></li>
    <li><i style="background-image:url(/play/gallery/map-last.jpg)"><u><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M10 9.2v5.6l4.6-2.8z" class="f"/></svg></u></i><b data-i18n="nMap5">最後の部屋</b><small data-i18n="nMap5s">40秒の動画</small></li>
    <li><i style="background-image:url(/play/gallery/map-morning.jpg)"><u><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17"/><rect x="7.5" y="7" width="9" height="10"/></svg></u></i><b data-i18n="nMap6">朝</b><small data-i18n="nMap6s">額縁を1つ</small></li>
@@ -483,8 +481,8 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 </div>
 
 <script src="monster-i18n.js?v=29"></script>
-<script src="night-i18n.js?v=23"></script>
+<script src="night-i18n.js?v=24"></script>
 <script src="night-film.js?v=19"></script>
-<script src="night-app.js?v=36"></script>
+<script src="night-app.js?v=37"></script>
 </body>
 </html>

@@ -160,8 +160,9 @@
   // at：'door'＝cur 番目の扉の前・'room'＝部屋の中・'lit'＝灯った部屋・'last'＝最後の通路（pos 0 入口／1 奥の2枚の前／2 光の扉の手前）
   let HAND = [], ROOM = [], sel = [], cur = 0, at = 'door', pos = 0, page = 0, busy = false, ended = false, endArm = false;
   let keyed = false, doorPics = [], witness = null, witnessMap = '', witnessHues = null, witnessTh = '', hikariLit = null, film = null, doorKeyed = [];
-  // 扉2〜4の鍵（2026-10-25〜、重吉さんの決め）：外のサイトで保存した画像。扉1は鍵なし。毎晩要るが、前に保存した同じ画像で何度でも開く
-  const DOORKEY = [null, 'fluid', 'hubble', 'sky'];
+  // 扉3の鍵（2026-10-25〜、重吉さんの決め）：外のサイトで保存した画像。ほかの扉は鍵なし。毎晩要るが、前に保存した同じ画像で何度でも開く
+  // 扉2（Silk→Fluid Simulation）と扉4（TheSkyLive）の鍵は、スマホで保存できなかったので 2026-10-28 に外した（重吉さんの決め）
+  const DOORKEY = [null, null, 'hubble', null];
   const doorKey = () => at === 'door' && !doorKeyed[cur] ? DOORKEY[cur] || null : null;
 
   function cardEl(c, opts = {}) {
@@ -208,7 +209,7 @@
     const dk = doorKey(), lightKey = last && pos === 2 && !keyed;
     $('roomBox').hidden = at !== 'room'; $('keyBox').hidden = !(lightKey || dk);
     if (fxFor && fxFor !== keyTarget()) keyFx(null);  // 別の扉に来たら、前の鍵の見た目を消す
-    // 鍵の箱は、扉2〜4と光の扉で同じものを使い、言葉だけ入れかえる
+    // 鍵の箱は、扉3と光の扉で同じものを使い、言葉だけ入れかえる
     if (dk) {
       $('keyLead').innerHTML = D('nDoorLead')[dk]; $('keyDrop').textContent = D('nDoorDrop')[dk];
       $('drop').setAttribute('aria-label', D('nDoorAria')[dk]); $('keyNote').innerHTML = tr('nDoorNote', { site: D('nDoorSite')[dk] });
@@ -489,7 +490,7 @@
     keyed = true; witness = txt(a.name); witnessMap = a.life ? lifeGrad(a) : ''; witnessHues = a.life ? lifeHues(a) : null; witnessTh = safeThumb(a.th); track('night_key');
     enterLast(a);
   }
-  // 扉2〜4：落とされた画像を、この端末の中で形と色だけ見る（AI なし・どこにも送らない・残さない）。合えば扉を開ける
+  // 扉3：落とされた画像を、この端末の中で形と色だけ見る（AI なし・どこにも送らない・残さない）。合えば扉を開ける
   async function useDoorKey(files) {
     const dk = doorKey(); if (busy || ended || !dk) return;
     const f = [...files].find(x => x.type.startsWith('image/')), site = D('nDoorSite')[dk];
@@ -504,10 +505,8 @@
     openDoor();
     setTimeout(() => { if (!ended) $('msg').textContent = tr('nDoorOk'); }, reduce ? 200 : 800);
   }
-  // ---- 扉2〜4の鍵：外のサイトで保存した画像（2026-10-25〜）。AI なしで、この端末の中で形と色だけを見る。画像は残さない ----
-  // fluid＝Fluid Simulation（paveldogreat.github.io/WebGL-Fluid-Simulation、Pavel Dobryakov さん）の「take screenshot」の画像（2026-10-28〜。Silk はスマホでアプリの店へ飛ぶので差しかえた）
+  // ---- 扉3の鍵：外のサイトで保存した画像（2026-10-25〜）。AI なしで、この端末の中で形と色だけを見る。画像は残さない ----
   // hubble＝NASA「ハッブルがあなたの誕生日に見たもの」：ファイル名が「june-1-2003-…」の形。名前が変わっていても、暗い宇宙の写真なら通す（重吉さんの決め）
-  // sky＝TheSkyLive の「あなたの星空」（Dark）：灰色の地の上に、大きな紺の丸い星図
   const MONTHS = /^(january|february|march|april|may|june|july|august|september|october|november|december)-\d{1,2}-\d{4}-/i;
   function pixelsOf(file, size = 160) {
     return new Promise(ok => {
@@ -524,24 +523,9 @@
   }
   function doorKeyOf(kind, P, name) {
     const { w, h, d } = P, n = w * h, mx = i => Math.max(d[i], d[i + 1], d[i + 2]), mn = i => Math.min(d[i], d[i + 1], d[i + 2]);
-    if (kind === 'fluid') {
-      // 「take screenshot」の名前（fluid.png・fluid (1).png など）なら通す
-      if (/^fluid[\s_-]*(\(\d+\)|\d+)?\.png$/i.test(name || '')) return true;
-      // 名前が変わっていたら：保存の大きさは短い辺がいつも512（端末の画面の縦横比のまま）。そのうえで、なめらかで色のある絵
-      const { rw, rh } = P, s = Math.min(rw, rh), l = Math.max(rw, rh);
-      if (s !== 512 || l / s > 3) return false;
-      let color = 0, diff = 0;
-      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-        const i = (y * w + x) * 4;
-        if (mx(i) > 40 && mx(i) - mn(i) > 25) color++;
-        if (x + 1 < w) diff += Math.abs(d[i] - d[i + 4]) + Math.abs(d[i + 1] - d[i + 5]) + Math.abs(d[i + 2] - d[i + 6]);
-      }
-      return color / n > 0.03 && diff / ((w - 1) * h) < 24;
-    }
     if (kind === 'hubble') {
       if (MONTHS.test(name || '')) return true;
-      // 名前が変わっていたら：宇宙らしい暗さ（黒に近い所が多い・茶色い暗さではない）と、色のある光。光の流れと星空の画像はそれぞれの扉の鍵なので通さない
-      if (doorKeyOf('fluid', P) || doorKeyOf('sky', P)) return false;
+      // 名前が変わっていたら：宇宙らしい暗さ（黒に近い所が多い・茶色い暗さではない）と、色のある光
       let sum = 0, dark = 0, vdark = 0, warm = 0, color = 0, bright = 0;
       for (let i = 0; i < d.length; i += 4) {
         const v = mx(i); sum += (d[i] + d[i + 1] + d[i + 2]) / 3;
@@ -552,24 +536,6 @@
         if (v > 150) bright++;
       }
       return sum / n < 60 && dark / n > 0.45 && vdark / n > 0.25 && warm / n < 0.15 && color / n > 0.003 && bright / n > 0.0005;
-    }
-    if (kind === 'sky') {
-      // 四すみの近くは灰色（33,33,33）
-      const grey = i => Math.abs(d[i] - 33) < 10 && Math.abs(d[i + 1] - 33) < 10 && Math.abs(d[i + 2] - 33) < 10;
-      let g = 0, gn = 0;
-      for (const [fx, fy] of [[.03, .03], [.97, .03], [.03, .97], [.97, .97], [.5, .01], [.5, .99]]) { gn++; if (grey((Math.floor(fy * (h - 1)) * w + Math.floor(fx * (w - 1))) * 4)) g++; }
-      if (g < 5) return false;
-      // 紺の空（青が勝つ暗い色）が、丸く、横いっぱい近くに広がる
-      let x0 = w, x1 = -1, y0 = h, y1 = -1, navy = 0;
-      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-        const i = (y * w + x) * 4;
-        if (d[i + 2] - d[i] > 6 && mx(i) < 70 && !grey(i)) { navy++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
-      }
-      if (x1 < 0) return false;
-      const bw = x1 - x0 + 1, bh = y1 - y0 + 1, fill = navy / (bw * bh);
-      // 丸の外（箱の四すみ）は灰色
-      const cg = [[x0 + 1, y0 + 1], [x1 - 1, y0 + 1], [x0 + 1, y1 - 1], [x1 - 1, y1 - 1]].filter(([x, y]) => grey((y * w + x) * 4)).length;
-      return bw / w > 0.75 && Math.abs(bw / bh - 1) < 0.12 && fill > 0.55 && cg >= 3;
     }
     return false;
   }
@@ -962,7 +928,7 @@
     const h = B.map((b, i) => b / A[i][i]);
     return `matrix3d(${h[0]},${h[3]},0,${h[6]},${h[1]},${h[4]},0,${h[7]},0,0,1,0,${h[2]},${h[5]},0,1)`;
   }
-  // 扉2〜4の鍵の画像を、その部屋の3つの壁に映す（2026-10-25〜、重吉さんの決め）。画像はその夜の画面の中だけで、どこにも残さない
+  // 扉3の鍵の画像を、その部屋の3つの壁に映す（2026-10-25〜、重吉さんの決め）。画像はその夜の画面の中だけで、どこにも残さない
   // 四隅は room.py の mask の JSON（絵の幅・高さを1とした値。左上・右上・右下・左下）。絵を作り直したら WALLS も直す
   const WALLS = {
     back: [[0.2474, 0.0514], [0.7526, 0.0514], [0.74, 0.6074], [0.26, 0.6074]],
