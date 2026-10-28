@@ -99,7 +99,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .nfilm.room canvas{height:calc(100vh - 130px);height:calc(100dvh - 130px);width:auto}
 .nfilm.room.pick canvas{height:calc(100vh - 330px);height:calc(100dvh - 330px);min-height:180px}
 .nf-cap{min-height:1.4em;color:var(--gold-soft);font:500 14px var(--serif);letter-spacing:.06em;text-align:center;max-width:560px}
-.nf-pick{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:8px}.nf-modes{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.nf-mode{font:600 14px var(--serif);color:var(--gold-soft);background:transparent;border:1px solid rgba(232,200,120,.6);border-radius:999px;padding:7px 16px;cursor:pointer}.nf-mode.on{background:rgba(232,200,120,.22);color:#fff3d6}.nf-drop{display:flex;flex-direction:column;gap:4px;border:1.5px dashed rgba(232,200,120,.7);border-radius:12px;padding:10px 14px;max-width:420px;cursor:pointer}.nf-drop.over,.nf-drop.has{border-style:solid;background:rgba(232,200,120,.1)}.nf-drop small{font-size:12px;opacity:.85}
+.nf-pick{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:8px}.nf-modes{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.nf-mode{font:600 14px var(--serif);color:var(--gold-soft);background:transparent;border:1px solid rgba(232,200,120,.6);border-radius:999px;padding:7px 16px;cursor:pointer}.nf-mode{opacity:.6;transition:background .25s,color .25s,opacity .25s,box-shadow .25s}.nf-mode:hover{opacity:.9}.nf-mode.on{opacity:1;background:linear-gradient(#f0d89a,#c9a45c);color:#1a1408;border-color:#f6e2a8;box-shadow:0 0 0 2px rgba(246,226,168,.35),0 0 16px rgba(240,200,110,.55)}.nf-mode.on::before{content:'✓ ';font-weight:700}.nf-drop{display:flex;flex-direction:column;gap:4px;border:1.5px dashed rgba(232,200,120,.7);border-radius:12px;padding:10px 14px;max-width:420px;cursor:pointer}.nf-drop.over,.nf-drop.has{border-style:solid;background:rgba(232,200,120,.1)}.nf-drop small{font-size:12px;opacity:.85}
 .nf-ai{display:inline-flex;flex-direction:column;gap:3px;border:1px solid rgba(200,200,215,.45);border-radius:14px;padding:7px 16px;background:rgba(255,255,255,.06);line-height:1.45}.nf-ai b{font-weight:600}.nf-ai small{font-size:12px;opacity:.85}.nf-ai.on{border-color:rgba(232,200,120,.7);background:rgba(232,200,120,.12)}
 .nf-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .nf-btns .nf-skip{position:fixed;right:16px;bottom:16px;background:rgba(0,0,0,.45)}
@@ -482,7 +482,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 
 <script src="monster-i18n.js?v=29"></script>
 <script src="night-i18n.js?v=22"></script>
-<script src="night-film.js?v=14"></script>
+<script src="night-film.js?v=15"></script>
 <script src="night-app.js?v=33"></script>
 </body>
 </html>

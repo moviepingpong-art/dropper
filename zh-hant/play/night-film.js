@@ -514,11 +514,11 @@
     // おまかせ／好きな画像を床に（2026-10-27〜、重吉さんの決め）。選んだ画像は、すぐ床に映して見せる
     if (o.tx.modeAuto) {
       const p = document.createElement('div'); p.className = 'nf-pick';
-      p.innerHTML = '<div class="nf-modes"><button type="button" class="nf-mode on" data-m="auto"></button><button type="button" class="nf-mode" data-m="pic"></button></div>'
+      p.innerHTML = '<div class="nf-modes"><button type="button" class="nf-mode on" data-m="auto" aria-pressed="true"></button><button type="button" class="nf-mode" data-m="pic" aria-pressed="false"></button></div>'
         + '<div class="nf-drop" role="button" tabindex="0" hidden><b></b><small></small><input type="file" accept="image/*" hidden></div>';
       const [ma, mp] = p.querySelectorAll('.nf-mode'), dz = p.querySelector('.nf-drop'), fi = dz.querySelector('input');
       ma.textContent = o.tx.modeAuto; mp.textContent = o.tx.modePic; dz.querySelector('b').textContent = o.tx.picDrop; dz.querySelector('small').textContent = o.tx.picNote || '';
-      const mode = m => { ma.classList.toggle('on', m === 'auto'); mp.classList.toggle('on', m === 'pic'); dz.hidden = m !== 'pic'; if (m === 'auto') { setPic(null); dz.classList.remove('has'); } draw(1); };
+      const mode = m => { ma.classList.toggle('on', m === 'auto'); mp.classList.toggle('on', m === 'pic'); ma.setAttribute('aria-pressed', m === 'auto'); mp.setAttribute('aria-pressed', m === 'pic'); dz.hidden = m !== 'pic'; if (m === 'auto') { setPic(null); dz.classList.remove('has'); } draw(1); };
       ma.onclick = () => mode('auto'); mp.onclick = () => mode('pic');
       const use = async f => {
         if (!f || !/^image\//.test(f.type)) return;
