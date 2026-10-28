@@ -170,9 +170,11 @@
     b.className = 'sp' + (opts.sel ? ' sel' : '') + (opts.rest ? ' rest' : '') + (opts.on ? ' on' : '');
     if (opts.rest) b.dataset.rest = tr('nRest');
     if (opts.n) b.dataset.n = opts.n;
-    // 奥に生まれた作品の絵（暗く）、手前に精霊の姿（カードの小さな絵の姿の窓を切り出す。額縁の .fsw と同じ）。2026-10-26 重吉さんの決め
-    const bg = c.art ? `background-image:linear-gradient(rgba(6,7,12,.3),rgba(6,7,12,.6)),url('/play/museum/${c.art}')` : `background:linear-gradient(${TY[c.t]},#0b0d16)`;
-    const fig = c.th ? `<i class="fig${c.art ? '' : ' solo'}" style="background-image:url('${c.th}')"></i>` : '';
+    // 奥に生まれた作品の絵、手前に精霊の姿（2026-10-26 重吉さんの決め）。
+    // 作品が見えるように、作品は明るく・精霊は小さく左下に（2026-10-28 重吉さんの決め）。精霊は透明の姿 c.fig、無ければカードの小さな絵の姿の窓を切り出す（額縁の .fsw と同じ）
+    const bg = c.art ? `background-image:linear-gradient(rgba(6,7,12,.02),rgba(6,7,12,.12) 55%,rgba(6,7,12,.55)),url('/play/museum/${c.art}')` : `background:linear-gradient(${TY[c.t]},#0b0d16)`;
+    const fig = c.art && c.fig ? `<i class="sprite" style="background-image:url('${c.fig}')"></i>`
+      : c.th ? `<i class="fig${c.art ? ' side' : ' solo'}" style="background-image:url('${c.th}')"></i>` : '';
     b.innerHTML = (c.framed && opts.keeper !== false ? `<span class="keeper ${c.framed}">${esc(tr('nKeeper'))}</span>` : '')
       + (c.rarity !== 'normal' ? `<span class="rar ${c.rarity}">${esc(tr(RARE[c.rarity][0]))}</span>` : '')
       + `<div class="fr" style="${bg}">${fig || (c.art ? '' : `<span class="ty">${esc(txt({ ty: c.t }))}</span>`)}</div>`
