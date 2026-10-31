@@ -11,6 +11,7 @@
 # 夜の美術館を灯す（night.html）も同じ作り。head の差し替えは NIGHT_JA_HEAD / NIGHT_LANGS（2026-10-21〜。前は対戦の battle.html）
 #
 # ★ play/spirit.html・play/night.html を直したら、これを走らせる（直したのが en/ in/ の側だと、次に走らせたとき消える）
+import json
 import sys
 from pathlib import Path
 
@@ -25,6 +26,28 @@ def spirit_fonts(sans, serif):
     return (f'<link href="https://fonts.googleapis.com/css2?family={s}:wght@400;500;700&family={f}:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;600;700&display=swap" rel="stylesheet">\n'
             f'<style>html:root{{--serif:"{serif}","Noto Serif JP",serif}}html body{{font-family:"{sans}","Noto Sans JP",sans-serif}}</style>')
 
+# 検索用の構造化データ（VideoGame の JSON-LD。2026-10-31〜）。説明は各言語の meta description と同じ文
+def spirit_ld(lang, name, alt, desc, in_lang, currency, pub_name, pub_url):
+    url = 'https://dropper-tools.com/' + ('' if lang == 'ja' else lang + '/') + 'play/spirit.html'
+    q = lambda v: json.dumps(v, ensure_ascii=False)
+    return ('<script type="application/ld+json">\n{\n'
+            '  "@context": "https://schema.org",\n'
+            '  "@type": "VideoGame",\n'
+            f'  "name": {q(name)},\n'
+            f'  "alternateName": {q(alt)},\n'
+            f'  "url": {q(url)},\n'
+            f'  "description": {q(desc)},\n'
+            '  "gamePlatform": "Web browser",\n'
+            '  "applicationCategory": "Game",\n'
+            '  "operatingSystem": "Any",\n'
+            f'  "inLanguage": {q(in_lang)},\n'
+            '  "isAccessibleForFree": true,\n'
+            f'  "offers": {{ "@type": "Offer", "price": "0", "priceCurrency": {q(currency)} }},\n'
+            f'  "publisher": {{ "@type": "Organization", "name": {q(pub_name)}, "url": {q(pub_url)} }}\n'
+            '}\n</script>')
+
+JA_DESC = '閉館後の美術館で、作品にひそむ精霊が目を覚ます遊び。くじで並ぶ世界の美術館の15点から、1点で目覚め、2〜3点で結び。精霊どうしの縁と受け継ぎ、1000体に1体の金の光も。自分の写真やファイルは使わず、ログインも不要です。'
+
 JA_HEAD = {
     'lang': '<html lang="ja">',
     'title': '<title>ともしびの美術館｜閉館後、作品に宿る精霊が目を覚ます｜ドロッパーの遊び場</title>',
@@ -38,6 +61,7 @@ JA_HEAD = {
     'ogimage': '<meta property="og:image" content="https://dropper-tools.com/assets/og/og-ja.png">',
     'langjs': "<script>window.LANG = 'ja';</script>",
     'fonts': JA_HEAD_FONTS,
+    'ld': spirit_ld('ja', 'ともしびの美術館', 'The Lantern Museum', JA_DESC, 'ja', 'JPY', 'ドロッパー', 'https://dropper-tools.com/'),
 }
 
 
@@ -79,6 +103,19 @@ LANGS = {
                 'vi_VN', 'Bảo tàng Đèn lồng | Sân chơi Dropper', 'Bảo tàng sau giờ đóng cửa. Tinh linh ngủ trong tác phẩm thức tỉnh trong tay bạn. Thức tỉnh, kết nối, nhân duyên và kế thừa. Ánh Vàng 1 trên 1.000.', 'en',
                 spirit_fonts('Noto Sans', 'Noto Serif')),
 }
+
+# 構造化データ：名前・通貨・発行元はこの表。説明は上の meta description をそのまま使う
+for _lang, _name, _cur, _pub in [
+        ('en', 'The Lantern Museum', 'USD', 'https://dropper-tools.com/en/'),
+        ('in', 'The Lantern Museum', 'INR', 'https://dropper-tools.com/in/'),
+        ('ko', '등불의 미술관', 'KRW', 'https://dropper-tools.com/'),
+        ('zh-hant', '燈火美術館', 'TWD', 'https://dropper-tools.com/'),
+        ('vi', 'Bảo tàng Đèn lồng', 'VND', 'https://dropper-tools.com/')]:
+    _h = LANGS[_lang]
+    _desc = _h['desc'][len('<meta name="description" content="'):-len('">')]
+    _in = _h['lang'][len('<html lang="'):-len('">')]
+    _alt = 'ともしびの美術館' if _name == 'The Lantern Museum' else 'The Lantern Museum'
+    LANGS[_lang]['ld'] = spirit_ld(_lang, _name, _alt, _desc, _in, _cur, 'Dropper', _pub)
 
 # ---- 古いURLから新しいページへ飛ばすページ（monster.html → spirit.html、battle.html → night.html。2026-10-21） ----
 def redirect_page(pre, to='spirit.html', title='The Lantern Museum'):
