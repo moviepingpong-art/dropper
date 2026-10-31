@@ -149,6 +149,7 @@ GitHub Pages で公開している静的サイト。公開URL: https://dropper-t
 - **`sitemap.xml` には手で足してある**（6言語分・hreflang つき）。遊び場のページを増やしたら、ここも手で足す
 - 検索用の head（canonical・OGP・hreflang）と GA4 のタグも、ページの中に**手で書いてある**（`build_seo_head()` と `GA_TAG` を通らない）。
   en/in の head は `tools/make-monster-langs.py` の中。測定IDを変えるときは、ここも直す
+  - `spirit.html` には構造化データ（VideoGame の JSON-LD、2026-10-31〜）も入れてある。6言語分は `make-monster-langs.py` の `spirit_ld()` が作り、説明は各言語の meta description と同じ文。**meta description を変えたら、日本語版の JSON-LD の説明（`JA_DESC`）も直す**
 - **AI は当方の中継（`workers/monster-ai/`、Cloudflare Workers）を通して OpenAI に頼む**（2026-10-18〜）。利用者はキーを入れない。
   重吉さんの OpenAI キーは Cloudflare のシークレットにだけ置く（リポジトリにもページにも書かない）。
   費用は OpenAI の「データ提供と引き換えの毎日の無料トークン」の中だけ。中継がその日の使用量を D1 で数えて手前で止め、1人1日20枚まで。上限は遊び場60万・道具140万トークンに分け、**送る前に見込みを先に足す**（同時に来ても枠を超えないため。2026-10-26〜、`gate()`）。
