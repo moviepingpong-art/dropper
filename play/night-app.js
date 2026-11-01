@@ -1,11 +1,12 @@
 // night-app.js — 夜の美術館を灯す（night.html）のプログラム。play/ と各言語の play/ でバイト同一に保つ。
 // 2026-10-21 に対戦（battle.html）から置きかえた（相手のいない形。重吉さんの判断）。
-// 目録（IndexedDB の dropper-monster）は読むだけ。書き換えない（光の扉の鍵の守り神だけは、見えない枠で開いた目録のページが入れる）。夜の記録は localStorage（この端末の中だけ）。
-// 明るさは輝きの合計（好む属性の子がいれば ×1.2）。結びのことわりと★主は 2026-10-25 になくした。守り神（人間のカード）は灯さない「立会人」で、強さを持たせない。
+// 目録（IndexedDB の dropper-monster）は読むだけ。書き換えない。夜の記録は localStorage（この端末の中だけ）。
+// 明るさは輝きの合計（好む属性の子がいれば ×1.2）。結びのことわりと★主は 2026-10-25 になくした。守り神は灯さない「立会人」で、強さを比べない。
 // 2026-10-21〜：朝を迎えた回数で朝の場面が5段階に育つ・朝ごとに額縁を1つ・目録の精霊を1体だけ飾る（はめかえ不可）・
 // 飾った子は「展示室の主」としてひとこと話す。
 // 2026-10-25〜（重吉さんの決め）：通路を進み、中世風の扉の奥の部屋を1つ目から順に4つ灯す → 最後の通路（両側に額縁6つ。もと「わたしの展示室」）→
-// 光の扉の手前で「80億分の1」の人生の記録の画像を鍵にして最後の部屋へ（灯さない。夜明け）。立会人へのお礼・光の間はなくした。
+// 光の扉から最後の部屋へ（灯さない。夜明け）。立会人へのお礼・光の間はなくした。
+// 2026-11-01〜（重吉さんの決め）：光の扉は鍵なしで開く。灯した光を「灯火の器」に貯め、満ちた夜は連れてきた7体から1体を選ぶと、その子が今夜の守り神になる。
 // 通路・部屋・朝の場面・額縁は Blender の静止画（play/gallery/、作り方は tools/blender/）。朝の場面の動くもの（光の筋・粒・鳥・花びら）は canvas で重ねる（drawScene）。
 (() => {
   'use strict';
@@ -99,13 +100,8 @@
       framed: (frames().find(f => f.id === M.id) || {}).k || null
     };
   }
-  // 守り神の色：その人の人生地図の丘の色（monster-app.js の drawLife と同じ式）を5つ拾う。夜明けに、立会人の人生の色の帯として出す（どの人生も同じ大きさ・同じ明るさ）
-  function lifeHues(M) {
-    const joy = [...String((M.life || {}).joy || '5')].map(Number).filter(x => !isNaN(x));
-    const at = f => { const v = (joy[Math.min(joy.length - 1, Math.floor(f * joy.length))] || 0) / 9; return `hsl(${Math.round(30 + v * 105)},${Math.round(22 + v * 58)}%,${Math.round(46 + v * 12)}%)`; };
-    return [0, .25, .5, .75, .99].map(at);
-  }
-  const lifeGrad = M => `linear-gradient(90deg,${lifeHues(M).join(',')})`;
+  // 守り神の色：その子の属性の色を金の光にまぜる（最後の部屋の光の柱の色）。どの子も同じ明るさ
+  const guideHues = c => ['#f3d79a', TY[c.t] || '#f0b429', '#ffe9c0'];
 
   // ---- おためしの精霊（目録が7体に満たないとき） ----
   // 名前は目録のページと同じ音の表から組む。絵は無いので、属性の色で描く
@@ -130,6 +126,30 @@
   function frames() { const R = loadRec(); return Array.isArray(R.frames) ? R.frames.filter(f => f && (f.k === 'dawn' || f.k === 'quiet')) : []; }
   // 朝の場面の段階：その夜に灯した部屋の数（1〜4。2026-10-25〜、重吉さんの決め）。絵は5段階のうち 1・2・4・5 を使う（4部屋＝いちばん華やかな絵）
   const PL = [1, 2, 4, 5];
+  // ---- 灯火の器（2026-11-01〜、重吉さんの決め。前は「人生の記録の画像」が光の扉の鍵だった） ----
+  // 部屋を灯すたび・最後の部屋に入るたびに1灯（1夜で最大5灯）。その場で残すので、途中でやめた夜の分も残る。同じ日の「もう一度挑戦する」でも貯まる。
+  // 10灯で満ちる。満ちた夜は光の扉で連れてきた7体から1体を選ぶと、その子が今夜の守り神になる（選ばずに進めば、器は満ちたまま）。
+  // 守り神が現れた夜の終わりに器は空に戻る（容量は変えない）。おためしの夜は貯めない。数があるのは器の光だけで、守り神には点数をつけない
+  // 記録：vessel { light: いまの灯, cycles: 満ちた回数（表示用） }・guide: 前に選んだ子の id（次の夜に先頭へ出すだけ）・guards { id: 守り神をつとめた夜の数 }（目録のページが印を出す）
+  const VMAX = 10;
+  function vessel() { const v = loadRec().vessel || {}; return { light: Math.max(0, Math.min(VMAX, Math.floor(Number(v.light) || 0))), cycles: Math.max(0, Math.floor(Number(v.cycles) || 0)) }; }
+  function addLight() {
+    if (trial) return vessel();
+    const R = loadRec(), v = vessel(); v.light = Math.min(VMAX, v.light + 1); R.vessel = v; saveRec(R); return v;
+  }
+  const vesselFull = () => !trial && vessel().light >= VMAX;
+  function vesselHTML() {
+    const v = vessel();
+    return `<span class="vh">${esc(tr('nVessel'))}</span><span class="vp" aria-hidden="true">${Array.from({ length: VMAX }, (_, i) => `<i class="${i < v.light ? 'on' : ''}"></i>`).join('')}</span>`
+      + `<span class="vt">${esc(v.light >= VMAX ? tr('nVesselFull') : tr('nVesselLeft', { n: VMAX - v.light }))}</span>`;
+  }
+  // 守り神が現れた夜の終わり：器を空に、満ちた回数と、その子が守り神をつとめた夜を数える
+  function guideDone(c) {
+    if (trial || !c) return;
+    const R = loadRec(), v = vessel(); v.light = 0; v.cycles += 1; R.vessel = v;
+    const G = R.guards && typeof R.guards === 'object' && !Array.isArray(R.guards) ? R.guards : {};
+    G[c.id] = (Number(G[c.id]) || 0) + 1; R.guards = G; R.guide = c.id; saveRec(R);
+  }
 
   // ---- 今夜の美術館：日付で決まる（だれが遊んでも同じ夜） ----
   // 部屋は12。名前の順は辞書の nRoomNames と同じ。好む属性は部屋ごとに決まっている
@@ -161,7 +181,8 @@
   let HAND = [], ROOM = [], sel = [], cur = 0, at = 'door', pos = 0, page = 0, busy = false, ended = false, endArm = false;
   // got：今夜手に入れた額縁（部屋の順）。{ f: 額縁の記録の形, ri: 記録（frames）の中の番号。おためしの夜は -1, c: 入った精霊 }
   let got = [];
-  let keyed = false, doorPics = [], witness = null, witnessMap = '', witnessHues = null, witnessTh = '', hikariLit = null, film = null, doorKeyed = [];
+  // keyed：光の扉をくぐった。guide：今夜の守り神（連れてきた7体から1体。器が満ちた夜だけ）。passed：器が満ちていたが、今夜は選ばないで進んだ
+  let keyed = false, doorPics = [], guide = null, passed = false, hikariLit = null, film = null, doorKeyed = [];
   // 扉3の鍵（2026-10-25〜、重吉さんの決め）：外のサイトで保存した画像。ほかの扉は鍵なし。毎晩要るが、前に保存した同じ画像で何度でも開く
   // 扉2（Silk→Fluid Simulation）と扉4（TheSkyLive）の鍵は、スマホで保存できなかったので 2026-10-28 に外した（重吉さんの決め）
   const DOORKEY = [null, null, 'light', null];
@@ -178,11 +199,13 @@
     const bg = c.art ? `background-image:linear-gradient(rgba(6,7,12,.02),rgba(6,7,12,.12) 55%,rgba(6,7,12,.55)),url('/play/museum/${c.art}')` : `background:linear-gradient(${TY[c.t]},#0b0d16)`;
     const fig = c.art && c.fig ? `<i class="sprite" style="background-image:url('${c.fig}')"></i>`
       : c.th ? `<i class="fig${c.art ? ' side' : ' solo'}" style="background-image:url('${c.th}')"></i>` : '';
-    b.innerHTML = (c.framed && opts.keeper !== false ? `<span class="keeper ${c.framed}">${esc(tr('nKeeper'))}</span>` : '')
-      + (c.rarity !== 'normal' ? `<span class="rar ${c.rarity}">${esc(tr(RARE[c.rarity][0]))}</span>` : '')
+    // plain：光の扉で守り神を選ぶとき。名前と作品だけで、輝き・珍しさは出さない（どの子を選んでも同じ。正解を作らない）
+    const plain = !!opts.plain;
+    b.innerHTML = (c.framed && opts.keeper !== false && !plain ? `<span class="keeper ${c.framed}">${esc(tr('nKeeper'))}</span>` : '')
+      + (c.rarity !== 'normal' && !plain ? `<span class="rar ${c.rarity}">${esc(tr(RARE[c.rarity][0]))}</span>` : '')
       + `<div class="fr" style="${bg}">${fig || (c.art ? '' : `<span class="ty">${esc(txt({ ty: c.t }))}</span>`)}</div>`
-      + `<div class="nm">${esc(c.n)}</div><div class="meta"><span>${esc(txt({ ty: c.t }))}</span><b>✦${c.p}</b></div>`;
-    b.setAttribute('aria-label', `${c.n} ${txt({ ty: c.t })} ${tr('nPower')} ${c.p}${opts.rest ? ' ' + tr('nRest') : ''}`);
+      + `<div class="nm">${esc(c.n)}</div>` + (plain ? '' : `<div class="meta"><span>${esc(txt({ ty: c.t }))}</span><b>✦${c.p}</b></div>`);
+    b.setAttribute('aria-label', plain ? c.n : `${c.n} ${txt({ ty: c.t })} ${tr('nPower')} ${c.p}${opts.rest ? ' ' + tr('nRest') : ''}`);
     return b;
   }
 
@@ -208,16 +231,14 @@
     else if (at === 'door') { fw.textContent = tr('nOpenDoor'); fw.onclick = openDoor; fw.hidden = busy || ended || !!doorKey(); }
     else fw.hidden = true;
     drawHall(); drawWalls();
-    const dk = doorKey(), lightKey = last && pos === 2 && !keyed;
-    $('roomBox').hidden = at !== 'room'; $('keyBox').hidden = !(lightKey || dk);
+    const dk = doorKey(), lightDoor = last && pos === 2 && !keyed;
+    $('roomBox').hidden = at !== 'room'; $('keyBox').hidden = !dk; $('lightBox').hidden = !lightDoor;
+    if (lightDoor) drawLightDoor();
     if (fxFor && fxFor !== keyTarget()) keyFx(null);  // 別の扉に来たら、前の鍵の見た目を消す
-    // 鍵の箱は、扉3と光の扉で同じものを使い、言葉だけ入れかえる
+    // 鍵の箱は扉3だけ（光の扉は 2026-11-01 から鍵なし）
     if (dk) {
       $('keyLead').innerHTML = D('nDoorLead')[dk]; $('keyDrop').textContent = D('nDoorDrop')[dk];
       $('drop').setAttribute('aria-label', D('nDoorAria')[dk]); $('keyNote').innerHTML = tr('nDoorNote');
-    } else if (lightKey) {
-      $('keyLead').innerHTML = tr('nKeyLead'); $('keyDrop').textContent = tr('nKeyDrop');
-      $('drop').setAttribute('aria-label', tr('nKeyAria')); $('keyNote').innerHTML = tr('nKeyNote');
     }
     ['act', 'act2', 'act3'].forEach(id => { $(id).hidden = true; });
     $('say').textContent = '';
@@ -493,33 +514,35 @@
     });
   }
 
-  // ---- 光の扉の鍵：「80億分の1」の人生の記録の画像（2026-10-25〜。それまでは目録のページの最初でドロップしていた） ----
-  // 見分けて守り神を目録に入れるのは目録のページ（monster-app.js）の仕事なので、見えない枠で spirit.html を開き、落とされたファイルを渡す（同じサイトの中だけ）。
-  // AI には送らない。画像はどこにも残さない（目録に入るのは守り神のカードだけ。同じ人生の記録の守り神がもういれば、新しく作らない）
-  let maker = null, makerReady = null;
-  function openMaker() {
-    if (makerReady) return makerReady;
-    maker = document.createElement('iframe'); maker.hidden = true; maker.tabIndex = -1; maker.setAttribute('aria-hidden', 'true');
-    makerReady = new Promise(ok => {
-      const on = e => { if (e.origin === location.origin && e.source === maker.contentWindow && e.data && e.data.type === 'lifeKeyReady') { removeEventListener('message', on); ok(); } };
-      addEventListener('message', on);
-    });
-    maker.src = 'spirit.html?key=1'; document.body.append(maker);
-    return makerReady;
+  // ---- 光の扉（2026-11-01〜、重吉さんの決め）：鍵なしで開く。灯火の器が満ちていれば、連れてきた7体から1体を今夜の守り神に選ぶ ----
+  // 前に選んだ子を先頭に出すだけ（並びの配慮。強さの差はつけない）
+  function drawLightDoor() {
+    const full = vesselFull();
+    $('lbVessel').innerHTML = vesselHTML();
+    $('lbQ').hidden = !full; $('lbHand').hidden = !full; $('lbSkip').hidden = !full; $('lbOpen').hidden = full;
+    $('lbLead').innerHTML = tr(full ? 'nGuideLead' : 'nLightLead');
+    $('lbOpen').disabled = $('lbSkip').disabled = busy || ended;
+    if (full) {
+      const prev = loadRec().guide, cs = HAND.slice().sort((x, y) => (y.id === prev) - (x.id === prev));
+      $('lbHand').replaceChildren(...cs.map(c => {
+        const b = cardEl(c, { plain: true });
+        b.disabled = busy || ended;
+        b.onclick = () => passDoor(c);
+        return b;
+      }));
+    }
   }
-  function askMaker(file) {
-    return new Promise(async ok => {
-      const on = e => { if (e.origin !== location.origin || !maker || e.source !== maker.contentWindow || !e.data || e.data.type !== 'lifeKeyDone') return; clearTimeout(timer); removeEventListener('message', on); ok(e.data); };
-      const timer = setTimeout(() => { removeEventListener('message', on); ok({ ok: false, err: true }); }, 25000);
-      addEventListener('message', on);
-      await openMaker();
-      maker.contentWindow.postMessage({ type: 'lifeKey', file }, location.origin);
-    });
+  function passDoor(c, skip) {
+    if (busy || ended || keyed || at !== 'last' || pos !== 2) return;
+    keyed = true; guide = c || null; passed = !!skip && !c; track('night_key');
+    enterLast();
   }
+  $('lbOpen').onclick = () => passDoor(null);
+  $('lbSkip').onclick = () => passDoor(null, true);
   // 鍵の箱の見た目：read 確かめ中／ok 合った／ng 合わなかった／null もとに戻す。落とした画像は画面に出すだけで、戻すときに捨てる
   let fxUrl = null, fxFor = null;
   const MARK = { ok: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>', ng: '<svg viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>' };
-  const keyTarget = () => { const dk = doorKey(); return dk ? dk + cur : at === 'last' && pos === 2 && !keyed ? 'life' : null; };
+  const keyTarget = () => { const dk = doorKey(); return dk ? dk + cur : null; };
   function keyFx(st, f) {
     const d = $('drop'), r = $('kres');
     d.classList.remove('read', 'ok', 'ng');
@@ -534,19 +557,7 @@
     const dk = doorKey(), lk = $('klike'); lk.hidden = !(st === 'ng' && dk);
     if (dk) { lk.firstElementChild.className = 'lk-' + dk; $('klikeT').textContent = D('nDoorLike')[dk]; }
   }
-  async function useKey(files) {
-    if (doorKey()) return useDoorKey(files);
-    if (busy || ended || keyed || at !== 'last' || pos !== 2) return;
-    const f = [...files].find(x => x.type.startsWith('image/'));
-    if (!f) { keyFx('ng'); $('msg').textContent = tr('nKeyNo'); sfx('no'); return; }
-    keyFx('read', f); $('drop').classList.add('busy'); $('msg').textContent = tr('nKeyReading');
-    const a = await askMaker(f);
-    $('drop').classList.remove('busy');
-    if (!a.ok) { keyFx('ng'); $('msg').textContent = tr(a.err ? 'nKeyErr' : 'nKeyNo'); sfx('no'); return; }
-    keyFx('ok'); await wait(900);
-    keyed = true; witness = txt(a.name); witnessMap = a.life ? lifeGrad(a) : ''; witnessHues = a.life ? lifeHues(a) : null; witnessTh = safeThumb(a.th); track('night_key');
-    enterLast(a);
-  }
+  function useKey(files) { if (doorKey()) useDoorKey(files); }
   // 扉3：落とされた画像を、この端末の中で形と色だけ見る（AI なし・どこにも送らない・残さない）。合えば扉を開ける
   async function useDoorKey(files) {
     const dk = doorKey(); if (busy || ended || !dk) return;
@@ -594,7 +605,7 @@
   }
 
   // 最後の部屋のお話と曲の設計図を AI に頼む（2026-10-25〜。1晩に1回）。送るのは作品のファイル名・精霊の名前・言語だけ。
-  // 守り神・人生の記録・鍵の画像は送らない。12秒で答えが無い・うまくいかないときは null（いつものお話と曲で流す）
+  // 守り神の選び・鍵の画像・あなたの写真は送らない。12秒で答えが無い・うまくいかないときは null（いつものお話と曲で流す）
   const AI_URL = 'https://ai.dropper-tools.com/monster';
   let storyP = null;  // 1晩に1回。もう一度挑戦するときに空にする
   async function nightStory() {
@@ -613,10 +624,15 @@
   }
 
   // 光の扉をくぐる。最後の部屋（灯さない。夜明けになる）
-  async function enterLast(a) {
+  async function enterLast() {
     busy = true; draw();
     const story = window.NightFilm ? (storyP || nightStory()) : null;  // 最後の通路で頼んだお話（まだなら、いま頼む）
-    $('msg').textContent = tr('nKeyOk', { name: witness });
+    // 最後の部屋に入ったら1灯。ここで器が満ちたら（扉の前ではまだだった夜）、連れてきた7体の1体目が守り神として合流する（操作は増やさない）
+    const wasFull = vesselFull();
+    addLight();
+    let joined = false;
+    if (!guide && !passed && !wasFull && vesselFull() && HAND.length) { guide = HAND[0]; joined = true; }
+    $('msg').textContent = guide ? tr(joined ? 'nGuideJoin' : 'nGuideOk', { name: guide.n }) : tr('nLightOk');
     sfx('light'); burst(.5, .4, 80);
     $('flash').classList.add('on');
     await wait(2400);
@@ -631,7 +647,7 @@
       const cards = FC.map(c => ({ art: c.art, th: c.th, dx: c.dx, rar: c.rarity, t: c.t, n: c.n, no: c.no, kin: (c.par || []).length > 0, par: (c.par || []).map(id => FC.findIndex(h => h.id === id)).filter(k => k >= 0) }));
       $('msg').textContent = tr('nStoryWriting');
       const st = await story;
-      try { film = await window.NightFilm.room({ cards, hues: witnessHues, guard: witness ? { th: witnessTh, n: witness, line: tr('nFilmGuard', { name: witness }) } : null, story: st, seed: FC.map(c => c.id).join('|') + '|' + isoDate(), congrats: tr('nFilmCongrats'), only: tr('nFilmOnly'), title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
+      try { film = await window.NightFilm.room({ cards, hues: guide ? guideHues(guide) : null, guard: guide ? { th: guide.th, n: guide.n, line: tr('nFilmGuard', { name: guide.n }) } : null, story: st, seed: FC.map(c => c.id).join('|') + '|' + isoDate(), congrats: tr('nFilmCongrats'), only: tr('nFilmOnly'), title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
         tx: { modeAuto: tr('nModeAuto'), modePic: tr('nModePic'), picDrop: tr('nPicDrop'), picNote: tr('nPicNote'), meDrop: tr('nMeDrop'), meNote: tr('nMeNote'), meOk: tr('nMeOk'), ai: tr(st ? 'nAiYes' : trial ? 'nAiTrial' : 'nAiNo'), aiSub: tr(st ? 'nAiYesSub' : 'nAiNoSub'), loading: tr('nFilmLoading'), play: tr('nFilmPlay'), skip: tr('nFilmSkip'), save: tr('nFilmSave'), close: tr('nFilmClose'), made: tr('nFilmMade'), noRec: tr('nFilmNoRec') } }); } catch (e) { film = null; }
       if (wasOn) bgm(true);
     }
@@ -665,6 +681,7 @@
       got.forEach(e => { if (e.f.k === k) { e.f.n = count; if (e.ri >= 0 && F[e.ri] && F[e.ri].id === e.f.id) F[e.ri].n = count; } });
       saveRec(R);
     }
+    if (dawn && guide) guideDone(guide);
     const st = Math.max(1, lit), lv = PL[st - 1], stages = D(dawn ? 'nStagesDawn' : 'nStagesQuiet') || [];
     sfx(dawn ? 'dawn' : 'quiet'); if (dawn) burst(.5, .3, 120);
     track(dawn ? 'night_dawn' : 'night_quiet');
@@ -686,7 +703,6 @@
       + (counts ? `<div class="lv">${esc(tr(dawn ? 'nLevelDawn' : 'nLevelQuiet', { n: count, stage: stages[st - 1] || '' }))}</div>`
         + `<div class="steps">${stages.map((x, i) => `<span class="${i < st ? 'on' : ''}">${esc(x)}</span>`).join('')}</div>` : '')
       + `<p>${dawn ? tr('nDawnP') : lit === ROOM.length ? tr('nQuietPKey') : lit ? tr('nQuietP', { n: lit, rooms: esc(dark) }) : tr('nQuietP0')}</p>`
-      + (dawn && witness ? `<p class="small">${esc(tr('nWitnessed', { name: witness }))}</p>` + (witnessMap ? `<div class="lifeband" style="background:${witnessMap}"></div>` : '') : '')
       + (dawn && hikariLit ? `<p class="hk">${esc(tr(hikariLit === 'gold' ? 'nHikariGold' : 'nHikariSilver'))}</p>` : '')
       + `<div class="lamps">${ROOM.map(R => `<i class="${R.lit ? 'on' : ''}"></i>`).join('')}<i class="sp${keyed ? ' on' : ''}"></i></div>`
       + (got.length ? `<div class="gift" id="gift"><div class="gotrow">${got.map(e => frameBox(e.f, 72)).join('')}</div><p>${esc(tr(trial ? 'nGotTrial' : 'nGotFrames', { n: got.length }))}</p></div>`
@@ -1161,7 +1177,7 @@
   $('tonight').onclick = () => {
     HAND = dpick.map(i => Object.assign({}, ZK[i], { used: false }));
     ROOM = tonight(new Date()); sel = []; cur = 0; at = 'door'; pos = 0; page = 0;
-    busy = false; ended = false; endArm = false; keyed = false; got = []; doorKeyed = []; doorPics.forEach(u => u && URL.revokeObjectURL(u)); doorPics = []; witness = null; witnessMap = ''; witnessHues = null; witnessTh = ''; hikariLit = null; film = null;
+    busy = false; ended = false; endArm = false; keyed = false; got = []; doorKeyed = []; doorPics.forEach(u => u && URL.revokeObjectURL(u)); doorPics = []; guide = null; passed = false; hikariLit = null; film = null;
     $('trialNote').hidden = !trial;
     $('deck').hidden = true; storyP = null; preload(); draw(); glowUp(); sfx('send'); track('night_start');
   };
@@ -1330,6 +1346,7 @@
   // ---- はじめ ----
   applyDom();
   $('rule1').innerHTML = tr('nRule1', { cap: CAP });
+  $('vessel').innerHTML = vesselHTML();
   const now = new Date();
   try { $('date').textContent = tr('nDate', { date: now.toLocaleDateString(document.documentElement.lang || 'ja', { month: 'long', day: 'numeric' }) }); } catch (e) { /* 日付の書き方が使えない画面でも遊べる */ }
   ROOM = tonight(now); draw(); glowUp();
