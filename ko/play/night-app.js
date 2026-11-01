@@ -700,10 +700,12 @@
     // 2026-11-01 に「金の額縁に精霊を飾る」をなくした（額縁は部屋を灯したときに手に入るため）
     // 器がまだ満ちていない朝は、器とあと何灯かを見せる（動画は満ちた夜だけ。2026-11-01 重吉さんの決め）
     const vrow = !trial && !filmed ? `<div class="vessel">${vesselHTML()}</div><p class="vnote">${esc(tr('nFilmLocked', { n: vessel().light, max: VMAX }))}</p>` : '';
-    if (dawn) {
+    // お別れの画面（夜明けの映像と「またお会いしましょう」）は、器が満ちて最後の部屋の動画を手に入れた夜だけ（2026-11-01 重吉さんの決め）。
+    // 満ちていない夜明けは、静かな朝と同じ形の画面に器とあと何灯かを出す
+    if (dawn && filmed) {
       $('end').className = 'end dawn solo';
       $('end').innerHTML = `<canvas class="scene" id="scene" aria-hidden="true"></canvas><div class="endin">`
-        + `<p class="thanks">${tr('nThanksBye')}</p>` + vrow
+        + `<p class="thanks">${tr('nThanksBye')}</p>`
         + `<div class="mini" id="gift"><button class="lnk" id="again" type="button">${esc(tr('nRetry'))}</button></div></div>`;
       $('morning').hidden = false;
       startScene(k, lv, hikariLit, true);
