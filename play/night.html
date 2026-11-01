@@ -125,6 +125,17 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .vessel .vh{font-family:var(--serif);color:var(--gold-soft);letter-spacing:.06em}
 .vessel .vp{display:inline-flex;gap:3px}
 .vessel .vp i{width:11px;height:15px;border-radius:50% 50% 45% 45%/60% 60% 40% 40%;border:1px solid rgba(201,164,92,.55);background:rgba(255,255,255,.03)}
+.vessel .vp i.new{animation:vnew 1.4s ease-out}
+@keyframes vnew{0%{transform:scale(.4);background:rgba(255,255,255,.03);box-shadow:none}45%{transform:scale(1.6);box-shadow:0 0 18px 6px rgba(255,226,160,.95)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.vessel .vp i.new{animation:none}}
+.gainvt{margin:2px 0 0;font-size:13px;color:var(--gold-soft)}
+.resume{margin:14px auto 4px;text-align:center;border:1px solid rgba(201,164,92,.55);border-radius:12px;padding:12px 14px;background:rgba(201,164,92,.07);max-width:520px}
+.resume p{margin:0 0 10px;font-size:.92rem;line-height:1.6}
+.vtoast{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:4;max-width:calc(100% - 24px);padding:6px 14px 8px;border-radius:14px;background:rgba(8,10,22,.82);border:1px solid rgba(232,200,120,.55);text-align:center;pointer-events:none;animation:vtin .5s ease-out}
+.vtoast .vt{display:none}
+.vtoast .vessel{margin:2px 0}.vtoast p{margin:0;font-size:13px;color:var(--gold-soft);line-height:1.5}
+@keyframes vtin{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
+.vnote{margin:2px auto 8px;max-width:30em;font-size:13px;line-height:1.6;color:var(--gold-soft)}
 .vessel .vp i.on{background:radial-gradient(circle at 50% 65%,#fff6d8,#f3cf7a 45%,#c9902f);border-color:#f3d79a;box-shadow:0 0 8px rgba(243,207,122,.7)}
 #lightBox .lbq{margin:6px 0 2px;font-family:var(--serif);font-size:18px;color:var(--gold-soft);text-align:center}
 #lightBox .hand{margin-top:8px}
@@ -385,6 +396,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
     <div class="vlit" id="vlit" data-i18n="nLit">灯がともった</div>
    </div>
    <canvas class="rite" id="rite" aria-hidden="true" hidden></canvas>
+   <div class="vtoast" id="vtoast" role="status" hidden></div>
    <button type="button" class="riteskip" id="riteskip" hidden>とばす ▶</button>
    <div class="flash" id="flash"></div>
    <div class="rinfo" id="rinfo" hidden></div>
@@ -450,6 +462,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
   <div class="tip" data-i18n="nTip" data-i18n-html></div>
   <div class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg><span data-i18n="nLock">画像はこの端末の中だけ。AI に送るのは作品と精霊の名前だけ</span></div>
   <details class="rmore"><summary data-i18n="nMore">くわしく</summary><div data-i18n="nRuleMore" data-i18n-html></div></details>
+  <div class="resume" id="resume" hidden><p id="resumeP"></p><button class="btn" id="resumebtn" type="button" data-i18n="nResume">続きから</button></div>
   <div class="center btns" style="justify-content:center"><button class="btn" id="startbtn" type="button" data-i18n="nStart">美術館へ入る</button></div>
   <div class="note center" data-i18n="nNote"></div>
  </div>
@@ -490,6 +503,8 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
   <p class="gainp" id="gainP"></p>
   <div class="gainlist" id="gainList"></div>
   <p class="gaingold" id="gainGold" hidden></p>
+  <div class="vessel" id="gainV" hidden></div>
+  <p class="gainvt" id="gainVt" hidden></p>
   <div class="tap" id="gainTap" hidden data-i18n="nTap">タップで次へ</div>
  </div>
 </div>
@@ -525,8 +540,8 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 </div>
 
 <script src="monster-i18n.js?v=31"></script>
-<script src="night-i18n.js?v=28"></script>
+<script src="night-i18n.js?v=30"></script>
 <script src="night-film.js?v=22"></script>
-<script src="night-app.js?v=43"></script>
+<script src="night-app.js?v=45"></script>
 </body>
 </html>
