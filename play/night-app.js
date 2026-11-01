@@ -657,7 +657,7 @@
   async function walkFilm(back) {
     const F = frames().reverse().slice(0, PER).map(f => ({ k: f.k, art: f.id && Array.isArray(f.w) && f.w[0] ? safeArt(f.w[0].f) : '', th: f.id ? safeThumb(f.th) : '', rar: f.rar, n: f.id ? txt(f.name) : '' }));
     // 通路の映像のあいだは、朝の場面（映像と曲）を止めておく。戻ったら back() が始めから流し直す
-    sceneOn = null; if (mornFilm) mornFilm.v.pause(); dawnMus = null; liftOv = null;
+    sceneOn = null; if (mornFilm) mornFilm.v.pause(); dawnMus = null; liftOv = null; stopDawn();
     const wasOn = on; if (wasOn) { bgm(false); master.gain.cancelScheduledValues(ac.currentTime); master.gain.setValueAtTime(.8, ac.currentTime); }
     try { await window.NightFilm.walk({ frames: F, tx: { loading: tr('nWalkLoading'), skip: tr('nFilmSkip'), close: tr('nWalkClose'), done: tr('nWalkDone', { name: F[0] ? F[0].n : '' }) } }); } catch (e) { /* 映像が無くても遊べる */ }
     if (wasOn) bgm(true);
@@ -665,7 +665,7 @@
   }
   function restart() {
     // もう一度挑戦するときは、曲も始めの静かな所からかけ直す（2026-10-25。前は朝の曲が続いたままだった）
-    dawnMus = null; liftOv = null;
+    dawnMus = null; liftOv = null; stopDawn();
     if (on && ac) {
       bgm(false); const g = master.gain, t = ac.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + .5);
       setTimeout(() => { if (!on || timer) return; g.cancelScheduledValues(ac.currentTime); g.setValueAtTime(.8, ac.currentTime); bgm(true); }, 1600);
@@ -735,7 +735,7 @@
         if (F.v.ended && !run.endT) run.endT = t;
         // 曲も映像に合わせる（始まり・光り輝く・薄れる）
         const ph = e >= D - 2 || F.v.ended ? 'out' : e >= D - 5 ? 'glow' : e > 0 && !F.v.paused ? 'start' : null;
-        if (ph && ph !== dawnMus && (ph !== 'start' || !dawnMus)) { if (ph !== 'start' && !dawnMus) dawnMusic('start', e, D); dawnMus = ph; dawnMusic(ph, e, D); }
+        if (ph && ph !== dawnMus && (ph !== 'start' || !dawnMus)) { if (ph !== 'start' && !dawnMus) dawnMusic('start', e); dawnMus = ph; dawnMusic(ph, e); }
         const glow = Math.min(1, Math.max(0, (e - (D - 5)) / 3)), out = Math.min(1, Math.max(0, ((run.endT ? 2 + (t - run.endT) / 1000 : e - (D - 2))) / 4));
         if (glow > 0) {
           const gl = g2.createRadialGradient(w / 2, h * 0.45, 0, w / 2, h * 0.45, Math.hypot(w, h) * 0.6);
@@ -1147,7 +1147,7 @@
   requestAnimationFrame(frame);
 
   // ---- 音：すべてその場で合成（音のファイルを使わない）。鈴と、静かに満ちていく宇宙のような BGM ----
-  let ac = null, on = false, master, bgmGain, wet, noise, timer = null, nextT = 0, step = 0;
+  let ac = null, on = false, muted = false, master, bgmGain, wet, noise, timer = null, nextT = 0, step = 0;
   function initAudio() {
     ac = new (window.AudioContext || window.webkitAudioContext)();
     const comp = ac.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3; comp.connect(ac.destination);
@@ -1243,15 +1243,17 @@
       nextT += STEP; step++;
     }
   }
-  // 夜明けの映像に合わせた曲（2026-10-26 重吉さんの決め）：映像が始まると頭から（静か→満ちる）、館が光り輝くところでいちばん満ち、
-  // 薄れるのに合わせて4秒で小さくして止める。もう一度挑戦するときは restart() がいつもの曲に戻す
-  let liftOv = null, dawnMus = null;
-  function dawnMusic(k, e, D) {
-    if (!on || !ac) return;
-    const g = master.gain, t = ac.currentTime;
-    if (k === 'start') { bgm(false); g.cancelScheduledValues(t); g.setValueAtTime(.8, t); const B = STEP * 16; liftOv = bar => { const x = bar * B; return x < 5 ? .2 : x < 10 ? .4 : x < D - 5 ? .6 : 1; }; bgm(true); }
-    else if (k === 'glow') sfx('dawn');
-    else if (k === 'out') { g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + 4); setTimeout(() => { if (dawnMus === 'out') { bgm(false); liftOv = null; } }, 4100); }
+  // 夜明けの映像（「ありがとうございました。またお会いしましょう。」）の曲（2026-11-01〜 重吉さんの決め「3C」）：専用の曲（night-film.js の DAWN_PLAN・NightFilm.dawn）を
+  // 映像に合わせて頭から流し、館が光り輝く所でいちばん満ち（曲の中でホ長調へ上がる）、薄れるのに合わせて4秒で小さくして止める。
+  // 最後の部屋の動画と同じく、「♪ 音を出す」を押していなくても流す。「♪ 止める」を押した人（muted）には流さない。夜のページの曲は、その間止める
+  let liftOv = null, dawnMus = null, dawnSong = null;
+  function stopDawn() { if (dawnSong) { dawnSong.stop(); dawnSong = null; } }
+  function dawnMusic(k, e) {
+    if (k === 'start') {
+      stopDawn(); if (on && ac) bgm(false);
+      if (muted || !ac || !window.NightFilm || !window.NightFilm.dawn) return;
+      ac.resume(); try { dawnSong = window.NightFilm.dawn(ac, e || 0); } catch (err) { dawnSong = null; /* 音が出なくても遊べる */ }
+    } else if (k === 'out' && dawnSong) { dawnSong.fade(4); dawnSong = null; }
   }
   function bgm(play) { if (play) { nextT = ac.currentTime + .05; step = 0; timer = setInterval(sched, 60); } else { clearInterval(timer); timer = null; } }
   function sfx(k) {
@@ -1271,7 +1273,7 @@
     if (S[k]) S[k]();
   }
   $('snd').onclick = () => {
-    if (!ac) initAudio(); ac.resume(); on = !on;
+    if (!ac) initAudio(); ac.resume(); on = !on; muted = !on;
     $('snd').classList.toggle('on', on); $('snd').textContent = tr(on ? 'nSndOff' : 'nSndOn'); if (on) { master.gain.cancelScheduledValues(ac.currentTime); master.gain.setValueAtTime(.8, ac.currentTime); } bgm(on); if (on) sfx('pick');
   };
 
@@ -1284,6 +1286,8 @@
   const dexP = readDex();
   $('startbtn').onclick = async () => {
     $('startbtn').disabled = true; $('startbtn').textContent = tr('nLoading');
+    // 押したときに音の場を作っておく（スマホは押したときに作った音の場でないと鳴らない）。夜明けの映像の曲に使う。「♪ 音を出す」を押すまで夜の曲は鳴らさない
+    try { if (!ac) initAudio(); ac.resume(); } catch (e) { /* 音が出なくても遊べる */ }
     const all = ALL = await dexP;
     ZK = all.filter(M => !isHuman(M) && Number(M.power) > 0).map(spirit).sort((a, b) => b.p - a.p);
     $('intro').hidden = true; $('deck').hidden = false; drawDeck(); sfx('pick');
