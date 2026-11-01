@@ -934,7 +934,7 @@
   const SMALL = 0.26; // 小さな額縁の窓は、大きな額縁の窓の幅の 26%
   // 飾った子の作品の写し（目録の M.works から。題・美術館・由来。結びの子は最初の作品の絵を窓に入れる）
   const worksOf = M => (Array.isArray(M.works) ? M.works : []).filter(w => w && safeArt(w.f)).slice(0, 3)
-    .map(w => ({ f: w.f, m: /^(aic|met|cma|smk)$/.test(w.m) ? w.m : '', title: String(w.title || '').slice(0, 200), url: /^https:\/\/[\w./?=&%#-]+$/.test(w.url || '') ? w.url : '', story: w.story || '' }));
+    .map(w => ({ f: w.f, m: /^(aic|met|cma|smk|rijks)$/.test(w.m) ? w.m : '', title: String(w.title || '').slice(0, 200), url: /^https:\/\/[\w./?=&%#-]+$/.test(w.url || '') ? w.url : '', story: w.story || '' }));
   const box4 = (x, y, w, h) => `left:${x}px;top:${y}px;width:${w}px;height:${h}px`;
   // 額縁の絵そのものの大きさの要素（使う所で縮める・ゆがめる）
   function fbox(f) {
