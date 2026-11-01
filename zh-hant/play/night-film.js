@@ -655,6 +655,12 @@
         me.ondragover = e => { e.preventDefault(); me.classList.add('over'); }; me.ondragleave = () => me.classList.remove('over');
         me.ondrop = e => { e.preventDefault(); me.classList.remove('over'); useMe(e.dataTransfer.files[0]); };
         p.append(me);
+        // その場で撮る（2026-11-01〜）：PC の Webカメラでも、スマホの前のカメラでも。楕円の中が光の柱に入る
+        if (o.tx.cam) {
+          const cb = document.createElement('button'); cb.type = 'button'; cb.className = 'nf-mode nf-camgo'; cb.textContent = o.tx.cam.go;
+          cb.onclick = async () => { const f = await camera({ face: 'user', oval: true, tx: o.tx.cam, onPick: () => mi.click() }); if (f) useMe(f); };
+          p.append(cb);
+        }
       }
       L.cap.append(p); cv.parentNode.classList.add('pick');  // 選ぶあいだは絵を小さくして、選ぶ所とボタンを入れる
     }
@@ -740,5 +746,85 @@
     });
   }
 
-  window.NightFilm = { room, walk, save, warm, dawn, frameCanvas, warp, homography };
+
+  // ---- その場で撮る（2026-11-01〜、重吉さんの決め）：PC の Webカメラ・Android・iPhone で、ページの中にカメラの映像を出して1枚撮る ----
+  // 撮った1枚は File で返すだけ（呼んだ側が objectURL で画面に出す）。どこにも送らず、残さない。
+  // カメラは「撮る」の画面が開いているあいだだけ使い、閉じたらすぐ止める。使えない・許されなかったときは「写真を選ぶ」へ（onPick）
+  // o：{ face: 'user'|'environment', oval: true（光の柱に入る範囲の楕円・その形に切って返す）, tx: { shot, use, retake, cancel, flip, no, pick, wait }, onPick }
+  const camOK = () => !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  function camera(o) {
+    const tx = o.tx || {};
+    return new Promise(resolve => {
+      const w = document.createElement('div'); w.className = 'nf-cam'; w.setAttribute('role', 'dialog'); w.setAttribute('aria-modal', 'true');
+      w.innerHTML = '<div class="nf-camv"><video playsinline muted autoplay></video><canvas hidden></canvas><i class="nf-camo" hidden></i><b class="nf-camn" hidden></b></div><p class="nf-camm" role="status"></p><div class="btns nf-camb"></div>';
+      document.body.append(w);
+      const box = w.querySelector('.nf-camv'), v = box.querySelector('video'), c = box.querySelector('canvas'), ov = box.querySelector('.nf-camo'), num = box.querySelector('.nf-camn'), msg = w.querySelector('.nf-camm'), bar = w.querySelector('.nf-camb');
+      let st = null, face = o.face || 'user', mirror = false, cams = 0, timer = null, done = false, crop = null;
+      const stop = () => { if (st) st.getTracks().forEach(t => t.stop()); st = null; v.srcObject = null; };
+      const end = r => { if (done) return; done = true; clearInterval(timer); stop(); c.width = c.height = 0; w.remove(); removeEventListener('keydown', key); resolve(r); };
+      const key = e => { if (e.key === 'Escape') end(null); };
+      addEventListener('keydown', key);
+      const b = (t, cls, fn) => { const x = document.createElement('button'); x.type = 'button'; x.className = 'btn ' + (cls || ''); x.textContent = t; x.onclick = fn; bar.append(x); return x; };
+      const live = () => {
+        bar.replaceChildren(); v.hidden = false; c.hidden = true; num.hidden = true; ov.hidden = !o.oval; msg.textContent = '';
+        b(tx.shot || '📷', 'nf-shot', shoot).focus();
+        if (cams > 1) b(tx.flip, 'ghost', () => { face = face === 'user' ? 'environment' : 'user'; start(); });
+        b(tx.cancel, 'ghost', () => end(null));
+      };
+      const fail = () => {
+        stop(); bar.replaceChildren(); v.hidden = true; c.hidden = true; ov.hidden = true; box.style.removeProperty('--ar'); box.classList.add('none'); msg.textContent = tx.no || '';
+        // 押した手のまま「写真を選ぶ」を開く（iPhone は押した手が無いと選ぶ画面を開かない）
+        if (o.onPick) b(tx.pick, '', () => { end(null); o.onPick(); });
+        b(tx.cancel, 'ghost', () => end(null));
+      };
+      async function start() {
+        stop(); bar.replaceChildren(); box.classList.remove('none'); msg.textContent = tx.wait || '';
+        try { st = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: face }, width: { ideal: 1280 }, height: { ideal: 1280 } } }); }
+        catch (e) { return done || fail(); }
+        if (done) return stop();
+        v.srcObject = st;
+        await v.play().catch(() => {});
+        if (!v.videoWidth) await new Promise(r => { v.onloadedmetadata = r; setTimeout(r, 1500); });
+        if (done) return stop();
+        if (!v.videoWidth) return fail();
+        const tr = st.getVideoTracks()[0], s = tr && tr.getSettings ? tr.getSettings() : {};
+        mirror = s.facingMode ? s.facingMode === 'user' : face === 'user';  // PC の Webカメラは向きを言わないので、自撮りとして鏡にする
+        box.classList.toggle('mirror', mirror);
+        const vw = v.videoWidth, vh = v.videoHeight; box.style.setProperty('--ar', vw / vh);
+        // 楕円の範囲：光の柱に入る形（縦 380：横 300）。映像の中で、その形のいちばん大きな四角の中に楕円を出す
+        if (o.oval) {
+          const r = 300 / 380, cw = vw / vh > r ? vh * r : vw, ch = vw / vh > r ? vh : vw / r;
+          crop = { x: (vw - cw) / 2, y: (vh - ch) * .35, w: cw, h: ch };
+          Object.assign(ov.style, { left: (crop.x + cw * .12) / vw * 100 + '%', top: (crop.y + ch * .1) / vh * 100 + '%', width: cw * .76 / vw * 100 + '%', height: ch * .8 / vh * 100 + '%' });
+        } else crop = null;
+        if (!cams && navigator.mediaDevices.enumerateDevices) cams = (await navigator.mediaDevices.enumerateDevices().catch(() => [])).filter(d => d.kind === 'videoinput').length;
+        if (!done) live();
+      }
+      function shoot() {
+        if (face !== 'user') return snap();
+        // 自撮りは3つ数えてから
+        bar.replaceChildren(); b(tx.cancel, 'ghost', () => end(null));
+        let n = 3; num.hidden = false; num.textContent = n;
+        timer = setInterval(() => { n--; if (n > 0) num.textContent = n; else { clearInterval(timer); num.hidden = true; snap(); } }, 1000);
+      }
+      function snap() {
+        if (done || !v.videoWidth) return;
+        const vw = v.videoWidth, vh = v.videoHeight, k = crop || { x: 0, y: 0, w: vw, h: vh }, sc = Math.min(1, 1600 / Math.max(k.w, k.h));
+        c.width = Math.round(k.w * sc); c.height = Math.round(k.h * sc);
+        const g = c.getContext('2d');
+        // 見えていたとおり（自撮りは鏡のまま）に残す
+        if (mirror) { g.translate(c.width, 0); g.scale(-1, 1); g.drawImage(v, vw - k.x - k.w, k.y, k.w, k.h, 0, 0, c.width, c.height); }
+        else g.drawImage(v, k.x, k.y, k.w, k.h, 0, 0, c.width, c.height);
+        v.hidden = true; c.hidden = false; ov.hidden = true; box.style.setProperty('--ar', c.width / c.height); v.pause();
+        bar.replaceChildren();
+        b(tx.use, '', () => c.toBlob(bl => end(bl ? new File([bl], 'camera.jpg', { type: 'image/jpeg' }) : null), 'image/jpeg', .9)).focus();
+        b(tx.retake, 'ghost', () => { box.style.setProperty('--ar', vw / vh); v.play().catch(() => {}); live(); });
+        b(tx.cancel, 'ghost', () => end(null));
+      }
+      w.addEventListener('click', e => { if (e.target === w) end(null); });
+      if (camOK()) start(); else fail();
+    });
+  }
+
+  window.NightFilm = { room, walk, save, warm, dawn, frameCanvas, warp, homography, camera };
 })();

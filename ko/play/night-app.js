@@ -744,10 +744,20 @@
       $('msg').textContent = tr('nStoryWriting');
       const st = await story;
       try { film = await window.NightFilm.room({ cards, hues: guide ? guideHues(guide) : null, guard: guide ? { th: guide.th, n: guide.n, line: tr('nFilmGuard', { name: guide.n }) } : null, story: st, seed: FC.map(c => c.id).join('|') + '|' + isoDate(), congrats: tr('nFilmCongrats'), only: tr('nFilmOnly'), title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
-        tx: { modeAuto: tr('nModeAuto'), modePic: tr('nModePic'), picDrop: tr('nPicDrop'), picNote: tr('nPicNote'), meDrop: tr('nMeDrop'), meNote: tr('nMeNote'), meOk: tr('nMeOk'), ai: tr(st ? 'nAiYes' : trial ? 'nAiTrial' : 'nAiNo'), aiSub: tr(st ? 'nAiYesSub' : 'nAiNoSub'), loading: tr('nFilmLoading'), play: tr('nFilmPlay'), skip: tr('nFilmSkip'), save: tr('nFilmSave'), close: tr('nFilmClose'), made: tr('nFilmMade'), noRec: tr('nFilmNoRec') } }); } catch (e) { film = null; }
+        tx: { modeAuto: tr('nModeAuto'), modePic: tr('nModePic'), picDrop: tr('nPicDrop'), picNote: tr('nPicNote'), meDrop: tr('nMeDrop'), meNote: tr('nMeNote'), meOk: tr('nMeOk'), cam: camTx('nCamMe'), ai: tr(st ? 'nAiYes' : trial ? 'nAiTrial' : 'nAiNo'), aiSub: tr(st ? 'nAiYesSub' : 'nAiNoSub'), loading: tr('nFilmLoading'), play: tr('nFilmPlay'), skip: tr('nFilmSkip'), save: tr('nFilmSave'), close: tr('nFilmClose'), made: tr('nFilmMade'), noRec: tr('nFilmNoRec') } }); } catch (e) { film = null; }
       if (wasOn) bgm(true);
     }
     busy = false; morning();
+  }
+  // その場で撮る（2026-11-01〜、重吉さんの決め）。扉3は後ろのカメラで灯りを撮る。最後の部屋の「あなたの写真」も同じ画面（night-film.js の camera()）
+  function camTx(go) { return { go: tr(go), shot: tr('nCamShot'), use: tr('nCamUse'), retake: tr('nCamRetake'), cancel: tr('nCamCancel'), flip: tr('nCamFlip'), no: tr('nCamNo'), pick: tr('nCamPick'), wait: tr('nCamWait') }; }
+  if (window.NightFilm && NightFilm.camera) {
+    const kc = $('keyCam'); kc.hidden = false;
+    kc.addEventListener('click', async () => {
+      if (busy || ended || !doorKey()) return;
+      const f = await NightFilm.camera({ face: 'environment', tx: camTx('nCamDoor'), onPick: () => $('file').click() });
+      if (f) useKey([f]);
+    });
   }
   const drop = $('drop');
   drop.addEventListener('click', () => $('file').click());
