@@ -141,13 +141,78 @@
   // 1灯ともったことを、絵の上に少しのあいだ見せる（最後の通路に着いたとき）
   let vtT = 0;
   function vToast(v) {
-    const T = $('vtoast'); T.innerHTML = `<div class="vessel">${vesselHTML(true)}</div><p>${esc(tr('nVesselAdd', { n: v.light, max: VMAX }))}</p>`;
-    T.hidden = false; clearTimeout(vtT); vtT = setTimeout(() => { T.hidden = true; }, 4200); sfx('light');
+    const T = $('vtoast');
+    if (v.light >= VMAX) { T.hidden = true; vesselBrim(); return; }   // 10灯目は、あふれる場面を画面いっぱいに
+    T.innerHTML = `<div class="vclip" id="vtClip"></div><p>${esc(tr('nVesselAdd', { n: v.light, max: VMAX }))}</p>`;
+    T.hidden = false; clearTimeout(vtT); vClip($('vtClip'), v.light);
+    vtT = setTimeout(() => { T.hidden = true; }, 4800);
   }
-  function vesselHTML(fresh) {
+  // 器の絵（Blender。play/gallery/vessel/v0〜v10.webp。作り方は tools/blender/vessel.py）。2026-11-01 重吉さんの決め：目盛りではなく、本物の器に光が満ちていく
+  const VGAL = '/play/gallery/vessel/';
+  const vImg = n => `<img class="vsl" src="${VGAL}v${Math.max(0, Math.min(VMAX, n))}.webp" alt="" width="160" height="184" decoding="async">`;
+  function vesselHTML() {
     const v = vessel();
-    return `<span class="vh">${esc(tr('nVessel'))}</span><span class="vp" aria-hidden="true">${Array.from({ length: VMAX }, (_, i) => `<i class="${i < v.light ? 'on' : ''}${fresh && i === v.light - 1 ? ' new' : ''}"></i>`).join('')}</span>`
-      + `<span class="vt">${esc(v.light >= VMAX ? tr('nVesselFull') : tr('nVesselLeft', { n: VMAX - v.light }))}</span>`;
+    return vImg(v.light) + `<span class="vtx"><span class="vh">${esc(tr('nVessel'))}</span>`
+      + `<span class="vt">${esc(v.light >= VMAX ? tr('nVesselFull') : tr('nVesselLeft', { n: VMAX - v.light }))}</span></span>`;
+  }
+  // 1灯ふえる：光のしずくが落ちてポチャンと水面が揺れ、1段上がる（約2.2秒。drop{n-1}.webm＝n-1灯→n灯）。終わったら器の絵に置きかえる。
+  // 動画は器の地の色（#121624）を焼きこんである。動きを減らす設定では絵だけ
+  function vClip(el, n) {
+    el.innerHTML = vImg(n - 1);
+    if (reduce || n < 1 || n > VMAX - 1) { el.innerHTML = vImg(n); return; }
+    const vd = document.createElement('video'); vd.muted = true; vd.playsInline = true; vd.preload = 'auto'; vd.setAttribute('muted', ''); vd.setAttribute('playsinline', '');
+    vd.className = 'vvid'; vd.innerHTML = `<source src="${VGAL}drop${n - 1}.webm" type="video/webm"><source src="${VGAL}drop${n - 1}.mp4" type="video/mp4">`;
+    let done = false; const fin = () => { if (done) return; done = true; el.innerHTML = vImg(n); };
+    vd.addEventListener('playing', () => vSound('drop'), { once: true });
+    vd.onended = fin; vd.onerror = fin; setTimeout(fin, 6000);
+    el.replaceChildren(vd); const p = vd.play(); if (p && p.catch) p.catch(fin);
+  }
+  // 10灯目：器があふれる（約7.6秒・画面いっぱい）。光が縁から盛り上がり、川のように蛇行して杯の外を伝い、台にたまって、光の粒が舞い上がる。押すか終わると閉じる
+  function vesselBrim() {
+    return new Promise(res => {
+      const L = $('vbrim'); $('vbrimT').textContent = tr('nVesselBrim'); $('vbrimS').textContent = tr('nVesselBrimSub');
+      const box = $('vbrimV'); L.hidden = false;
+      let done = false;
+      const close = () => { if (done) return; done = true; setTimeout(() => { L.hidden = true; box.innerHTML = ''; res(); }, 200); };
+      if (reduce) { box.innerHTML = vImg(VMAX); setTimeout(() => L.addEventListener('click', close, { once: true }), 300); setTimeout(close, 3500); return; }
+      const vd = document.createElement('video'); vd.muted = true; vd.playsInline = true; vd.preload = 'auto'; vd.setAttribute('muted', ''); vd.setAttribute('playsinline', '');
+      vd.className = 'vvid'; vd.innerHTML = `<source src="${VGAL}overflow.webm" type="video/webm"><source src="${VGAL}overflow.mp4" type="video/mp4">`;
+      vd.addEventListener('playing', () => vSound('brim'), { once: true });
+      vd.onended = () => { $('vbrimTap').hidden = false; L.addEventListener('click', close, { once: true }); };
+      vd.onerror = () => { box.innerHTML = vImg(VMAX); $('vbrimTap').hidden = false; L.addEventListener('click', close, { once: true }); };
+      $('vbrimTap').hidden = true; box.replaceChildren(vd); const p = vd.play(); if (p && p.catch) p.catch(vd.onerror);
+      setTimeout(() => L.addEventListener('click', close, { once: true }), 1500); // 途中でも押せば閉じる
+    });
+  }
+  // 器の音（WebAudio でその場で作る。試しの音は共有フォルダ vessel/ の plop.py・overflow_snd.py）。
+  // 最後の部屋の動画と同じく「♪ 音を出す」を押していなくても鳴らす。「♪ 止める」を押した人（muted）には鳴らさない
+  let vbrimStop = null;
+  function vSound(kind) {
+    if (muted || !ac) return;
+    try { ac.resume(); } catch (e) { /* 鳴らなくても遊べる */ }
+    const t0 = ac.currentTime + .02, out = ac.createGain(); out.gain.value = .7; out.connect(ac.destination);
+    const osc = (type, f, t, d, a, g = out) => { const o = ac.createOscillator(), e = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(a, t + .004); e.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(e).connect(g); o.start(t); o.stop(t + d + .05); return o; };
+    const bubble = (f0, f1, t, d, a) => { const o = osc('sine', f0, t, d, a); o.frequency.exponentialRampToValueAtTime(f1, t + .05); };
+    const bel = (f, t, d, a) => { osc('sine', f, t, d, a); osc('sine', f * 2.76, t, d * .35, a * .3); };
+    const plink = (t, f1 = 1250) => {
+      const n = ac.createBufferSource(), b = ac.createBuffer(1, ac.sampleRate * .05, ac.sampleRate), x = b.getChannelData(0);
+      for (let i = 0; i < x.length; i++) x[i] = (Math.random() * 2 - 1) * Math.exp(-i / ac.sampleRate / .01);
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1800; const g = ac.createGain(); g.gain.value = .25;
+      n.buffer = b; n.connect(lp).connect(g).connect(out); n.start(t);
+      bubble(400, f1, t, .24, .55); bubble(740, 1850, t + .088, .15, .22);
+    };
+    const T = kind === 'brim' ? 16 / 24 : 16 / 24;   // しずくが水面に入る時刻（動画の16コマ目）
+    if (kind === 'drop') { plink(t0 + T); bel(1318.5, t0 + T + .04, 1.6, .12); bel(1975.5, t0 + T + .16, 1.4, .08); bel(2637, t0 + T + .3, 1.1, .05); return; }
+    // あふれる：ポチャン → 光が満ちる和音（ニ長調）→ 流れに合わせて鈴が上へ連なる → 台にたまる低い響き → いちばん明るい所で鈴と和音
+    plink(t0 + T, 1150); bel(1174.7, t0 + T + .04, 1.6, .12);
+    const pad = (fs, t, d, a, att, rel) => fs.forEach((f, i) => { const o = ac.createOscillator(), e = ac.createGain(), lfo = ac.createOscillator(), lg = ac.createGain(); o.type = 'sine'; o.frequency.value = f; lfo.frequency.value = 5.2; lg.gain.value = f * .004; lfo.connect(lg).connect(o.frequency);
+      e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(a / fs.length / (1 + i * .3), t + att); e.gain.setValueAtTime(a / fs.length / (1 + i * .3), t + d - rel); e.gain.linearRampToValueAtTime(0, t + d); o.connect(e).connect(out); o.start(t); lfo.start(t); o.stop(t + d + .05); lfo.stop(t + d + .05); });
+    pad([293.66, 369.99, 440, 587.33], t0 + 1.7, 5.9, .32, 1.4, 1.8);
+    pad([146.83, 220], t0 + 4.3, 3.3, .22, .8, 1.8);
+    const nt = [1174.7, 1480, 1760, 2349.3, 2960, 3520];
+    for (let i = 0; i < 14; i++) bel(nt[i % 6] * (i >= 6 && i < 12 ? .5 : 1), t0 + 2.8 + i * .17, 1.2, .05 + .015 * (i % 3));
+    pad([587.33, 739.99, 880, 1174.7], t0 + 5.5, 2.1, .26, .25, 1.6);
+    [[2349.3, 0], [1760, .07], [2960, .14], [3520, .24]].forEach(([f, d]) => bel(f, t0 + 5.6 + d, 1.9, .08));
   }
   // 動画が作られた夜（器が満ちた夜）の終わり：器を空に、満ちた回数と、守り神がいればその子が守り神をつとめた夜を数える
   function guideDone(c) {
@@ -520,7 +585,14 @@
         $('gainGold').hidden = false; $('gainGold').textContent = tr(all4 ? 'nGainGold' : 'nGainHint');
         $('gainList').replaceChildren(Object.assign(document.createElement('div'), { className: 'gone', innerHTML: frameBox(f, Math.min(200, innerWidth - 80)) }));
         // 部屋を灯すたびに灯火の器へ1灯（2026-11-01 重吉さんの決め。前は最後の部屋に入ったときだけ灯っていた）。ここで見せる
-        if (!trial) { const was = vessel().light, v = addLight(); $('gainV').innerHTML = vesselHTML(v.light > was); $('gainVt').textContent = v.light > was ? tr('nVesselAdd', { n: v.light, max: VMAX }) : tr('nVesselFull'); $('gainV').hidden = $('gainVt').hidden = false; $('vessel').innerHTML = vesselHTML(); }
+        let brim = false;
+        if (!trial) {
+          const was = vessel().light, v = addLight(), up = v.light > was; brim = up && v.light >= VMAX;
+          $('gainV').hidden = $('gainVt').hidden = false; $('vessel').innerHTML = vesselHTML();
+          $('gainVt').textContent = up ? tr('nVesselAdd', { n: v.light, max: VMAX }) : tr('nVesselFull');
+          if (up && !brim) vClip($('gainV'), v.light); else $('gainV').innerHTML = vImg(v.light);
+        }
+        if (brim) setTimeout(vesselBrim, 900);   // 10灯目は、額縁を見せたあとであふれる場面を
         $('gainTap').hidden = false;
         const go = e => { if (e.type === 'keydown' && !['Enter', ' '].includes(e.key)) return; L.removeEventListener('click', go); removeEventListener('keydown', go); L.hidden = true; done(); };
         setTimeout(() => { L.addEventListener('click', go); addEventListener('keydown', go); }, 400);

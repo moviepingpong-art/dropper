@@ -136,6 +136,18 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .keylead{margin:0;font-size:14px;line-height:1.9} .keylead a{color:var(--gold-soft)}
 /* 灯火の器（2026-11-01〜）：10灯の小さな灯り。数があるのは器の光だけ */
 .vessel{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 10px;margin:10px 0 4px;font-size:13px;color:var(--mid)}
+.vessel .vsl{width:52px;height:auto;display:block;filter:drop-shadow(0 0 6px rgba(243,207,122,.18))}
+.vessel .vtx{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.vclip{width:150px;margin:6px auto 0;border-radius:14px;overflow:hidden;background:#121624;box-shadow:0 0 0 1px rgba(201,164,92,.25)}
+.vclip img,.vclip video{display:block;width:100%;height:auto}
+.vtoast .vclip{width:104px;margin:2px auto}
+.layer.vbrim{z-index:60;align-items:center;background:rgba(6,8,16,.9);display:flex;align-items:center;justify-content:center}
+.layer.vbrim[hidden]{display:none}
+.vbrimbox{text-align:center;padding:16px;max-width:520px}
+.vbrimv{width:min(78vw,52vh,400px);margin:0 auto;border-radius:20px;overflow:hidden;background:#121624}
+.vbrimv img,.vbrimv video{display:block;width:100%;height:auto}
+.vbrimt{font-family:var(--serif);color:var(--gold-soft);margin:14px 0 6px;font-size:1.3rem;letter-spacing:.06em}
+.vbrims{margin:0;color:var(--mid);font-size:.92rem;line-height:1.7}
 .vessel .vh{font-family:var(--serif);color:var(--gold-soft);letter-spacing:.06em}
 .vessel .vp{display:inline-flex;gap:3px}
 .vessel .vp i{width:11px;height:15px;border-radius:50% 50% 45% 45%/60% 60% 40% 40%;border:1px solid rgba(201,164,92,.55);background:rgba(255,255,255,.03)}
@@ -512,13 +524,22 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
  </div>
 </div>
 
+<!-- 灯火の器が満ちてあふれる（10灯目。2026-11-01 重吉さんの決め。動画は play/gallery/vessel/overflow.*） -->
+<div class="layer vbrim" id="vbrim" hidden aria-live="polite">
+ <div class="vbrimbox">
+  <div class="vbrimv" id="vbrimV"></div>
+  <h2 class="vbrimt" id="vbrimT"></h2>
+  <p class="vbrims" id="vbrimS"></p>
+  <div class="tap" id="vbrimTap" hidden data-i18n="nTap">タップで次へ</div>
+ </div>
+</div>
 <div class="layer lt" id="gain" hidden aria-live="polite">
  <div class="ltbox">
   <h2 class="gainh" id="gainH"></h2>
   <p class="gainp" id="gainP"></p>
   <div class="gainlist" id="gainList"></div>
   <p class="gaingold" id="gainGold" hidden></p>
-  <div class="vessel" id="gainV" hidden></div>
+  <div class="vclip" id="gainV" hidden></div>
   <p class="gainvt" id="gainVt" hidden></p>
   <div class="tap" id="gainTap" hidden data-i18n="nTap">タップで次へ</div>
  </div>
@@ -554,9 +575,9 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
  </div>
 </div>
 
-<script src="monster-i18n.js?v=32"></script>
-<script src="night-i18n.js?v=32"></script>
+<script src="monster-i18n.js?v=33"></script>
+<script src="night-i18n.js?v=33"></script>
 <script src="night-film.js?v=23"></script>
-<script src="night-app.js?v=47"></script>
+<script src="night-app.js?v=48"></script>
 </body>
 </html>
