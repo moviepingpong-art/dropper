@@ -46,28 +46,6 @@ def spirit_ld(lang, name, alt, desc, in_lang, currency, pub_name, pub_url):
             f'  "publisher": {{ "@type": "Organization", "name": {q(pub_name)}, "url": {q(pub_url)} }}\n'
             '}\n</script>')
 
-# OG画像（2026-11-01〜 ゲーム専用の og-spirit.jpg）と Twitter のタグ。spirit.html だけ。夜のページは前のまま（og-*.png 1行）
-def spirit_og(alt, title, desc):
-    img = 'https://dropper-tools.com/assets/og/og-spirit.jpg'
-    return (f'<meta property="og:image" content="{img}">\n'
-            '<meta property="og:image:width" content="1200">\n'
-            '<meta property="og:image:height" content="630">\n'
-            f'<meta property="og:image:alt" content="{alt}">\n'
-            '<meta name="twitter:card" content="summary_large_image">\n'
-            f'<meta name="twitter:image" content="{img}">\n'
-            f'<meta name="twitter:title" content="{title}">\n'
-            f'<meta name="twitter:description" content="{desc}">')
-
-OG_ALT = {
-    'ja': '夜の美術館に浮かぶ提灯の明かりと、額縁の絵から漂う小さな光',
-    'en': 'A glowing lantern in a museum at night, tiny lights drifting from the framed paintings',
-    'in': 'A glowing lantern in a museum at night, tiny lights drifting from the framed paintings',
-    'ko': '밤의 미술관에 떠 있는 등불과 액자 속 그림에서 흘러나오는 작은 빛들',
-    'zh-hant': '夜間美術館裡漂浮的燈籠微光，與畫框中流洩而出的點點光芒',
-    'vi': 'Ánh đèn lồng lơ lửng trong bảo tàng ban đêm và những đốm sáng nhỏ bay ra từ các bức tranh',
-    'da': 'En lysende lanterne på et museum om natten og små lys, der svæver ud fra de indrammede malerier',
-}
-
 JA_DESC = '閉館後の美術館で、作品にひそむ精霊が目を覚ます遊び。くじで並ぶ世界の美術館の15点から、1点で目覚め、2〜3点で結び。精霊どうしの縁と受け継ぎ、1000体に1体の金の光も。自分の写真やファイルは使わず、ログインも不要です。'
 
 JA_HEAD = {
@@ -80,7 +58,7 @@ JA_HEAD = {
     'ogtitle': '<meta property="og:title" content="ともしびの美術館｜ドロッパーの遊び場">',
     'ogdesc': '<meta property="og:description" content="閉館後の美術館。作品にひそむ精霊が、あなたの手で目を覚まします。目覚め・結び・縁と受け継ぎ。1000体に1体の金の光も。">',
     'ogurl': '<meta property="og:url" content="https://dropper-tools.com/play/spirit.html">',
-    'ogimage': spirit_og(OG_ALT['ja'], 'ともしびの美術館｜ドロッパーの遊び場', '閉館後の美術館。作品にひそむ精霊が、あなたの手で目を覚まします。目覚め・結び・縁と受け継ぎ。1000体に1体の金の光も。'),
+    'ogimage': '<meta property="og:image" content="https://dropper-tools.com/assets/og/og-ja.png">',
     'langjs': "<script>window.LANG = 'ja';</script>",
     'fonts': JA_HEAD_FONTS,
     'ld': spirit_ld('ja', 'ともしびの美術館', 'The Lantern Museum', JA_DESC, 'ja', 'JPY', 'ドロッパー', 'https://dropper-tools.com/'),
@@ -99,7 +77,7 @@ def shead(lang, html_lang, title, desc, locale, ogtitle, ogdesc, og, fonts=JA_HE
         'ogtitle': f'<meta property="og:title" content="{ogtitle}">',
         'ogdesc': f'<meta property="og:description" content="{ogdesc}">',
         'ogurl': f'<meta property="og:url" content="{url}">',
-        'ogimage': spirit_og(OG_ALT[lang], ogtitle, ogdesc),
+        'ogimage': f'<meta property="og:image" content="https://dropper-tools.com/assets/og/og-{og}.png">',
         'langjs': f"<script>window.LANG = '{lang}';</script>",
         'fonts': fonts,
     }
@@ -144,6 +122,34 @@ for _lang, _name, _cur, _pub in [
     _alt = 'ともしびの美術館' if _name == 'The Lantern Museum' else 'The Lantern Museum'
     LANGS[_lang]['ld'] = spirit_ld(_lang, _name, _alt, _desc, _in, _cur, 'Dropper', _pub)
 
+# OG画像はゲーム専用の og-spirit.jpg（2026-11-01〜。重吉さんが6言語のページを直接直したのを、この表に写した）。Twitter の題と説明は og と同じ文
+SPIRIT_OG = 'https://dropper-tools.com/assets/og/og-spirit.jpg'
+SPIRIT_ALT = {
+    'ja': '夜の美術館に浮かぶ提灯の明かりと、額縁の絵から漂う小さな光',
+    'en': 'A glowing lantern in a museum at night, tiny lights drifting from the framed paintings',
+    'in': 'A glowing lantern in a museum at night, tiny lights drifting from the framed paintings',
+    'ko': '밤의 미술관에 떠 있는 등불과 액자 속 그림에서 흘러나오는 작은 빛들',
+    'zh-hant': '夜間美術館裡漂浮的燈籠微光，與畫框中流洩而出的點點光芒',
+    'vi': 'Ánh đèn lồng lơ lửng trong bảo tàng ban đêm và những đốm sáng nhỏ bay ra từ các bức tranh',
+    'da': 'En lysende lanterne på et museum om natten og små lys, der svæver ud fra de indrammede malerier',
+}
+
+
+def spirit_og(h, lang):
+    cut = lambda v, a: v[len(a):-len('">')]
+    title = cut(h['ogtitle'], '<meta property="og:title" content="')
+    desc = cut(h['ogdesc'], '<meta property="og:description" content="')
+    h['ogimage'] = (f'<meta property="og:image" content="{SPIRIT_OG}">\n'
+                    '<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n'
+                    f'<meta property="og:image:alt" content="{SPIRIT_ALT[lang]}">')
+    h['twitter'] = (f'<meta name="twitter:image" content="{SPIRIT_OG}">\n'
+                    f'<meta name="twitter:title" content="{title}">\n<meta name="twitter:description" content="{desc}">')
+
+
+spirit_og(JA_HEAD, 'ja')
+for _lang in LANGS:
+    spirit_og(LANGS[_lang], _lang)
+
 # ---- 古いURLから新しいページへ飛ばすページ（monster.html → spirit.html、battle.html → night.html。2026-10-21） ----
 def redirect_page(pre, to='spirit.html', title='The Lantern Museum'):
     url = f'https://dropper-tools.com{pre}play/{to}'
@@ -177,7 +183,6 @@ def nhead(lang, html_lang, title, desc, locale, ogtitle, ogdesc, og, fonts=JA_HE
     url = f'https://dropper-tools.com/{lang}/play/night.html'
     h['canonical'] = f'<link rel="canonical" href="{url}">'
     h['ogurl'] = f'<meta property="og:url" content="{url}">'
-    h['ogimage'] = f'<meta property="og:image" content="https://dropper-tools.com/assets/og/og-{og}.png">'
     return h
 
 

@@ -162,7 +162,7 @@
   let keyed = false, doorPics = [], witness = null, witnessMap = '', witnessHues = null, witnessTh = '', hikariLit = null, film = null, doorKeyed = [];
   // 扉3の鍵（2026-10-25〜、重吉さんの決め）：外のサイトで保存した画像。ほかの扉は鍵なし。毎晩要るが、前に保存した同じ画像で何度でも開く
   // 扉2（Silk→Fluid Simulation）と扉4（TheSkyLive）の鍵は、スマホで保存できなかったので 2026-10-28 に外した（重吉さんの決め）
-  const DOORKEY = [null, null, 'hubble', null];
+  const DOORKEY = [null, null, 'light', null];
   const doorKey = () => at === 'door' && !doorKeyed[cur] ? DOORKEY[cur] || null : null;
 
   function cardEl(c, opts = {}) {
@@ -212,7 +212,7 @@
     // 鍵の箱は、扉3と光の扉で同じものを使い、言葉だけ入れかえる
     if (dk) {
       $('keyLead').innerHTML = D('nDoorLead')[dk]; $('keyDrop').textContent = D('nDoorDrop')[dk];
-      $('drop').setAttribute('aria-label', D('nDoorAria')[dk]); $('keyNote').innerHTML = tr('nDoorNote', { site: D('nDoorSite')[dk] });
+      $('drop').setAttribute('aria-label', D('nDoorAria')[dk]); $('keyNote').innerHTML = tr('nDoorNote');
     } else if (lightKey) {
       $('keyLead').innerHTML = tr('nKeyLead'); $('keyDrop').textContent = tr('nKeyDrop');
       $('drop').setAttribute('aria-label', tr('nKeyAria')); $('keyNote').innerHTML = tr('nKeyNote');
@@ -475,7 +475,7 @@
     r.hidden = st === 'read'; r.className = 'kres ' + st;
     $('kresT').textContent = st === 'ok' ? tr('nKeyFit') : st === 'ng' ? tr('nKeyMiss') : '';
     const dk = doorKey(), lk = $('klike'); lk.hidden = !(st === 'ng' && dk);
-    if (dk) { lk.firstElementChild.className = 'lk-' + dk; $('klikeT').textContent = tr('nKeyLike', { site: D('nDoorSite')[dk] }); }
+    if (dk) { lk.firstElementChild.className = 'lk-' + dk; $('klikeT').textContent = D('nDoorLike')[dk]; }
   }
   async function useKey(files) {
     if (doorKey()) return useDoorKey(files);
@@ -493,21 +493,20 @@
   // 扉3：落とされた画像を、この端末の中で形と色だけ見る（AI なし・どこにも送らない・残さない）。合えば扉を開ける
   async function useDoorKey(files) {
     const dk = doorKey(); if (busy || ended || !dk) return;
-    const f = [...files].find(x => x.type.startsWith('image/')), site = D('nDoorSite')[dk];
-    if (!f) { keyFx('ng'); $('msg').textContent = tr('nDoorNo', { site }); sfx('no'); return; }
+    const f = [...files].find(x => x.type.startsWith('image/'));
+    if (!f) { keyFx('ng'); $('msg').textContent = tr('nDoorNo'); sfx('no'); return; }
     keyFx('read', f); $('drop').classList.add('busy'); $('msg').textContent = tr('nKeyReading');
     const ok = await doorKeyFits(dk, f).catch(() => false);
     $('drop').classList.remove('busy');
     if (doorKey() !== dk) return;
-    if (!ok) { keyFx('ng'); $('msg').textContent = tr('nDoorNo', { site }); sfx('no'); return; }
+    if (!ok) { keyFx('ng'); $('msg').textContent = tr('nDoorNo'); sfx('no'); return; }
     keyFx('ok'); sfx('light'); busy = true; await wait(900); busy = false;
     doorKeyed[cur] = true; doorPics[cur] = URL.createObjectURL(f);
     openDoor();
     setTimeout(() => { if (!ended) $('msg').textContent = tr('nDoorOk'); }, reduce ? 200 : 800);
   }
-  // ---- 扉3の鍵：外のサイトで保存した画像（2026-10-25〜）。AI なしで、この端末の中で形と色だけを見る。画像は残さない ----
-  // hubble＝NASA「ハッブルがあなたの誕生日に見たもの」：ファイル名が「june-1-2003-…」の形。名前が変わっていても、暗い宇宙の写真なら通す（重吉さんの決め）
-  const MONTHS = /^(january|february|march|april|may|june|july|august|september|october|november|december)-\d{1,2}-\d{4}-/i;
+  // ---- 扉3の鍵：身のまわりの灯りを撮った写真（2026-11-01〜、重吉さんの決め。前は NASA のハッブルの写真）。AI なしで、この端末の中で明るさだけを見る。画像は残さない ----
+  // light＝暗めの写真の中に、白くとぶほど明るい所（灯り）がある。外のサイトに頼らず、スマホはカメラで、PC は手もとの写真で必ず手に入るように、ゆるく通す
   function pixelsOf(file, size = 160) {
     return new Promise(ok => {
       const url = URL.createObjectURL(file), im = new Image();
@@ -522,20 +521,13 @@
     });
   }
   function doorKeyOf(kind, P, name) {
-    const { w, h, d } = P, n = w * h, mx = i => Math.max(d[i], d[i + 1], d[i + 2]), mn = i => Math.min(d[i], d[i + 1], d[i + 2]);
-    if (kind === 'hubble') {
-      if (MONTHS.test(name || '')) return true;
-      // 名前が変わっていたら：宇宙らしい暗さ（黒に近い所が多い・茶色い暗さではない）と、色のある光
-      let sum = 0, dark = 0, vdark = 0, warm = 0, color = 0, bright = 0;
-      for (let i = 0; i < d.length; i += 4) {
-        const v = mx(i); sum += (d[i] + d[i + 1] + d[i + 2]) / 3;
-        if (v < 45) dark++;
-        if (v < 25) vdark++;
-        if (v < 60 && d[i] - d[i + 2] > 15) warm++;
-        if (v > 60 && v - mn(i) > 25) color++;
-        if (v > 150) bright++;
-      }
-      return sum / n < 60 && dark / n > 0.45 && vdark / n > 0.25 && warm / n < 0.15 && color / n > 0.003 && bright / n > 0.0005;
+    const { w, h, d } = P, n = w * h, mx = i => Math.max(d[i], d[i + 1], d[i + 2]);
+    if (kind === 'light') {
+      // 白くとぶ所が3点以上・画面の3割まで（白い紙や昼の空ではない）・明るさの真ん中が150まで（暗めの写真）
+      const hist = new Uint32Array(256); let bright = 0;
+      for (let i = 0; i < d.length; i += 4) { const v = mx(i); hist[v]++; if (v >= 240) bright++; }
+      let med = 0; for (let k = 0, acc = 0; k < 256; k++) { acc += hist[k]; if (acc >= n / 2) { med = k; break; } }
+      return bright >= 3 && bright / n <= 0.3 && med <= 150;
     }
     return false;
   }
