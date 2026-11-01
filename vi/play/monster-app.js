@@ -1668,8 +1668,9 @@
   function showVessel() {
     const el = $('vessel'); if (!el) return;
     const v = nightRec().vessel || {}, n = Math.max(0, Math.min(VMAX, Math.floor(Number(v.light) || 0)));
-    el.innerHTML = `<span class="vh">${esc(tr('vessel'))}</span><span class="vp" aria-hidden="true">${Array.from({ length: VMAX }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}</span>`
-      + `<span class="vt">${esc(n >= VMAX ? tr('vesselFull') : tr('vesselLeft', { n: VMAX - n }))}</span>`;
+    // 器の絵は夜のページと同じ（Blender。play/gallery/vessel/v0〜v10.webp）。2026-11-01〜、目盛りから本物の器へ
+    el.innerHTML = `<img class="vsl" src="/play/gallery/vessel/v${n}.webp" alt="" width="160" height="184" decoding="async"><span class="vtx"><span class="vh">${esc(tr('vessel'))}</span>`
+      + `<span class="vt">${esc(n >= VMAX ? tr('vesselFull') : tr('vesselLeft', { n: VMAX - n }))}</span></span>`;
   }
   function showFrame(M) {
     const f = framesById().get(M.id), gn = guardsById().get(M.id), el = $('framePlate'), cv = $('card');
