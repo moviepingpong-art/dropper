@@ -191,7 +191,7 @@
     '書類': { shape: 'paper' },
     '絵': { shape: 'drawing' },
     '画面': { shape: 'screen' },
-    // 人間は AI の答えでは選ばれない。「80億分の1」の人生の記録をドロップしたときだけ（readLifeCard）
+    // 人間は AI の答えでは選ばれない。前は人生の記録の画像から生まれていたが、2026-11-01 にやめた（いまは生まれない。描き方は古いカードのために残す）
     '人間': { shape: 'human' }
   };
   const shapeOf = g => (KINDS[g.kind] || {}).shape || 'monster';
@@ -767,57 +767,6 @@
     c.restore();
   }
 
-  // ---- 人生の記録（「80億分の1」の共有カード）を見分けて、人生地図を読む ----
-  // 画像に埋め込みの印は無いので、絵の決まった形で見分ける：縦横 4:5・上の帯のえんじ色・地の色・左下の人生地図。
-  // 幅1080にそろえて測る。写真アプリで縮んだ JPEG でも通るように、色には幅を持たせる。
-  // 人生地図はマスの大きさが毎回違う（段の数で変わる）ので、1段目の右端からマスの間隔を出す。
-  // 読むのは、生きた年ごとの幸せ（青緑の濃さ）・亡くなった年（濃い紺のマス）・平均寿命（太枠のマス）だけ
-  function readLifeCard(img) {
-    const w = img.naturalWidth, h = img.naturalHeight;
-    if (!w || w < 400 || Math.abs(h / w - 1.25) > 0.02) return null;
-    const cv = document.createElement('canvas'); cv.width = 1080; cv.height = 1350;
-    const x = cv.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0, 1080, 1350);
-    const d = x.getImageData(0, 0, 1080, 1350).data;
-    const P = (px, py) => { const i = (Math.round(py) * 1080 + Math.round(px)) * 4; return [d[i], d[i + 1], d[i + 2]]; };
-    const near = (cl, t, tol) => cl.every((v, i) => Math.abs(v - t[i]) <= tol);
-    const share = (pts, t, tol) => pts.filter(q => near(P(q[0], q[1]), t, tol)).length / pts.length;
-    const band = [], bg = [];
-    for (let px = 20; px < 1060; px += 40) for (const py of [20, 60, 100]) band.push([px, py]);
-    for (let py = 150; py < 1300; py += 50) bg.push([20, py], [1060, py]);
-    if (share(band, [140, 29, 60], 24) < 0.8 || share(bg, [235, 240, 237], 14) < 0.85) return null;
-    const teal = cl => cl[1] - cl[0] > 30, dark = cl => Math.max(...cl) < 95;
-    let y0 = -1; for (let py = 905; py < 960 && y0 < 0; py++) if (teal(P(75, py))) y0 = py;
-    let x0 = -1; for (let px = 50; px < 120 && x0 < 0 && y0 >= 0; px++) if (teal(P(px, y0 + 10))) x0 = px;
-    if (x0 < 0) return null;
-    let x1 = x0, miss = 0;
-    for (let px = x0; px < 640 && miss < 12; px++) { if (teal(P(px, y0 + 10))) { x1 = px; miss = 0; } else miss++; }
-    const pitch = (x1 - x0 + 1) / (10 - 0.146), cell = pitch * 0.854;
-    if (pitch < 18 || pitch > 60) return null;
-    const joy = []; let age = -1, avg = null;
-    for (let r = 0; r < 14; r++) {
-      const yc = y0 + r * pitch + cell / 2;
-      if (yc > 1215) break;
-      for (let k = 0; k < 10; k++) {
-        const xl = x0 + k * pitch, cl = P(xl + cell / 2, yc), i = r * 10 + k;
-        const yt = y0 + r * pitch, edge = f => [0, 1, 2, 3].some(o => dark(f(o))); // 太枠：マスの左と上のふちが濃い（JPEG ではにじむので、内側へ数画素たどる）
-        if (avg === null && !dark(cl) && edge(o => P(xl + o, yc)) && edge(o => P(xl + cell / 2, yt + o))) avg = i;
-        if (age >= 0) continue;
-        if (teal(cl)) joy.push(clamp01((205 - cl[1]) / 90));
-        else if (dark(cl)) age = i;
-        else return null; // 亡くなった年より前に、色の無いマスがあるのはおかしい
-      }
-    }
-    if (age < 1) return null;
-    return { age, avg, joy: joy.map(v => Math.round(v * 9)).join('') };
-  }
-  // 人生地図から強さのかたよりを出す：たいりょく＝享年、こうげき＝とても幸せな年の多さ、
-  // まもり＝幸せの浮き沈みの少なさ、すばやさ＝0〜20歳の幸せ
-  function lifeMeas(life) {
-    const j = [...life.joy].map(v => Number(v) / 9), n = j.length || 1;
-    const mean = j.reduce((a, b) => a + b, 0) / n, sd = Math.sqrt(j.reduce((a, b) => a + (b - mean) ** 2, 0) / n);
-    const y = j.slice(0, 20), ym = y.length ? y.reduce((a, b) => a + b, 0) / y.length : mean;
-    return { bias: { hp: toBias(life.age / 100), atk: toBias(j.filter(v => v > 0.7).length / n * 2), def: toBias(1 - sd * 4), spd: toBias(ym) }, lively: mean, mean };
-  }
   // 子ども・合体の人生地図：親の年を1年ずつ交互に編む（亡くなった年は無し）
   function mixLife(lives) {
     const ls = lives.filter(l => l && l.joy);
@@ -1706,14 +1655,31 @@
     } catch (e) { /* 読めなければ印を出さない */ }
     return out;
   }
+  // 夜の美術館で「今夜の守り神」をつとめた夜の数（2026-11-01〜、重吉さんの決め。記録は同じ dropper-spirit-night の guards、ここでは読むだけ）。
+  // 目録の小さな絵に印、開いたカードの名札に何夜つとめたか。輝き（強さ）は変えない
+  // 灯火の器（night.html と同じ記録の vessel）も、目録の見出しの下に出す
+  function nightRec() { try { return JSON.parse(localStorage.getItem('dropper-spirit-night')) || {}; } catch (e) { return {}; } }
+  function guardsById() {
+    const G = nightRec().guards, out = new Map();
+    if (G && typeof G === 'object' && !Array.isArray(G)) for (const id in G) { const n = Math.floor(Number(G[id]) || 0); if (n > 0) out.set(id, n); }
+    return out;
+  }
+  const VMAX = 10;
+  function showVessel() {
+    const el = $('vessel'); if (!el) return;
+    const v = nightRec().vessel || {}, n = Math.max(0, Math.min(VMAX, Math.floor(Number(v.light) || 0)));
+    el.innerHTML = `<span class="vh">${esc(tr('vessel'))}</span><span class="vp" aria-hidden="true">${Array.from({ length: VMAX }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}</span>`
+      + `<span class="vt">${esc(n >= VMAX ? tr('vesselFull') : tr('vesselLeft', { n: VMAX - n }))}</span>`;
+  }
   function showFrame(M) {
-    const f = framesById().get(M.id), el = $('framePlate'), cv = $('card');
+    const f = framesById().get(M.id), gn = guardsById().get(M.id), el = $('framePlate'), cv = $('card');
     cv.classList.remove('framed-dawn', 'framed-quiet', 'leaf');
-    if (!f) { el.classList.add('hidden'); return; }
+    const gl = gn ? `<span class="gnights">${esc(tr('guardNights', { n: gn }))}</span>` : '';
+    if (!f) { el.innerHTML = gl; el.classList.toggle('hidden', !gn); return; }
     const dawn = f.k === 'dawn';
     cv.classList.add(dawn ? 'framed-dawn' : 'framed-quiet');
     if (M.rarity === 'gold' || M.rarity === 'silver') cv.classList.add('leaf');
-    el.innerHTML = `<b>${esc(tr(dawn ? 'frameTitleDawn' : 'frameTitleQuiet'))}</b><span>${esc(tr(dawn ? 'framedAtDawn' : 'framedAtQuiet', { n: Number(f.n) || 1 }))}</span>`;
+    el.innerHTML = `<b>${esc(tr(dawn ? 'frameTitleDawn' : 'frameTitleQuiet'))}</b><span>${esc(tr(dawn ? 'framedAtDawn' : 'framedAtQuiet', { n: Number(f.n) || 1 }))}</span>` + gl;
     el.classList.remove('hidden');
   }
 
@@ -1733,13 +1699,15 @@
       await loadFontsFor(M); const cv = document.createElement('canvas'); cv.width = 600; cv.height = 920;
       drawCard(cv, M); M.thumb = thumbOf(cv); M.fig = figOf(M); M.dex = dexOf(M); M.look = LOOK; await DB.put('cards', JSON.parse(JSON.stringify(M)));
     }
-    const cards = (await DB.getAll('cards')).sort((a, b) => b.serial - a.serial), g = $('dex'), framed = framesById();
+    const cards = (await DB.getAll('cards')).sort((a, b) => b.serial - a.serial), g = $('dex'), framed = framesById(), guards = guardsById();
     $('dexCount').textContent = tr('dexCount', { n: cards.length, max: DEX_MAX });
+    showVessel();
     g.innerHTML = '';
     for (const m of cards) {
       const b = document.createElement('button'); b.className = 'cardthumb'; b.type = 'button';
       const fr = framed.get(m.id);
       if (fr) { b.classList.add('framed', fr.k); const mk = document.createElement('span'); mk.className = 'fmark'; mk.textContent = tr(fr.k === 'dawn' ? 'frameMarkDawn' : 'frameMarkQuiet'); b.appendChild(mk); }
+      if (guards.has(m.id)) { const gm = document.createElement('span'); gm.className = 'gmark'; gm.textContent = tr('guardMark'); gm.title = tr('guardNights', { n: guards.get(m.id) }); b.appendChild(gm); }
       b.title = `No.${m.no} ${nameOf(m)}`;
       const i = new Image(); i.src = safeThumb(m.dex) || m.thumb; i.alt = tr('dexAlt', { name: nameOf(m), gender: tr(m.gender === 'm' ? 'male' : 'female'), gen: m.gen }); b.appendChild(i);
       const tag = document.createElement('span'); tag.className = 'tag';
@@ -1837,7 +1805,7 @@
       g.type = m >= 0.7 ? '光' : m >= 0.55 ? '森' : m >= 0.4 ? '風' : '水';
       g.moves = [{ d: 'humanMoves', p: [fp[3] % 8] }, { d: 'humanMoves', p: [(fp[3] % 8 + 1 + (fp[3] >>> 8) % 7) % 8] }];
     }
-    // 人間のカード（人生の記録）には、強さ・珍しさ・バグをつけない。どの人生も同じ値（「80億分の1」の運営の方のお願い、2026-10-17）
+    // 人間のカード（人生の記録）には、強さ・珍しさ・バグをつけない。どの人生も同じ値（人生どうしを比べない。2026-10-17）
     const rarity = life ? 'normal' : rarityOf(fp);
     const bug = !life && isBugPrint(fp);
     let stats = {};
@@ -2542,24 +2510,6 @@
     await DB.clear('cards'); await DB.clear('couples');
     slots.m = slots.f = null; renderSlots(); await renderDex();
   });
-  // ---- 夜の美術館の光の扉の鍵（night.html、2026-10-25〜。それまではこのページでドロップしていた） ----
-  // night.html が見えない枠でこのページを開き、落とされた人生の記録の画像を渡してくる（同じサイトの中だけ）。
-  // ここで見分けて（AI は使わない）、守り神を目録に入れ、名前と人生地図を返す。同じ人生の記録の守り神がもう目録にいれば、新しく作らない。画像は残さない
-  if (window.parent !== window) {
-    addEventListener('message', async e => {
-      if (e.origin !== location.origin || e.source !== window.parent || !e.data || e.data.type !== 'lifeKey' || !(e.data.file instanceof Blob)) return;
-      const reply = x => e.source.postMessage(Object.assign({ type: 'lifeKeyDone' }, x), location.origin);
-      try {
-        const l = await loadPhoto(e.data.file), life = readLifeCard(l.img);
-        if (!life) return reply({ ok: false });
-        // その夜だけの守り神。目録には入れない（2026-10-25〜、重吉さんの決め）。名前・人生地図の色・カードの小さな絵（最後の部屋の動画に出す）だけを返す
-        const M = await build(l.bytes, l.img, printOf(fingerprint(l.bytes)), { kind: 'life', meas: lifeMeas(life), life });
-        await display(M);
-        reply({ ok: true, name: JSON.parse(JSON.stringify(M.name)), life: { joy: M.life.joy }, th: thumbOf() });
-      } catch (err) { reply({ ok: false, err: true }); }
-    });
-    window.parent.postMessage({ type: 'lifeKeyReady' }, location.origin);
-  }
   window.applyI18n();
   renderSlots();
   renderDex();
