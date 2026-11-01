@@ -659,7 +659,8 @@
         if (o.tx.cam) {
           const cb = document.createElement('button'); cb.type = 'button'; cb.className = 'nf-mode nf-camgo'; cb.textContent = o.tx.cam.go;
           cb.onclick = async () => { const f = await camera({ face: 'user', oval: true, tx: o.tx.cam, onPick: () => mi.click() }); if (f) useMe(f); };
-          p.append(cb);
+          // 写真の箱の横に並べる（狭い画面では下へ折り返す）。縦に積むと、背の低い画面で「光の中へ」に重なった
+          const row = document.createElement('div'); row.className = 'nf-merow'; me.replaceWith(row); row.append(me, cb);
         }
       }
       L.cap.append(p); cv.parentNode.classList.add('pick');  // 選ぶあいだは絵を小さくして、選ぶ所とボタンを入れる
