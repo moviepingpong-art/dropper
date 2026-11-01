@@ -117,6 +117,33 @@ for _lang, _name, _cur, _pub in [
     _alt = 'ともしびの美術館' if _name == 'The Lantern Museum' else 'The Lantern Museum'
     LANGS[_lang]['ld'] = spirit_ld(_lang, _name, _alt, _desc, _in, _cur, 'Dropper', _pub)
 
+# OG画像はゲーム専用の og-spirit.jpg（2026-11-01〜。重吉さんが6言語のページを直接直したのを、この表に写した）。Twitter の題と説明は og と同じ文
+SPIRIT_OG = 'https://dropper-tools.com/assets/og/og-spirit.jpg'
+SPIRIT_ALT = {
+    'ja': '夜の美術館に浮かぶ提灯の明かりと、額縁の絵から漂う小さな光',
+    'en': 'A glowing lantern in a museum at night, tiny lights drifting from the framed paintings',
+    'in': 'A glowing lantern in a museum at night, tiny lights drifting from the framed paintings',
+    'ko': '밤의 미술관에 떠 있는 등불과 액자 속 그림에서 흘러나오는 작은 빛들',
+    'zh-hant': '夜間美術館裡漂浮的燈籠微光，與畫框中流洩而出的點點光芒',
+    'vi': 'Ánh đèn lồng lơ lửng trong bảo tàng ban đêm và những đốm sáng nhỏ bay ra từ các bức tranh',
+}
+
+
+def spirit_og(h, lang):
+    cut = lambda v, a: v[len(a):-len('">')]
+    title = cut(h['ogtitle'], '<meta property="og:title" content="')
+    desc = cut(h['ogdesc'], '<meta property="og:description" content="')
+    h['ogimage'] = (f'<meta property="og:image" content="{SPIRIT_OG}">\n'
+                    '<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n'
+                    f'<meta property="og:image:alt" content="{SPIRIT_ALT[lang]}">')
+    h['twitter'] = (f'<meta name="twitter:image" content="{SPIRIT_OG}">\n'
+                    f'<meta name="twitter:title" content="{title}">\n<meta name="twitter:description" content="{desc}">')
+
+
+spirit_og(JA_HEAD, 'ja')
+for _lang in LANGS:
+    spirit_og(LANGS[_lang], _lang)
+
 # ---- 古いURLから新しいページへ飛ばすページ（monster.html → spirit.html、battle.html → night.html。2026-10-21） ----
 def redirect_page(pre, to='spirit.html', title='The Lantern Museum'):
     url = f'https://dropper-tools.com{pre}play/{to}'
