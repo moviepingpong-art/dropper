@@ -9,7 +9,8 @@ export const LANG_NAME = {
   in: 'Hinglish (Hindi written in Latin letters, mixed with simple English, like the rest of the page)',
   ko: 'Korean',
   'zh-hant': 'Traditional Chinese',
-  vi: 'Vietnamese'
+  vi: 'Vietnamese',
+  da: 'Danish'
 };
 
 // 曲の設計図で選べるもの。ページの night-film.js が、この中の言葉だけで曲を組む（ほかの言葉は捨てる）

@@ -1,7 +1,7 @@
 # 遊び場（ともしびの美術館・夜の美術館を灯す）のほかの言語版を、日本語版（play/spirit.html・play/night.html）から作る。
 # 古いURLの monster.html・battle.html（6言語）は、spirit.html・night.html へ飛ばすだけのページをここで書き出す（2026-10-21）
 #
-#   python tools/make-monster-langs.py          … en/play/ と in/play/ に書き出す
+#   python tools/make-monster-langs.py          … en・in・ko・zh-hant・vi・da の play/ に書き出す
 #   python tools/make-monster-langs.py --check  … 書き出した物が最新かだけを見る（コミット前のフック）
 #
 # 親は日本語版。ページの中身（</head> より後ろ）は3言語で同じで、違うのは
@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'play'
 JS = ['monster-i18n.js', 'monster-app.js', 'night-i18n.js', 'night-film.js', 'night-app.js']
 
-# 字体：本文はゴシック、見出し・名前は明朝（2026-10-21〜「夜の美術館」の見た目）。韓国語・繁体字・ベトナム語は、その言語の Noto を前に置く
+# 字体：本文はゴシック、見出し・名前は明朝（2026-10-21〜「夜の美術館」の見た目）。韓国語・繁体字・ベトナム語・デンマーク語は、その言語の Noto を前に置く
 JA_HEAD_FONTS = '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;600;700&display=swap" rel="stylesheet">'
 def spirit_fonts(sans, serif):
     s, f = sans.replace(' ', '+'), serif.replace(' ', '+')
@@ -46,6 +46,28 @@ def spirit_ld(lang, name, alt, desc, in_lang, currency, pub_name, pub_url):
             f'  "publisher": {{ "@type": "Organization", "name": {q(pub_name)}, "url": {q(pub_url)} }}\n'
             '}\n</script>')
 
+# OG画像（2026-11-01〜 ゲーム専用の og-spirit.jpg）と Twitter のタグ。spirit.html だけ。夜のページは前のまま（og-*.png 1行）
+def spirit_og(alt, title, desc):
+    img = 'https://dropper-tools.com/assets/og/og-spirit.jpg'
+    return (f'<meta property="og:image" content="{img}">\n'
+            '<meta property="og:image:width" content="1200">\n'
+            '<meta property="og:image:height" content="630">\n'
+            f'<meta property="og:image:alt" content="{alt}">\n'
+            '<meta name="twitter:card" content="summary_large_image">\n'
+            f'<meta name="twitter:image" content="{img}">\n'
+            f'<meta name="twitter:title" content="{title}">\n'
+            f'<meta name="twitter:description" content="{desc}">')
+
+OG_ALT = {
+    'ja': '夜の美術館に浮かぶ提灯の明かりと、額縁の絵から漂う小さな光',
+    'en': 'A glowing lantern in a museum at night, tiny lights drifting from the framed paintings',
+    'in': 'A glowing lantern in a museum at night, tiny lights drifting from the framed paintings',
+    'ko': '밤의 미술관에 떠 있는 등불과 액자 속 그림에서 흘러나오는 작은 빛들',
+    'zh-hant': '夜間美術館裡漂浮的燈籠微光，與畫框中流洩而出的點點光芒',
+    'vi': 'Ánh đèn lồng lơ lửng trong bảo tàng ban đêm và những đốm sáng nhỏ bay ra từ các bức tranh',
+    'da': 'En lysende lanterne på et museum om natten og små lys, der svæver ud fra de indrammede malerier',
+}
+
 JA_DESC = '閉館後の美術館で、作品にひそむ精霊が目を覚ます遊び。くじで並ぶ世界の美術館の15点から、1点で目覚め、2〜3点で結び。精霊どうしの縁と受け継ぎ、1000体に1体の金の光も。自分の写真やファイルは使わず、ログインも不要です。'
 
 JA_HEAD = {
@@ -58,7 +80,7 @@ JA_HEAD = {
     'ogtitle': '<meta property="og:title" content="ともしびの美術館｜ドロッパーの遊び場">',
     'ogdesc': '<meta property="og:description" content="閉館後の美術館。作品にひそむ精霊が、あなたの手で目を覚まします。目覚め・結び・縁と受け継ぎ。1000体に1体の金の光も。">',
     'ogurl': '<meta property="og:url" content="https://dropper-tools.com/play/spirit.html">',
-    'ogimage': '<meta property="og:image" content="https://dropper-tools.com/assets/og/og-ja.png">',
+    'ogimage': spirit_og(OG_ALT['ja'], 'ともしびの美術館｜ドロッパーの遊び場', '閉館後の美術館。作品にひそむ精霊が、あなたの手で目を覚まします。目覚め・結び・縁と受け継ぎ。1000体に1体の金の光も。'),
     'langjs': "<script>window.LANG = 'ja';</script>",
     'fonts': JA_HEAD_FONTS,
     'ld': spirit_ld('ja', 'ともしびの美術館', 'The Lantern Museum', JA_DESC, 'ja', 'JPY', 'ドロッパー', 'https://dropper-tools.com/'),
@@ -77,7 +99,7 @@ def shead(lang, html_lang, title, desc, locale, ogtitle, ogdesc, og, fonts=JA_HE
         'ogtitle': f'<meta property="og:title" content="{ogtitle}">',
         'ogdesc': f'<meta property="og:description" content="{ogdesc}">',
         'ogurl': f'<meta property="og:url" content="{url}">',
-        'ogimage': f'<meta property="og:image" content="https://dropper-tools.com/assets/og/og-{og}.png">',
+        'ogimage': spirit_og(OG_ALT[lang], ogtitle, ogdesc),
         'langjs': f"<script>window.LANG = '{lang}';</script>",
         'fonts': fonts,
     }
@@ -102,6 +124,10 @@ LANGS = {
                 'Trong bảo tàng sau giờ đóng cửa, tinh linh ngủ trong các tác phẩm thức tỉnh. Chọn 1 trong 15 tác phẩm bốc thăm từ các bảo tàng thế giới để đánh thức, hoặc 2–3 để kết nối. Nhân duyên và kế thừa giữa các tinh linh, và Ánh Vàng 1 trên 1.000. Ảnh và tệp của bạn không được dùng. Không cần đăng nhập.',
                 'vi_VN', 'Bảo tàng Đèn lồng | Sân chơi Dropper', 'Bảo tàng sau giờ đóng cửa. Tinh linh ngủ trong tác phẩm thức tỉnh trong tay bạn. Thức tỉnh, kết nối, nhân duyên và kế thừa. Ánh Vàng 1 trên 1.000.', 'en',
                 spirit_fonts('Noto Sans', 'Noto Serif')),
+    'da': shead('da', 'da', 'Lanternemuseet | Ånder vågner i kunstværkerne efter lukketid | Droppers legeplads',
+                'På museet efter lukketid vågner ånderne, der sover i kunstværkerne. Vælg 1 af 15 tilfældigt trukne værker fra museer i hele verden for at vække en ånd, eller 2–3 for at binde dem. Bånd og arv mellem ånderne og et Guldlys, der kun kommer 1 ud af 1.000 gange. Dine egne billeder og filer bliver ikke brugt. Intet login.',
+                'da_DK', 'Lanternemuseet | Droppers legeplads', 'Museet efter lukketid. Ånden, der sover i et kunstværk, vågner i dine hænder. Vække, binde, bånd og arv. Guldlys 1 ud af 1.000.', 'en',
+                spirit_fonts('Noto Sans', 'Noto Serif')),
 }
 
 # 構造化データ：名前・通貨・発行元はこの表。説明は上の meta description をそのまま使う
@@ -110,7 +136,8 @@ for _lang, _name, _cur, _pub in [
         ('in', 'The Lantern Museum', 'INR', 'https://dropper-tools.com/in/'),
         ('ko', '등불의 미술관', 'KRW', 'https://dropper-tools.com/'),
         ('zh-hant', '燈火美術館', 'TWD', 'https://dropper-tools.com/'),
-        ('vi', 'Bảo tàng Đèn lồng', 'VND', 'https://dropper-tools.com/')]:
+        ('vi', 'Bảo tàng Đèn lồng', 'VND', 'https://dropper-tools.com/'),
+        ('da', 'Lanternemuseet', 'DKK', 'https://dropper-tools.com/')]:
     _h = LANGS[_lang]
     _desc = _h['desc'][len('<meta name="description" content="'):-len('">')]
     _in = _h['lang'][len('<html lang="'):-len('">')]
@@ -150,6 +177,7 @@ def nhead(lang, html_lang, title, desc, locale, ogtitle, ogdesc, og, fonts=JA_HE
     url = f'https://dropper-tools.com/{lang}/play/night.html'
     h['canonical'] = f'<link rel="canonical" href="{url}">'
     h['ogurl'] = f'<meta property="og:url" content="{url}">'
+    h['ogimage'] = f'<meta property="og:image" content="https://dropper-tools.com/assets/og/og-{og}.png">'
     return h
 
 
@@ -171,6 +199,10 @@ NIGHT_LANGS = {
     'vi': nhead('vi', 'vi', 'Thắp sáng bảo tàng đêm | Thắp sáng các phòng trưng bày đang ngủ bằng tinh linh | Sân chơi Dropper',
                 'Chọn 7 tinh linh từ danh mục Bảo tàng Đèn lồng và đi qua hành lang của bảo tàng sau giờ đóng cửa, mở 4 cánh cửa và thắp sáng từng phòng trưng bày. Mỗi phòng cần một độ sáng và yêu thích một số hệ. Bảo tàng đêm nay được định theo ngày, ai chơi cũng cùng một đêm. Không có thua.',
                 'vi_VN', 'Thắp sáng bảo tàng đêm | Sân chơi Dropper', 'Cùng tinh linh trong danh mục, thắp sáng các phòng của bảo tàng sau giờ đóng cửa. Ai chơi cũng cùng một đêm. Thắp 4 phòng, cuối cùng là cánh cửa ánh sáng.', 'en',
+                spirit_fonts('Noto Sans', 'Noto Serif')),
+    'da': nhead('da', 'da', 'Tænd lys i natmuseet | Tænd lys i de sovende sale med dine ånder | Droppers legeplads',
+                'Vælg 7 ånder fra dit katalog i Lanternemuseet, og gå gennem museets korridorer efter lukketid: åbn 4 døre, og tænd lys i salen bag hver af dem. Hver sal skal bruge en bestemt mængde lys og holder af bestemte elementer. Nattens museum bestemmes af datoen, så alle får den samme nat. Man kan ikke tabe.',
+                'da_DK', 'Tænd lys i natmuseet | Droppers legeplads', 'Bring lys til salene i museet efter lukketid sammen med ånderne i dit katalog. Alle får den samme nat. Tænd lys i 4 sale, og til sidst venter Lysets dør.', 'en',
                 spirit_fonts('Noto Sans', 'Noto Serif')),
 }
 
