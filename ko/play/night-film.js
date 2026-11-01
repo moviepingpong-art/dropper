@@ -251,7 +251,8 @@
   // 光の粒が灯籠へ（G → A で高まる）→ 天窓の光で D の和音がひらき、鈴が降りて消える。時刻は lastroom.py の LIT0・GAP（120コマ・75コマ）に合わせる
   // 旋律・和音の進み方・ハープの並び・灯るたびの鈴の音は、その夜のカードから決める（rnd）。AI の設計図の楽器は色として足す（オルガン・鈴・ハープ・声）
   // sp：精霊ごとの特別（rar 金の光・銀の光／kin 縁から生まれた子）。額縁が灯る時刻に、金＝声の和音、銀＝高い鈴の連なり、縁の子＝2つの旋律が重なる
-  const ROOM_PLAN = (rnd, sp = []) => ({ bell, harp, voice, choir, solo, bass, haze: strings, organ, inst }) => {
+  // lt：額縁が灯る時刻（秒）。2026-11-01 に額縁を4つにしてから、灯るのは小節の頭と限らない（和音は小節ごと、灯った合図と特別な音は灯る時刻に）
+  const ROOM_PLAN = (rnd, sp = [], lt = null) => ({ bell, harp, voice, choir, solo, bass, haze: strings, organ, inst }) => {
     const pick = a => a[Math.floor(rnd() * a.length)], L0 = 5, BAR = 3.125, BEAT = BAR / 4, has = x => inst.includes(x);
     const C = { D: [50, 57, 62, 66, 69], Bm: [47, 54, 59, 62, 66], G: [43, 55, 59, 62, 67], A: [45, 57, 61, 64, 69], DF: [42, 57, 62, 66, 69], Em: [40, 55, 59, 64, 67],
       Asus: [45, 57, 62, 64, 69], AC: [49, 57, 61, 64, 69], Fm: [42, 54, 61, 66, 69], Gm6: [43, 55, 58, 62, 64] };
@@ -274,8 +275,11 @@
       strings(c.slice(1), t, BAR + .1, .012 * g, 1200 + i * 200);
       if (has('organ')) organ(c.slice(1, 4), t, BAR, .008 * g);
       bass(c[0] - 12 + (c[0] < 44 ? 12 : 0), t, BAR, .07 * g);
-      bell(pick(c.slice(2)) + 24, t + .05, 3.4, has('bell') ? .07 : .05);                            // 灯った合図
       hp.forEach((h, b) => harp(c[1 + ((h + i) % 4)] + 12, t + b * BEAT + BEAT / 2, 1.8, (.03 + .005 * i) * (has('harp') ? 1.4 : 1)));
+    });
+    (lt || P.map((k, i) => L0 + i * BAR)).forEach((t, i) => {
+      const c = C[P[Math.min(P.length - 1, Math.floor((t - L0) / BAR + .01))]];
+      bell(pick(c.slice(2)) + 24, t + .05, 3.4, has('bell') ? .07 : .05);                            // 灯った合図
       const c2 = sp[i];
       if (!c2) return;
       if (c2.rar === 'gold') { voice([74, 78, 81], t + .05, 1.7, .02); bell(86, t + .12, 3.2, .07); }
@@ -397,6 +401,19 @@
       q.setTransform(1, 0, 0, .75, 0, 30); const m = q.createRadialGradient(160, 160, 80, 160, 160, 158); m.addColorStop(0, '#000'); m.addColorStop(1, 'rgba(0,0,0,0)');
       q.fillStyle = m; q.fillRect(0, 0, 320, 320); q.setTransform(1, 0, 0, 1, 0, 0);
     }
+    // あなたの写真（2026-11-01〜、重吉さんの決め）：光の柱の真ん中に、ふちをぼかした楕円で浮かべる。守り神はそのそばで静かに見守る。
+    // 自撮りでも、前からある写真でもよい。顔は探さず、写真の真ん中（少し上寄り）を使う。この端末の中だけで、AI にも当方にも送らず、残さない
+    let meCv = null, meURL = null;
+    function meCut(im) {
+      if (!im) return null;
+      const c = document.createElement('canvas'); c.width = 300; c.height = 380; const q = c.getContext('2d');
+      const r = 300 / 380, iw = im.width, ih = im.height, sw = iw / ih > r ? ih * r : iw, sh = iw / ih > r ? ih : iw / r;
+      q.drawImage(im, (iw - sw) / 2, Math.max(0, (ih - sh) * .35), sw, sh, 0, 0, 300, 380);
+      q.globalCompositeOperation = 'destination-in';
+      q.setTransform(1, 0, 0, 380 / 300, 0, 0); const m = q.createRadialGradient(150, 150, 75, 150, 150, 150); m.addColorStop(0, '#000'); m.addColorStop(1, 'rgba(0,0,0,0)');
+      q.fillStyle = m; q.fillRect(0, 0, 300, 300); q.setTransform(1, 0, 0, 1, 0, 0);
+      return c;
+    }
     // 好きな画像（2026-10-27〜、重吉さんの決め）：1枚を、柱と柱のあいだの壁ごとに壁いっぱいに貼る（はみ出しは切る）。画像はこの端末の中だけで、どこにも送らない。
     // 壁の所は、動画の抜きの濃さが 128（encode-film.sh wall）。壁の上の点は last.json の cam（カメラの位置と光線の向き）と円い壁の交わりで求める
     const RR = J.rr || 4.2, WALL = J.wall || 4.4, BAYS = J.bays || 8, A0 = J.a0 || -Math.PI / 2, SB = 2 * Math.PI / BAYS;
@@ -423,8 +440,8 @@
     }
     const setAuto = () => { texs = autoArts.length ? Array.from({ length: BAYS }, (_, b) => autoTex(b)) : null; };
     // 20秒のときの時刻（コマ）→ この映像のコマ（lastroom.py の T と同じ。2026-10-27 に40秒にした）
-    const L0 = J.lit0 || 70, GP = J.gap || 30;
-    const T = f => { if (!J.lit0) return f; const P = [[0, 70, 0, L0], [70, 280, L0, L0 + 7 * GP], [280, 380, L0 + 7 * GP, Math.round(J.n * 795 / 960)], [380, 480, Math.round(J.n * 795 / 960), J.n]];
+    const L0 = J.lit0 || 70, GP = J.gap || 30, NW = J.wins.length;  // 額縁の数（2026-11-01 に7つから4つへ。額縁の所の長さは同じ）
+    const T = f => { if (!J.lit0) return f; const P = [[0, 70, 0, L0], [70, 280, L0, L0 + NW * GP], [280, 380, L0 + NW * GP, Math.round(J.n * 795 / 960)], [380, 480, Math.round(J.n * 795 / 960), J.n]];
       for (const [a0, a1, b0, b1] of P) if (f <= a1) return b0 + (f - a0) * (b1 - b0) / (a1 - a0); return J.n; };
     const K = GP / 30, lit = i => L0 + i * GP;  // 額縁 i が灯るコマ
     if (o.pic) setPic(await img(o.pic));
@@ -541,15 +558,23 @@
         g.globalCompositeOperation = 'screen'; g.globalAlpha = la * .7; g.drawImage(beam, 0, 0);
         const gr = g.createRadialGradient(ox, oy, 0, ox, oy, W * .3); gr.addColorStop(0, hues[Math.floor(hues.length / 2)]); gr.addColorStop(1, 'rgba(0,0,0,0)');
         g.globalAlpha = la * .35; g.fillStyle = gr; g.fillRect(0, 0, W, H); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
-        // 光の柱の中に守り神が現れ、名前が下に出る（どの人生も同じ大きさ・同じ明るさ）
+        // 光の柱の真ん中に、あなたの写真（入れた夜だけ）。2026-11-01〜
         const ga = clamp((f - T(330)) / (T(380) - T(330)));
+        if (meCv && ga > 0) {
+          const mw = W * .42, mh = mw * 380 / 300, mx = ox - mw / 2, my = H * .47 - mh / 2 - (1 - ga) * H * .02;
+          g.globalAlpha = ga; g.drawImage(meCv, mx, my, mw, mh); g.globalAlpha = 1;
+        }
+        // 守り神は柱のそば（右下・灯籠のそば）で、静かに見守る。浮かび上がらず、ゆっくり光るだけ（2026-11-01 重吉さんの決め。どの人生も同じ大きさ・同じ明るさ）
         if (G && ga > 0) {
-          const gw = W * .46, gh = gw * .75, gx0 = ox - gw / 2, gy0 = H * .5 - gh / 2 - (1 - ga) * H * .03;
-          if (gcv) { g.globalAlpha = ga; g.drawImage(gcv, gx0, gy0, gw, gh); g.globalAlpha = 1; }
+          const gw = W * .24, gh = gw * .75, gcx = Math.min(W - gw * .6, ox + W * .27), gcy = H * .66 + Math.sin(f / 30) * H * .004, gx0 = gcx - gw / 2, gy0 = gcy - gh / 2;
+          const halo = g.createRadialGradient(gcx, gcy, 0, gcx, gcy, gw * .75); halo.addColorStop(0, `rgba(255,236,190,${.28 + .1 * Math.sin(f / 20)})`); halo.addColorStop(1, 'rgba(255,220,150,0)');
+          g.globalAlpha = ga; g.fillStyle = halo; g.fillRect(gcx - gw, gcy - gw, gw * 2, gw * 2);
+          if (gcv) g.drawImage(gcv, gx0, gy0, gw, gh);
+          g.globalAlpha = 1;
           const na = clamp((f - T(350)) / (T(370) - T(350)));
           if (G.n && na > 0) {
-            g.textAlign = 'center'; g.textBaseline = 'top'; g.font = `600 ${Math.round(W / 20)}px "Noto Serif JP", serif`;
-            g.fillStyle = `rgba(255,240,205,${na})`; g.shadowColor = 'rgba(0,0,0,.8)'; g.shadowBlur = 8; g.fillText(G.n, ox, gy0 + gh + 6); g.shadowBlur = 0;
+            g.textAlign = 'center'; g.textBaseline = 'top'; g.font = `600 ${Math.round(W / 32)}px "Noto Serif JP", serif`;
+            g.fillStyle = `rgba(255,240,205,${na})`; g.shadowColor = 'rgba(0,0,0,.8)'; g.shadowBlur = 8; g.fillText(G.n, gcx, gy0 + gh + 4); g.shadowBlur = 0;
           }
         }
       }
@@ -612,6 +637,25 @@
       fi.onchange = () => { use(fi.files[0]); fi.value = ''; };
       dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); }; dz.ondragleave = () => dz.classList.remove('over');
       dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); use(e.dataTransfer.files[0]); };
+      // あなたの写真を光の中に（2026-11-01〜）。スマホでは押すと、その場で撮るか写真から選べる
+      if (o.tx.meDrop) {
+        const me = document.createElement('div'); me.className = 'nf-drop nf-me'; me.setAttribute('role', 'button'); me.tabIndex = 0;
+        me.innerHTML = '<i class="nf-mepic" hidden></i><span><b></b><small></small></span><input type="file" accept="image/*" hidden>';
+        me.querySelector('b').textContent = o.tx.meDrop; me.querySelector('small').textContent = o.tx.meNote || '';
+        const mi = me.querySelector('input'), mp2 = me.querySelector('.nf-mepic');
+        const useMe = async f => {
+          if (!f || !/^image\//.test(f.type)) return;
+          if (meURL) URL.revokeObjectURL(meURL);
+          meURL = URL.createObjectURL(f); meCv = meCut(await img(meURL));
+          mp2.style.backgroundImage = `url('${meURL}')`; mp2.hidden = !meCv; me.classList.toggle('has', !!meCv);
+          me.querySelector('b').textContent = meCv ? o.tx.meOk || o.tx.meDrop : o.tx.meDrop;
+        };
+        me.onclick = () => mi.click(); me.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); mi.click(); } };
+        mi.onchange = () => { useMe(mi.files[0]); mi.value = ''; };
+        me.ondragover = e => { e.preventDefault(); me.classList.add('over'); }; me.ondragleave = () => me.classList.remove('over');
+        me.ondrop = e => { e.preventDefault(); me.classList.remove('over'); useMe(e.dataTransfer.files[0]); };
+        p.append(me);
+      }
       L.cap.append(p); cv.parentNode.classList.add('pick');  // 選ぶあいだは絵を小さくして、選ぶ所とボタンを入れる
     }
     // 押してから始める（音を出すには、押した手が要る）
@@ -626,11 +670,11 @@
         draw(J.n); L.btns.replaceChildren();
         if (blob) { L.cap.textContent = o.tx.made; btn(L, o.tx.save, '', () => save(blob, rec.ext, o.file)); }
         else if (all && !rec) L.cap.textContent = o.tx.noRec;
-        btn(L, o.tx.close, 'ghost', () => { close(); if (picURL) URL.revokeObjectURL(picURL); free(fcs, vc, draw.t); draw.t = null; resolve(blob ? { blob, ext: rec.ext } : null); });
+        btn(L, o.tx.close, 'ghost', () => { close(); if (picURL) URL.revokeObjectURL(picURL); if (meURL) URL.revokeObjectURL(meURL); meCv = null; free(fcs, vc, draw.t); draw.t = null; resolve(blob ? { blob, ext: rec.ext } : null); });
       };
       const stopDraw = onFrames(v, t => draw(Math.floor(t * J.fps) + 1));
       btn(L, o.tx.skip, 'ghost nf-skip', () => finish(false));
-      if (A) { A.ac.resume(); S = score(A.ac, A.out, ROOM_PLAN(seeded(o.seed || ''), o.cards.map(c => ({ rar: c.rar, kin: !!c.kin }))), o.story && o.story.music, 'D', J.n / J.fps); rec = recorder(cv, A.dest); }
+      if (A) { A.ac.resume(); S = score(A.ac, A.out, ROOM_PLAN(seeded(o.seed || ''), o.cards.map(c => ({ rar: c.rar, kin: !!c.kin })), J.wins.map((w, i) => lit(i) / J.fps)), o.story && o.story.music, 'D', J.n / J.fps); rec = recorder(cv, A.dest); }
       if (rec) { rec.ondataavailable = e => { if (e.data && e.data.size) parts.push(e.data); }; rec.start(500); }
       v.onended = () => { draw(J.n); setTimeout(() => finish(true), 900); };
       v.play().catch(() => finish(false));

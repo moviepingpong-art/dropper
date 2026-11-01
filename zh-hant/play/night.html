@@ -101,11 +101,15 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .nfilm.room.pick canvas{height:calc(100vh - 330px);height:calc(100dvh - 330px);min-height:180px}
 .nf-cap{min-height:1.4em;color:var(--gold-soft);font:500 14px var(--serif);letter-spacing:.06em;text-align:center;max-width:560px}
 .nf-pick{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:8px}.nf-modes{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.nf-mode{font:600 14px var(--serif);color:var(--gold-soft);background:transparent;border:1px solid rgba(232,200,120,.6);border-radius:999px;padding:7px 16px;cursor:pointer}.nf-mode{opacity:.6;transition:background .25s,color .25s,opacity .25s,box-shadow .25s}.nf-mode:hover{opacity:.9}.nf-mode.on{opacity:1;background:linear-gradient(#f0d89a,#c9a45c);color:#1a1408;border-color:#f6e2a8;box-shadow:0 0 0 2px rgba(246,226,168,.35),0 0 16px rgba(240,200,110,.55)}.nf-mode.on::before{content:'✓ ';font-weight:700}.nf-drop{display:flex;flex-direction:column;gap:4px;border:1.5px dashed rgba(232,200,120,.7);border-radius:12px;padding:10px 14px;max-width:420px;cursor:pointer}.nf-drop.over,.nf-drop.has{border-style:solid;background:rgba(232,200,120,.1)}.nf-drop small{font-size:12px;opacity:.85}
+/* あなたの写真を光の中に（2026-11-01〜）。選んだ写真は小さく見せるだけ */
+.nf-me{flex-direction:row;align-items:center;gap:10px;text-align:left}.nf-me>span{display:flex;flex-direction:column;gap:4px}.nf-mepic{flex:none;width:44px;height:56px;border-radius:50%;background:center 35%/cover no-repeat;box-shadow:0 0 12px rgba(240,200,110,.6)}
 .nf-ai{display:inline-flex;flex-direction:column;gap:3px;border:1px solid rgba(200,200,215,.45);border-radius:14px;padding:7px 16px;background:rgba(255,255,255,.06);line-height:1.45}.nf-ai b{font-weight:600}.nf-ai small{font-size:12px;opacity:.85}.nf-ai.on{border-color:rgba(232,200,120,.7);background:rgba(232,200,120,.12)}
 .nf-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .nf-btns .nf-skip{position:fixed;right:16px;bottom:16px;background:rgba(0,0,0,.45)}
 /* 光の扉をくぐる */
 .rite{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+.riteskip{position:absolute;right:12px;bottom:12px;z-index:4;font:inherit;font-size:13px;color:#f3e6c4;background:rgba(0,0,0,.5);border:1px solid rgba(232,200,120,.6);border-radius:999px;padding:6px 14px;cursor:pointer}
+.riteskip:hover,.riteskip:focus-visible{background:rgba(232,200,120,.25)}
 .flash{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 52%,#fff 0,#fff6dc 30%,rgba(255,226,160,.85) 60%,rgba(255,210,120,.4) 100%)}
 .flash.on{transition:opacity 1.6s ease-in;opacity:1}
 /* 下の欄 */
@@ -117,6 +121,15 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .panel .say:empty{display:none}
 .pbtns{justify-content:center}
 .keylead{margin:0;font-size:14px;line-height:1.9} .keylead a{color:var(--gold-soft)}
+/* 灯火の器（2026-11-01〜）：10灯の小さな灯り。数があるのは器の光だけ */
+.vessel{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 10px;margin:10px 0 4px;font-size:13px;color:var(--mid)}
+.vessel .vh{font-family:var(--serif);color:var(--gold-soft);letter-spacing:.06em}
+.vessel .vp{display:inline-flex;gap:3px}
+.vessel .vp i{width:11px;height:15px;border-radius:50% 50% 45% 45%/60% 60% 40% 40%;border:1px solid rgba(201,164,92,.55);background:rgba(255,255,255,.03)}
+.vessel .vp i.on{background:radial-gradient(circle at 50% 65%,#fff6d8,#f3cf7a 45%,#c9902f);border-color:#f3d79a;box-shadow:0 0 8px rgba(243,207,122,.7)}
+#lightBox .lbq{margin:6px 0 2px;font-family:var(--serif);font-size:18px;color:var(--gold-soft);text-align:center}
+#lightBox .hand{margin-top:8px}
+#lightBox .btns{justify-content:center;margin-top:10px}
 .drop{border:1px dashed var(--gold);border-radius:2px;padding:18px 12px;text-align:center;background:rgba(201,164,92,.06);cursor:pointer;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mid)}
 .drop b{font:600 16px var(--serif);color:var(--gold-soft);letter-spacing:.08em}
 .drop.over,.drop:focus-visible{background:rgba(201,164,92,.16);outline:none;border-style:solid}
@@ -253,6 +266,16 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .ltdone.on{opacity:1;text-shadow:0 0 18px rgba(230,207,154,.8)}
 .ltback{font-size:13px;color:var(--gold-soft);min-height:1.5em}
 .tap{font-size:12px;color:var(--dim)}
+/* 部屋を灯すと額縁が1つ（2026-11-01〜）。2〜3体で灯したときは、どの子を入れるかを選ぶ */
+.gainh{font-family:var(--serif);font-size:20px;letter-spacing:.12em;color:var(--gold-soft);margin:0}
+.gainp{font-size:14px;margin:0}
+.gainlist{display:flex;gap:12px;justify-content:center;align-items:flex-end;flex-wrap:wrap}
+.gpick{background:none;border:1px solid rgba(201,164,92,.35);padding:8px 6px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink);cursor:pointer;font:inherit;font-size:13px}
+.gpick:hover,.gpick:focus-visible{border-color:var(--gold-soft);box-shadow:0 0 14px rgba(230,207,154,.45)}
+.gone{animation:gainIn .7s ease-out}
+@keyframes gainIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+.gaingold{font-size:13px;color:var(--gold-soft)}
+.gotrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 /* 朝 */
 .morning .end{margin:auto 0}
 .end{width:100%;max-width:560px;border:1px solid var(--line);text-align:center;padding:40px 22px 22px;display:flex;flex-direction:column;gap:12px;align-items:center}
@@ -345,7 +368,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .pconfirm{border:1px solid var(--gold);background:#0e1020;padding:16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
 .pconfirm p{margin:0;font-family:var(--serif);line-height:1.9}
 .pconfirm .warn{color:var(--warm)}
-@media (prefers-reduced-motion:reduce){.ltcards .sp,.vimg.lit,.vanim.arrive{animation:none}.sp,.ltdone,.vlit,.vanim.go,.vanim.back,.flash.on{transition:none}}
+@media (prefers-reduced-motion:reduce){.gone,.ltcards .sp,.vimg.lit,.vanim.arrive{animation:none}.sp,.ltdone,.vlit,.vanim.go,.vanim.back,.flash.on{transition:none}}
 </style>
 </head>
 <body>
@@ -363,6 +386,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
     <div class="vlit" id="vlit" data-i18n="nLit">灯がともった</div>
    </div>
    <canvas class="rite" id="rite" aria-hidden="true" hidden></canvas>
+   <button type="button" class="riteskip" id="riteskip" hidden>とばす ▶</button>
    <div class="flash" id="flash"></div>
    <div class="rinfo" id="rinfo" hidden></div>
    <button class="fwd" id="fwd" type="button" hidden data-i18n="nForward">前に進む ↑</button>
@@ -377,10 +401,18 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
    </div>
    <div id="keyBox" hidden>
     <p class="keylead" id="keyLead"></p>
-    <div class="drop" id="drop" tabindex="0" role="button" data-i18n="nKeyAria" data-i18n-attr="aria-label"><b id="keyDrop" data-i18n="nKeyDrop">人生の記録の画像をドロップ</b><span data-i18n="nKeyDropSub">ここに落とすか、押して選ぶ</span><div class="kfx" aria-hidden="true"><i class="kpic" id="kpic"></i><span class="kmark" id="kmark"></span></div></div>
+    <div class="drop" id="drop" tabindex="0" role="button" ><b id="keyDrop"></b><span data-i18n="nKeyDropSub">ここに落とすか、押して選ぶ</span><div class="kfx" aria-hidden="true"><i class="kpic" id="kpic"></i><span class="kmark" id="kmark"></span></div></div>
     <div class="kres" id="kres" role="status" hidden><b id="kresT"></b><span class="klike" id="klike" hidden><i></i><small id="klikeT"></small></span></div>
     <input type="file" id="file" accept="image/*" hidden>
-    <p class="note" id="keyNote" data-i18n="nKeyNote" data-i18n-html></p>
+    <p class="note" id="keyNote"></p>
+   </div>
+   <!-- 光の扉（2026-11-01〜）：鍵なしで開く。灯火の器が満ちた夜は、連れてきた7体から今夜の守り神を1体えらぶ -->
+   <div id="lightBox" hidden>
+    <div class="vessel" id="lbVessel"></div>
+    <p class="lbq" id="lbQ" data-i18n="nGuideQ" hidden>今夜、扉を一緒にくぐるのは誰ですか</p>
+    <p class="keylead" id="lbLead"></p>
+    <div class="hand" id="lbHand" hidden></div>
+    <div class="btns"><button class="btn" id="lbOpen" type="button" data-i18n="nLightOpen">光の扉を開ける</button><button class="btn ghost" id="lbSkip" type="button" data-i18n="nGuideSkip" hidden>今夜は選ばないで進む</button></div>
    </div>
    <div class="msg" id="msg" aria-live="polite"></div>
    <div class="btns pbtns"><button class="btn" id="act" type="button" hidden></button><button class="btn ghost" id="act2" type="button" hidden></button><button class="btn ghost" id="act3" type="button" hidden></button><button class="btn ghost" id="endbtn" type="button" data-i18n="nEndBtn">今夜はここまでにする</button></div>
@@ -394,6 +426,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
   <h1 data-i18n="nIntroH">夜の美術館を灯す</h1>
   <p class="lead" data-i18n="nIntroLead">閉館後の美術館。目録の精霊たちと、眠っている展示室に灯をともします</p>
   <div class="promo"><p class="promo-h">✦ <span data-i18n="nPromo" data-i18n-html>世界にひとつだけの動画を<wbr>手に入れよう</span> ✦</p><p class="promo-s" data-i18n="nPromoSub">4つの部屋を灯して最後の部屋に入ると、その夜の精霊たちと作品、AI が書くお話と曲で、40秒の動画ができます</p><p class="promo-m" data-i18n="nPromoMore">✦ 金の光・銀の光・縁の子を連れていくと、最後の部屋に特別な光の場面が。あなたの夜には、何が起こるでしょう？</p></div>
+  <div class="vessel" id="vessel"></div>
   <ol class="rules">
    <li><b class="n">1</b><span id="rule1"></span></li>
    <li><b class="n">2</b><span data-i18n="nRule2" data-i18n-html></span></li>
@@ -405,7 +438,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
    <li><i style="background-image:url(/play/gallery/map-seven.jpg)"></i><b data-i18n="nMap1">7体えらぶ</b></li>
    <li><i style="background-image:url(/play/gallery/map-door.jpg)"></i><b data-i18n="nMap2">扉1</b></li>
    <li><i style="background-image:url(/play/gallery/map-wall.jpg)"><u><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"/><path d="M12 12h9M18 12v3.5M21 12v2.5"/></svg></u></i><b data-i18n="nMap3">扉2〜4</b><small data-i18n="nMap3s">扉3は画像が鍵。壁に映る</small></li>
-   <li><i style="background-image:url(/play/gallery/map-light.jpg)"><u><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"/><path d="M12 12h9M18 12v3.5M21 12v2.5"/></svg></u></i><b data-i18n="nMap4">光の扉</b><small data-i18n="nMap4s">80億分の1が鍵。守り神が一緒に</small></li>
+   <li><i style="background-image:url(/play/gallery/map-light.jpg)"><u><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"/><path d="M12 12h9M18 12v3.5M21 12v2.5"/></svg></u></i><b data-i18n="nMap4">光の扉</b><small data-i18n="nMap4s">灯した光が鍵。満ちた夜に、選んだ1体が守り神に</small></li>
    <li><i style="background-image:url(/play/gallery/map-last.jpg)"><u><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M10 9.2v5.6l4.6-2.8z" class="f"/></svg></u></i><b data-i18n="nMap5">最後の部屋</b><small data-i18n="nMap5s">40秒の動画</small></li>
    <li><i style="background-image:url(/play/gallery/map-morning.jpg)"><u><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17"/><rect x="7.5" y="7" width="9" height="10"/></svg></u></i><b data-i18n="nMap6">朝</b><small data-i18n="nMap6s">額縁を1つ</small></li>
   </ol>
@@ -452,6 +485,16 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
  </div>
 </div>
 
+<div class="layer lt" id="gain" hidden aria-live="polite">
+ <div class="ltbox">
+  <h2 class="gainh" id="gainH"></h2>
+  <p class="gainp" id="gainP"></p>
+  <div class="gainlist" id="gainList"></div>
+  <p class="gaingold" id="gainGold" hidden></p>
+  <div class="tap" id="gainTap" hidden data-i18n="nTap">タップで次へ</div>
+ </div>
+</div>
+
 <div class="layer morning" id="morning" hidden><div class="end" id="end"></div></div>
 
 <div class="layer" id="fview" hidden>
@@ -482,9 +525,9 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
  </div>
 </div>
 
-<script src="monster-i18n.js?v=30"></script>
-<script src="night-i18n.js?v=26"></script>
-<script src="night-film.js?v=21"></script>
-<script src="night-app.js?v=40"></script>
+<script src="monster-i18n.js?v=31"></script>
+<script src="night-i18n.js?v=28"></script>
+<script src="night-film.js?v=22"></script>
+<script src="night-app.js?v=43"></script>
 </body>
 </html>

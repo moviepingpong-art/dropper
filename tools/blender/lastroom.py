@@ -1,4 +1,4 @@
-# 最後の部屋（5つ目）の映像：円い部屋の壁に7つの額縁。カメラが部屋に入り、額縁が1つずつ灯り、
+# 最後の部屋（5つ目）の映像：円い部屋の壁に4つの額縁（2026-11-01 に7つから4つへ。4つの部屋で手に入れた額縁・重吉さんの決め）。カメラが部屋に入り、額縁が1つずつ灯り、
 # 光の粒が真ん中のともしびに集まって、天窓から光の柱が降りる（40秒・縦9:16・24コマ）。オープニングの作りを最後の部屋に置きかえた。
 #   python3 lastroom.py -- <出力フォルダ/> [幅px] [サンプル数] [最初のコマ] [最後のコマ]
 #   python3 lastroom.py -- <出力フォルダ/> 540 0        … 書き出さずに、窓の四隅（コマごと）の JSON だけを書く
@@ -28,8 +28,8 @@ sc.render.fps = 24; sc.frame_start = 1; sc.frame_end = N
 random.seed(7)
 
 RR, WALL = 4.2, 4.4          # 部屋の半径・壁の高さ（その上に円い屋根）
-BAYS = 8                      # 0＝入口（光の扉）、1〜7＝額縁
-S = 1.35                      # 額縁の大きさ（窓 0.88×1.35m）
+BAYS = 5                      # 0＝入口（光の扉）、1〜4＝額縁（4つの部屋の額縁）
+S = float(os.environ.get('FS', 1.7))  # 額縁の大きさ（1.35 で窓 0.88×1.35m。4つにして柱のあいだが広くなったので大きく）
 FZ = 2.05                     # 額縁の真ん中の高さ
 
 
@@ -125,22 +125,23 @@ for k in range(BAYS):
     F.sphere((cx, cy, 3.0), 0.02, emit_mat('flame', (1.0, 0.62, 0.22), 60), scale=(1, 1, 1.8), seg=12)
     bpy.ops.object.light_add(type='POINT', location=(cx, cy, 3.02)); bpy.context.object.data.energy = 18; bpy.context.object.data.color = (1.0, 0.62, 0.3); bpy.context.object.data.shadow_soft_size = 0.05
 
-# ---- 7つの額縁（夜明けと静かな朝をかわるがわる）。窓は抜き。上から小さな灯りが順に灯る ----
+# ---- 4つの額縁（4部屋とも灯した夜の額縁なので、みな金＝夜明けの額縁）。窓は抜き。上から小さな灯りが順に灯る ----
 hold = bpy.data.materials.new('hold'); hold.use_nodes = True; nt = hold.node_tree
 nt.nodes.remove(nt.nodes['Principled BSDF']); ho = nt.nodes.new('ShaderNodeHoldout'); nt.links.new(ho.outputs[0], nt.nodes['Material Output'].inputs[0])
 # 額縁の絵（frame.py の JSON。night-app.js の FR と同じ数）。小さな額縁の窓は大きな額縁の窓の幅の 26%（SMALL）
 FR = {'dawn': dict(w=720, h=1149, l=141, t=336, ww=438, wh=672, top=208, s=dict(w=300, h=398, l=59, t=59, ww=182, wh=280, top=6)),
       'quiet': dict(w=720, h=968, l=128, t=128, ww=464, wh=711, top=14, s=dict(w=300, h=403, l=53, t=53, ww=193, wh=296, top=6))}
 SMALL = 0.26
-LIT0, GAP = 120, 75           # 1つ目の額縁が灯るコマ・次までのコマ数
+LIT0, GAP = 120, 131          # 1つ目の額縁が灯るコマ・次までのコマ数（4つで 120〜644。7つのとき 75 だった額縁の所の長さを保つ）
+KIND = 'dawn'
 wins = []
 for i in range(1, BAYS):
     t = ang(i); x, y = (RR - 0.03) * math.cos(t), (RR - 0.03) * math.sin(t)
-    parent, M, et, _, _ = F.build('dawn' if i % 2 else 'quiet')
+    parent, M, et, _, _ = F.build(KIND)
     bpy.ops.mesh.primitive_plane_add(size=1, location=(0, 0, 0.002)); wp = bpy.context.object
     wp.scale = (F.WW * 1.02, F.WH * 1.02, 1); wp.data.materials.append(hold); wp.parent = parent
     # 小さな額縁（精霊が見える）の所も抜く。ページが小さな額縁の絵と精霊を下に描く（灯籠などが前に来ても隠れるように）
-    P = FR[('dawn' if i % 2 else 'quiet')]; Q = P['s']; u = F.WW / P['ww']; kk = P['ww'] * SMALL / Q['ww']
+    P = FR[KIND]; Q = P['s']; u = F.WW / P['ww']; kk = P['ww'] * SMALL / Q['ww']
     x0 = (P['w'] - Q['w'] * kk) / 2; y0 = P['top'] - Q['top'] * kk; cx, cy = P['l'] + P['ww'] / 2, P['t'] + P['wh'] / 2
     bpy.ops.mesh.primitive_plane_add(size=1, location=((x0 + Q['w'] * kk / 2 - cx) * u, -(y0 + Q['h'] * kk / 2 - cy) * u, 0.1)); sp_ = bpy.context.object
     sp_.scale = (Q['w'] * kk * u, Q['h'] * kk * u, 1); sp_.data.materials.append(hold); sp_.parent = parent
@@ -152,7 +153,7 @@ for i in range(1, BAYS):
     L.rotation_euler = (Vector((x, y, FZ)) - L.location).to_track_quat('-Z', 'Y').to_euler()
     keyp(L.data, 'energy', [(1, 0.0), (f0, 0.0), (f0 + 16, 420.0), (N, 420.0)])
     sc.frame_set(1)
-    wins.append({'i': i, 'kind': 'dawn' if i % 2 else 'quiet', 'f0': f0, 'obj': parent,
+    wins.append({'i': i, 'kind': KIND, 'f0': f0, 'obj': parent,
                  'corners': [Vector((x, y, FZ)) + Vector((-math.sin(t) * sx * F.WW * S / 2, math.cos(t) * sx * F.WW * S / 2, sz * F.WH * S / 2)) for sx, sz in [(1, 1), (-1, 1), (-1, -1), (1, -1)]]})
 
 # ---- 真ん中のともしび：台座の上の金の灯籠。光の粒が集まるほど明るくなる ----
@@ -174,7 +175,7 @@ bpy.ops.mesh.primitive_cone_add(vertices=6, radius1=0.32, depth=0.3, location=(0
 bpy.ops.object.light_add(type='POINT', location=(0, 0, 1.34)); LL = bpy.context.object
 LL.data.color = (1.0, 0.72, 0.4); LL.data.shadow_soft_size = 0.25
 keyp(LL.data, 'energy', [(1, 15.0), (T(300), 40.0), (T(380), 900.0), (N, 1400.0)])
-# 光の粒：額縁から灯籠へ流れる（7本×10粒）。そのあと天窓へのぼる
+# 光の粒：額縁から灯籠へ流れる（額縁ごとに10粒）。そのあと天窓へのぼる
 mote = emit_mat('mote', (1.0, 0.8, 0.45), 30.0)
 for w in wins:
     c = sum(w['corners'], Vector()) / 4
@@ -215,9 +216,9 @@ for i in range(1, BAYS):  # 額縁 i が灯るころ、部屋の真ん中の近�
     # 40秒（2026-10-27〜）：額縁の前で止まって、ゆっくり回りながら少し寄る（約2.3秒）。次の額縁へは約0.9秒で移る
     CK.append((f0 + 4, pol(0.95, ang(i) + math.radians(84), 1.6), pol(RR, ang(i), FZ - 0.05), 21))
     CK.append((f0 + GAP - 18, pol(0.95, ang(i) + math.radians(96), 1.6), pol(RR, ang(i), FZ - 0.05), 23))
-CK += [(T(330), pol(2.6, ang(7) + math.radians(40), 1.3), pol(0, 0, 1.5), 20),
-       (T(400), pol(2.3, ang(8) + math.radians(40), 0.9), pol(0, 0, 3.2), 18),
-       (N, pol(1.6, ang(8) + math.radians(70), 0.7), pol(0, 0, WALL + RR * 0.9), 16)]
+CK += [(T(330), pol(2.6, ang(BAYS - 1) + math.radians(40), 1.3), pol(0, 0, 1.5), 20),
+       (T(400), pol(2.3, ang(BAYS) + math.radians(40), 0.9), pol(0, 0, 3.2), 18),
+       (N, pol(1.6, ang(BAYS) + math.radians(70), 0.7), pol(0, 0, WALL + RR * 0.9), 16)]
 for f, p, t, lens in CK:
     co.location = p; co.keyframe_insert('location', frame=f); tgt.location = t; tgt.keyframe_insert('location', frame=f)
     cam.lens = lens; cam.keyframe_insert('lens', frame=f)
