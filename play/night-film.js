@@ -251,7 +251,8 @@
   // 光の粒が灯籠へ（G → A で高まる）→ 天窓の光で D の和音がひらき、鈴が降りて消える。時刻は lastroom.py の LIT0・GAP（120コマ・75コマ）に合わせる
   // 旋律・和音の進み方・ハープの並び・灯るたびの鈴の音は、その夜のカードから決める（rnd）。AI の設計図の楽器は色として足す（オルガン・鈴・ハープ・声）
   // sp：精霊ごとの特別（rar 金の光・銀の光／kin 縁から生まれた子）。額縁が灯る時刻に、金＝声の和音、銀＝高い鈴の連なり、縁の子＝2つの旋律が重なる
-  const ROOM_PLAN = (rnd, sp = []) => ({ bell, harp, voice, choir, solo, bass, haze: strings, organ, inst }) => {
+  // lt：額縁が灯る時刻（秒）。2026-11-01 に額縁を4つにしてから、灯るのは小節の頭と限らない（和音は小節ごと、灯った合図と特別な音は灯る時刻に）
+  const ROOM_PLAN = (rnd, sp = [], lt = null) => ({ bell, harp, voice, choir, solo, bass, haze: strings, organ, inst }) => {
     const pick = a => a[Math.floor(rnd() * a.length)], L0 = 5, BAR = 3.125, BEAT = BAR / 4, has = x => inst.includes(x);
     const C = { D: [50, 57, 62, 66, 69], Bm: [47, 54, 59, 62, 66], G: [43, 55, 59, 62, 67], A: [45, 57, 61, 64, 69], DF: [42, 57, 62, 66, 69], Em: [40, 55, 59, 64, 67],
       Asus: [45, 57, 62, 64, 69], AC: [49, 57, 61, 64, 69], Fm: [42, 54, 61, 66, 69], Gm6: [43, 55, 58, 62, 64] };
@@ -274,8 +275,11 @@
       strings(c.slice(1), t, BAR + .1, .012 * g, 1200 + i * 200);
       if (has('organ')) organ(c.slice(1, 4), t, BAR, .008 * g);
       bass(c[0] - 12 + (c[0] < 44 ? 12 : 0), t, BAR, .07 * g);
-      bell(pick(c.slice(2)) + 24, t + .05, 3.4, has('bell') ? .07 : .05);                            // 灯った合図
       hp.forEach((h, b) => harp(c[1 + ((h + i) % 4)] + 12, t + b * BEAT + BEAT / 2, 1.8, (.03 + .005 * i) * (has('harp') ? 1.4 : 1)));
+    });
+    (lt || P.map((k, i) => L0 + i * BAR)).forEach((t, i) => {
+      const c = C[P[Math.min(P.length - 1, Math.floor((t - L0) / BAR + .01))]];
+      bell(pick(c.slice(2)) + 24, t + .05, 3.4, has('bell') ? .07 : .05);                            // 灯った合図
       const c2 = sp[i];
       if (!c2) return;
       if (c2.rar === 'gold') { voice([74, 78, 81], t + .05, 1.7, .02); bell(86, t + .12, 3.2, .07); }
@@ -423,8 +427,8 @@
     }
     const setAuto = () => { texs = autoArts.length ? Array.from({ length: BAYS }, (_, b) => autoTex(b)) : null; };
     // 20秒のときの時刻（コマ）→ この映像のコマ（lastroom.py の T と同じ。2026-10-27 に40秒にした）
-    const L0 = J.lit0 || 70, GP = J.gap || 30;
-    const T = f => { if (!J.lit0) return f; const P = [[0, 70, 0, L0], [70, 280, L0, L0 + 7 * GP], [280, 380, L0 + 7 * GP, Math.round(J.n * 795 / 960)], [380, 480, Math.round(J.n * 795 / 960), J.n]];
+    const L0 = J.lit0 || 70, GP = J.gap || 30, NW = J.wins.length;  // 額縁の数（2026-11-01 に7つから4つへ。額縁の所の長さは同じ）
+    const T = f => { if (!J.lit0) return f; const P = [[0, 70, 0, L0], [70, 280, L0, L0 + NW * GP], [280, 380, L0 + NW * GP, Math.round(J.n * 795 / 960)], [380, 480, Math.round(J.n * 795 / 960), J.n]];
       for (const [a0, a1, b0, b1] of P) if (f <= a1) return b0 + (f - a0) * (b1 - b0) / (a1 - a0); return J.n; };
     const K = GP / 30, lit = i => L0 + i * GP;  // 額縁 i が灯るコマ
     if (o.pic) setPic(await img(o.pic));
@@ -630,7 +634,7 @@
       };
       const stopDraw = onFrames(v, t => draw(Math.floor(t * J.fps) + 1));
       btn(L, o.tx.skip, 'ghost nf-skip', () => finish(false));
-      if (A) { A.ac.resume(); S = score(A.ac, A.out, ROOM_PLAN(seeded(o.seed || ''), o.cards.map(c => ({ rar: c.rar, kin: !!c.kin }))), o.story && o.story.music, 'D', J.n / J.fps); rec = recorder(cv, A.dest); }
+      if (A) { A.ac.resume(); S = score(A.ac, A.out, ROOM_PLAN(seeded(o.seed || ''), o.cards.map(c => ({ rar: c.rar, kin: !!c.kin })), J.wins.map((w, i) => lit(i) / J.fps)), o.story && o.story.music, 'D', J.n / J.fps); rec = recorder(cv, A.dest); }
       if (rec) { rec.ondataavailable = e => { if (e.data && e.data.size) parts.push(e.data); }; rec.start(500); }
       v.onended = () => { draw(J.n); setTimeout(() => finish(true), 900); };
       v.play().catch(() => finish(false));

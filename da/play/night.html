@@ -253,6 +253,16 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .ltdone.on{opacity:1;text-shadow:0 0 18px rgba(230,207,154,.8)}
 .ltback{font-size:13px;color:var(--gold-soft);min-height:1.5em}
 .tap{font-size:12px;color:var(--dim)}
+/* 部屋を灯すと額縁が1つ（2026-11-01〜）。2〜3体で灯したときは、どの子を入れるかを選ぶ */
+.gainh{font-family:var(--serif);font-size:20px;letter-spacing:.12em;color:var(--gold-soft);margin:0}
+.gainp{font-size:14px;margin:0}
+.gainlist{display:flex;gap:12px;justify-content:center;align-items:flex-end;flex-wrap:wrap}
+.gpick{background:none;border:1px solid rgba(201,164,92,.35);padding:8px 6px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink);cursor:pointer;font:inherit;font-size:13px}
+.gpick:hover,.gpick:focus-visible{border-color:var(--gold-soft);box-shadow:0 0 14px rgba(230,207,154,.45)}
+.gone{animation:gainIn .7s ease-out}
+@keyframes gainIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+.gaingold{font-size:13px;color:var(--gold-soft)}
+.gotrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 /* 朝 */
 .morning .end{margin:auto 0}
 .end{width:100%;max-width:560px;border:1px solid var(--line);text-align:center;padding:40px 22px 22px;display:flex;flex-direction:column;gap:12px;align-items:center}
@@ -345,7 +355,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .pconfirm{border:1px solid var(--gold);background:#0e1020;padding:16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
 .pconfirm p{margin:0;font-family:var(--serif);line-height:1.9}
 .pconfirm .warn{color:var(--warm)}
-@media (prefers-reduced-motion:reduce){.ltcards .sp,.vimg.lit,.vanim.arrive{animation:none}.sp,.ltdone,.vlit,.vanim.go,.vanim.back,.flash.on{transition:none}}
+@media (prefers-reduced-motion:reduce){.gone,.ltcards .sp,.vimg.lit,.vanim.arrive{animation:none}.sp,.ltdone,.vlit,.vanim.go,.vanim.back,.flash.on{transition:none}}
 </style>
 </head>
 <body>
@@ -452,6 +462,16 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
  </div>
 </div>
 
+<div class="layer lt" id="gain" hidden aria-live="polite">
+ <div class="ltbox">
+  <h2 class="gainh" id="gainH"></h2>
+  <p class="gainp" id="gainP"></p>
+  <div class="gainlist" id="gainList"></div>
+  <p class="gaingold" id="gainGold" hidden></p>
+  <div class="tap" id="gainTap" hidden data-i18n="nTap">タップで次へ</div>
+ </div>
+</div>
+
 <div class="layer morning" id="morning" hidden><div class="end" id="end"></div></div>
 
 <div class="layer" id="fview" hidden>
@@ -483,8 +503,8 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 </div>
 
 <script src="monster-i18n.js?v=30"></script>
-<script src="night-i18n.js?v=26"></script>
-<script src="night-film.js?v=21"></script>
-<script src="night-app.js?v=40"></script>
+<script src="night-i18n.js?v=27"></script>
+<script src="night-film.js?v=22"></script>
+<script src="night-app.js?v=41"></script>
 </body>
 </html>
