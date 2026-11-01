@@ -364,7 +364,7 @@
   }
 
   // ---- 灯った部屋で：部屋の真ん中に送った精霊の作品が浮かび、その上を精霊が舞ってから作品へ還る（2026-10-28 重吉さんの決め）----
-  // 精霊1体に作品1枚（送った数だけ並ぶ）。絵の上の canvas に描くだけで、何も残さない。動きを減らす設定では飛ばす
+  // 精霊1体に作品1枚（送った数だけ並ぶ）。絵の上の canvas に描くだけで、何も残さない。動きを減らす設定では飛ばす。右下の「とばす」で途中で終えられる
   const RITE = { 1: [600], 2: [455, 745], 3: [350, 600, 850] }, RITE_Y = 400, RITE_H = 190;
   function riteImg(src) { return new Promise(ok => { if (!src) return ok(null); const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = src; }); }
   async function riteScene(cs) {
@@ -380,11 +380,14 @@
       return { x: xs[i], w, h: w / ar, c, a, f: figs[i], ph: i * 2.1 };
     });
     const T0 = 900, T1 = 3600, T2 = 4700, T3 = 6600, ease = x => x < 0 ? 0 : x > 1 ? 1 : x * x * (3 - 2 * x);
-    let sucked = 0;
+    let sucked = 0, skip = false;
+    // とばす（2026-11-01 重吉さんの決め）：押すとその部屋の場面をすぐ終えて、灯った部屋へ
+    const sk = $('riteskip'); sk.textContent = tr('nFilmSkip') + ' ▶'; sk.hidden = false; sk.onclick = () => { skip = true; };
     return new Promise(done => {
       const t0 = performance.now();
       const frame = now => {
         const t = now - t0;
+        if (skip) { sk.hidden = true; sk.onclick = null; cv.hidden = true; g.clearRect(0, 0, 1200, 800); $('vlit').classList.add('on'); return done(); }
         g.clearRect(0, 0, 1200, 800);
         box.forEach((B, i) => {
           const appear = ease(t / T0), fade = 1 - ease((t - T2 - 500) / (T3 - T2 - 500)), bob = Math.sin(t / 700 + B.ph) * 5;
@@ -433,7 +436,7 @@
         for (const d of dust) { d.x += d.vx; d.y += d.vy; d.vy -= .02; d.l -= .014; if (d.l > 0) { g.globalAlpha = d.l; g.fillStyle = '#ffe2a6'; g.beginPath(); g.arc(d.x, d.y, 2.4, 0, 6.28); g.fill(); } }
         g.restore();
         if (t > T2 - 300 && !$('vlit').classList.contains('on')) $('vlit').classList.add('on');
-        if (t < T3) requestAnimationFrame(frame); else { cv.hidden = true; g.clearRect(0, 0, 1200, 800); done(); }
+        if (t < T3) requestAnimationFrame(frame); else { sk.hidden = true; sk.onclick = null; cv.hidden = true; g.clearRect(0, 0, 1200, 800); done(); }
       };
       requestAnimationFrame(frame);
     });

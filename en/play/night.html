@@ -107,6 +107,8 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .nf-btns .nf-skip{position:fixed;right:16px;bottom:16px;background:rgba(0,0,0,.45)}
 /* 光の扉をくぐる */
 .rite{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+.riteskip{position:absolute;right:12px;bottom:12px;z-index:4;font:inherit;font-size:13px;color:#f3e6c4;background:rgba(0,0,0,.5);border:1px solid rgba(232,200,120,.6);border-radius:999px;padding:6px 14px;cursor:pointer}
+.riteskip:hover,.riteskip:focus-visible{background:rgba(232,200,120,.25)}
 .flash{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 52%,#fff 0,#fff6dc 30%,rgba(255,226,160,.85) 60%,rgba(255,210,120,.4) 100%)}
 .flash.on{transition:opacity 1.6s ease-in;opacity:1}
 /* 下の欄 */
@@ -374,6 +376,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
     <div class="vlit" id="vlit" data-i18n="nLit">灯がともった</div>
    </div>
    <canvas class="rite" id="rite" aria-hidden="true" hidden></canvas>
+   <button type="button" class="riteskip" id="riteskip" hidden>とばす ▶</button>
    <div class="flash" id="flash"></div>
    <div class="rinfo" id="rinfo" hidden></div>
    <button class="fwd" id="fwd" type="button" hidden data-i18n="nForward">前に進む ↑</button>
@@ -506,6 +509,6 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 <script src="monster-i18n.js?v=30"></script>
 <script src="night-i18n.js?v=27"></script>
 <script src="night-film.js?v=22"></script>
-<script src="night-app.js?v=41"></script>
+<script src="night-app.js?v=42"></script>
 </body>
 </html>
