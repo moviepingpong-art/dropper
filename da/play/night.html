@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tænd lys i natmuseet | Tænd lys i de sovende sale med dine ånder | Droppers legeplads</title>
+<meta name="description" content="Vælg 7 ånder fra dit katalog i Lanternemuseet, og gå gennem museets korridorer efter lukketid: åbn 4 døre, og tænd lys i salen bag hver af dem. Hver sal skal bruge en bestemt mængde lys og holder af bestemte elementer. Nattens museum bestemmes af datoen, så alle får den samme nat. Man kan ikke tabe.">
+<link rel="canonical" href="https://dropper-tools.com/da/play/night.html">
+<link rel="alternate" hreflang="ja" href="https://dropper-tools.com/play/night.html">
+<link rel="alternate" hreflang="en" href="https://dropper-tools.com/en/play/night.html">
+<link rel="alternate" hreflang="en-IN" href="https://dropper-tools.com/in/play/night.html">
+<link rel="alternate" hreflang="ko" href="https://dropper-tools.com/ko/play/night.html">
+<link rel="alternate" hreflang="zh-Hant" href="https://dropper-tools.com/zh-hant/play/night.html">
+<link rel="alternate" hreflang="vi" href="https://dropper-tools.com/vi/play/night.html">
+<link rel="alternate" hreflang="da" href="https://dropper-tools.com/da/play/night.html">
+<link rel="alternate" hreflang="x-default" href="https://dropper-tools.com/play/night.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dropper">
+<meta property="og:locale" content="da_DK">
+<meta property="og:title" content="Tænd lys i natmuseet | Droppers legeplads">
+<meta property="og:description" content="Bring lys til salene i museet efter lukketid sammen med ånderne i dit katalog. Alle får den samme nat. Tænd lys i 4 sale, og til sidst venter Lysets dør.">
+<meta property="og:url" content="https://dropper-tools.com/da/play/night.html">
+<meta property="og:image" content="https://dropper-tools.com/assets/og/og-en.png">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Google Analytics (GA4)。測定IDはほかのページと同じ（build.py の GA_TAG）。
+     イベントは回数だけを送る（track()）。カードの中身・名前は送らない（プライバシーポリシー「遊び場」の節） -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PQPKYYYXKG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PQPKYYYXKG');
+</script>
+<script>window.LANG = 'da';</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&family=Noto+Serif:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;600;700&display=swap" rel="stylesheet">
+<style>html:root{--serif:"Noto Serif","Noto Serif JP",serif}html body{font-family:"Noto Sans","Noto Sans JP",sans-serif}</style>
+<style>
+/* 夜の美術館：紺の地に金の灯り1色。見出し・部屋・名前は明朝（spirit.html と同じ見た目） */
+:root{
+  --bg:#0b0d16; --wall:#121524; --card:#131624; --gold:#c9a45c; --gold-soft:#e6cf9a; --gold-pale:#2a2414;
+  --ink:#ece6d8; --mid:#b8b2a2; --dim:#8a8577; --line:#2a2c3a; --warm:#f1c7a0; --ng:#e8806a;
+  --serif:'Noto Serif JP',serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0b0d16; } }
+:root[data-theme="dark"]{ --bg:#0b0d16; }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans JP',sans-serif;line-height:1.7}
+html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.app{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px))}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.logo{font-family:var(--serif);font-weight:600;letter-spacing:.14em;color:var(--gold-soft);font-size:15px}
+.topr{display:flex;gap:8px;align-items:center}
+.back,.snd{font:500 12px 'Noto Sans JP',sans-serif;color:var(--mid);text-decoration:none;background:none;border:1px solid var(--line);border-radius:2px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.snd.on{color:var(--gold-soft);border-color:var(--gold)}
+.back:focus-visible,.snd:focus-visible,.btn:focus-visible,.sp:focus-visible,.hf:focus-visible{outline:2px solid var(--gold-soft);outline-offset:2px}
+.head{margin:22px 0 4px;display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.head h1{margin:0;font-family:var(--serif);font-weight:600;font-size:clamp(22px,5vw,28px);letter-spacing:.12em}
+.date{font-family:var(--serif);color:var(--mid);font-size:13px}
+/* 今夜の道のり：灯す部屋4つ（丸）と最後の部屋（ひし形） */
+.path{display:flex;gap:8px;align-items:center}
+.path i{width:10px;height:10px;border-radius:50%;border:1px solid var(--gold);display:block}
+.path i.on{background:var(--gold)}
+.path i.now{background:var(--gold-soft);box-shadow:0 0 10px var(--gold-soft)}
+.path i.key{border-radius:1px;transform:rotate(45deg);width:9px;height:9px}
+/* 通路と部屋の絵 */
+.view{position:relative;width:100%;aspect-ratio:3/2;overflow:hidden;border:1px solid var(--line);background:#0b0a0c;margin-top:12px}
+.vanim{position:absolute;inset:0;transform-origin:50% 45%}
+.vanim.go{transition:transform .55s ease-in,opacity .55s ease-in;transform:scale(1.3);opacity:0}
+.vanim.back{transition:transform .5s ease-in,opacity .5s ease-in;transform:scale(.84);opacity:0}
+.vanim.arrive{animation:arrive .6s ease-out}
+@keyframes arrive{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+.vimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.vimg.lit{animation:litup 1.4s ease-out}
+/* 扉3の鍵の画像を、その部屋の壁に映す（壁の形は Blender の抜き room-wallmask.png・四隅は night-app.js の WALLS）。その夜だけ・残さない */
+.walls{position:absolute;left:0;top:0;width:1200px;height:800px;transform-origin:0 0;pointer-events:none;opacity:.82;transition:opacity 1.2s;
+  -webkit-mask:url(/play/gallery/room-wallmask.png) 0 0/1200px 800px no-repeat;mask:url(/play/gallery/room-wallmask.png) 0 0/1200px 800px no-repeat}
+.walls.lit{opacity:.68}
+.walls>div{position:absolute;left:0;top:0;transform-origin:0 0;background-size:cover;background-position:center}
+@keyframes litup{from{filter:brightness(.35)}to{filter:none}}
+/* 扉の上の真鍮の札（door.py の札の位置） */
+.plaque{position:absolute;left:50%;top:25.1%;transform:translate(-50%,-50%);font:600 clamp(9px,1.6vw,13px) var(--serif);color:#fff2c8;letter-spacing:.12em;white-space:nowrap;text-shadow:0 1px 3px #000;pointer-events:none}
+.vlit{position:absolute;left:0;right:0;bottom:9%;text-align:center;font:600 clamp(20px,4.4vw,30px) var(--serif);color:#fff6dc;letter-spacing:.3em;text-shadow:0 0 18px #ffcf7a,0 0 40px #ffb84a;opacity:0;transition:opacity .8s;pointer-events:none}
+.vlit.on{opacity:1}
+/* 「前に進む」は通路の真ん中の下（絨毯の上） */
+.rinfo{position:absolute;left:2.5%;top:3.5%;z-index:2;background:rgba(14,12,20,.74);border:1px solid var(--gold);border-radius:2px;padding:9px 16px 10px;font:500 18px/1.55 var(--serif);color:var(--gold-soft);letter-spacing:.06em;pointer-events:none}
+.rinfo b{color:var(--ink,#f3ead6);font-weight:600}
+@media (max-width:560px){.rinfo{font-size:14px;padding:6px 11px 7px}}
+.fwd{position:absolute;left:50%;bottom:6%;transform:translateX(-50%);z-index:2;background:rgba(14,12,20,.78);color:var(--gold-soft);border:1px solid var(--gold);border-radius:2px;padding:9px 22px;font:600 15px var(--serif);letter-spacing:.14em;cursor:pointer;white-space:nowrap}
+.fwd:hover,.fwd:focus-visible{background:var(--gold);color:#1a1408;outline:none}
+/* 2の段（2026-10-25）：最後の部屋の映像（縦）と、最後の通路を進む映像（横）。night-film.js が出す */
+.nfilm{position:fixed;inset:0;z-index:60;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:12px 16px}
+.nfilm[hidden]{display:none}
+.nfilm canvas{display:block;max-width:100%;max-height:calc(100vh - 130px);max-height:calc(100dvh - 130px);background:#05060a;border:1px solid rgba(201,164,92,.35)}
+.nfilm.walk canvas{width:min(100%,960px);height:auto}
+.nfilm.room canvas{height:calc(100vh - 130px);height:calc(100dvh - 130px);width:auto}
+.nfilm.room.pick canvas{height:calc(100vh - 330px);height:calc(100dvh - 330px);min-height:180px}
+.nf-cap{min-height:1.4em;color:var(--gold-soft);font:500 14px var(--serif);letter-spacing:.06em;text-align:center;max-width:560px}
+.nf-pick{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:8px}.nf-modes{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.nf-mode{font:600 14px var(--serif);color:var(--gold-soft);background:transparent;border:1px solid rgba(232,200,120,.6);border-radius:999px;padding:7px 16px;cursor:pointer}.nf-mode{opacity:.6;transition:background .25s,color .25s,opacity .25s,box-shadow .25s}.nf-mode:hover{opacity:.9}.nf-mode.on{opacity:1;background:linear-gradient(#f0d89a,#c9a45c);color:#1a1408;border-color:#f6e2a8;box-shadow:0 0 0 2px rgba(246,226,168,.35),0 0 16px rgba(240,200,110,.55)}.nf-mode.on::before{content:'✓ ';font-weight:700}.nf-drop{display:flex;flex-direction:column;gap:4px;border:1.5px dashed rgba(232,200,120,.7);border-radius:12px;padding:10px 14px;max-width:420px;cursor:pointer}.nf-drop.over,.nf-drop.has{border-style:solid;background:rgba(232,200,120,.1)}.nf-drop small{font-size:12px;opacity:.85}
+.nf-ai{display:inline-flex;flex-direction:column;gap:3px;border:1px solid rgba(200,200,215,.45);border-radius:14px;padding:7px 16px;background:rgba(255,255,255,.06);line-height:1.45}.nf-ai b{font-weight:600}.nf-ai small{font-size:12px;opacity:.85}.nf-ai.on{border-color:rgba(232,200,120,.7);background:rgba(232,200,120,.12)}
+.nf-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.nf-btns .nf-skip{position:fixed;right:16px;bottom:16px;background:rgba(0,0,0,.45)}
+/* 光の扉をくぐる */
+.rite{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+.flash{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 52%,#fff 0,#fff6dc 30%,rgba(255,226,160,.85) 60%,rgba(255,210,120,.4) 100%)}
+.flash.on{transition:opacity 1.6s ease-in;opacity:1}
+/* 下の欄 */
+.panel{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.panel .rn{font-family:var(--serif);font-weight:600;font-size:22px;letter-spacing:.1em}
+.panel .rn small{display:block;font:500 12px 'Noto Sans JP',sans-serif;color:var(--mid);letter-spacing:.06em}
+.panel .info{font-size:13px;color:var(--mid)} .panel .info b{color:var(--gold-soft);font-weight:500}
+.panel .say{font-family:var(--serif);font-size:14px;color:var(--gold-soft);border-left:2px solid var(--gold);padding-left:10px}
+.panel .say:empty{display:none}
+.pbtns{justify-content:center}
+.keylead{margin:0;font-size:14px;line-height:1.9} .keylead a{color:var(--gold-soft)}
+.drop{border:1px dashed var(--gold);border-radius:2px;padding:18px 12px;text-align:center;background:rgba(201,164,92,.06);cursor:pointer;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mid)}
+.drop b{font:600 16px var(--serif);color:var(--gold-soft);letter-spacing:.08em}
+.drop.over,.drop:focus-visible{background:rgba(201,164,92,.16);outline:none;border-style:solid}
+.drop.busy{pointer-events:none}
+/* 鍵を落としたあと：確かめ中は画像の上を光がなぞる・合えば金に光って印・合わなければ揺れて ✕（2026-10-26 重吉さんの決め） */
+.drop{position:relative;overflow:hidden}
+.drop .kfx{display:none;position:absolute;inset:0}
+.drop.read .kfx,.drop.ok .kfx,.drop.ng .kfx{display:block}
+.kpic{position:absolute;inset:0;background:#05060b center/cover no-repeat;opacity:.6;transition:opacity .4s,filter .4s}
+.drop.read .kpic::after{content:'';position:absolute;left:0;right:0;height:30%;background:linear-gradient(transparent,rgba(240,205,110,.55),transparent);animation:kscan 1s linear infinite}
+@keyframes kscan{from{top:-30%}to{top:100%}}
+.kmark{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transform:scale(0)}
+.kmark svg{width:34px;height:34px;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.drop.ok{border:2px solid var(--gold-soft);box-shadow:0 0 0 3px rgba(240,205,110,.22),0 0 30px rgba(240,205,110,.5)}
+.drop.ok .kpic{opacity:.85}
+.drop.ok .kmark{background:radial-gradient(circle,#f6dc8e,#c9a45c);box-shadow:0 0 26px rgba(246,220,142,.9);animation:kpop .45s cubic-bezier(.3,1.6,.5,1) forwards} .drop.ok .kmark svg{stroke:#1a1408}
+.drop.ng{border:2px solid var(--ng);animation:kshake .45s}
+.drop.ng .kpic{filter:grayscale(1) brightness(.45)}
+.drop.ng .kmark{background:rgba(20,10,10,.85);border:2px solid var(--ng);animation:kpop .3s ease-out forwards} .drop.ng .kmark svg{stroke:var(--ng)}
+@keyframes kpop{to{transform:scale(1)}}
+@keyframes kshake{0%,100%{transform:none}20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+.kres{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-family:var(--serif)}
+.kres b{font-size:16px;font-weight:600;letter-spacing:.06em} .kres.ok b{color:var(--gold-soft)} .kres.ng b{color:var(--ng)}
+.klike{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mid);font-family:inherit}
+.klike i{width:54px;height:40px;border:1px solid var(--line);flex:none}
+.lk-light{background:radial-gradient(circle at 50% 42%,#fff 0 3px,#ffe7a8 5px,rgba(255,190,90,.75) 9px,rgba(200,120,40,.25) 18px,transparent 26px),linear-gradient(#1a1410,#0b0908)}
+@media (prefers-reduced-motion:reduce){.drop.ng{animation:none}.drop.read .kpic::after{animation:none}}
+/* 手もとの精霊 */
+.hand{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+@media (max-width:640px){.hand{grid-template-columns:repeat(4,1fr)}}
+.sp{position:relative;background:linear-gradient(#171a2a,#10121d);border:1px solid rgba(201,164,92,.45);padding:5px;border-radius:2px;font:inherit;color:var(--ink);text-align:left;cursor:pointer;transition:transform .15s,opacity .3s,box-shadow .2s}
+.sp .fr{aspect-ratio:4/5;border:3px solid #2b2418;outline:1px solid var(--gold);background:#000 center/cover no-repeat;display:flex;align-items:flex-end;justify-content:center}
+.sp .fr{position:relative}
+.sp .fig{position:absolute;left:50%;bottom:7%;width:62%;aspect-ratio:182/280;transform:translateX(-50%);background:#0d0f17 no-repeat;background-size:278.8% auto;background-position:50% 22.4%;border:2px solid #2b2418;outline:1px solid var(--gold);box-shadow:0 4px 14px rgba(0,0,0,.65)}
+.sp .fig.solo{width:74%;bottom:5%}
+.sp .fig.side{left:4%;bottom:5%;width:40%;transform:none}
+.sp .sprite{position:absolute;left:-14%;bottom:-4%;width:92%;aspect-ratio:1;background:no-repeat center/contain;filter:drop-shadow(0 0 6px rgba(255,230,170,.55)) drop-shadow(0 3px 6px rgba(0,0,0,.6));pointer-events:none}
+.sp .fr .ty{font-family:var(--serif);font-size:20px;color:rgba(255,255,255,.75);margin:auto}
+.sp .nm{font-family:var(--serif);font-size:12px;font-weight:600;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp .meta{display:flex;justify-content:space-between;gap:4px;font-size:11px;color:var(--mid)}
+.sp .meta span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp .meta b{color:var(--gold-soft);font-family:var(--serif);font-weight:600}
+.sp.sel{border-color:var(--gold-soft);box-shadow:0 0 0 2px var(--gold),0 0 22px rgba(230,207,154,.35);transform:translateY(-6px)}
+.sp.rest{opacity:.3;cursor:default}
+.sp.rest::after{content:attr(data-rest);position:absolute;left:0;right:0;top:38%;text-align:center;font-family:var(--serif);font-size:12px;color:var(--ink)}
+.sp .star{position:absolute;top:-9px;left:-6px;background:var(--gold);color:#1a1408;font-size:10px;padding:1px 6px;font-family:var(--serif);z-index:1}
+.sp .rar{position:absolute;top:-9px;right:-6px;font-size:10px;padding:1px 6px;font-family:var(--serif);z-index:1;color:#1a1408}
+.rar.gold{background:linear-gradient(90deg,#a8781c,#f6dc8e,#a8781c)} .rar.silver{background:linear-gradient(90deg,#7d8796,#eef1f6,#7d8796)}
+/* 明るさの見積もり */
+.calc{margin-top:16px;border-top:1px solid var(--line);padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.calc .f{font-family:var(--serif);font-size:14px;color:var(--mid);display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.calc .f b{color:var(--ink);font-weight:600}
+.calc .big{font-size:28px;color:var(--gold-soft);margin:0 4px}
+.chip{border:1px solid rgba(201,164,92,.5);color:var(--gold-soft);padding:0 7px;font-size:12px;font-family:'Noto Sans JP',sans-serif}
+.chip.neg{border-color:var(--line);color:var(--mid)}
+.ok{font-size:13px;color:var(--gold-soft)} .short{font-size:13px;color:var(--warm)}
+.btns{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{display:inline-block;background:var(--gold);color:#1a1408;border:0;border-radius:2px;padding:11px 24px;font-family:var(--serif);letter-spacing:.12em;font-size:15px;cursor:pointer;text-decoration:none;text-align:center}
+.btn:disabled{background:#2a2c3a;color:var(--dim);cursor:default}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--mid);letter-spacing:.05em;font-size:13px;padding:9px 16px}
+.btn.ghost.warn{border-color:var(--warm);color:var(--warm)}
+.msg{margin-top:12px;font-size:13px;color:var(--mid);min-height:1.7em}
+.note{margin-top:14px;font-size:12px;color:var(--dim);line-height:1.9}
+/* 重ねて出す画面（ルール・7体えらぶ・灯す場面・朝） */
+.layer{position:fixed;inset:0;z-index:5;overflow:auto;background:rgba(6,7,12,.94);display:flex;justify-content:center;align-items:flex-start;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px))}
+.box{width:100%;max-width:640px;margin:auto 0;border:1px solid var(--line);background:var(--wall);padding:22px 20px;display:flex;flex-direction:column;gap:12px}
+.box h1,.box h2{margin:0;font-family:var(--serif);font-weight:600;letter-spacing:.12em;text-align:center}
+.box h1{font-size:24px;color:var(--gold-soft)} .box h2{font-size:20px}
+.box h3{margin:6px 0 0;font-family:var(--serif);font-weight:600;font-size:14px;color:var(--mid);letter-spacing:.06em}
+.lead{margin:0;text-align:center;font-family:var(--serif);color:var(--mid);font-size:14px}
+/* 最後の部屋の動画を売りにする帯（2026-10-25 重吉さんの決め）。大きめの字 */
+.promo{margin:4px 0 2px;padding:14px 16px 12px;border:1px solid var(--gold);border-radius:3px;background:linear-gradient(180deg,rgba(214,183,100,.16),rgba(214,183,100,.05));text-align:center}
+.promo-h{margin:0;font-family:var(--serif);font-weight:600;font-size:22px;line-height:1.45;color:var(--gold-soft);letter-spacing:.05em;word-break:keep-all;overflow-wrap:anywhere}
+.promo-s{margin:6px 0 0;font-size:13px;line-height:1.6;color:var(--mid)}
+.promo-m{margin:8px 0 0;font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--gold-soft)}
+@media (max-width:560px){.promo-h{font-size:18px}}
+.rules{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.rules li{display:flex;gap:10px;align-items:flex-start}
+.rules .n{flex:none;width:22px;height:22px;border:1px solid var(--gold);color:var(--gold-soft);font-family:var(--serif);font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.rmore{font-size:12px;line-height:1.7;color:var(--mid)} .rmore b{font-weight:500;color:var(--gold-soft)}
+.rmore summary{cursor:pointer;color:var(--dim);width:max-content} .rmore[open] summary{margin-bottom:6px}
+/* 夜の流れの図：3つずつ2段。番号と矢印で順番が分かる */
+.map{margin:4px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:16px 22px;counter-reset:m}
+.map li{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;counter-increment:m}
+.map li:not(:nth-child(3n)):not(:last-child)::after{content:'';position:absolute;right:-16px;top:calc(33% - 6px);border:6px solid transparent;border-left:9px solid var(--gold);border-right:0}
+.map i{position:relative;display:block;width:100%;aspect-ratio:4/3;background:#10121c center/cover;border:1px solid var(--line);margin-bottom:4px}
+.map i::before{content:counter(m);position:absolute;top:-8px;left:-8px;width:20px;height:20px;border:1px solid var(--gold);background:var(--wall);color:var(--gold-soft);font-family:var(--serif);font-size:12px;font-style:normal;display:flex;align-items:center;justify-content:center}
+.map u{position:absolute;right:5px;bottom:5px;width:28px;height:28px;border-radius:50%;background:rgba(8,9,15,.8);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center}
+.map svg,.lock svg{width:17px;height:17px;fill:none;stroke:var(--gold-soft);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round} .map svg .f{fill:var(--gold-soft);stroke:none}
+.map b{font-family:var(--serif);font-weight:600;font-size:14px;color:var(--gold-soft);line-height:1.3}
+.map small{font-size:11.5px;color:var(--mid);line-height:1.4}
+.fxh{margin:6px 0 -4px;text-align:center;font-family:var(--serif);font-size:13px;color:var(--mid);letter-spacing:.06em}
+.fx{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.fx span{display:flex;flex-direction:column;align-items:center;gap:1px;padding:10px 4px 8px;border:1px solid var(--line);background:#0e1019}
+.fx i{width:46px;height:36px;margin-bottom:4px}
+.fx-g{background:linear-gradient(90deg,transparent 30%,rgba(240,205,110,.85) 46%,rgba(255,236,170,.95) 50%,rgba(240,205,110,.85) 54%,transparent 70%),radial-gradient(circle at 50% 100%,rgba(240,205,110,.5),transparent 60%)}
+.fx-s{background:repeating-linear-gradient(100deg,transparent 0 7px,rgba(210,222,240,.8) 7px 8.5px),radial-gradient(circle at 50% 100%,rgba(200,215,235,.35),transparent 65%);-webkit-mask:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask:linear-gradient(transparent,#000 30%,#000 70%,transparent)}
+.fx-k{background:radial-gradient(circle at 30% 40%,rgba(255,214,150,.95) 0 6px,transparent 13px),radial-gradient(circle at 70% 40%,rgba(170,205,255,.95) 0 6px,transparent 13px),radial-gradient(ellipse at 50% 82%,rgba(255,240,210,.95) 0 6px,transparent 15px)}
+.fx b{font-family:var(--serif);font-weight:600;font-size:13px;color:var(--gold-soft)} .fx small{font-size:11.5px;color:var(--mid)}
+.lock{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--mid)}
+@media (max-width:480px){.map{gap:14px 16px}.map li:not(:nth-child(3n)):not(:last-child)::after{right:-12px;border-width:5px;border-left-width:7px}.map b{font-size:13px}.map small{font-size:10.5px}.map u{width:24px;height:24px}.map svg{width:14px;height:14px}}
+.rules em,.tip b{font-style:normal;color:var(--gold-soft)}
+.tip,.gnote{font-size:13px;color:var(--mid);border-left:2px solid var(--gold);padding:4px 10px}
+.center{text-align:center}
+/* 7体えらぶ */
+.picked{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+@media (max-width:640px){.picked{grid-template-columns:repeat(4,1fr)}}
+.slot{display:flex;flex-direction:column;gap:4px}
+.slot .empty{aspect-ratio:4/6;border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;color:var(--dim);font-family:var(--serif)}
+.mline{display:flex;justify-content:space-between;font-size:13px;color:var(--mid)} .mline b{color:var(--gold-soft);font-family:var(--serif)}
+.mline.bad b{color:var(--warm)}
+.meter{height:4px;background:#1c1e2b} .meter i{display:block;height:100%;background:var(--gold);transition:width .2s} .meter.bad i{background:var(--warm)}
+.zukan{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;max-height:46vh;overflow:auto;padding:8px 6px 4px}
+.zukan .sp.on{border-color:var(--gold-soft);box-shadow:0 0 0 2px var(--gold)}
+.zukan .sp.on::before{content:attr(data-n);position:absolute;top:-8px;left:-5px;background:var(--gold-soft);color:#1a1408;font-size:10px;padding:0 6px;font-family:var(--serif);z-index:1}
+.dmsg{font-size:13px;color:var(--mid);text-align:center} .dmsg.warn{color:var(--warm)}
+.few{display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center;font-size:14px;color:var(--mid)}
+/* 灯す場面 */
+.lt{background:rgba(6,7,12,.96);align-items:center;cursor:pointer}
+.ltbox{width:100%;max-width:560px;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.ltroom{font-family:var(--serif);font-size:24px;letter-spacing:.2em}
+.ltneed{font-size:13px;color:var(--mid)}
+.ltcards{display:flex;gap:10px;justify-content:center}
+.ltcards .sp{width:96px;cursor:default;animation:rise .7s ease-out both}
+.ltcards .sp:nth-child(2){animation-delay:.12s} .ltcards .sp:nth-child(3){animation-delay:.24s}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.glow{width:min(100%,420px);height:6px;background:#1c1e2b;position:relative}
+.glow i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#8a6a2c,var(--gold-soft));width:0}
+.glow .mark{position:absolute;top:-6px;bottom:-6px;width:1px;background:var(--ink)}
+.ltnum{font-family:var(--serif);font-size:44px;color:var(--gold-soft);line-height:1}
+.ltchips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;min-height:22px}
+.ltdone{font-family:var(--serif);font-size:20px;letter-spacing:.2em;color:var(--gold-soft);min-height:32px;opacity:0;transition:opacity .6s}
+.ltdone.on{opacity:1;text-shadow:0 0 18px rgba(230,207,154,.8)}
+.ltback{font-size:13px;color:var(--gold-soft);min-height:1.5em}
+.tap{font-size:12px;color:var(--dim)}
+/* 朝 */
+.morning .end{margin:auto 0}
+.end{width:100%;max-width:560px;border:1px solid var(--line);text-align:center;padding:40px 22px 22px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.end.dawn{background:linear-gradient(#1b1e33 0%,#3a3350 45%,#b98e5c 100%)}
+.end.quiet{background:linear-gradient(#0b0d16,#151827 60%,#2a3140)}
+.end h2{margin:0;font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:.24em}
+.end.quiet h2{color:var(--gold-soft)}
+.end p{margin:0;font-family:var(--serif);line-height:2;font-size:15px;opacity:.9}
+.lamps{display:flex;gap:14px;margin:6px 0}
+.lamps i{width:12px;height:12px;border-radius:50%;background:#2a2c3a}
+.lamps i.on{background:var(--gold-soft);box-shadow:0 0 12px 4px rgba(230,207,154,.7)}
+.end .btn{min-width:240px;line-height:1.6}
+.end .small{font-size:12px;color:var(--mid)}
+.end .small b{color:var(--warm);font-weight:500}
+/* 展示室の主・光の間 */
+.sp .keeper{position:absolute;bottom:42px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;padding:0 6px;font-family:var(--serif);z-index:1;background:linear-gradient(90deg,#a8781c,#f6dc8e);color:#1a1408}
+.sp .keeper.quiet{background:#5a3f2a;color:#eef1f6;border:1px solid #d8dde6}
+.ltsay{font-family:var(--serif);font-size:15px;color:var(--gold-soft);min-height:1.6em;max-width:480px}
+/* 朝の場面（仮の絵は canvas）・段階・額縁をもらう */
+.end{position:relative;overflow:hidden}
+/* 場面は上の窓（文字やボタンと重ならないよう、絵の下に文字を並べる） */
+.end .scene{display:block;width:calc(100% + 44px);height:200px;margin:-40px -22px 4px;border-bottom:1px solid var(--line)}
+.end .endin{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;align-items:center;width:100%}
+.end .lv{font-family:var(--serif);font-size:14px;color:var(--gold-soft)}
+.steps{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;font-size:11px;color:var(--mid)}
+.steps span{border:1px solid rgba(255,255,255,.2);padding:1px 6px;background:rgba(0,0,0,.25)}
+.steps span.on{border-color:var(--gold-soft);color:#fff2c4;background:rgba(201,164,92,.28)}
+.end p.hk{color:#fff2c4;font-size:14px}
+/* 夜明けは朝の絵とお礼だけ（2026-10-25〜） */
+.end.solo{max-width:900px;padding:0 0 22px;background:#0b0a0c}
+.end.solo .scene{width:100%;height:auto;aspect-ratio:1120/400;margin:0 0 18px}
+.end .thanks{font-size:clamp(18px,3.4vw,24px);color:#fff2c4;letter-spacing:.08em;line-height:1.9}
+.end .mini{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:13px;color:var(--mid)}
+.end .lnk{background:none;border:0;padding:4px 2px;color:var(--gold-soft);font:inherit;font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.lamps i.sp{border-radius:2px;transform:rotate(45deg)}
+.lamps i.sp.on{background:#fff2c4}
+.lifeband{width:min(100%,260px);height:10px;border-radius:5px;box-shadow:0 0 14px rgba(255,236,190,.35)}
+.gift{display:flex;flex-direction:column;align-items:center;gap:8px;background:rgba(11,13,22,.55);border:1px solid rgba(201,164,92,.45);padding:14px;width:100%}
+.gift p{font-size:14px}
+.gift .btns{justify-content:center}
+/* 選ぶ画面 */
+.box.wide{max-width:760px}
+/* 額縁（Blender の静止画 play/gallery/）。.fb は額縁の絵そのものの大きさ（px）で組み、使う所で縮める・ゆがめる */
+.fb{position:relative}
+.fb>*{position:absolute}
+.fb .fw{background:#0d0f17 center/cover no-repeat}
+.fb .fw.empty{background:repeating-linear-gradient(45deg,#1a0f12 0 18px,#140b0e 18px 36px);display:flex;align-items:center;justify-content:center;color:var(--dim);font:500 44px var(--serif);letter-spacing:.2em}
+.fb .fi{left:0;top:0;width:100%;height:100%}
+.fb .fsm>*{position:absolute}
+.fb .fsm img{left:0;top:0;width:100%;height:100%}
+.fb .fsm{filter:drop-shadow(4px 8px 7px rgba(0,0,0,.7))}
+/* 小さな額縁の精霊：カードの小さな絵のうち、作品の窓（600×920 のカードの 46,132 から 508×330）の真ん中を縦長に切り出す */
+.fb .fsw{background:#0d0f17 no-repeat;background-size:278.8% auto;background-position:50% 22.4%}
+.fb.rar-gold .fi{filter:drop-shadow(0 0 14px rgba(255,226,140,.95)) drop-shadow(0 0 34px rgba(255,210,110,.6))}
+.fb.rar-silver .fi{filter:drop-shadow(0 0 14px rgba(240,244,250,.9)) drop-shadow(0 0 34px rgba(220,228,240,.55))}
+.fscale{position:relative;display:inline-block;overflow:visible}
+.fscale>.fb{transform-origin:0 0}
+/* 最後の通路：通路の絵の上に、額縁を壁の位置へゆがめて重ねる（もと「わたしの展示室」） */
+.stage{position:absolute;left:0;top:0;width:1600px;height:1067px;transform-origin:0 0}
+.stage .hcv{position:absolute;left:0;top:0;width:1600px;height:1067px;pointer-events:none}
+.stage .hf{position:absolute;background:none;border:0;padding:0;cursor:pointer;border-radius:6px}
+.stage .hf:hover,.stage .hf:focus-visible{background:rgba(255,236,190,.07);box-shadow:0 0 0 2px rgba(246,220,142,.55);outline:none}
+.hlabels{position:absolute;inset:0;pointer-events:none}
+.hlabels span{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-family:var(--serif);color:#f6dc8e;background:rgba(14,12,20,.86);border:1px solid #c9a45c;padding:1px 8px;font-size:clamp(9px,1.25vw,13px)}
+.hlabels span.near{font-size:clamp(10px,1.7vw,17px)}
+.hlabels span.g{color:#fff2c4;border-color:#f6dc8e;box-shadow:0 0 10px rgba(255,226,140,.5)}
+.hlabels span.s{color:#fff;border-color:#eef1f6;box-shadow:0 0 10px rgba(240,244,250,.45)}
+.hlabels span.dim{color:var(--mid)}
+/* 正面から見る */
+.fv{max-width:900px;flex-direction:row;gap:26px;align-items:flex-start}
+.fvl{flex:0 0 auto;display:flex;justify-content:center}
+.fvr{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.fvt{font-family:var(--serif);color:var(--gold-soft);font-size:14px;letter-spacing:.12em}
+.fvr h2{margin:0;text-align:left;font-size:28px}
+.fvn{font-size:12px;color:var(--mid);padding-bottom:10px;border-bottom:1px solid var(--gold)}
+.fvd{margin:6px 0 0;font-family:var(--serif);line-height:1.9}
+.fvw{font-size:13px;line-height:1.8;color:var(--mid)}
+.fvw b{display:block;color:var(--gold-soft);font-weight:500;font-family:var(--serif);margin-top:6px}
+.fvw .ti{color:var(--ink)}
+.fvw a{color:var(--gold-soft)}
+.fvw p{margin:6px 0 0;font-family:var(--serif);color:var(--ink);opacity:.9}
+@media (max-width:640px){.fv{flex-direction:column;align-items:center}.fvr h2{font-size:24px}}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;max-height:46vh;overflow:auto;padding:4px}
+.pgrid .th{aspect-ratio:180/276;background:#000 center/cover no-repeat;border:1px solid var(--line);position:relative;cursor:pointer;padding:0}
+.pgrid .th.sel{outline:2px solid var(--gold-soft);box-shadow:0 0 18px rgba(230,207,154,.4)}
+.pgrid .th.done{opacity:.35;cursor:default}
+.pgrid .lbl{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);color:var(--ink);font-size:11px;padding:2px 4px;font-family:var(--serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pgrid .mk{position:absolute;right:3px;top:3px;font-size:10px;padding:0 5px;font-family:var(--serif)}
+.mk.dawn{background:linear-gradient(90deg,#a8781c,#f6dc8e);color:#1a1408}.mk.quiet{background:#5a3f2a;color:#eef1f6;border:1px solid #d8dde6}
+.pconfirm{border:1px solid var(--gold);background:#0e1020;padding:16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.pconfirm p{margin:0;font-family:var(--serif);line-height:1.9}
+.pconfirm .warn{color:var(--warm)}
+@media (prefers-reduced-motion:reduce){.ltcards .sp,.vimg.lit,.vanim.arrive{animation:none}.sp,.ltdone,.vlit,.vanim.go,.vanim.back,.flash.on{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="app" id="app">
+  <div class="top"><span class="logo" data-i18n="nLogo">夜の美術館を灯す</span><span class="topr"><a class="back" href="spirit.html" data-i18n="nBack">← 目録へ</a><button class="snd" id="snd" type="button" data-i18n="nSndOn">♪ 音を出す</button></span></div>
+  <div class="head"><div><h1 data-i18n="nTonight">今夜の美術館</h1><div class="date" id="date"></div></div><div class="path" id="path" aria-hidden="true"></div></div>
+  <!-- 通路と部屋の絵（Blender の静止画 play/gallery/）。扉の札・最後の通路の額縁・「前に進む」を絵の上に重ねる -->
+  <div class="view" id="view">
+   <div class="vanim" id="vanim">
+    <img class="vimg" id="vimg" alt="" draggable="false">
+    <div class="walls" id="walls" hidden></div>
+    <div class="plaque" id="plaque"></div>
+    <div class="stage" id="stage"></div><div class="hlabels" id="hLabels"></div>
+    <div class="vlit" id="vlit" data-i18n="nLit">灯がともった</div>
+   </div>
+   <canvas class="rite" id="rite" aria-hidden="true" hidden></canvas>
+   <div class="flash" id="flash"></div>
+   <div class="rinfo" id="rinfo" hidden></div>
+   <button class="fwd" id="fwd" type="button" hidden data-i18n="nForward">前に進む ↑</button>
+  </div>
+  <div class="panel" id="panel">
+   <div class="rn" id="rn"></div>
+   <div class="info" id="info"></div>
+   <div class="say" id="say"></div>
+   <div id="roomBox" hidden>
+    <div class="hand" id="hand"></div>
+    <div class="calc"><div class="f" id="pv"></div><div class="btns"><span id="okmsg"></span><button class="btn" id="go" type="button" disabled data-i18n="nGo">灯す</button></div></div>
+   </div>
+   <div id="keyBox" hidden>
+    <p class="keylead" id="keyLead"></p>
+    <div class="drop" id="drop" tabindex="0" role="button" data-i18n="nKeyAria" data-i18n-attr="aria-label"><b id="keyDrop" data-i18n="nKeyDrop">人生の記録の画像をドロップ</b><span data-i18n="nKeyDropSub">ここに落とすか、押して選ぶ</span><div class="kfx" aria-hidden="true"><i class="kpic" id="kpic"></i><span class="kmark" id="kmark"></span></div></div>
+    <div class="kres" id="kres" role="status" hidden><b id="kresT"></b><span class="klike" id="klike" hidden><i></i><small id="klikeT"></small></span></div>
+    <input type="file" id="file" accept="image/*" hidden>
+    <p class="note" id="keyNote" data-i18n="nKeyNote" data-i18n-html></p>
+   </div>
+   <div class="msg" id="msg" aria-live="polite"></div>
+   <div class="btns pbtns"><button class="btn" id="act" type="button" hidden></button><button class="btn ghost" id="act2" type="button" hidden></button><button class="btn ghost" id="act3" type="button" hidden></button><button class="btn ghost" id="endbtn" type="button" data-i18n="nEndBtn">今夜はここまでにする</button></div>
+   <div class="note" id="trialNote" hidden data-i18n="nTrialNote">おためしの精霊です（目録には入りません）</div>
+  </div>
+</div>
+
+<div class="layer" id="intro">
+ <div class="box">
+  <a class="back" href="spirit.html" data-i18n="nBack" style="align-self:flex-start">← 目録へ</a>
+  <h1 data-i18n="nIntroH">夜の美術館を灯す</h1>
+  <p class="lead" data-i18n="nIntroLead">閉館後の美術館。目録の精霊たちと、眠っている展示室に灯をともします</p>
+  <div class="promo"><p class="promo-h">✦ <span data-i18n="nPromo" data-i18n-html>世界にひとつだけの動画を<wbr>手に入れよう</span> ✦</p><p class="promo-s" data-i18n="nPromoSub">4つの部屋を灯して最後の部屋に入ると、その夜の精霊たちと作品、AI が書くお話と曲で、40秒の動画ができます</p><p class="promo-m" data-i18n="nPromoMore">✦ 金の光・銀の光・縁の子を連れていくと、最後の部屋に特別な光の場面が。あなたの夜には、何が起こるでしょう？</p></div>
+  <ol class="rules">
+   <li><b class="n">1</b><span id="rule1"></span></li>
+   <li><b class="n">2</b><span data-i18n="nRule2" data-i18n-html></span></li>
+   <li><b class="n">3</b><span data-i18n="nRule3" data-i18n-html></span></li>
+   <li><b class="n">4</b><span data-i18n="nRule4" data-i18n-html></span></li>
+  </ol>
+  <!-- 夜の流れの図（2026-10-25 重吉さんの決め：文字を読まずに分かるように）。絵は play/gallery/map-*.jpg -->
+  <ol class="map">
+   <li><i style="background-image:url(/play/gallery/map-seven.jpg)"></i><b data-i18n="nMap1">7体えらぶ</b></li>
+   <li><i style="background-image:url(/play/gallery/map-door.jpg)"></i><b data-i18n="nMap2">扉1</b></li>
+   <li><i style="background-image:url(/play/gallery/map-wall.jpg)"><u><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"/><path d="M12 12h9M18 12v3.5M21 12v2.5"/></svg></u></i><b data-i18n="nMap3">扉2〜4</b><small data-i18n="nMap3s">扉3は画像が鍵。壁に映る</small></li>
+   <li><i style="background-image:url(/play/gallery/map-light.jpg)"><u><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"/><path d="M12 12h9M18 12v3.5M21 12v2.5"/></svg></u></i><b data-i18n="nMap4">光の扉</b><small data-i18n="nMap4s">80億分の1が鍵。守り神が一緒に</small></li>
+   <li><i style="background-image:url(/play/gallery/map-last.jpg)"><u><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M10 9.2v5.6l4.6-2.8z" class="f"/></svg></u></i><b data-i18n="nMap5">最後の部屋</b><small data-i18n="nMap5s">40秒の動画</small></li>
+   <li><i style="background-image:url(/play/gallery/map-morning.jpg)"><u><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17"/><rect x="7.5" y="7" width="9" height="10"/></svg></u></i><b data-i18n="nMap6">朝</b><small data-i18n="nMap6s">額縁を1つ</small></li>
+  </ol>
+  <p class="fxh" data-i18n="nFxH">最後の部屋で、特別な光</p>
+  <div class="fx">
+   <span><i class="fx-g"></i><b data-i18n="nFxGold">金の光</b><small data-i18n="nFxGoldS">金の柱</small></span>
+   <span><i class="fx-s"></i><b data-i18n="nFxSilver">銀の光</b><small data-i18n="nFxSilverS">銀の雨</small></span>
+   <span><i class="fx-k"></i><b data-i18n="nFxKin">縁の子</b><small data-i18n="nFxKinS">光がひとつに</small></span>
+  </div>
+  <div class="tip" data-i18n="nTip" data-i18n-html></div>
+  <div class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg><span data-i18n="nLock">画像はこの端末の中だけ。AI に送るのは作品と精霊の名前だけ</span></div>
+  <details class="rmore"><summary data-i18n="nMore">くわしく</summary><div data-i18n="nRuleMore" data-i18n-html></div></details>
+  <div class="center btns" style="justify-content:center"><button class="btn" id="startbtn" type="button" data-i18n="nStart">美術館へ入る</button></div>
+  <div class="note center" data-i18n="nNote"></div>
+ </div>
+</div>
+
+<div class="layer" id="deck" hidden>
+ <div class="box">
+  <a class="back" href="spirit.html" data-i18n="nBack" style="align-self:flex-start">← 目録へ</a>
+  <h2 data-i18n="nDeckH">目録から7体えらぶ</h2>
+  <div class="picked" id="picked"></div>
+  <div class="mline" id="mline"><span id="msumLbl"></span><span><b id="msum">0</b> ／ <span id="mcap"></span></span></div>
+  <div class="meter" id="meter"><i id="mbar" style="width:0"></i></div>
+  <h3 data-i18n="nZukanH">あなたの目録（タップで入れる・外す）</h3>
+  <div class="zukan" id="zukan"></div>
+  <div class="few" id="few" hidden><span id="fewMsg"></span><a class="btn" href="spirit.html" data-i18n="nFewMake">精霊を目覚めさせに行く</a><button class="btn ghost" id="trial" type="button" data-i18n="nTrial">おためしの精霊で遊ぶ</button></div>
+  <div class="dmsg" id="dmsg"></div>
+  <div class="btns" style="justify-content:center"><button class="btn ghost" id="auto" type="button" data-i18n="nAuto">おまかせで選ぶ</button><button class="btn" id="tonight" type="button" disabled data-i18n="nToNight">今夜の美術館へ</button></div>
+ </div>
+</div>
+
+<div class="layer lt" id="lt" hidden aria-live="polite">
+ <div class="ltbox">
+  <div class="ltroom" id="ltRoom"></div>
+  <div class="ltsay" id="ltSay"></div>
+  <div class="ltneed" id="ltNeed"></div>
+  <div class="ltcards" id="ltCards"></div>
+  <div class="ltchips" id="ltChips"></div>
+  <div class="ltnum" id="ltNum">0</div>
+  <div class="glow" id="ltGlow"><i id="ltBar"></i><span class="mark" id="ltMark"></span></div>
+  <div class="ltdone" id="ltDone" data-i18n="nLit">灯がともった</div>
+  <div class="tap" id="ltTap" hidden data-i18n="nTap">タップで次へ</div>
+ </div>
+</div>
+
+<div class="layer morning" id="morning" hidden><div class="end" id="end"></div></div>
+
+<div class="layer" id="fview" hidden>
+ <div class="box fv">
+  <div class="fvl" id="fvFrame"></div>
+  <div class="fvr">
+   <div class="fvt" id="fvT"></div>
+   <h2 id="fvName"></h2>
+   <div class="fvn" id="fvN"></div>
+   <p class="fvd" id="fvDesc"></p>
+   <div class="fvw" id="fvWork"></div>
+   <div><button class="btn ghost" id="fvClose" type="button" data-i18n="nClose">閉じる</button></div>
+  </div>
+ </div>
+</div>
+
+<div class="layer" id="picker" hidden>
+ <div class="box wide">
+  <h2 id="pickH"></h2>
+  <p class="note center" id="pickNone" hidden data-i18n="nNoDexCards">目録に精霊がいません。精霊を目覚めさせてから飾れます</p>
+  <div class="pgrid" id="pickGrid"></div>
+  <div class="pconfirm" id="pickConfirm" hidden>
+   <div id="pickPreview"></div>
+   <p id="pickMsg"></p>
+   <div class="btns" style="justify-content:center"><button class="btn" id="doFrame" type="button" data-i18n="nDoFrame">飾る</button><button class="btn ghost" id="repick" type="button" data-i18n="nRepick">選び直す</button></div>
+  </div>
+  <div class="center"><button class="btn ghost" id="pickClose" type="button" data-i18n="nClose">閉じる</button></div>
+ </div>
+</div>
+
+<script src="monster-i18n.js?v=30"></script>
+<script src="night-i18n.js?v=26"></script>
+<script src="night-film.js?v=20"></script>
+<script src="night-app.js?v=39"></script>
+</body>
+</html>
