@@ -10,7 +10,7 @@ export const LANG_NAME = {
   ko: 'Korean',
   'zh-hant': 'Traditional Chinese',
   vi: 'Vietnamese',
-  da: 'Danish'
+  nl: 'Dutch'
 };
 
 // 曲の設計図で選べるもの。ページの night-film.js が、この中の言葉だけで曲を組む（ほかの言葉は捨てる）

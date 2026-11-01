@@ -1,7 +1,7 @@
 # 遊び場（ともしびの美術館・夜の美術館を灯す）のほかの言語版を、日本語版（play/spirit.html・play/night.html）から作る。
 # 古いURLの monster.html・battle.html（6言語）は、spirit.html・night.html へ飛ばすだけのページをここで書き出す（2026-10-21）
 #
-#   python tools/make-monster-langs.py          … en・in・ko・zh-hant・vi・da の play/ に書き出す
+#   python tools/make-monster-langs.py          … en・in・ko・zh-hant・vi・nl の play/ に書き出す
 #   python tools/make-monster-langs.py --check  … 書き出した物が最新かだけを見る（コミット前のフック）
 #
 # 親は日本語版。ページの中身（</head> より後ろ）は3言語で同じで、違うのは
@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'play'
 JS = ['monster-i18n.js', 'monster-app.js', 'night-i18n.js', 'night-film.js', 'night-app.js']
 
-# 字体：本文はゴシック、見出し・名前は明朝（2026-10-21〜「夜の美術館」の見た目）。韓国語・繁体字・ベトナム語・デンマーク語は、その言語の Noto を前に置く
+# 字体：本文はゴシック、見出し・名前は明朝（2026-10-21〜「夜の美術館」の見た目）。韓国語・繁体字・ベトナム語・オランダ語は、その言語の Noto を前に置く
 JA_HEAD_FONTS = '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;600;700&display=swap" rel="stylesheet">'
 def spirit_fonts(sans, serif):
     s, f = sans.replace(' ', '+'), serif.replace(' ', '+')
@@ -102,9 +102,9 @@ LANGS = {
                 'Trong bảo tàng sau giờ đóng cửa, tinh linh ngủ trong các tác phẩm thức tỉnh. Chọn 1 trong 15 tác phẩm bốc thăm từ các bảo tàng thế giới để đánh thức, hoặc 2–3 để kết nối. Nhân duyên và kế thừa giữa các tinh linh, và Ánh Vàng 1 trên 1.000. Ảnh và tệp của bạn không được dùng. Không cần đăng nhập.',
                 'vi_VN', 'Bảo tàng Đèn lồng | Sân chơi Dropper', 'Bảo tàng sau giờ đóng cửa. Tinh linh ngủ trong tác phẩm thức tỉnh trong tay bạn. Thức tỉnh, kết nối, nhân duyên và kế thừa. Ánh Vàng 1 trên 1.000.', 'en',
                 spirit_fonts('Noto Sans', 'Noto Serif')),
-    'da': shead('da', 'da', 'Lanternemuseet | Ånder vågner i kunstværkerne efter lukketid | Droppers legeplads',
-                'På museet efter lukketid vågner ånderne, der sover i kunstværkerne. Vælg 1 af 15 tilfældigt trukne værker fra museer i hele verden for at vække en ånd, eller 2–3 for at binde dem. Bånd og arv mellem ånderne og et Guldlys, der kun kommer 1 ud af 1.000 gange. Dine egne billeder og filer bliver ikke brugt. Intet login.',
-                'da_DK', 'Lanternemuseet | Droppers legeplads', 'Museet efter lukketid. Ånden, der sover i et kunstværk, vågner i dine hænder. Vække, binde, bånd og arv. Guldlys 1 ud af 1.000.', 'en',
+    'nl': shead('nl', 'nl', 'Het Lantaarnmuseum | Geesten worden wakker in kunstwerken na sluitingstijd | Droppers speeltuin',
+                'In het museum na sluitingstijd ontwaken de geesten die in de kunstwerken slapen. Kies 1 van 15 willekeurig getrokken kunstwerken uit musea over de hele wereld om een geest te wekken, of 2–3 om ze te verbinden. Banden en erfenis tussen geesten, en een Goudlicht dat maar 1 op de 1.000 keer komt. Je eigen foto\'s en bestanden worden niet gebruikt. Inloggen is niet nodig.',
+                'nl_NL', 'Het Lantaarnmuseum | Droppers speeltuin', 'Het museum na sluitingstijd. De geest die in een kunstwerk slaapt, ontwaakt in jouw handen. Wekken, verbinden, banden en erfenis. Goudlicht 1 op de 1.000.', 'en',
                 spirit_fonts('Noto Sans', 'Noto Serif')),
 }
 
@@ -115,7 +115,7 @@ for _lang, _name, _cur, _pub in [
         ('ko', '등불의 미술관', 'KRW', 'https://dropper-tools.com/'),
         ('zh-hant', '燈火美術館', 'TWD', 'https://dropper-tools.com/'),
         ('vi', 'Bảo tàng Đèn lồng', 'VND', 'https://dropper-tools.com/'),
-        ('da', 'Lanternemuseet', 'DKK', 'https://dropper-tools.com/')]:
+        ('nl', 'Het Lantaarnmuseum', 'EUR', 'https://dropper-tools.com/')]:
     _h = LANGS[_lang]
     _desc = _h['desc'][len('<meta name="description" content="'):-len('">')]
     _in = _h['lang'][len('<html lang="'):-len('">')]
@@ -131,7 +131,7 @@ SPIRIT_ALT = {
     'ko': '밤의 미술관에 떠 있는 등불과 액자 속 그림에서 흘러나오는 작은 빛들',
     'zh-hant': '夜間美術館裡漂浮的燈籠微光，與畫框中流洩而出的點點光芒',
     'vi': 'Ánh đèn lồng lơ lửng trong bảo tàng ban đêm và những đốm sáng nhỏ bay ra từ các bức tranh',
-    'da': 'En lysende lanterne på et museum om natten og små lys, der svæver ud fra de indrammede malerier',
+    'nl': 'Een gloeiende lantaarn in een museum bij nacht, met kleine lichtjes die uit de ingelijste schilderijen zweven',
 }
 
 
@@ -152,7 +152,7 @@ for _lang in LANGS:
 
 # ---- 古いURLから新しいページへ飛ばすページ（monster.html → spirit.html、battle.html → night.html。2026-10-21） ----
 def redirect_page(pre, to='spirit.html', title='The Lantern Museum'):
-    url = f'https://dropper-tools.com{pre}play/{to}'
+    url = f'https://dropper-tools.com{to}' if to.startswith('/') else f'https://dropper-tools.com{pre}play/{to}'
     return ('<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n<meta name="robots" content="noindex">\n'
             f'<link rel="canonical" href="{url}">\n<meta http-equiv="refresh" content="0; url={to}">\n'
             f'<title>{title}</title>\n'
@@ -205,15 +205,18 @@ NIGHT_LANGS = {
                 'Chọn 7 tinh linh từ danh mục Bảo tàng Đèn lồng và đi qua hành lang của bảo tàng sau giờ đóng cửa, mở 4 cánh cửa và thắp sáng từng phòng trưng bày. Mỗi phòng cần một độ sáng và yêu thích một số hệ. Bảo tàng đêm nay được định theo ngày, ai chơi cũng cùng một đêm. Không có thua.',
                 'vi_VN', 'Thắp sáng bảo tàng đêm | Sân chơi Dropper', 'Cùng tinh linh trong danh mục, thắp sáng các phòng của bảo tàng sau giờ đóng cửa. Ai chơi cũng cùng một đêm. Thắp 4 phòng, cuối cùng là cánh cửa ánh sáng.', 'en',
                 spirit_fonts('Noto Sans', 'Noto Serif')),
-    'da': nhead('da', 'da', 'Tænd lys i natmuseet | Tænd lys i de sovende sale med dine ånder | Droppers legeplads',
-                'Vælg 7 ånder fra dit katalog i Lanternemuseet, og gå gennem museets korridorer efter lukketid: åbn 4 døre, og tænd lys i salen bag hver af dem. Hver sal skal bruge en bestemt mængde lys og holder af bestemte elementer. Nattens museum bestemmes af datoen, så alle får den samme nat. Man kan ikke tabe.',
-                'da_DK', 'Tænd lys i natmuseet | Droppers legeplads', 'Bring lys til salene i museet efter lukketid sammen med ånderne i dit katalog. Alle får den samme nat. Tænd lys i 4 sale, og til sidst venter Lysets dør.', 'en',
+    'nl': nhead('nl', 'nl', 'Doe het licht aan in het nachtmuseum | Verlicht de slapende zalen met je geesten | Droppers speeltuin',
+                'Kies 7 geesten uit je catalogus van het Lantaarnmuseum en loop na sluitingstijd door de gangen van het museum: open 4 deuren en steek in elke zaal het licht aan. Elke zaal heeft een bepaalde hoeveelheid licht nodig en houdt van bepaalde elementen. Het museum van vannacht hangt af van de datum, dus iedereen krijgt dezelfde nacht. Verliezen kan niet.',
+                'nl_NL', 'Doe het licht aan in het nachtmuseum | Droppers speeltuin', 'Breng licht in de zalen van het museum na sluitingstijd, samen met de geesten uit je catalogus. Iedereen krijgt dezelfde nacht. Verlicht 4 zalen, en aan het eind wacht de deur van het licht.', 'en',
                 spirit_fonts('Noto Sans', 'Noto Serif')),
 }
 
 PAGES = [('spirit.html', JA_HEAD, LANGS), ('night.html', NIGHT_JA_HEAD, NIGHT_LANGS)]
 # 古いURL → 新しいページ（note・X に貼ったリンクが切れないように残す。中身は持たず、検索にも出さない）
 REDIRECTS = [('monster.html', 'spirit.html', 'The Lantern Museum'), ('battle.html', 'night.html', 'Light the Night Museum')]
+# デンマーク語版（da、2026-11-01 の朝に出した）は同じ日にオランダ語版（nl）と入れかえた（重吉さんの決め）。
+# da/play/ の4ページは、nl/play/ の同じページへ飛ばすだけのページにして残す（貼ったリンクが切れないように）
+GONE_LANGS = {'da': 'nl'}
 
 
 def build():
@@ -232,6 +235,11 @@ def build():
         out[SRC / old] = redirect_page('/', to, title).encode('utf-8')
         for lang in LANGS:
             out[ROOT / lang / 'play' / old] = redirect_page(f'/{lang}/', to, title).encode('utf-8')
+    for gone, now in GONE_LANGS.items():
+        for name, title in [('spirit.html', 'The Lantern Museum'), ('night.html', 'Light the Night Museum')]:
+            out[ROOT / gone / 'play' / name] = redirect_page(f'/{now}/', f'/{now}/play/{name}', title).encode('utf-8')
+        for old, to, title in REDIRECTS:
+            out[ROOT / gone / 'play' / old] = redirect_page(f'/{now}/', f'/{now}/play/{to}', title).encode('utf-8')
     for lang in LANGS:
         for f in JS:
             out[ROOT / lang / 'play' / f] = (SRC / f).read_bytes()

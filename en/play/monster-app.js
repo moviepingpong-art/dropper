@@ -2034,7 +2034,7 @@
   const VOICE = {
     ja: [6.02, 8.57, 4.46, 6.98, 3.89, 5.88, 5.93, 4.06, 4.97], en: [6.19, 9.89, 4.46, 6.79, 4.66, 4.82, 5.21, 3.43, 4.42],
     ko: [4.92, 8.33, 5.33, 5.78, 4.8, 5.57, 4.56, 2.93, 4.34], 'zh-hant': [6.48, 9.53, 5.38, 6.94, 4.42, 6.7, 5.42, 4.06, 4.46],
-    vi: [5.06, 8.33, 5.33, 6.65, 4.61, 6.65, 4.06, 3.43, 4.3], da: [4.75, 9.53, 3.74, 5.16, 4.92, 5.66, 5.21, 3.55, 4.51]
+    vi: [5.06, 8.33, 5.33, 6.65, 4.61, 6.65, 4.06, 3.43, 4.3], nl: [4.97, 9.53, 5.02, 7.25, 4.3, 6.07, 5.93, 4.56, 5.21]
   };
   // 段落のあとの間（秒）。「もう一度だけ」の前と「閉館の夜」の前は長めに
   const GAP = [1, .8, .6, 1.3, 1, 1.2, .7, .8];
@@ -2043,7 +2043,7 @@
     { f: 'met', by: 'Martin Furtschegger', lic: 'CC BY 3.0', url: 'https://commons.wikimedia.org/wiki/File:Das_Metropolitan_Museum_auf_der_5_th_Avenue_beim_Central_Park_-_panoramio.jpg' },
     { f: 'chi', by: 'Beyond My Ken', lic: 'CC BY-SA 4.0', url: 'https://commons.wikimedia.org/wiki/File:Art_Institute_of_Chicago_from_across_Michigan_Avenue.jpg' },
     { f: 'cle', by: 'Erik Drost', lic: 'CC BY 2.0', url: 'https://commons.wikimedia.org/wiki/File:Art_museum_and_lagoon.jpg' },
-    { f: 'smk', by: 'Nahid V', lic: 'CC BY 2.0', url: 'https://commons.wikimedia.org/wiki/File:The_Danish_National_Gallery_-_Copenhagen_(14756983766).jpg' }
+    { f: 'rijks', by: 'Suicasmo', lic: 'CC BY-SA 4.0', url: 'https://commons.wikimedia.org/wiki/File:South_facade_of_the_Rijksmuseum_Amsterdam_20180702.jpg' }
   ];
   const voiceLang = () => VOICE[window.LANG] ? window.LANG : window.LANG === 'ja' || !window.LANG ? 'ja' : 'en';
   // 声のファイルは「はじめる」を押す前から読みはじめる（押してから待たないように）
@@ -2320,7 +2320,7 @@
   // 人生の記録かどうかはこの端末の中で形を見て見分け、違えば何も残さずに断る。人生の記録は合体させない（人生どうしを強さで比べないため）
 
   // ---- 美術館の作品から生まれる（2026-10-20〜）----
-  // 4館（メトロポリタン・シカゴ・クリーブランド・デンマーク国立）の、権利の切れた作品（CC0）から選んだ300点を /play/museum/ に置いてある。
+  // 4館（メトロポリタン・シカゴ・クリーブランド・アムステルダム国立）の、権利の切れた作品（CC0）から選んだ300点を /play/museum/ に置いてある。
   // 人・文字・ロゴの写った物は外してある。名前・技・説明・由来は前もって6言語で作ってある（museum.json）。AI には送らない
   const MUSEUM_BASE = '/play/museum/';
   const SHELF = 15;
