@@ -334,14 +334,27 @@
   }
   function advance() {
     if (cur < ROOM.length - 1) walk(1, () => { cur++; at = 'door'; });
-    else walk(1, () => {
-      at = 'last'; pos = 0; page = 0; fixFrames();
-      // 最後の通路に着いたら灯火の器に1灯（2026-11-01 重吉さんの決め：部屋ごとに1灯＋ここで1灯＝1夜5灯、2夜で満ちる）
-      if (!trial && !lastLit) { lastLit = true; const was = vessel().light, v = addLight(); if (v.light > was) setTimeout(() => vToast(v), 60); }
-      // 最後の部屋の動画は、器が満ちた夜だけ（2026-11-01 重吉さんの決め）。その夜だけ、お話を頼み、動画を先に読む（扉をくぐってから待たないように。2026-10-26）
-      if (window.NightFilm && filmNight()) { if (!storyP) storyP = nightStory(); if (window.NightFilm.warm) window.NightFilm.warm(); }
-    });
+    else walk(1, toLast);
   }
+  function toLast() {
+    at = 'last'; pos = 0; page = 0; fixFrames();
+    // 最後の通路に着いたら灯火の器に1灯（2026-11-01 重吉さんの決め：部屋ごとに1灯＋ここで1灯＝1夜5灯、2夜で満ちる）
+    if (!trial && !lastLit) { lastLit = true; const was = vessel().light, v = addLight(); if (v.light > was) setTimeout(() => vToast(v), 60); }
+    // 最後の部屋の動画は、器が満ちた夜だけ（2026-11-01 重吉さんの決め）。その夜だけ、お話を頼み、動画を先に読む（扉をくぐってから待たないように。2026-10-26）
+    if (window.NightFilm && filmNight()) { if (!storyP) storyP = nightStory(); if (window.NightFilm.warm) window.NightFilm.warm(); }
+    saveNow();
+  }
+  // ---- 夜の続き（2026-11-01〜、重吉さんの決め）：途中でページを閉じても、同じ日のうちなら次の扉の前から再開できる。
+  //      部屋を灯すたびに、連れてきた7体・使った子・灯した部屋・手に入れた額縁（記録の中の番号）を localStorage の同じ記録の now に残す。
+  //      扉3の鍵の画像・最後の部屋の画像・あなたの写真は残さない（扉3の前から再開したら、もう一度入れてもらう）。朝を迎えたら消す。おためしの夜は残さない
+  function saveNow() {
+    if (trial) return;
+    const R = loadRec();
+    R.now = { d: isoDate(), ids: HAND.map(h => h.id), used: HAND.filter(h => h.used).map(h => h.id), lit: ROOM.map(x => !!x.lit), got: got.map(e => ({ ri: e.ri, id: e.c.id })), ll: lastLit };
+    saveRec(R);
+  }
+  function clearNow() { const R = loadRec(); if (R.now) { delete R.now; saveRec(R); } }
+  function nowSaved() { const n = loadRec().now; return n && n.d === isoDate() && Array.isArray(n.ids) && Array.isArray(n.lit) ? n : null; }
   function forward() { if (pos < 2) walk(1, () => { pos++; }); }
   $('go').onclick = async () => {
     const R = ROOM[cur], cs = sel.map(i => HAND[i]);
@@ -356,6 +369,7 @@
     at = 'lit'; draw(); $('vlit').classList.remove('on'); glowUp(); sfx('lit');
     await riteScene(cs);
     await gainFrame(cs);
+    saveNow();
     busy = false; draw(); burst(.5, .35, 60);
   };
   $('endbtn').onclick = () => {
@@ -679,7 +693,7 @@
   // 場面の段階は、その夜に灯した部屋の数で決まる（PL）。2026-10-25 に立会人へのお礼（お礼をしないと次の夜は★主を置けない）をなくした
   let sceneOn = null;
   function morning() {
-    ended = true; draw();
+    ended = true; draw(); clearNow();
     const lit = ROOM.filter(R => R.lit).length, dawn = keyed, k = dawn ? 'dawn' : 'quiet';
     const dark = ROOM.filter(R => !R.lit).map(roomName).join(tr('nRoomSep'));
     const counts = !trial && lit > 0;
@@ -1188,13 +1202,37 @@
   }
   $('auto').onclick = autoPick;
   $('trial').onclick = () => { trial = true; dpick = []; ZK = trialSet(); sfx('pick'); drawDeck(); };
-  $('tonight').onclick = () => {
-    HAND = dpick.map(i => Object.assign({}, ZK[i], { used: false }));
+  function beginNight(hand) {
+    HAND = hand;
     ROOM = tonight(new Date()); sel = []; cur = 0; at = 'door'; pos = 0; page = 0;
     busy = false; ended = false; endArm = false; keyed = false; got = []; doorKeyed = []; doorPics.forEach(u => u && URL.revokeObjectURL(u)); doorPics = []; guide = null; passed = false; hikariLit = null; film = null; lastLit = false; filmed = false;
     $('trialNote').hidden = !trial;
-    $('deck').hidden = true; storyP = null; preload(); draw(); glowUp(); sfx('send'); track('night_start');
+    $('deck').hidden = true; storyP = null; preload();
+  }
+  $('tonight').onclick = () => {
+    beginNight(dpick.map(i => Object.assign({}, ZK[i], { used: false })));
+    saveNow(); // 新しい夜を始めたら、前の続きは上書きする
+    draw(); glowUp(); sfx('send'); track('night_start');
   };
+  // 続きから：連れてきた子を目録から読み直し（消したカードは外す）、灯した部屋と額縁を戻して、次の扉の前（4部屋とも灯っていれば最後の通路）から
+  function resumeNight(n) {
+    trial = false;
+    const byId = new Map(ZK.map(c => [c.id, c])), used = new Set(n.used || []);
+    beginNight(n.ids.filter(id => byId.has(id)).map(id => Object.assign({}, byId.get(id), { used: used.has(id) })));
+    n.lit.forEach((v, i) => { if (ROOM[i]) ROOM[i].lit = !!v; });
+    const F = frames();
+    got = (n.got || []).map(e => {
+      const c = HAND.find(h => h.id === e.id) || ZK.find(h => h.id === e.id);
+      if (!c) return null;
+      const ok = e.ri >= 0 && F[e.ri] && F[e.ri].id === e.id, f = ok ? Object.assign({}, F[e.ri]) : frameOf(c, 'quiet');
+      HAND.forEach(h => { if (h.id === c.id) h.framed = h.framed || f.k; });
+      return { f, ri: ok ? e.ri : -1, c };
+    }).filter(Boolean);
+    lastLit = !!n.ll;
+    const next = ROOM.findIndex(R => !R.lit);
+    if (next < 0) toLast(); else { cur = next; at = 'door'; }
+    draw(); glowUp(); sfx('send'); track('night_resume');
+  }
 
   // ---- 背景：紺の闇に、金の灯りの粒がただよう。灯った部屋が増えるほど、粒が増えて明るくなる ----
   const cv = $('bg'), g = cv.getContext('2d');
@@ -1371,6 +1409,18 @@
     try { if (!ac) initAudio(); ac.resume(); } catch (e) { /* 音が出なくても遊べる */ }
     const all = ALL = await dexP;
     ZK = all.filter(M => !isHuman(M) && Number(M.power) > 0).map(spirit).sort((a, b) => b.p - a.p);
-    $('intro').hidden = true; $('deck').hidden = false; drawDeck(); sfx('pick');
+    $('intro').hidden = true;
+    if (resumeMode) { const n = nowSaved(); if (n) { resumeMode = false; return resumeNight(n); } }
+    $('deck').hidden = false; drawDeck(); sfx('pick');
   };
+  // 同じ日の続きがあれば、始めの画面に「続きから」と「はじめから」（2026-11-01 重吉さんの決め）
+  let resumeMode = false;
+  (() => {
+    const n = nowSaved();
+    if (!n) { clearNow(); return; } // 前の日の続きは消す
+    const lit = n.lit.filter(Boolean).length;
+    $('resumeP').textContent = tr('nResumeP', { n: lit, max: n.lit.length }) + (lit < 3 ? ' ' + tr('nResumeKey') : '');
+    $('resume').hidden = false; $('startbtn').textContent = tr('nFromStart'); $('startbtn').classList.add('ghost');
+    $('resumebtn').onclick = () => { if ($('startbtn').disabled) return; resumeMode = true; $('resumebtn').disabled = true; $('startbtn').onclick(); };
+  })();
 })();
