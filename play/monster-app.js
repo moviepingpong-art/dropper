@@ -1006,7 +1006,7 @@
   const printOf = fp => fp.map(v => v.toString(16).padStart(8, '0')).join('');
 
   // ---- 保存（この PC・スマホの中だけ。IndexedDB） ----
-  // cards：カードの中身と小さな絵。couples：夫婦と子ども。meta：端末の秘密の番号・発行番号・写真ごとの発行回数。
+  // cards：カードの中身と小さな絵。couples：前の縁と受け継ぎの記録（2026-11-02 になくした。開いたときに空にする）。meta：端末の秘密の番号・発行番号・写真ごとの発行回数。
   // IndexedDB が使えない画面（プライベートブラウズなど）では、その画面を閉じるまでだけ覚える
   const DB = (() => {
     let dbp = null, memOnly = false;
@@ -1075,7 +1075,7 @@
   }
   // 背景に薄く並べる、読んだ断片の値（16進数）。飛び飛びに拾った数十バイトだけなので、元のファイルには戻せない
   const HEX_LEN = 64;
-  // 子ども・合体は、親の断片を1バイトずつ交互に編む（どちらかが古いカードで断片を持たなければ、持っているほうだけ）
+  // 合体は、もとの断片を1バイトずつ交互に編む（どちらかが古いカードで断片を持たなければ、持っているほうだけ）
   function mixHex(list) {
     const hs = list.filter(Boolean);
     if (!hs.length) return '';
@@ -1130,7 +1130,7 @@
     const seg = peaks.slice(from, from + 160), mx = Math.max(1e-6, ...seg); // いちばん大きい音を高さいっぱいにそろえる
     return Array.from(seg, v => Math.min(35, Math.round(v / mx * 35)).toString(36)).join('');
   }
-  // 子ども・合体：写真の欠片は親の欠片を数行ずつ交互に（合体は縦の帯ごとに）。文章・音声はどちらかの親のもの
+  // 合体：写真の欠片はもとの欠片を数行ずつ交互に（合体は縦の帯ごとに）。文章・音声はどちらかの親のもの
   function mixShard(list, byColumn) {
     const ss = list.filter(Boolean).map(unb64).filter(u => u.length === SHARD * SHARD * 3);
     if (!ss.length) return undefined;
@@ -1205,86 +1205,6 @@
       c.fillRect(x + (6 - col) * cs, y + row * cs, cs + 0.3, cs + 0.3);
     }
     c.restore();
-  }
-
-  // ---- 結婚と子ども ----
-  // 結婚できるか：男性×女性、どちらもまだ結婚していない、親子・兄弟姉妹ではない
-  function whyCannotMarry(a, b, couples) {
-    if (!a || !b) return tr('marryPick');
-    if (a.id === b.id) return tr('marrySame');
-    if (a.gender === b.gender) return tr('marryGender');
-    if ((a.g.kind === '人間') !== (b.g.kind === '人間')) return tr('marryHuman');
-    const married = new Set(couples.flatMap(cp => [cp.male, cp.female]));
-    if (married.has(a.id)) return tr('marryAlready', { name: nameOf(a) });
-    if (married.has(b.id)) return tr('marryAlready', { name: nameOf(b) });
-    const pa = a.parents || [], pb = b.parents || [];
-    if (pa.includes(b.id) || pb.includes(a.id)) return tr('marryParent');
-    if (pa.some(p => pb.includes(p))) return tr('marrySibling');
-    return '';
-  }
-  const mixColor = (a, b, t) => a.map((v, i) => v * (1 - t) + b[i] * t);
-  // 子ども：形・目・模様・頭の飾りは父か母のどちらかから。色は混ぜる。強さは両親の平均にぶれ。まれに突然変異。
-  // 鍵は端末の秘密の番号・両親・何人目かで決まるので、兄弟姉妹は毎回違う子になる
-  function makeChild(father, mother, idx, secret) {
-    const fp = fingerprint(enc(`child:${secret}:${father.id}:${mother.id}:${idx}`));
-    const r = sfc32(fp[0], fp[1], fp[2], fp[3]);
-    for (let i = 0; i < 12; i++) r();
-    const one = (a, b) => (r() < 0.5 ? a : b);
-    const F = father.g, Mo = mother.g;
-    const g = {};
-    for (const k of ['rx', 'ry', 'wob', 'sq', 'pattern', 'spots', 'top', 'eyes', 'eyeSize', 'mouth', 'arms', 'cheeks', 'second', 'third']) g[k] = one(F[k], Mo[k]);
-    g.main = mixColor(F.main, Mo.main, 0.3 + r() * 0.4);
-    const kp = (fp[0] & 1 ? (F.kind ? F : Mo) : (Mo.kind ? Mo : F)); // 種類はどちらかの親から（乱数は使わない）
-    g.kind = kp.kind; g.animal = kp.animal;
-    if (g.kind === '人間') { // 人間の見た目も、指紋のビットでどちらかの親から（乱数の並びは変えない）
-      g.skin = (fp[1] & 1 ? F : Mo).skin; g.hair = (fp[1] & 2 ? F : Mo).hair; g.hairStyle = (fp[1] & 4 ? F : Mo).hairStyle;
-      g.gray = false; g.glasses = !!((fp[1] & 8) && (F.glasses || Mo.glasses)); g.item = null;
-      g.mood = ((F.mood === undefined ? 0.5 : F.mood) + (Mo.mood === undefined ? 0.5 : Mo.mood)) / 2;
-    }
-    let type = one(father.type, mother.type), mutation = '';
-    if (r() < 1 / 12) {
-      const what = Math.floor(r() * 4);
-      if (what === 0) { g.eyes = [1, 2, 3].find(e => e !== F.eyes && e !== Mo.eyes) || 3; mutation = 'mutEyes'; }
-      if (what === 1) { g.top = ['ears', 'horns', 'antenna', 'type'].find(t => t !== F.top && t !== Mo.top) || 'horns'; mutation = 'mutTop'; }
-      if (what === 2) { g.pattern = ['spots', 'belly', 'stripes', 'none'].find(t => t !== F.pattern && t !== Mo.pattern) || 'stripes'; mutation = 'mutPattern'; }
-      if (what === 3) { const ks = Object.keys(TYPES).filter(t => t !== father.type && t !== mother.type); type = ks[Math.floor(r() * ks.length)]; mutation = 'mutType'; }
-    }
-    g.type = type;
-    const base = {};
-    for (const k of Object.keys(F.stats)) base[k] = Math.max(8, Math.round((F.stats[k] + Mo.stats[k]) / 2 * (0.9 + r() * 0.3)));
-    g.stats = base;
-    // 珍しさの受け継ぎ：親にゴールドが1人いれば10倍、シルバーは1人ごとに5倍。バグ個体の親がいれば4分の1でバグる
-    const golds = [father, mother].filter(p => p.rarity === 'gold').length, silvers = [father, mother].filter(p => p.rarity === 'silver').length;
-    const roll = r();
-    let rarity =
-      roll < 0.001 * (1 + 9 * golds) ? 'gold' : roll < 0.001 * (1 + 9 * golds) + 0.002 * (1 + 4 * silvers) ? 'silver' : 'normal';
-    let bug = r() < (father.bug || mother.bug ? 0.25 : 1 / 16);
-    let stats = {};
-    for (const [k, v] of Object.entries(base)) stats[k] = Math.round(v * RARITY[rarity].mult);
-    let bugStat = null;
-    if (bug) { bugStat = Object.keys(stats)[Math.floor(r() * 4)]; stats[bugStat] = 255; }
-    // 人間の子も、強さ・珍しさ・バグはつけない（乱数は引いたあとで捨てるので、ほかの子の並びは変わらない）
-    if (g.kind === '人間') { rarity = 'normal'; bug = false; bugStat = null; stats = lifeStats(); g.stats = lifeStats(); }
-    // 名前：片方の親の頭（1〜2字）＋ときどき間の字＋もう片方の親のおしり（1〜2字）。
-    // つなぎ目で小さい字や「ン」が重なる・頭に来るのは直す（「ハッ」＋「ッチ」が「ハッッチ」になっていた）
-    // 組み立て方（文の仕様）で持つので、見るページの言語の親の名前から組み直される
-    const [A, B] = r() < 0.5 ? [father.name, mother.name] : [mother.name, father.name];
-    const MID = D('mid'), TAIL = D('tail');
-    const na = 1 + Math.floor(r() * 2), mid = r() < 0.4 ? { d: 'mid', p: [2 + Math.floor(r() * (MID.length - 2))] } : '', nb = 1 + Math.floor(r() * 2);
-    const name = { nm: { cat: [{ sl: A, from: 0, to: na }, mid, { sl: B, from: -nb }] }, tail: 0 };
-    const minName = D('minName') || 3;
-    if ([...txt(name)].length < minName || [...txt(name.nm).replace(/([ッャュョァィゥェォーン])\1+/g, '$1').replace(/^[ッャュョァィゥェォーン]+/, '')].length < minName) name.tail = Math.floor(r() * TAIL.length);
-    return {
-      g, fp, type, name, stats, power: powerOf(stats), rarity, bug, bugStat, fusion: 0,
-      gender: r() < 0.5 ? 'm' : 'f', gen: Math.max(father.gen || 1, mother.gen || 1) + 1,
-      parents: [father.id, mother.id], parentNames: [father.name, mother.name], childNo: idx + 1,
-      hex: mixHex([father.hex, mother.hex]), shard: mixShard([father.shard, mother.shard], false), shardText: (fp[2] & 1 ? father : mother).shardText || father.shardText || mother.shardText,
-      shardWave: (fp[2] & 1 ? father : mother).shardWave || father.shardWave || mother.shardWave, life: mixLife([father.life, mother.life]),
-      no: (fp[3] % 999) + 1, motif: '', mission: '',
-      moves: [one(father.moves[0], father.moves[1]), one(mother.moves[0], mother.moves[1])],
-      desc: { cat: [{ k: 'childDesc', v: { f: father.name, m: mother.name, n: idx + 1 } }, mutation ? { k: 'childMut', v: { what: { k: mutation } } } : { k: 'childHalf' }] },
-      id: printOf(fp), print: printOf(fp).slice(0, 12).toUpperCase()
-    };
   }
 
   // 合体：同じ写真の組なら、落とす順に関係なく同じ子になる（指紋を並べ替えてから混ぜる）
@@ -1499,8 +1419,7 @@
       c.fillStyle = metal[2]; c.textAlign = 'center'; c.fillText(label, 0, 7); c.restore(); c.textAlign = 'left';
     }
     // 生まれ（結びの子は、混ぜた属性）と、右に輝き
-    const origin = M.parents ? tr('originChild', { gen: M.gen, f: txt(M.parentNames[0]), m: txt(M.parentNames[1]) })
-      : M.fusion ? tr('originFuse', { n: M.fusion, parts: M.parts.map(p => txt({ ty: p })).join(tr('partsSep')) }) : M.g.kind === '人間' ? (txt(M.motif) || tr(SOURCES.life.origin)) : M.motif ? (charaOf(M.g) ? charaOf(M.g) + tr('charaSep') : '') + tr(M.source === 'museum' ? 'originWork' : M.source === 'audio' ? 'originSound' : 'originPhoto', { motif: txt(M.motif) }) : M.source ? tr(SOURCES[M.source].origin) : tr('originColor');
+    const origin = M.fusion ? tr('originFuse', { n: M.fusion, parts: M.parts.map(p => txt({ ty: p })).join(tr('partsSep')) }) : M.g.kind === '人間' ? (txt(M.motif) || tr(SOURCES.life.origin)) : M.motif ? (charaOf(M.g) ? charaOf(M.g) + tr('charaSep') : '') + tr(M.source === 'museum' ? 'originWork' : M.source === 'audio' ? 'originSound' : 'originPhoto', { motif: txt(M.motif) }) : M.source ? tr(SOURCES[M.source].origin) : tr('originColor');
     const human = isHuman(M);
     // 右の輝き（守り神は札）の幅を先に測り、生まれの文が重ならないように詰める
     let rightW;
@@ -1508,7 +1427,7 @@
       c.font = `700 28px ${FS}`; const pwW = c.measureText('✦ ' + M.power).width;
       c.font = `600 15px ${FF}`; rightW = pwW + 8 + c.measureText(tr(M.strong ? 'powerStrong' : M.aiBoost ? 'powerAi' : 'power')).width;
     } else { c.font = `700 18px ${FF}`; rightW = c.measureText(tr('guardian')).width; }
-    c.fillStyle = MID; c.font = M.parents ? `700 16px ${FF}` : `500 18px ${FF}`;
+    c.fillStyle = MID; c.font = `500 18px ${FF}`;
     let ot = origin;
     const room = W - 92 - rightW - 16;
     if (c.measureText(ot).width > room) { while ([...ot].length > 1 && c.measureText(ot + '…').width > room) ot = [...ot].slice(0, -1).join(''); ot += '…'; }
@@ -1569,8 +1488,7 @@
       wrap(c, txt(M.mission), 54, y + 46, W - 108, 22, 1);
     }
     // 下の帯：1行目に、その1枚だけの記録（発行番号と、読み取った部分・両親・結び）
-    const birth = M.parents ? tr('birthChild', { f: txt(M.parentNames[0]), m: txt(M.parentNames[1]), n: M.childNo })
-      : M.fusion ? tr('birthFuse', { n: M.fusion }) : M.frag ? tr('birthFrag', { n: M.frag.n, start: M.frag.start, stride: M.frag.stride }) : '';
+    const birth = M.fusion ? tr('birthFuse', { n: M.fusion }) : M.frag ? tr('birthFrag', { n: M.frag.n, start: M.frag.start, stride: M.frag.stride }) : '';
     c.fillStyle = DIM; c.font = `500 14px ${FF}`; c.textAlign = 'left';
     c.fillText(tr('issued', { serial: String(M.serial || 0).padStart(6, '0'), birth }), 46, H - 66);
     c.fillStyle = metal ? metal[2] : GOLD; c.font = `600 17px ${FS}`;
@@ -1635,7 +1553,7 @@
   // アクセス解析のイベント。回数だけを送り、写真・名前・カードの中身は送らない（プライバシーポリシーに書いた約束）
   function track(name) { try { if (typeof gtag === 'function') gtag('event', name); } catch (e) { /* 計測が止められていても遊べる */ } }
   async function saveCard(M, again) {
-    if (!again) track(M.parents ? 'monster_child' : M.fusion ? 'monster_fuse' : 'monster_born');
+    if (!again) track(M.fusion ? 'monster_fuse' : 'monster_born');
     M.thumb = thumbOf(); M.fig = isHuman(M) ? '' : figOf(M); M.dex = dexOf(M); M.look = LOOK;
     await DB.put('cards', JSON.parse(JSON.stringify(M)));
     await renderDex();
@@ -1685,7 +1603,7 @@
   }
 
   // 目録は20体まで（2026-10-25〜、重吉さんの決め）。
-  // いっぱいのときは新しく目覚める・結ぶ・受け継ぐを止めるだけで、前からいる子は消さない
+  // いっぱいのときは新しく目覚める・結ぶを止めるだけで、前からいる子は消さない
   const DEX_MAX = 20;
   const dexCount = async () => (await DB.getAll('cards')).length;
   async function dexFull() {
@@ -1695,6 +1613,9 @@
   async function renderDex() {
     // 前は守り神も目録に入れていた。いまはその夜だけの立会人なので、残っている守り神はここで消す（2026-10-25〜）
     for (const M of await DB.getAll('cards')) if (M.g && M.g.kind === '人間') await DB.del('cards', M.id);
+    // 縁と受け継ぎ（受け継ぐ子が生まれる仕組み）は 2026-11-02 になくした（重吉さんの決め）。前に生まれた受け継ぐ子と縁の記録も消す
+    for (const M of await DB.getAll('cards')) if (M.parents) await DB.del('cards', M.id);
+    if ((await DB.getAll('couples')).length) await DB.clear('couples');
     // 描き方が変わる前のカードは、小さな絵を描き直す（夜の美術館のカードと映像も、この小さな絵を使うため）
     for (const M of await DB.getAll('cards')) if (M.look !== LOOK) {
       await loadFontsFor(M); const cv = document.createElement('canvas'); cv.width = 600; cv.height = 920;
@@ -1710,9 +1631,9 @@
       if (fr) { b.classList.add('framed', fr.k); const mk = document.createElement('span'); mk.className = 'fmark'; mk.textContent = tr(fr.k === 'dawn' ? 'frameMarkDawn' : 'frameMarkQuiet'); b.appendChild(mk); }
       if (guards.has(m.id)) { const gm = document.createElement('span'); gm.className = 'gmark'; gm.textContent = tr('guardMark'); gm.title = tr('guardNights', { n: guards.get(m.id) }); b.appendChild(gm); }
       b.title = `No.${m.no} ${nameOf(m)}`;
-      const i = new Image(); i.src = safeThumb(m.dex) || m.thumb; i.alt = tr('dexAlt', { name: nameOf(m), gender: tr(m.gender === 'm' ? 'male' : 'female'), gen: m.gen }); b.appendChild(i);
+      const i = new Image(); i.src = safeThumb(m.dex) || m.thumb; i.alt = tr('dexAlt', { name: nameOf(m), gender: tr(m.gender === 'm' ? 'male' : 'female') }); b.appendChild(i);
       const tag = document.createElement('span'); tag.className = 'tag';
-      tag.innerHTML = `<span>${m.gender === 'm' ? '♂' : '♀'}</span>` + (Number(m.gen) > 1 ? `<span>${esc(tr('genTag', { gen: Number(m.gen) }))}</span>` : '');
+      tag.innerHTML = `<span>${m.gender === 'm' ? '♂' : '♀'}</span>`;
       b.appendChild(tag);
       b.addEventListener('click', () => display(m, tr('fromDex')));
       g.appendChild(b);
@@ -1720,7 +1641,6 @@
     $('dexEmpty').classList.toggle('hidden', cards.length > 0);
     $('clearDex').classList.toggle('hidden', cards.length === 0);
     if (DB.memOnly) $('dexNote').textContent = tr('memOnly');
-    await renderCouples();
   }
 
   // ---- AI（任意） ----
@@ -1856,7 +1776,6 @@
   }
   function statusOf(M) {
     const s = [];
-    if (M.parents) s.push(tr('stChild', { f: txt(M.parentNames[0]), m: txt(M.parentNames[1]), n: M.childNo }));
     if (M.fusion) s.push(tr('stFuse', { n: M.fusion, power: M.power }));
     if (M.rarity !== 'normal') s.push(tr(RARITY[M.rarity].msg));
     if (M.strong) s.push(tr('stStrong'));
@@ -2420,53 +2339,6 @@
     }).join('');
   }
 
-  // ---- 結婚の操作 ----
-  const slots = { m: null, f: null };
-  function renderSlots() {
-    for (const [k, el, label] of [['m', $('slotM'), tr('husband')], ['f', $('slotF'), tr('wife')]]) {
-      const c = slots[k];
-      el.classList.toggle('on', !!c);
-      el.innerHTML = `<span class="sym ${k}">${k === 'm' ? '♂' : '♀'}</span>` + (c ? `<img src="${safeThumb(c.dex) || safeThumb(c.thumb)}" alt=""><span>${esc(tr('slotFilled', { label, name: nameOf(c) }))}</span>` : `<span>${esc(tr('slotEmpty', { label }))}</span>`);
-    }
-    $('wed').disabled = !(slots.m && slots.f);
-  }
-  async function renderCouples() {
-    const couples = (await DB.getAll('couples')).sort((a, b) => b.at - a.at);
-    const cards = new Map((await DB.getAll('cards')).map(c => [c.id, c]));
-    const box = $('couples'); box.innerHTML = '';
-    for (const cp of couples) {
-      const m = cards.get(cp.male), f = cards.get(cp.female);
-      if (!m || !f) continue;
-      const row = document.createElement('div'); row.className = 'couple';
-      const mn = esc(nameOf(m)), fn = esc(nameOf(f));
-      row.innerHTML = `<img src="${safeThumb(m.dex) || safeThumb(m.thumb)}" alt="${mn}"><span>${mn} ♂</span><span>💍</span><img src="${safeThumb(f.dex) || safeThumb(f.thumb)}" alt="${fn}"><span>${fn} ♀</span><span class="kids">${esc(tr('kidsCount', { n: Number(cp.children.length) }))}</span>`;
-      const b = document.createElement('button'); b.type = 'button';
-      b.textContent = tr(cp.children.length >= 3 ? 'kidsMax' : 'haveChild');
-      b.disabled = cp.children.length >= 3;
-      b.addEventListener('click', () => haveChild(cp.id));
-      row.appendChild(b); box.appendChild(row);
-    }
-  }
-  async function wed() {
-    const couples = await DB.getAll('couples');
-    const why = whyCannotMarry(slots.m, slots.f, couples);
-    if (why) { $('wedMsg').textContent = why; return; }
-    await DB.put('couples', { id: slots.m.id + '|' + slots.f.id, male: slots.m.id, female: slots.f.id, children: [], at: Date.now() });
-    $('wedMsg').textContent = '';
-    track('monster_marry');
-    setStatus(tr('married', { m: nameOf(slots.m), f: nameOf(slots.f) }));
-    slots.m = slots.f = null; renderSlots(); await renderCouples();
-  }
-  async function haveChild(coupleId) {
-    const cp = await DB.get('couples', coupleId);
-    if (!cp || cp.children.length >= 3 || await dexFull()) return;
-    const father = await DB.get('cards', cp.male), mother = await DB.get('cards', cp.female);
-    const child = makeChild(father, mother, cp.children.length, await deviceSecret());
-    cp.children.push(child.id);
-    await DB.put('couples', cp);
-    await show(child, null);
-  }
-
   // ---- 入力 ----
   document.querySelectorAll('.museums button').forEach(b => b.addEventListener('click', () => deal(b.dataset.m)));
   $('reshuffle').addEventListener('click', () => { const on = document.querySelector('.museums button[aria-pressed="true"]'); deal(on ? on.dataset.m : 'all'); });
@@ -2474,29 +2346,16 @@
   $('snd').addEventListener('click', () => { soundOn = !soundOn; $('snd').textContent = tr(soundOn ? 'sndOff' : 'sndOn'); });
   $('again').addEventListener('click', () => { $('pick').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
   // 目録のカードを1枚だけ消す（2026-10-25〜。カードを画像で保存するボタンの代わり。重吉さんの決め）。
-  // この子が入った縁の記録も消す。受け継いだ子は残す（親の名前はその子が覚えている）。夜の美術館の額縁は写しなので残る
+  // 夜の美術館の額縁は写しなので残る
   $('del').addEventListener('click', async () => {
     if (!current) return;
     const M = await DB.get('cards', current.id);
     if (!M) { setStatus(tr('notInDex')); return; }
     if (!confirm(tr('delConfirm', { name: nameOf(M) }))) return;
-    for (const cp of await DB.getAll('couples')) if (cp.male === M.id || cp.female === M.id) await DB.del('couples', cp.id);
     await DB.del('cards', M.id);
-    if (slots.m && slots.m.id === M.id) slots.m = null;
-    if (slots.f && slots.f.id === M.id) slots.f = null;
-    current = null; cancelAnimationFrame(blinkRaf); $('stage').classList.add('hidden'); renderSlots(); await renderDex();
+    current = null; cancelAnimationFrame(blinkRaf); $('stage').classList.add('hidden'); await renderDex();
     setStatus(tr('deleted', { name: nameOf(M) }));
   });
-  $('cand').addEventListener('click', async () => {
-    if (!current) return;
-    const saved = await DB.get('cards', current.id); // 図鑑に入った子だけ（中身がそろっている）
-    if (!saved) { setStatus(tr('notInDex')); return; }
-    slots[saved.gender] = saved; renderSlots();
-    $('wedMsg').textContent = whyCannotMarry(slots.m, slots.f, await DB.getAll('couples')) && slots.m && slots.f ? whyCannotMarry(slots.m, slots.f, await DB.getAll('couples')) : '';
-    $('marry').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
-  $('wed').addEventListener('click', wed);
-  $('unslot').addEventListener('click', () => { slots.m = slots.f = null; $('wedMsg').textContent = ''; renderSlots(); });
   $('aiRetry').addEventListener('click', async () => {
     const v = aiView;
     if (!v || !v.redo || v.cls === 'work') return;
@@ -2509,10 +2368,9 @@
   $('clearDex').addEventListener('click', async () => {
     if (!confirm(tr('clearConfirm'))) return;
     await DB.clear('cards'); await DB.clear('couples');
-    slots.m = slots.f = null; renderSlots(); await renderDex();
+    await renderDex();
   });
   window.applyI18n();
-  renderSlots();
   renderDex();
   $('filmAgain').addEventListener('click', opening);
   if (window.parent === window) { let seen = false; try { seen = !!localStorage.getItem(INTRO); } catch (e) { seen = true; } if (!seen) opening(); }

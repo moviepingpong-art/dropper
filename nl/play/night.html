@@ -263,12 +263,11 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .map b{font-family:var(--serif);font-weight:600;font-size:14px;color:var(--gold-soft);line-height:1.3}
 .map small{font-size:11.5px;color:var(--mid);line-height:1.4}
 .fxh{margin:6px 0 -4px;text-align:center;font-family:var(--serif);font-size:13px;color:var(--mid);letter-spacing:.06em}
-.fx{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.fx{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .fx span{display:flex;flex-direction:column;align-items:center;gap:1px;padding:10px 4px 8px;border:1px solid var(--line);background:#0e1019}
 .fx i{width:46px;height:36px;margin-bottom:4px}
 .fx-g{background:linear-gradient(90deg,transparent 30%,rgba(240,205,110,.85) 46%,rgba(255,236,170,.95) 50%,rgba(240,205,110,.85) 54%,transparent 70%),radial-gradient(circle at 50% 100%,rgba(240,205,110,.5),transparent 60%)}
 .fx-s{background:repeating-linear-gradient(100deg,transparent 0 7px,rgba(210,222,240,.8) 7px 8.5px),radial-gradient(circle at 50% 100%,rgba(200,215,235,.35),transparent 65%);-webkit-mask:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask:linear-gradient(transparent,#000 30%,#000 70%,transparent)}
-.fx-k{background:radial-gradient(circle at 30% 40%,rgba(255,214,150,.95) 0 6px,transparent 13px),radial-gradient(circle at 70% 40%,rgba(170,205,255,.95) 0 6px,transparent 13px),radial-gradient(ellipse at 50% 82%,rgba(255,240,210,.95) 0 6px,transparent 15px)}
 .fx b{font-family:var(--serif);font-weight:600;font-size:13px;color:var(--gold-soft)} .fx small{font-size:11.5px;color:var(--mid)}
 .lock{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--mid)}
 @media (max-width:480px){.map{gap:14px 16px}.map li:not(:nth-child(3n)):not(:last-child)::after{right:-12px;border-width:5px;border-left-width:7px}.map b{font-size:13px}.map small{font-size:10.5px}.map u{width:24px;height:24px}.map svg{width:14px;height:14px}}
@@ -467,7 +466,7 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
   <a class="back" href="spirit.html" data-i18n="nBack" style="align-self:flex-start">← 目録へ</a>
   <h1 data-i18n="nIntroH">夜の美術館を灯す</h1>
   <p class="lead" data-i18n="nIntroLead">閉館後の美術館。目録の精霊たちと、眠っている展示室に灯をともします</p>
-  <div class="promo"><p class="promo-h">✦ <span data-i18n="nPromo" data-i18n-html>世界にひとつだけの動画を<wbr>手に入れよう</span> ✦</p><p class="promo-s" data-i18n="nPromoSub">4つの部屋を灯して最後の部屋に入ると、その夜の精霊たちと作品、AI が書くお話と曲で、55秒の動画ができます</p><p class="promo-m" data-i18n="nPromoMore">✦ 金の光・銀の光・縁の子を連れていくと、最後の部屋に特別な光の場面が。あなたの夜には、何が起こるでしょう？</p></div>
+  <div class="promo"><p class="promo-h">✦ <span data-i18n="nPromo" data-i18n-html>世界にひとつだけの動画を<wbr>手に入れよう</span> ✦</p><p class="promo-s" data-i18n="nPromoSub">4つの部屋を灯して最後の部屋に入ると、その夜の精霊たちと作品、AI が書くお話と曲で、55秒の動画ができます</p><p class="promo-m" data-i18n="nPromoMore">✦ 金の光・銀の光の精霊を連れていくと、最後の部屋に特別な光の場面が。あなたの夜には、何が起こるでしょう？</p></div>
   <div class="vessel" id="vessel"></div>
   <ol class="rules">
    <li><b class="n">1</b><span id="rule1"></span></li>
@@ -488,7 +487,6 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
   <div class="fx">
    <span><i class="fx-g"></i><b data-i18n="nFxGold">金の光</b><small data-i18n="nFxGoldS">金の柱</small></span>
    <span><i class="fx-s"></i><b data-i18n="nFxSilver">銀の光</b><small data-i18n="nFxSilverS">銀の雨</small></span>
-   <span><i class="fx-k"></i><b data-i18n="nFxKin">縁の子</b><small data-i18n="nFxKinS">光がひとつに</small></span>
   </div>
   <div class="tip" data-i18n="nTip" data-i18n-html></div>
   <div class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg><span data-i18n="nLock">画像はこの端末の中だけ。AI に送るのは作品と精霊の名前だけ</span></div>
@@ -579,9 +577,9 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
  </div>
 </div>
 
-<script src="monster-i18n.js?v=33"></script>
-<script src="night-i18n.js?v=34"></script>
-<script src="night-film.js?v=25"></script>
-<script src="night-app.js?v=49"></script>
+<script src="monster-i18n.js?v=34"></script>
+<script src="night-i18n.js?v=35"></script>
+<script src="night-film.js?v=26"></script>
+<script src="night-app.js?v=50"></script>
 </body>
 </html>

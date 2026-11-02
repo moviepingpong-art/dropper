@@ -251,7 +251,7 @@
   // 入口（0〜5秒）は遠くの合唱「ウー」とハープ → 額縁が1つ灯るたびに1小節（3.125秒）、和音が変わり鈴が鳴る。2つ目からひとりの声が旋律を歌う →
   // 光の粒が灯籠へ（G → A で高まる）→ 天窓の光で D の和音がひらき、鈴が降りて消える。時刻は lastroom.py の LIT0・GAP（120コマ・75コマ）に合わせる
   // 旋律・和音の進み方・ハープの並び・灯るたびの鈴の音は、その夜のカードから決める（rnd）。AI の設計図の楽器は色として足す（オルガン・鈴・ハープ・声）
-  // sp：精霊ごとの特別（rar 金の光・銀の光／kin 縁から生まれた子）。額縁が灯る時刻に、金＝声の和音、銀＝高い鈴の連なり、縁の子＝2つの旋律が重なる
+  // sp：精霊ごとの特別（rar 金の光・銀の光）。額縁が灯る時刻に、金＝声の和音、銀＝高い鈴の連なり（縁の子の2つの旋律は 2026-11-02 に受け継ぎをなくしたので外した）
   // lt：額縁が灯る時刻（秒）。2026-11-01 に額縁を4つにしてから、灯るのは小節の頭と限らない（和音は小節ごと、灯った合図と特別な音は灯る時刻に）
   const ROOM_PLAN = (rnd, sp = [], lt = null, asc = null) => ({ bell, harp, voice, choir, solo, bass, haze: strings, organ, inst }) => {
     const pick = a => a[Math.floor(rnd() * a.length)], L0 = 5, BAR = 3.125, BEAT = BAR / 4, has = x => inst.includes(x);
@@ -285,7 +285,6 @@
       if (!c2) return;
       if (c2.rar === 'gold') { voice([74, 78, 81], t + .05, 1.7, .02); bell(86, t + .12, 3.2, .07); }
       else if (c2.rar === 'silver') [90, 93, 95, 98, 102].forEach((n, q) => bell(n, t + .08 + q * .07, 1.8, .05));
-      if (c2.kin) { [74, 78, 76, 81].forEach((n, q) => harp(n, t + .1 + q * .18, 1.2, .07)); [69, 73, 74, 78].forEach((n, q) => bell(n, t + .19 + q * .18, 1.8, .05)); }
     });
     solo(line, .05);
     const t2 = L0 + 7 * BAR;                                                                        // 光の粒が灯籠へ
@@ -583,13 +582,13 @@
         g.globalAlpha = clamp(a); g.fillStyle = gr; g.fillRect(cx - sz, cy - sz, sz * 2, sz * 2);
       });
       g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
-      // 特別な精霊の額縁が灯るとき（2026-10-25〜）：金の光＝天窓から金の柱と金の粉、銀の光＝銀の雨、縁の子＝2つの光がひとつになって額縁へ。
-      // 親も7体の中にいれば、親の額縁と子の額縁を光の糸でつなぐ。強さには関係しない（見た目と音だけ）
+      // 特別な精霊の額縁が灯るとき（2026-10-25〜）：金の光＝天窓から金の柱と金の粉、銀の光＝銀の雨。強さには関係しない（見た目と音だけ）。
+      // 縁の子（2つの光がひとつに・親子の額縁を光の糸でつなぐ）は 2026-11-02 に受け継ぎをなくしたので外した
       const rr = n => { const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); };
       const ctr = q => [(q[0][0] + q[1][0] + q[2][0] + q[3][0]) / 4 * W, (q[0][1] + q[1][1] + q[2][1] + q[3][1]) / 4 * H];
       g.globalCompositeOperation = 'screen';
       F.w.forEach((q, i) => {
-        const c = o.cards[i]; if (!c || !q[5] || (c.rar !== 'gold' && c.rar !== 'silver' && !c.kin)) return;
+        const c = o.cards[i]; if (!c || !q[5] || (c.rar !== 'gold' && c.rar !== 'silver')) return;
         const age = (f - lit(i)) / K; if (age < -8 || age > 52) return;
         const k = clamp(Math.min((age + 8) / 10, (52 - age) / 14)), [cx, cy] = ctr(q);
         const fw = Math.hypot((q[1][0] - q[0][0]) * W, (q[1][1] - q[0][1]) * H), fh = Math.hypot((q[3][0] - q[0][0]) * W, (q[3][1] - q[0][1]) * H);
@@ -601,27 +600,6 @@
           g.strokeStyle = '#dfe8f6'; g.lineWidth = 1.3;
           for (let n = 0; n < 40; n++) { const x = cx + (rr(n) - .5) * fw * 2, y = cy - fh * 1.2 + ((rr(n + 40) * fh * 2.4 + (age + 8) * (9 + rr(n + 80) * 6)) % (fh * 2.4)); g.globalAlpha = k * (.35 + .4 * rr(n + 9)); g.beginPath(); g.moveTo(x, y); g.lineTo(x - 2, y + 12 + rr(n + 5) * 10); g.stroke(); }
         }
-        if (c.kin) {
-          const p = clamp((age + 8) / 26), e = p * p * (3 - 2 * p), r = Math.max(10, W / 30);
-          [[-1, '#f6c6d8'], [1, '#c6dcf6']].forEach(([sd, col]) => {
-            if (p >= 1) return; const x = cx + sd * fw * 1.2 * (1 - e), y = cy - fh * .35 * Math.sin(e * 3.14) - fh * .1 * (1 - e);
-            const gr = g.createRadialGradient(x, y, 0, x, y, r * 3); gr.addColorStop(0, '#ffffff'); gr.addColorStop(.18, col); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.globalAlpha = k; g.fillStyle = gr; g.fillRect(x - r * 3, y - r * 3, r * 6, r * 6);
-          });
-          if (p >= 1) { const a2 = clamp(1 - (age - 18) / 26), rad = fw * (.4 + .6 * (1 - a2)); const gr = g.createRadialGradient(cx, cy, 0, cx, cy, rad); gr.addColorStop(0, 'rgba(255,240,230,.9)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.globalAlpha = a2 * .8; g.fillStyle = gr; g.fillRect(cx - rad, cy - rad, rad * 2, rad * 2); }
-        }
-      });
-      // 縁の糸：子の額縁が灯ってから、天窓の光まで
-      if (f < T(330)) F.w.forEach((q, i) => {
-        const c = o.cards[i]; if (!c || !q[5] || !Array.isArray(c.par) || !c.par.length) return;
-        const age = (f - lit(i)) / K; if (age < 18) return;
-        const a = clamp(Math.min((age - 18) / 16, (T(330) - f) / 24)) * (.55 + .15 * Math.sin(f / 6)), [x1, y1] = ctr(q);
-        c.par.forEach(pi => {
-          const pq = F.w[pi]; if (!pq) return;
-          // 親の額縁が画面の外なら、その方へ画面のはしまで糸をのばす
-          let [x0, y0] = ctr(pq); if (!pq[5] || pq[4] <= 0) { x0 = x0 < x1 ? -10 : W + 10; y0 = y1 - H * .08; }
-          const gr = g.createLinearGradient(x0, y0, x1, y1); gr.addColorStop(0, 'rgba(246,198,216,.9)'); gr.addColorStop(.5, 'rgba(255,240,200,1)'); gr.addColorStop(1, 'rgba(198,220,246,.9)');
-          [[9, .25], [3.2, 1]].forEach(([lw, m]) => { g.globalAlpha = a * m; g.strokeStyle = gr; g.lineWidth = lw; g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo((x0 + x1) / 2, Math.min(y0, y1) - H * .06, x1, y1); g.stroke(); });
-        });
       });
       g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
       // 灯った額縁の下に、その精霊の名前（灯ってから1.6秒）
@@ -773,7 +751,7 @@
       };
       const stopDraw = onFrames(v, t => draw(Math.floor(t * J.fps) + 1));
       btn(L, o.tx.skip, 'ghost nf-skip', () => finish(false));
-      if (A) { A.ac.resume(); S = score(A.ac, A.out, ROOM_PLAN(seeded(o.seed || ''), o.cards.map(c => ({ rar: c.rar, kin: !!c.kin })), J.wins.map((w, i) => lit(i) / J.fps), X ? X.map(x => x / J.fps) : null), o.story && o.story.music, 'D', J.n / J.fps); rec = recorder(cv, A.dest); }
+      if (A) { A.ac.resume(); S = score(A.ac, A.out, ROOM_PLAN(seeded(o.seed || ''), o.cards.map(c => ({ rar: c.rar })), J.wins.map((w, i) => lit(i) / J.fps), X ? X.map(x => x / J.fps) : null), o.story && o.story.music, 'D', J.n / J.fps); rec = recorder(cv, A.dest); }
       if (rec) { rec.ondataavailable = e => { if (e.data && e.data.size) parts.push(e.data); }; rec.start(500); }
       v.onended = () => { draw(J.n); setTimeout(() => finish(true), 900); };
       v.play().catch(() => finish(false));
