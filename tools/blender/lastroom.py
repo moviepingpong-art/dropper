@@ -11,12 +11,15 @@ from bpy_extras.object_utils import world_to_camera_view
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 a = sys.argv[sys.argv.index('--') + 1:]
 OUTD = a[0]; PX = int(a[1]) if len(a) > 1 else 540; SAMPLES = int(a[2]) if len(a) > 2 else 24
-N = 960                        # 40秒（2026-10-27 に20秒から2倍に。額縁をゆっくり見られるように・重吉さんの決め）
-# 20秒のときのコマ → 40秒のコマ。入口 0〜70→0〜120・額縁 70〜280→120〜645（30コマごと→75コマごと）・光の粒 280〜380→645〜795・天窓 380〜480→795〜960
+N = 1320                       # 55秒（2026-11-01 に40秒から。額縁の作品と精霊が光の柱のまわりを回って天へ昇る場面を足した・重吉さんの決め）
+# 20秒のときのコマ → 55秒のコマ。入口 0〜70→0〜120・額縁 70〜280→120〜645・光の柱 280〜380→645〜795・舞い上がる 380〜425→795〜1150・白い画面 425〜480→1150〜1320
+SEG = ((0, 70, 0, 120), (70, 280, 120, 645), (280, 380, 645, 795), (380, 425, 795, 1150), (425, 480, 1150, N))
 def T(f):
-    for a0, a1, b0, b1 in ((0, 70, 0, 120), (70, 280, 120, 645), (280, 380, 645, 795), (380, 480, 795, 960)):
+    for a0, a1, b0, b1 in SEG:
         if f <= a1: return round(b0 + (f - a0) * (b1 - b0) / (a1 - a0))
     return N
+# 舞い上がる場面のコマ（2026-11-01〜）：額縁から抜け出す SEP0〜・柱のまわりを回る ORB0〜UP0・天窓へ昇る UP0〜UP1
+SEP0, ORB0, UP0, UP1 = 680, 780, 1010, 1150
 F0 = int(a[3]) if len(a) > 3 else 1; F1 = int(a[4]) if len(a) > 4 else N
 os.makedirs(OUTD, exist_ok=True)
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -39,6 +42,9 @@ def key(sock, pairs):
 
 def keyp(obj, path, pairs):
     for f, v in pairs: setattr(obj, path, v); obj.keyframe_insert(path, frame=f)
+
+
+def pol(r, t, z): return Vector((r * math.cos(t), r * math.sin(t), z))
 
 
 # ---- 部屋：石の壁・柱・円い屋根と天窓・床 ----
@@ -103,7 +109,7 @@ for _ in range(140):
     p_ = Vector((math.cos(th) * math.cos(ph), math.sin(th) * math.cos(ph), math.sin(ph))) * (RR - 0.03) + Vector((0, 0, WALL))
     F.sphere(p_, random.uniform(0.012, 0.03), star, seg=8)
 sky = emit_mat('oculus', (0.75, 0.82, 1.0), 0.0)
-key(sky.node_tree.nodes['Emission'].inputs['Strength'], [(1, 1.5), (T(300), 1.5), (T(380), 14.0), (N, 18.0)])
+key(sky.node_tree.nodes['Emission'].inputs['Strength'], [(1, 1.5), (T(300), 1.5), (T(380), 14.0), (UP0, 18.0), (UP1, 40.0), (N, 40.0)])
 bpy.ops.mesh.primitive_circle_add(vertices=48, radius=RR * 0.40, fill_type='NGON', location=(0, 0, WALL + RR * 0.93))
 bpy.context.object.data.materials.append(sky)
 bpy.ops.mesh.primitive_torus_add(major_radius=RR * 0.345, minor_radius=0.09, major_segments=64, minor_segments=8, location=(0, 0, WALL + RR * 0.935))
@@ -175,16 +181,85 @@ bpy.ops.mesh.primitive_cone_add(vertices=6, radius1=0.32, depth=0.3, location=(0
 bpy.ops.object.light_add(type='POINT', location=(0, 0, 1.34)); LL = bpy.context.object
 LL.data.color = (1.0, 0.72, 0.4); LL.data.shadow_soft_size = 0.25
 keyp(LL.data, 'energy', [(1, 15.0), (T(300), 40.0), (T(380), 900.0), (N, 1400.0)])
-# 光の粒：額縁から灯籠へ流れる（額縁ごとに10粒）。そのあと天窓へのぼる
+# ---- 舞い上がる場面（2026-11-01〜、重吉さんの決め）：額縁の作品と精霊が分かれて抜け出し、光の柱のまわりを渦を描いて回りながら集まり、
+#      あなたの写真・守り神と一緒に天窓へ昇る。作品・精霊・写真・守り神はその夜ごとに違うので絵に焼きこまず、ここではコマごとの3Dの位置だけを決め、
+#      光の尾・灯り・金の粉だけを描く。ページ（night-film.js）が last.json の x（コマごとに画面の位置と奥行き）に合わせて描く
+def sst(x, a_, b_):
+    t_ = max(0.0, min(1.0, (x - a_) / (b_ - a_))); return t_ * t_ * (3 - 2 * t_)
+
+
+TOP = WALL + RR * 0.93         # 天窓の高さ
+ZM = 2.9                       # あなたの写真の真ん中の高さ（灯籠の上）
+def d0(i): return SEP0 + (i - 1) * 10   # 額縁ごとに少しずつずらして抜け出す
+
+
+def spin(i):                   # 回る角度（コマごと）。抜け出してからゆっくり速くなり、回るあいだは一定、昇るときにもう一段速く
+    out, th, v1 = {}, ang(i), 2 * math.pi * 1.15 / (UP0 - ORB0)
+    for f in range(1, N + 1):
+        v = v1 * sst(f, d0(i) + 30, ORB0 + 40) * (1 + 0.9 * sst(f, UP0, UP1)); th += v; out[f] = th
+    return out
+
+
+SPIN = {i: spin(i) for i in range(1, BAYS)}
+
+
+def work_at(i, f):             # 作品の真ん中と大きさ（窓に対する割合）
+    th = SPIN[i][f]
+    r = (RR - 0.08) - 0.85 * sst(f, d0(i), d0(i) + 50) - (RR - 0.93 - 1.25) * sst(f, d0(i) + 40, UP0) - 0.9 * sst(f, UP0, UP1)
+    z = FZ + 0.2 * sst(f, d0(i), d0(i) + 50) + 0.45 * sst(f, d0(i) + 40, UP0) + 0.08 * math.sin((f - d0(i)) / 26 + i) * sst(f, ORB0, ORB0 + 40) + (TOP - 2.7) * sst(f, UP0 + 10, UP1) ** 1.6
+    k = 1 - 0.5 * sst(f, d0(i) + 20, ORB0 + 60) - 0.25 * sst(f, UP0 + 20, UP1)
+    return pol(r, th, z), k
+
+
+def spirit_at(i, f):           # 精霊：上の小さな額縁から抜け出し、作品の少し前・少し上を一緒に回る
+    p_, k = work_at(i, f); th = SPIN[i][f] + 0.5 * sst(f, d0(i) + 15, d0(i) + 75)
+    r = p_.xy.length * (1 - 0.18 * sst(f, d0(i) + 15, d0(i) + 75))
+    q = pol(r, th, p_.z + (0.55 + 0.12 * math.sin(f / 14 + i)) * sst(f, d0(i) + 15, d0(i) + 75))
+    s0 = pol(RR - 0.1, ang(i), FZ + F.WH * S * 0.56)
+    return s0.lerp(q, sst(f, d0(i) + 15, d0(i) + 75)), 0.85 * (k / 0.5 if k < 0.5 else 1) ** 0.5
+
+
+GA = ang(0) + math.radians(35) + math.radians(55)   # 守り神は柱のそば（回る場面のカメラから見て右手前）
+
+
+def me_at(f): return Vector((0, 0, ZM + (TOP - ZM) * sst(f, UP0 + 15, UP1) ** 1.5))
+
+
+def guard_at(f):
+    t_ = sst(f, UP0 + 5, UP1); return pol(0.95 - 0.6 * t_, GA + 2.2 * t_, 1.7 + (TOP - 1.7) * t_ ** 1.6)
+
+
+# 光の尾：作品は金、精霊は白に近い光。尾の長さはおよそ2秒
+trw = emit_mat('trailw', (1.0, 0.78, 0.42), 5.0); trs = emit_mat('trails', (0.85, 0.92, 1.0), 6.0)
+def trail(fn, i, mat, depth):
+    cu = bpy.data.curves.new(f'tr{i}{mat.name}', 'CURVE'); cu.dimensions = '3D'; cu.bevel_depth = depth; cu.bevel_resolution = 2
+    sp = cu.splines.new('POLY'); fs_ = list(range(d0(i), UP1 + 1, 2)); sp.points.add(len(fs_) - 1)
+    for k_, f in enumerate(fs_): sp.points[k_].co = (*fn(i, f)[0], 1)
+    cu.bevel_factor_mapping_start = cu.bevel_factor_mapping_end = 'SPLINE'
+    ob = bpy.data.objects.new(cu.name, cu); sc.collection.objects.link(ob); ob.data.materials.append(mat)
+    span = UP1 - d0(i)
+    for f in [1, d0(i)] + list(range(d0(i) + 4, UP1 + 1, 4)) + [UP1 + 12]:
+        e = max(0.0, min(1.0, (f - d0(i)) / span)); cu.bevel_factor_end = e; cu.bevel_factor_start = max(0.0, min(e, e - 26 / span)) if f <= UP1 else 1.0
+        cu.keyframe_insert('bevel_factor_end', frame=f); cu.keyframe_insert('bevel_factor_start', frame=f)
+
+
+for i in range(1, BAYS):
+    trail(work_at, i, trw, 0.007); trail(spirit_at, i, trs, 0.005)
+    # 抜け出すとき、窓のところがふわっと光る
+    c = pol(RR - 0.6, ang(i), FZ)
+    bpy.ops.object.light_add(type='POINT', location=c); Lp = bpy.context.object; Lp.data.color = (1.0, 0.85, 0.6); Lp.data.shadow_soft_size = 0.4
+    keyp(Lp.data, 'energy', [(1, 0.0), (d0(i) - 2, 0.0), (d0(i) + 10, 260.0), (d0(i) + 50, 0.0)])
+# 集まった光が部屋を照らす（作品の輪の真ん中について昇る）
+bpy.ops.object.light_add(type='POINT', location=(0, 0, 2.6)); LG = bpy.context.object; LG.data.color = (1.0, 0.8, 0.5); LG.data.shadow_soft_size = 0.6
+keyp(LG.data, 'energy', [(1, 0.0), (ORB0, 0.0), (ORB0 + 60, 90.0), (UP0, 120.0), (UP1, 400.0), (N, 400.0)])
+keyp(LG, 'location', [(1, Vector((0, 0, 2.7))), (UP0, Vector((0, 0, 2.7))), (UP1, Vector((0, 0, TOP - 0.6)))])
+# 金の粉：昇るときに、渦を描いて一緒に天窓へ
 mote = emit_mat('mote', (1.0, 0.8, 0.45), 30.0)
-for w in wins:
-    c = sum(w['corners'], Vector()) / 4
-    for j in range(10):
-        s0 = 290 + j * 4 + random.randint(0, 8); s1 = T(s0 + 55); s0 = T(s0)
-        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.025, segments=10, ring_count=6, location=c); o = bpy.context.object; o.data.materials.append(mote)
-        mid = c.lerp(Vector((0, 0, 1.4)), 0.5) + Vector((random.uniform(-.4, .4), random.uniform(-.4, .4), random.uniform(.3, 1.0)))
-        keyp(o, 'scale', [(1, (0, 0, 0)), (s0 - 1, (0, 0, 0)), (s0, (1, 1, 1)), (s1, (1, 1, 1)), (s1 + 1, (0, 0, 0))])
-        keyp(o, 'location', [(s0, c), ((s0 + s1) // 2, mid), (s1, Vector((0, 0, 1.4)))])
+for j in range(110):
+    r0 = random.uniform(0.3, 2.0); t0 = random.uniform(0, 2 * math.pi); s0 = UP0 - 30 + random.randint(0, 70); s1 = s0 + random.randint(80, 120)
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=random.uniform(0.012, 0.026), segments=8, ring_count=5, location=pol(r0, t0, 1.0)); o = bpy.context.object; o.data.materials.append(mote)
+    keyp(o, 'scale', [(1, (0, 0, 0)), (s0 - 1, (0, 0, 0)), (s0, (1, 1, 1)), (s1 - 6, (1, 1, 1)), (s1, (0, 0, 0))])
+    keyp(o, 'location', [(s0, pol(r0, t0, random.uniform(0.6, 2.4))), ((s0 + s1) // 2, pol(r0 * 0.6, t0 + 2.2, random.uniform(3.2, 4.8))), (s1, pol(0.25, t0 + 4.4, TOP + 0.2))])
 # ---- 空気：薄いもや。天窓からの光の柱がもやに映る ----
 fog = bpy.data.materials.new('fog'); fog.use_nodes = True; nt = fog.node_tree; nt.nodes.remove(nt.nodes['Principled BSDF'])
 vs = nt.nodes.new('ShaderNodeVolumeScatter'); vs.inputs['Density'].default_value = 0.03; nt.links.new(vs.outputs[0], nt.nodes['Material Output'].inputs['Volume'])
@@ -207,8 +282,6 @@ tgt = bpy.data.objects.new('tgt', None); sc.collection.objects.link(tgt)
 c = co.constraints.new('TRACK_TO'); c.target = tgt; c.track_axis = 'TRACK_NEGATIVE_Z'; c.up_axis = 'UP_Y'
 
 
-def pol(r, t, z): return Vector((r * math.cos(t), r * math.sin(t), z))
-
 
 CK = [(1, pol(RR - 0.4, ang(0), 1.6), pol(0, 0, 1.6), 22)]  # 入口の内側。灯籠の向こうの壁を見る
 for i in range(1, BAYS):  # 額縁 i が灯るころ、部屋の真ん中の近くから、その額縁と両どなりを見る（ゆっくり回る）
@@ -216,9 +289,12 @@ for i in range(1, BAYS):  # 額縁 i が灯るころ、部屋の真ん中の近�
     # 40秒（2026-10-27〜）：額縁の前で止まって、ゆっくり回りながら少し寄る（約2.3秒）。次の額縁へは約0.9秒で移る
     CK.append((f0 + 4, pol(0.95, ang(i) + math.radians(84), 1.6), pol(RR, ang(i), FZ - 0.05), 21))
     CK.append((f0 + GAP - 18, pol(0.95, ang(i) + math.radians(96), 1.6), pol(RR, ang(i), FZ - 0.05), 23))
-CK += [(T(330), pol(2.6, ang(BAYS - 1) + math.radians(40), 1.3), pol(0, 0, 1.5), 20),
-       (T(400), pol(2.3, ang(BAYS) + math.radians(40), 0.9), pol(0, 0, 3.2), 18),
-       (N, pol(1.6, ang(BAYS) + math.radians(70), 0.7), pol(0, 0, WALL + RR * 0.9), 16)]
+CK += [(700, pol(3.5, ang(0) + math.radians(25), 1.4), pol(0, 0, 2.3), 18),       # 入口のほうへ下がり、光の柱と抜け出す作品を見る
+       (ORB0, pol(3.5, ang(0) + math.radians(35), 1.3), pol(0, 0, 2.4), 20),     # 作品と精霊が柱のまわりを回る（ゆっくり回りこむ）
+       (UP0, pol(3.4, ang(0) + math.radians(80), 1.1), pol(0, 0, 2.7), 20),
+       (1080, pol(2.5, ang(0) + math.radians(100), 0.8), pol(0, 0, 4.6), 15),   # 昇るのを追って見上げる
+       (UP1, pol(2.2, ang(0) + math.radians(115), 0.7), pol(0, 0, WALL + RR * 0.9), 14),
+       (N, pol(2.1, ang(0) + math.radians(125), 0.7), pol(0, 0, WALL + RR * 0.9), 14)]
 for f, p, t, lens in CK:
     co.location = p; co.keyframe_insert('location', frame=f); tgt.location = t; tgt.keyframe_insert('location', frame=f)
     cam.lens = lens; cam.keyframe_insert('lens', frame=f)
@@ -242,18 +318,46 @@ def cam_ray():
     return [round(x, 5) for x in (*C, *(tr - tl), *(bl - tl), *tl)]
 
 
+# 舞い上がる場面（SEP0〜）：コマごとに、作品の四隅（左上・右上・右下・左下）と奥行き、精霊・写真・守り神の真ん中と「1m が画面の高さの何割か」と奥行き。
+#   x = {a: [[[u,v]×4, 奥行き], …4], s: [[u, v, 1mの高さ, 奥行き], …4], me: [u, v, 1mの高さ, 奥行き], g: [同じ]}。奥行きはカメラからの距離（大きいほど奥。ページは奥から描く）
+def proj(p_):
+    q = world_to_camera_view(sc, co, p_); return q, round(q.x, 4), round(1 - q.y, 4)
+
+
+def pt(p_):
+    q, u, v = proj(p_); up = co.matrix_world.to_3x3() @ Vector((0, 1, 0)); q2 = world_to_camera_view(sc, co, p_ + up)
+    return [u, v, round(abs(q2.y - q.y), 4), round(q.z, 3)]
+
+
+def asc_frame(f):
+    C = co.matrix_world.translation; A_, S_ = [], []
+    for i in range(1, BAYS):
+        c_, k = work_at(i, f); t = ang(i); n0 = Vector((-math.cos(t), -math.sin(t), 0)); n1 = (C - c_); n1.z *= 0.5; n1.normalize()
+        b = sst(f, d0(i) + 10, d0(i) + 70); n = n0.lerp(n1, b).normalized()
+        yw = 0.35 * math.sin((f - d0(i)) / 30 + i) * b; n = Vector((n.x * math.cos(yw) - n.y * math.sin(yw), n.x * math.sin(yw) + n.y * math.cos(yw), n.z)).normalized()
+        r_ = (-n).cross(Vector((0, 0, 1))).normalized(); u_ = r_.cross(-n).normalized()
+        w2, h2 = F.WW * S * k / 2, F.WH * S * k / 2
+        cs = [c_ - r_ * w2 + u_ * h2, c_ + r_ * w2 + u_ * h2, c_ + r_ * w2 - u_ * h2, c_ - r_ * w2 - u_ * h2]
+        A_.append([[list(proj(p_)[1:]) for p_ in cs], round(world_to_camera_view(sc, co, c_).z, 3)])
+        sp_, sz = spirit_at(i, f); S_.append(pt(sp_) + [round(sz, 3)])
+    return {'a': A_, 's': S_, 'me': pt(me_at(f)), 'g': pt(guard_at(f))}
+
+
 # 窓の四隅（絵の割合。左上・右上・右下・左下）・灯りの強さ（0〜1）・見えるか、と天窓の真ん中を、コマごとに書く
-out = {'w': PX, 'h': sc.render.resolution_y, 'fps': 24, 'n': N, 'lit0': LIT0, 'gap': GAP, 'rr': RR, 'wall': WALL, 'bays': BAYS, 'a0': round(ang(0), 6), 'wins': [{'i': w_['i'], 'kind': w_['kind']} for w_ in wins], 'f': []}
-for f in range(1, N + 1):
-    sc.frame_set(f); fr = []
-    for w_ in wins:
-        cs = [world_to_camera_view(sc, co, p) for p in w_['corners']]
-        vis = all(q.z > 0.05 for q in cs) and max(q.x for q in cs) > -0.05 and min(q.x for q in cs) < 1.05
-        b = max(0.0, min(1.0, (f - w_['f0']) / 16))
-        fr.append([[round(q.x, 4), round(1 - q.y, 4)] for q in cs] + [round(b, 2), 1 if vis else 0])
-    oc = world_to_camera_view(sc, co, Vector((0, 0, WALL + RR * 0.94)))
-    out['f'].append({'w': fr, 'oc': [round(oc.x, 4), round(1 - oc.y, 4), 1 if oc.z > 0 else 0], 'cam': cam_ray()})
-json.dump(out, open(os.path.join(OUTD, 'last.json'), 'w'), separators=(',', ':'))
+out = {'w': PX, 'h': sc.render.resolution_y, 'fps': 24, 'n': N, 'lit0': LIT0, 'gap': GAP, 'seg': SEG, 'asc': [SEP0, ORB0, UP0, UP1], 'top': round(TOP, 3), 'rr': RR, 'wall': WALL, 'bays': BAYS, 'a0': round(ang(0), 6), 'wins': [{'i': w_['i'], 'kind': w_['kind']} for w_ in wins], 'f': []}
+if not os.environ.get('NOJSON'):  # 続きから書き出すときは、JSON を書き直さない（1320コマぶんで数分かかる）
+    for f in range(1, N + 1):
+        sc.frame_set(f); fr = []
+        for w_ in wins:
+            cs = [world_to_camera_view(sc, co, p) for p in w_['corners']]
+            vis = all(q.z > 0.05 for q in cs) and max(q.x for q in cs) > -0.05 and min(q.x for q in cs) < 1.05
+            b = max(0.0, min(1.0, (f - w_['f0']) / 16))
+            fr.append([[round(q.x, 4), round(1 - q.y, 4)] for q in cs] + [round(b, 2), 1 if vis else 0])
+        oc = world_to_camera_view(sc, co, Vector((0, 0, WALL + RR * 0.94)))
+        rec = {'w': fr, 'oc': [round(oc.x, 4), round(1 - oc.y, 4), 1 if oc.z > 0 else 0], 'cam': cam_ray()}
+        if f >= SEP0: rec['x'] = asc_frame(f)
+        out['f'].append(rec)
+    json.dump(out, open(os.path.join(OUTD, 'last.json'), 'w'), separators=(',', ':'))
 # 壁の抜き（MASK=1）：画像を映す壁だけ白、ほかは黒の白黒の絵。encode-film.sh wall が、透明の度合いの絵に灰色（128）として重ねる
 if os.environ.get('MASK'):  # 壁の抜き：画像を映す壁だけ白、ほかは黒
     blk = emit_mat('mblack', (0, 0, 0), 1.0); wht = emit_mat('mwhite', (1, 1, 1), 1.0)

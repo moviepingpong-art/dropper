@@ -734,13 +734,13 @@
     // 金の光・銀の光の子を連れた夜は、夜明けに金の柱／銀の雨（もとの「光の間」の光）
     hikariLit = HAND.some(c => c.rarity === 'gold') ? 'gold' : HAND.some(c => c.rarity === 'silver') ? 'silver' : null;
     $('flash').classList.remove('on');
-    // 最後の部屋の映像（40秒）。4つの部屋で手に入れた額縁（部屋の順）の作品と精霊が、壁の4つの額縁に灯る（2026-11-01〜。前はその夜の7体）。保存できる動画にする（night-film.js）
+    // 最後の部屋の映像（55秒）。4つの部屋で手に入れた額縁（部屋の順）の作品と精霊が、壁の4つの額縁に灯る（2026-11-01〜。前はその夜の7体）。保存できる動画にする（night-film.js）
     if (!filmed) { $('msg').textContent = tr('nFilmLocked', { n: vessel().light, max: VMAX }); await wait(reduce ? 400 : 3200); }
     else if (window.NightFilm) {
       const wasOn = on; if (wasOn) bgm(false);
       // 縁の子は kin、親も今夜の4つの額縁にいれば par にその番号（光の糸でつなぐ）
       const FC = got.map(e => e.c);
-      const cards = FC.map(c => ({ art: c.art, th: c.th, dx: c.dx, rar: c.rarity, t: c.t, n: c.n, no: c.no, kin: (c.par || []).length > 0, par: (c.par || []).map(id => FC.findIndex(h => h.id === id)).filter(k => k >= 0) }));
+      const cards = FC.map(c => ({ art: c.art, th: c.th, dx: c.dx, fig: c.fig, rar: c.rarity, t: c.t, n: c.n, no: c.no, kin: (c.par || []).length > 0, par: (c.par || []).map(id => FC.findIndex(h => h.id === id)).filter(k => k >= 0) }));
       $('msg').textContent = tr('nStoryWriting');
       const st = await story;
       try { film = await window.NightFilm.room({ cards, hues: guide ? guideHues(guide) : null, guard: guide ? { th: guide.th, n: guide.n, line: tr('nFilmGuard', { name: guide.n }) } : null, story: st, seed: FC.map(c => c.id).join('|') + '|' + isoDate(), congrats: tr('nFilmCongrats'), only: tr('nFilmOnly'), title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
