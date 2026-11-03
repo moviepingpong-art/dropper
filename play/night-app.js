@@ -155,17 +155,30 @@
     return vImg(v.light) + `<span class="vtx"><span class="vh">${esc(tr('nVessel'))}</span>`
       + `<span class="vt">${esc(v.light >= VMAX ? tr('nVesselFull') : tr('nVesselLeft', { n: VMAX - v.light }))}</span></span>`;
   }
-  // 1灯ふえる：光のしずくが落ちてポチャンと水面が揺れ、1段上がる（約2.2秒。drop{n-1}.webm＝n-1灯→n灯）。終わったら器の絵に置きかえる。
+  // 1灯ふえる：光のしずくが落ちてポチャンと水面が揺れ、1段上がる（約2.2秒。drop{n-1}.mp4＝n-1灯→n灯）。終わったら器の絵に置きかえる。
   // 動画は器の地の色（#121624）を焼きこんである。動きを減らす設定では絵だけ
+  // 2026-11-03 スマホで動かなかった（WebM が 4:4:4 で書き出されていて、スマホは読めなかった）ので：MP4 を先に選ぶ・流れ出すまで前の器の絵を出したまま・
+  // 2.5秒たっても流れなければ絵で1段上げて音だけ鳴らす・次のしずくを先に読んでおく（vWarm）
+  const vSrc = name => `<source src="${VGAL}${name}.mp4" type="video/mp4"><source src="${VGAL}${name}.webm" type="video/webm">`;
+  const vWarmed = new Set();
+  function vWarm(n) {   // n 灯目のしずく（10灯目はあふれる場面）を先に読んでおく。約18KB（あふれるは約100KB）
+    if (reduce || trial || n < 1 || n > VMAX) return;
+    const name = n >= VMAX ? 'overflow' : `drop${n - 1}`;
+    if (vWarmed.has(name)) return; vWarmed.add(name);
+    const ext = document.createElement('video').canPlayType('video/mp4') ? 'mp4' : 'webm';
+    try { fetch(VGAL + name + '.' + ext).catch(() => {}); } catch (e) { /* 読めなくても遊べる */ }
+  }
   function vClip(el, n) {
     el.innerHTML = vImg(n - 1);
     if (reduce || n < 1 || n > VMAX - 1) { el.innerHTML = vImg(n); return; }
     const vd = document.createElement('video'); vd.muted = true; vd.playsInline = true; vd.preload = 'auto'; vd.setAttribute('muted', ''); vd.setAttribute('playsinline', '');
-    vd.className = 'vvid'; vd.innerHTML = `<source src="${VGAL}drop${n - 1}.webm" type="video/webm"><source src="${VGAL}drop${n - 1}.mp4" type="video/mp4">`;
-    let done = false; const fin = () => { if (done) return; done = true; el.innerHTML = vImg(n); };
-    vd.addEventListener('playing', () => vSound('drop'), { once: true });
-    vd.onended = fin; vd.onerror = fin; setTimeout(fin, 6000);
-    el.replaceChildren(vd); const p = vd.play(); if (p && p.catch) p.catch(fin);
+    vd.className = 'vvid'; vd.innerHTML = vSrc(`drop${n - 1}`);
+    let done = false, played = false;
+    const fin = () => { if (done) return; done = true; clearTimeout(slow); if (!played) vSound('drop', 0); el.innerHTML = vImg(n); vWarm(n + 1); };
+    const slow = setTimeout(() => { if (!played) fin(); }, 2500);   // 流れ出さない端末は、待たせずに絵で上げる
+    vd.addEventListener('playing', () => { if (done || played) return; played = true; clearTimeout(slow); vd.classList.add('on'); vSound('drop'); setTimeout(fin, 4500); }, { once: true });
+    vd.onended = fin; vd.onerror = fin; vd.lastElementChild.onerror = fin;   // どの形式も読めないときは、最後の source に失敗が来る
+    el.appendChild(vd); const p = vd.play(); if (p && p.catch) p.catch(fin);
   }
   // 10灯目：器があふれる（約7.6秒・画面いっぱい）。光が縁から盛り上がり、川のように蛇行して杯の外を伝い、台にたまって、光の粒が舞い上がる。押すか終わると閉じる
   function vesselBrim() {
@@ -176,10 +189,12 @@
       const close = () => { if (done) return; done = true; setTimeout(() => { L.hidden = true; box.innerHTML = ''; res(); }, 200); };
       if (reduce) { box.innerHTML = vImg(VMAX); setTimeout(() => L.addEventListener('click', close, { once: true }), 300); setTimeout(close, 3500); return; }
       const vd = document.createElement('video'); vd.muted = true; vd.playsInline = true; vd.preload = 'auto'; vd.setAttribute('muted', ''); vd.setAttribute('playsinline', '');
-      vd.className = 'vvid'; vd.innerHTML = `<source src="${VGAL}overflow.webm" type="video/webm"><source src="${VGAL}overflow.mp4" type="video/mp4">`;
-      vd.addEventListener('playing', () => vSound('brim'), { once: true });
+      vd.className = 'vvid on'; vd.innerHTML = vSrc('overflow');
+      let played = false;
+      vd.addEventListener('playing', () => { if (played) return; played = true; vSound('brim'); }, { once: true });
       vd.onended = () => { $('vbrimTap').hidden = false; L.addEventListener('click', close, { once: true }); };
-      vd.onerror = () => { box.innerHTML = vImg(VMAX); $('vbrimTap').hidden = false; L.addEventListener('click', close, { once: true }); };
+      vd.onerror = () => { if (!played) { played = true; vSound('brim', 0); } box.innerHTML = vImg(VMAX); $('vbrimTap').hidden = false; L.addEventListener('click', close, { once: true }); };
+      vd.lastElementChild.onerror = vd.onerror;
       $('vbrimTap').hidden = true; box.replaceChildren(vd); const p = vd.play(); if (p && p.catch) p.catch(vd.onerror);
       setTimeout(() => L.addEventListener('click', close, { once: true }), 1500); // 途中でも押せば閉じる
     });
@@ -187,7 +202,7 @@
   // 器の音（WebAudio でその場で作る。試しの音は共有フォルダ vessel/ の plop.py・overflow_snd.py）。
   // 最後の部屋の動画と同じく「♪ 音を出す」を押していなくても鳴らす。「♪ 止める」を押した人（muted）には鳴らさない
   let vbrimStop = null;
-  function vSound(kind) {
+  function vSound(kind, lead) {   // lead：しずくが水面に入るまでの秒（動画に合わせる。動画なしで鳴らすときは 0）
     if (muted || !ac) return;
     try { ac.resume(); } catch (e) { /* 鳴らなくても遊べる */ }
     const t0 = ac.currentTime + .02, out = ac.createGain(); out.gain.value = .7; out.connect(ac.destination);
@@ -201,7 +216,7 @@
       n.buffer = b; n.connect(lp).connect(g).connect(out); n.start(t);
       bubble(400, f1, t, .24, .55); bubble(740, 1850, t + .088, .15, .22);
     };
-    const T = kind === 'brim' ? 16 / 24 : 16 / 24;   // しずくが水面に入る時刻（動画の16コマ目）
+    const T = lead == null ? 16 / 24 : lead;   // しずくが水面に入る時刻（動画の16コマ目）
     if (kind === 'drop') { plink(t0 + T); bel(1318.5, t0 + T + .04, 1.6, .12); bel(1975.5, t0 + T + .16, 1.4, .08); bel(2637, t0 + T + .3, 1.1, .05); return; }
     // あふれる：ポチャン → 光が満ちる和音（ニ長調）→ 流れに合わせて鈴が上へ連なる → 台にたまる低い響き → いちばん明るい所で鈴と和音
     plink(t0 + T, 1150); bel(1174.7, t0 + T + .04, 1.6, .12);
@@ -1288,7 +1303,7 @@
     ROOM = tonight(new Date()); sel = []; cur = 0; at = 'door'; pos = 0; page = 0;
     busy = false; ended = false; endArm = false; keyed = false; got = []; doorKeyed = []; doorPics.forEach(u => u && URL.revokeObjectURL(u)); doorPics = []; guide = null; passed = false; hikariLit = null; film = null; lastLit = false; filmed = false;
     $('trialNote').hidden = !trial;
-    $('deck').hidden = true; storyP = null; preload();
+    $('deck').hidden = true; storyP = null; preload(); vWarm(vessel().light + 1);   // 最初のしずくを先に読んでおく
   }
   $('tonight').onclick = () => {
     beginNight(dpick.map(i => Object.assign({}, ZK[i], { used: false })));
