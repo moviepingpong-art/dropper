@@ -57,4 +57,18 @@ if ! "$PY" tools/make-monster-langs.py --check >&2; then
   exit 1
 fi
 
+# 動画（.webm / .mp4）がスマホで再生できる形式か（2026-11-03〜。灯火の器の WebM が 4:4:4 で、スマホで動かなかった）
+# コミットに入る動画だけを見る。ffprobe が無ければ check-videos.py が警告だけ出して通す
+VIDS=$(git diff --cached --name-only --diff-filter=ACMR -- '*.webm' '*.mp4')
+if [ -n "$VIDS" ]; then
+  # shellcheck disable=SC2086
+  if ! "$PY" tools/check-videos.py $VIDS; then
+    echo "" >&2
+    echo "pre-commit: 上の動画はスマホで再生できません（PC では動くので気づきにくい）。" >&2
+    echo "  ffmpeg に -pix_fmt yuv420p を付けて書き出し直してから、コミットしてください。" >&2
+    echo "" >&2
+    exit 1
+  fi
+fi
+
 exit 0
