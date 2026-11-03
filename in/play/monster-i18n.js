@@ -1016,6 +1016,9 @@
     filmPlay: '▶ 開始',
     filmSkip: '略過 ›',
     filmAgain: '▶ 再看一次開場',
+    guideAgain: '▶ 觀看使用說明影片',
+    guideAria: '使用說明影片',
+    guideClose: '關閉 ✕',
     filmAria: '開場影片',
     // オープニングの前の物語（2026-10-27〜）。段落の中の \n で行を分ける。storyVoice は金の大きな一言、storyEnd の2行目は金
     story: ['在世界上的四座美術館裡，\n沉睡著許多作品。', '它們曾經在人們身邊生活。\n餐桌上的花瓶。喜慶之日的項鍊。窗邊的畫。', '有人創作了它們，\n也有人珍惜地傳承下來。', '如今，它們在典藏庫安靜的架子上，\n思念著那些日子，沉睡著。'],
@@ -1281,6 +1284,9 @@
     filmPlay: '▶ Bắt đầu',
     filmSkip: 'Bỏ qua ›',
     filmAgain: '▶ Xem lại đoạn mở đầu',
+    guideAgain: '▶ Xem video hướng dẫn',
+    guideAria: 'Video hướng dẫn',
+    guideClose: 'Đóng ✕',
     filmAria: 'Phim mở đầu',
     // オープニングの前の物語（2026-10-27〜）。段落の中の \n で行を分ける。storyVoice は金の大きな一言、storyEnd の2行目は金
     story: ['Trong bốn bảo tàng trên thế giới,\nnhiều tác phẩm đang say ngủ.', 'Xưa kia, chúng từng sống bên con người.\nBình hoa trên bàn ăn. Chuỗi vòng ngày vui. Bức tranh bên cửa sổ.', 'Có người đã làm ra chúng,\nvà có người đã nâng niu chúng.', 'Giờ đây, chúng ngủ trên những kệ yên tĩnh trong kho,\nnhớ về những ngày ấy.'],
@@ -1520,6 +1526,9 @@
     filmPlay: '▶ Begin',
     filmSkip: 'Overslaan ›',
     filmAgain: '▶ Bekijk de opening opnieuw',
+    guideAgain: '▶ Bekijk de uitlegvideo',
+    guideAria: 'Uitlegvideo',
+    guideClose: 'Sluiten ✕',
     filmAria: 'Openingsfilm',
     // オープニングの前の物語（2026-11-01〜）。段落の中の \n で行を分ける。storyVoice は金の大きな一言、storyEnd の2行目は金
     story: ['In vier musea over de hele wereld\nslapen vele kunstwerken.', 'Ooit leefden ze naast de mensen.\nEen vaas op tafel. Een feestelijke ketting. Een schilderij bij het raam.', 'Iemand maakte ze,\nen iemand anders hield van ze.', 'Nu slapen ze op stille planken in het depot\nen denken terug aan die dagen.'],

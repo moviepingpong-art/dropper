@@ -2374,7 +2374,7 @@
   renderDex();
   $('filmAgain').addEventListener('click', opening);
   // 使い方の動画：言語ごとの会話の動画がある言語だけ（in は英語版）。押したときだけ読み込む（当方のサーバーの mp4。外へは送らない）
-  const GUIDE = { ja: 'ja', en: 'en', in: 'en', ko: 'ko' }[LANG];
+  const GUIDE = { ja: 'ja', en: 'en', in: 'en', ko: 'ko', 'zh-hant': 'zh-hant', vi: 'vi', nl: 'nl' }[LANG];
   if (GUIDE && $('guideAgain')) {
     const gf = $('guideFilm'), gv = $('guideV');
     gv.poster = '/play/gallery/guide-' + GUIDE + '.jpg';
