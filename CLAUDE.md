@@ -211,6 +211,16 @@ git config core.hooksPath tools/hooks
 
 どうしても止めたくないときは `git commit --no-verify`。
 
+**同じフックが、コミットに入る動画（`.webm` / `.mp4`）の形式も確かめる**（`tools/check-videos.py`、2026-11-03〜）。
+色は `yuv420p` だけ・WebM は VP8／VP9 Profile 0・MP4 は H.264。2026-11-03 に灯火の器の WebM だけが 4:4:4（`gbrp`）で、
+**PC では動くのにスマホでは静止画のまま・音も出なかった**（#117）。PNG のコマから ffmpeg で書き出すと、`-pix_fmt yuv420p`（か `format=yuv420p`）を付けないと 4:4:4 になる。
+ffprobe が無い PC では警告だけで通るので、動画を足したら `python tools/check-videos.py` で全部を確かめる。
+
+ページで動画を流すときの決め（同じ日から）：
+- `<source>` は **MP4 を先**に並べる（どの端末でも読める）
+- 読み込み中に枠を空にしない（前の絵を残し、流れ出してから見せる）。流れない端末は数秒であきらめて絵に進む
+- **音を動画の再生だけに頼らない**（流れなくても音は鳴らす）。`night-app.js` の `vClip()` が見本
+
 ## 文言の追加・変更
 
 - 文言はすべて `src/i18n/{ja,en,in}.json`。テンプレートに直書きしない。

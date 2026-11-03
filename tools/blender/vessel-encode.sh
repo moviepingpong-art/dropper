@@ -6,6 +6,7 @@
 #   python3 vessel-drop.py -- <作業>/d4 4 5 400 32         （止まっても同じ命令で続きから）
 #   python3 vessel-overflow.py -- <作業>/flow 400 32
 # 絵は透明のまま（にじみも透明に）、動画は器の地の色 #121624 を焼きこむ（ページの .vclip・.vbrimv と同じ色）
+# WebM は -pix_fmt yuv420p を付ける（2026-11-03。付けないと 4:4:4 になり、スマホが読めず、しずくも音も出なかった）
 set -e
 W=$1; HERE=$(cd "$(dirname "$0")" && pwd); OUT=$HERE/../../play/gallery/vessel; mkdir -p "$OUT"
 T=$(mktemp -d)
@@ -24,7 +25,7 @@ for f in range(n):
     im = Image.open(f'{dst}/g.png'); bg = Image.new('RGB', im.size, (18, 22, 36)); bg.paste(im, (0, 0), im); bg.save(f'{dst}/{f:04d}.png')
 for f in range(n, n + 8): Image.open(f'{dst}/{n - 1:04d}.png').save(f'{dst}/{f:04d}.png')   # 終わりを少し止める
 PY
-  ffmpeg -y -loglevel error -framerate 24 -i "$T/c/%04d.png" -vf "scale=400:-2" -c:v libvpx-vp9 -b:v 0 -crf 36 -row-mt 1 -an "$OUT/$2.webm"
+  ffmpeg -y -loglevel error -framerate 24 -i "$T/c/%04d.png" -vf "scale=400:-2" -c:v libvpx-vp9 -pix_fmt yuv420p -b:v 0 -crf 36 -row-mt 1 -an "$OUT/$2.webm"
   ffmpeg -y -loglevel error -framerate 24 -i "$T/c/%04d.png" -vf "scale=400:-2" -c:v libx264 -pix_fmt yuv420p -crf 24 -movflags +faststart -an "$OUT/$2.mp4"
 }
 for L in 0 1 2 3 4 5 6 7 8; do clip "$W/d$L" "drop$L" 52; done

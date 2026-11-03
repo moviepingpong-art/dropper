@@ -30,6 +30,14 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'G-PQPKYYYXKG');
+  var launchMode = 'browser';
+  // Store 版（PWABuilder・新しい Edge）は window.Windows が見えないので、起動したときの referrer でも見分け、同じタブの中では覚えておく
+  var fromStore = false;
+  try { fromStore = document.referrer.indexOf('app-info://platform/microsoft-store') === 0 || sessionStorage.getItem('launch_mode') === 'store_app'; } catch (e) {}
+  if (typeof window.Windows !== 'undefined' || fromStore) launchMode = 'store_app';
+  else if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) launchMode = 'installed_pwa';
+  try { if (launchMode === 'store_app') sessionStorage.setItem('launch_mode', 'store_app'); } catch (e) {}
+  gtag('set', 'user_properties', { launch_mode: launchMode });
 </script>
 <script>window.LANG = 'vi';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -143,7 +151,9 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .vessel .vsl{width:52px;height:auto;display:block;filter:drop-shadow(0 0 6px rgba(243,207,122,.18))}
 .vessel .vtx{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
 .vclip{width:150px;margin:6px auto 0;border-radius:14px;overflow:hidden;background:#121624;box-shadow:0 0 0 1px rgba(201,164,92,.25)}
+.vclip{position:relative}
 .vclip img,.vclip video{display:block;width:100%;height:auto}
+.vclip video{position:absolute;inset:0;height:100%;opacity:0;transition:opacity .15s}.vclip video.on{opacity:1}
 .vtoast .vclip{width:104px;margin:2px auto}
 .layer.vbrim{z-index:60;align-items:center;background:rgba(6,8,16,.9);display:flex;align-items:center;justify-content:center}
 .layer.vbrim[hidden]{display:none}
@@ -580,6 +590,6 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 <script src="monster-i18n.js?v=34"></script>
 <script src="night-i18n.js?v=35"></script>
 <script src="night-film.js?v=26"></script>
-<script src="night-app.js?v=50"></script>
+<script src="night-app.js?v=51"></script>
 </body>
 </html>
