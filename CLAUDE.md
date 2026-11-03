@@ -53,6 +53,8 @@ GitHub Pages で公開している静的サイト。公開URL: https://dropper-t
 - **7言語（2026-10-17〜。オランダ語 `nl` は 2026-11-01〜。同じ日の朝に出したデンマーク語 `da` と入れかえた＝重吉さんの決め）。親は日本語版 `play/`。** `en/play/`・`in/play/`・`ko/play/`・`zh-hant/play/`・`vi/play/`・`nl/play/` は
   `python tools/make-monster-langs.py` が日本語版から作る（違うのは head と `window.LANG` の1行だけ）。
   **en/ in/ の側を直接直さない**（次に走らせたとき消える）。コミット前のフックが、作り直した物と同じかを確かめる
+- **PWA（Microsoft Store 向け、2026-11-03〜）は日本語版 `play/spirit.html` だけ**：`play/manifest.webmanifest`（scope `/play/`）・`play/sw.js`（静的ファイルだけネットワーク優先でキャッシュ。キャッシュ名 `tomoshibi-v1`、方針を変えたら上げる）・`play/icons/`（192・512・マスカブル512）。
+  ほかの言語の spirit.html では `make-monster-langs.py` の `PWA_LINES` が manifest と登録の行を外す。**manifest を変えたら Store 版の作り直し（PWABuilder）が要る**
 - ページは3つのファイル：`spirit.html`（画面）・`monster-i18n.js`（辞書）・`monster-app.js`（動き）。
   JS は3フォルダで**バイト同一**。中身を変えたら `?v=` を上げる
 - 辞書：キーは **ja と en の両方**に足す。`in` は en の上に Hinglish の言葉だけを重ねる
