@@ -55,6 +55,10 @@ GitHub Pages で公開している静的サイト。公開URL: https://dropper-t
   **en/ in/ の側を直接直さない**（次に走らせたとき消える）。コミット前のフックが、作り直した物と同じかを確かめる
 - **PWA（Microsoft Store 向け、2026-11-03〜）は日本語版 `play/spirit.html` だけ**：`play/manifest.webmanifest`（scope `/play/`）・`play/sw.js`（静的ファイルだけネットワーク優先でキャッシュ。キャッシュ名 `tomoshibi-v1`、方針を変えたら上げる）・`play/icons/`（192・512・マスカブル512）。
   ほかの言語の spirit.html では `make-monster-langs.py` の `PWA_LINES` が manifest と登録の行を外す。**manifest を変えたら Store 版の作り直し（PWABuilder）が要る**
+  - **Microsoft Store に出している（2026-11-03 申請、Store ID `9PJ1QPNP6HX1`・発行者「てつや工房」）。** ホスト型の PWA で、パッケージは公開サイトをそのまま出すので、サイトの更新はそのままアプリに出る（中身だけなら申請し直さない）。
+    その代わり **manifest・`sw.js`・`play/icons/` の3点・日本語版 spirit.html の PWA の3行（ほかの言語には入れない）を壊さない**。
+    **`privacy.html` は Store の申請にもプライバシーポリシーとして登録した**ので残す（Google の審査と同じく、URL を変えない）。
+    パッケージを作り直すときは、**番号を今の msix 1.0.1.0 より上げる**（同じ番号では受け付けられない）。申請の値（Package ID など）は保管庫の `30_Refs/ともしびの美術館.md`
 - ページは3つのファイル：`spirit.html`（画面）・`monster-i18n.js`（辞書）・`monster-app.js`（動き）。
   JS は3フォルダで**バイト同一**。中身を変えたら `?v=` を上げる
 - 辞書：キーは **ja と en の両方**に足す。`in` は en の上に Hinglish の言葉だけを重ねる
