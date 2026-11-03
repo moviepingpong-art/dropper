@@ -59,6 +59,8 @@ GitHub Pages で公開している静的サイト。公開URL: https://dropper-t
     その代わり **manifest・`sw.js`・`play/icons/` の3点・日本語版 spirit.html の PWA の3行（ほかの言語には入れない）を壊さない**。
     **`privacy.html` は Store の申請にもプライバシーポリシーとして登録した**ので残す（Google の審査と同じく、URL を変えない）。
     パッケージを作り直すときは、**番号を今の msix 1.0.1.0 より上げる**（同じ番号では受け付けられない）。申請の値（Package ID など）は保管庫の `30_Refs/ともしびの美術館.md`
+  - **フリーゲーム夢現にも出している（2026-11-03 掲載、https://freegame-mugen.jp/browser/game_16044.html）。** リンクだけの掲載で、日本語版 `play/spirit.html` へ送る。
+    **`/play/spirit.html` の URL（場所・ファイル名）を変えるときは、先に重吉さんに知らせる**（夢現の掲載リンクと Store 版が切れる。掲載の直しは夢現の制作者のマイページから）
 - ページは3つのファイル：`spirit.html`（画面）・`monster-i18n.js`（辞書）・`monster-app.js`（動き）。
   JS は3フォルダで**バイト同一**。中身を変えたら `?v=` を上げる
 - 辞書：キーは **ja と en の両方**に足す。`in` は en の上に Hinglish の言葉だけを重ねる
