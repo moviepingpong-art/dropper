@@ -30,6 +30,10 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'G-PQPKYYYXKG');
+  var launchMode = 'browser';
+  if (typeof window.Windows !== 'undefined') launchMode = 'store_app';
+  else if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) launchMode = 'installed_pwa';
+  gtag('set', 'user_properties', { launch_mode: launchMode });
 </script>
 <script>window.LANG = 'ko';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
