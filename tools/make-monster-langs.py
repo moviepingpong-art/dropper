@@ -219,6 +219,15 @@ REDIRECTS = [('monster.html', 'spirit.html', 'The Lantern Museum'), ('battle.htm
 GONE_LANGS = {'da': 'nl'}
 
 
+# PWA（Microsoft Store 向け、2026-11-03〜）は日本語版 play/spirit.html だけ。
+# manifest の scope は /play/ なので、/en/play/ などはその外。ほかの言語ではこの3行を外す
+PWA_LINES = [
+    '<link rel="manifest" href="/play/manifest.webmanifest">\n',
+    '<meta name="theme-color" content="#0b0d16">\n',
+    "<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/play/sw.js').catch(function(){})});}</script>\n",
+]
+
+
 def build():
     out = {}
     for name, ja_head, langs in PAGES:
@@ -230,6 +239,8 @@ def build():
             s = ja
             for k, v in ja_head.items():
                 s = s.replace(v, head[k])
+            for line in PWA_LINES:
+                s = s.replace(line, '')
             out[ROOT / lang / 'play' / name] = s.encode('utf-8')
     for old, to, title in REDIRECTS:
         out[SRC / old] = redirect_page('/', to, title).encode('utf-8')
