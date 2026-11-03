@@ -1458,7 +1458,7 @@
     }
   }
   // 夜明けの映像（「ありがとうございました。またお会いしましょう。」）の曲（2026-11-01〜 重吉さんの決め「3C」）：専用の曲（night-film.js の DAWN_PLAN・NightFilm.dawn）を
-  // 映像に合わせて頭から流し、館が光り輝く所でいちばん満ち（曲の中でホ長調へ上がる）、薄れるのに合わせて4秒で小さくして止める。
+  // 映像に合わせて頭から流し、館が光り輝く所でいちばん満ち（曲の中でホ長調へ上がる）、薄れはじめて1秒あとから4秒で小さくして止める。
   // 最後の部屋の動画と同じく、「♪ 音を出す」を押していなくても流す。「♪ 止める」を押した人（muted）には流さない。夜のページの曲は、その間止める
   let liftOv = null, dawnMus = null, dawnSong = null;
   function stopDawn() { if (dawnSong) { dawnSong.stop(); dawnSong = null; } }
@@ -1467,7 +1467,7 @@
       stopDawn(); if (on && ac) bgm(false);
       if (muted || !ac || !window.NightFilm || !window.NightFilm.dawn) return;
       ac.resume(); try { dawnSong = window.NightFilm.dawn(ac, e || 0); } catch (err) { dawnSong = null; /* 音が出なくても遊べる */ }
-    } else if (k === 'out' && dawnSong) { dawnSong.fade(4); dawnSong = null; }
+    } else if (k === 'out' && dawnSong) { dawnSong.fade(4, 1); dawnSong = null; }  // 映像が薄れはじめて1秒あとから、4秒で小さくする（2026-11-04 重吉さん「もう1秒長く」）
   }
   function bgm(play) { if (play) { nextT = ac.currentTime + .05; step = 0; timer = setInterval(sched, 60); } else { clearInterval(timer); timer = null; } }
   function sfx(k) {
