@@ -18,6 +18,10 @@
       filmSkip: 'とばす ›',
       filmAgain: '▶ オープニングをもう一度見る',
       filmAria: 'オープニングの映像',
+      // 使い方の動画（2026-11-02〜）。日本語の会話なので日本語版だけに出す（monster-app.js の guideAgain）
+      guideAgain: '▶ 使い方の動画を見る',
+      guideAria: '使い方の動画',
+      guideClose: 'とじる ✕',
       // オープニングの前の物語（2026-10-27〜）。段落の中の \n で行を分ける。storyVoice は金の大きな一言、storyEnd の2行目は金
       story: ['世界の4つの美術館に、\nたくさんの作品が眠っています。', 'かつては、人のそばで生きていました。\n食卓の花瓶。祝いの日の首飾り。窓辺の絵。', '作った人がいて、\n大切に受けついだ人がいました。', 'いまは収蔵庫の静かな棚で、\nあの日々を思いながら眠っています。'],
       storyVoice: '「もう一度だけ、\nだれかに、見てほしい」',
@@ -311,6 +315,9 @@
       filmSkip: 'Skip ›',
       filmAgain: '▶ Watch the opening again',
       filmAria: 'Opening film',
+      guideAgain: '▶ How-to video (Japanese)',
+      guideAria: 'How-to video',
+      guideClose: 'Close ✕',
       // オープニングの前の物語（2026-10-27〜）。段落の中の \n で行を分ける。storyVoice は金の大きな一言、storyEnd の2行目は金
       story: ['In four museums around the world,\nmany works of art lie sleeping.', 'Once, they lived beside people.\nA vase on the table. A festive necklace. A painting by the window.', 'Someone made each one,\nand others cherished it.', 'Now they sleep on quiet shelves in storage,\nremembering those days.'],
       storyVoice: '“Just once more,\nI wish someone would see me.”',
