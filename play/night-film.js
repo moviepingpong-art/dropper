@@ -227,6 +227,18 @@
     };
     const timp = (n, t, v) => { t += T0; const o = ac.createOscillator(), e = ac.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(N(n) * 1.04, t); o.frequency.exponentialRampToValueAtTime(N(n), t + .08); e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .01); e.gain.exponentialRampToValueAtTime(.0001, t + 1.4); o.connect(e); e.connect(master); e.connect(wet); o.start(t); o.stop(t + 1.5); };
     const bass = (n, t, d, v) => { t += T0; const o = ac.createOscillator(), e = ac.createGain(); o.type = 'sine'; o.frequency.value = N(n); e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .6); e.gain.setValueAtTime(v, t + d - .4); e.gain.exponentialRampToValueAtTime(.0001, t + d + .6); o.connect(e); e.connect(master); o.start(t); o.stop(t + d + .7); };
+    // 2026-11-04〜 お別れの映像の曲（4拍子の、前へ進む曲）の楽器：バスドラム・ハイハット・スネア・シンバル・刻むシンセ
+    const kick = (t, v) => { t += T0; const o = ac.createOscillator(), e = ac.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(44, t + .12); e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .004); e.gain.exponentialRampToValueAtTime(.0001, t + .38); o.connect(e); e.connect(master); o.start(t); o.stop(t + .4); };
+    const hit = (t, v, d, type, f, q = .7, rv = false) => { t += T0; const s = ac.createBufferSource(), b = ac.createBiquadFilter(), e = ac.createGain(); s.buffer = noise; b.type = type; b.frequency.value = f; b.Q.value = q; e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .003); e.gain.exponentialRampToValueAtTime(.0001, t + d); s.connect(b); b.connect(e); e.connect(master); if (rv) e.connect(wet); s.start(t, Math.random()); s.stop(t + d + .05); };
+    const hat = (t, v) => hit(t, v, .05, 'highpass', 7500);
+    const snare = (t, v) => { hit(t, v, .16, 'bandpass', 1900, .6, true); const tt = t + T0, o = ac.createOscillator(), e = ac.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(200, tt); o.frequency.exponentialRampToValueAtTime(150, tt + .08); e.gain.setValueAtTime(.0001, tt); e.gain.exponentialRampToValueAtTime(v * .6, tt + .003); e.gain.exponentialRampToValueAtTime(.0001, tt + .12); o.connect(e); e.connect(master); o.start(tt); o.stop(tt + .14); };
+    const crash = (t, v) => hit(t, v, 2.6, 'highpass', 4200, .5, true);
+    const pulse = (n, t, d, v, open = 1600) => {  // 刻むシンセ：のこぎりの音2つを、すぐ閉じるフィルターに通す
+      t += T0; const e = ac.createGain(), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 3; lp.frequency.setValueAtTime(open, t); lp.frequency.exponentialRampToValueAtTime(260, t + d);
+      e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .005); e.gain.exponentialRampToValueAtTime(.0001, t + d);
+      [-7, 7].forEach(dt => { const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = N(n); o.detune.value = dt; o.connect(lp); o.start(t); o.stop(t + d + .05); });
+      lp.connect(e); e.connect(master); e.connect(echo);
+    };
     // 設計図の楽器で鳴らす：旋律は 鈴・ハープ、和音は 弦・オルガン・声。どちらも選ばれていなければ、鈴・弦を小さく
     const MEL = inst.filter(x => x === 'bell' || x === 'harp'), PAD = inst.filter(x => x === 'strings' || x === 'organ' || x === 'voice');
     const mel = (n, t, d, v) => { const k = MEL.length ? 1 / Math.sqrt(MEL.length) : .6; (MEL.length ? MEL : ['bell']).forEach(x => x === 'harp' ? harp(n, t, d * .7, v * k) : bell(n, t, d, v * k)); };
@@ -239,7 +251,7 @@
       Eb: { b: 51, t: [58, 63, 67, 69], pad: [51, 55, 58, 62] }, Gm: { b: 43, t: [58, 62, 65, 67], pad: [43, 50, 53, 58] } };
     const ARP = [0, 1, 2, 3, 4, 3, 2, 1, 0, 2, 1, 3, 2, 4, 3, 1];
     const arp = (c, t0, t1, v0, v1, rate = 1, pat = ARP) => { for (let t = t0, i = 0; t < t1; t += STEP / rate, i++) { const a = pat[i % pat.length], k = (t - t0) / (t1 - t0); spark(a === 4 ? c.t[0] + 12 : c.t[a], t, v0 + (v1 - v0) * k); } };
-    plan({ whistle, piano, timp, bell, haze, spark, sub, boom: (t, v) => boom(t, v * soft), riser: (t, d, v) => riser(t, d, v * soft), arp, CH, STEP, mel, pad, voice, harp, choir, solo, bass, organ, inst });
+    plan({ whistle, piano, timp, kick, hat, snare, crash, pulse, bell, haze, spark, sub, boom: (t, v) => boom(t, v * soft), riser: (t, d, v) => riser(t, d, v * soft), arp, CH, STEP, mel, pad, voice, harp, choir, solo, bass, organ, inst });
     return { T0, stop: () => { master.gain.cancelScheduledValues(ac.currentTime); master.gain.setTargetAtTime(0, ac.currentTime, .15); } };
   }
   // その夜のカードから決まる乱数（同じ夜の同じ7体なら同じ。カードか日付が1つ違えば別の曲・別の灯り）
@@ -315,31 +327,45 @@
     if (has('organ')) organ([50, 57, 62, 66], u1, 7, .014);
     [86, 81, 78, 74, 69, 66, 62].forEach((n, i) => bell(n, u1 + .1 + i * .22, 4, .06));
   };
-  // お別れの映像の曲（夜明けの20秒の映像・2026-11-01〜 重吉さんの決め「3C」）：最後の部屋の曲（ニ長調）から続く、ケルトの3拍子。
-  // 参考にした曲の雰囲気（映画の終わりの、ピアノと弦と遠い太鼓に、ケルトの笛が飾りの音をつけて旋律を歌い、大きく満ちる曲）で、曲そのものは写さず一から作った。
-  // 1小節 2.5秒の3拍子。ロ短調から始まり Bm → G → D → A → G → B7、館が光り輝く 15秒でホ長調へ一段上がっていちばん満ちる（直前に太鼓の連打）。
-  // 笛は始めから、低い音から1オクターブ跳ねて入る。ページが 18秒から4秒で小さくして止める
-  const DAWN_PLAN = ({ whistle, piano, timp, choir, haze: strings, bass, bell, harp }) => {
-    const b = 2.5 / 3, CH = [[47, [54, 59, 62, 66]], [43, [55, 59, 62, 67]], [50, [57, 62, 66, 69]], [45, [57, 61, 64, 69]], [43, [55, 59, 62, 67]], [47, [54, 57, 63, 66]]];
-    CH.forEach(([r, c], i) => { const t = i * 2.5, g = Math.min(1, .45 + i * .11);
-      piano(r, t, 2.4, .07); piano(c[1] + 12, t + b, 1.2, .045); piano(c[2] + 12, t + b, 1.2, .04); piano(c[1] + 12, t + 2 * b, 1.2, .04); piano(c[3] + 12, t + 2 * b, 1.2, .035);
-      bass(r - 12 + (r < 44 ? 12 : 0), t, 2.5, .06 * g); if (i >= 1) strings(c, t, 2.6, .012 * g, 1300 + i * 250); if (i >= 3) choir(c.slice(0, 3), t, 2.7, .012 * g, 'oo');
-      if (i >= 1) { timp(r < 44 ? r : r - 12, t, .09 + .02 * i); timp(r < 44 ? r : r - 12, t + b * 1.5, .04 + .01 * i); timp(r < 44 ? r : r - 12, t + 2 * b, .05 + .01 * i); } });
-    whistle([[59, 0, .4], [71, .42, 1.15, 73], [69, 1.67, .4], [66, 2.08, .4], [67, 2.5, .6], [71, 3.12, .2], [74, 3.33, 1.2, 76], [71, 4.58, .4],
-      [69, 5, .6], [66, 5.62, .2], [69, 5.83, .4], [74, 6.25, 1.2, 76], [76, 7.5, .6], [73, 8.12, .2], [69, 8.33, .8], [64, 9.17, .8],
-      [71, 10, .4], [74, 10.42, .4], [79, 10.83, 1.2, 81], [78, 12.08, .4], [75, 12.5, .6], [76, 13.12, .2], [78, 13.33, .8], [81, 14.17, .4], [80, 14.58, .4],
-      [83, 15, 1.6, 85], [88, 16.6, 3.2, 90]], .065);
-
-    const E = (t) => { choir([64, 68, 71, 76, 80], t, 5, .028, 'ah'); strings([52, 59, 64, 68, 71, 76], t, 5, .022, 3200); bass(40, t, 5, .11); timp(40, t, .24);
-      [88, 83, 80, 76, 71, 68, 64].forEach((n, i) => bell(n, t + .15 + i * .24, 3.6, .055)); [76, 80, 83, 88, 92].forEach((n, i) => harp(n, t + 2.2 + i * .14, 2, .045)); };
-    E(15); for (let k = 0; k < 18; k++) timp(47, 13.8 + k * .065, .02 + k * .007);
+  // お別れの映像の曲（夜明けの20秒の映像・2026-11-04〜 重吉さんの決め）：前へ進む4拍子の曲（ニ長調・128 の速さ・1小節 1.875秒）。
+  // 参考にした曲の雰囲気（和音がふくらんで入り、8分の刻みとバスドラムで前へ進む、明るく力強い曲）で、曲そのものは写さず一から作った。
+  // 始めの1小節は A の和音がふくらむだけ → D | A/C# | G | A | Bm | G | Asus→A で刻み・太鼓・旋律が足されていく →
+  // 館が光り輝く 15秒（8小節目の頭）でシンバルと一緒にホ長調へ一段上がり、いちばん満ちる（直前にスネアの連打）。ページが 18秒から4秒で小さくして止める
+  const DAWN_PLAN = ({ kick, hat, snare, crash, pulse, solo, choir, haze: strings, bass, bell, harp, riser }) => {
+    const B = 1.875, q = B / 4, e8 = q / 2;
+    const CH = [[45, [57, 64, 69, 71]], [38, [62, 66, 69, 74]], [37, [61, 64, 69, 73]], [43, [62, 67, 71, 74]], [45, [61, 64, 69, 73]], [47, [62, 66, 71, 74]], [43, [62, 67, 71, 74]], [45, [62, 64, 69, 74]]];
+    strings(CH[0][1], 0, B + .3, .02, 2600); bass(CH[0][0] - 12, .3, B - .2, .05); riser(.2, B - .2, .03);
+    CH.forEach(([r, c], i) => { if (!i) return; const t = i * B, g = Math.min(1, .55 + i * .07);
+      strings(c, t, B + .15, .014 * g, 1500 + i * 220); bass(r - 12 + (r < 40 ? 12 : 0), t, B, .07 * g); if (i >= 5) choir(c.slice(0, 3), t, B + .2, .013 * g, 'ah');
+      for (let k = 0; k < 8; k++) { const tt = t + k * e8; pulse(r + (k % 2 ? 24 : 12), tt, e8 * .9, (.02 + .002 * i) * (k % 2 ? .75 : 1), 1100 + i * 150);
+        if (i >= 3 && k % 2) hat(tt, .02 + .003 * i); }
+      for (let k = 0; k < 4; k++) { if (i < 3 && k % 2) continue; kick(t + k * q, .2 + .03 * i); if (i >= 5 && k % 2) snare(t + k * q, .05); } });
+    // 7小節目（Asus）の終わりで A へ解けて、スネアの連打で 15秒へ
+    strings([61, 64, 69, 73], 7 * B + 2 * q, 2 * q, .018, 3000);
+    for (let k = 0; k < 8; k++) snare(7 * B + 2 * q + k * e8 / 2, .025 + k * .008);
+    riser(7 * B, B, .05);
+    solo([[78, 1 * B, q * 1.5], [76, 1 * B + q * 1.5, q * .5], [74, 1 * B + q * 2, q], [69, 1 * B + q * 3, q],
+      [73, 2 * B, q * 1.5], [74, 2 * B + q * 1.5, q * .5], [76, 2 * B + q * 2, q * 2],
+      [74, 3 * B, q], [71, 3 * B + q, q], [74, 3 * B + q * 2, q], [79, 3 * B + q * 3, q],
+      [78, 4 * B, q * 1.5], [76, 4 * B + q * 1.5, q * .5], [76, 4 * B + q * 2, q * 2],
+      [78, 5 * B, q], [81, 5 * B + q, q], [83, 5 * B + q * 2, q * 1.5], [81, 5 * B + q * 3.5, q * .5],
+      [79, 6 * B, q], [78, 6 * B + q, q], [79, 6 * B + q * 2, q], [83, 6 * B + q * 3, q],
+      [81, 7 * B, q * 2], [83, 7 * B + q * 2, q], [85, 7 * B + q * 3, q], [88, 15, 3.4]], .06);
+    [[69, 1 * B], [73, 2 * B], [74, 3 * B], [73, 4 * B], [78, 5 * B], [74, 6 * B], [76, 7 * B]].forEach(([n, t]) => bell(n + 12, t, 1.8, .03));
+    // 15秒：ホ長調へ。シンバル・合唱「アー」・弦・低い響き・鈴が降りて、ハープが上る。刻みとバスドラムは続く（ページが小さくする）
+    const t = 15, r = 40, c = [64, 68, 71, 76, 80];
+    crash(t, .12); choir(c, t, 5, .028, 'ah'); strings([52, 59, 64, 68, 71, 76], t, 5, .022, 3400); bass(r, t, 5, .11);
+    [88, 83, 80, 76, 71, 68, 64].forEach((n, i) => bell(n, t + .15 + i * .24, 3.6, .05)); [76, 80, 83, 88, 92].forEach((n, i) => harp(n, t + 2.2 + i * .14, 2, .04));
+    for (let k = 0; k < 28; k++) { const tt = t + k * e8; pulse(r + (k % 2 ? 24 : 12), tt, e8 * .9, k % 2 ? .026 : .034, 2000); if (k % 2) hat(tt, .04); if (k % 2 === 0) kick(tt, .4); if (k % 4 === 2) snare(tt, .06); }
   };
   // 夜明けの映像に合わせて鳴らす。ac は、ページが前もって押したときに作った音の場（スマホで音が出るように）。off：映像がすでに進んだ秒
   function dawn(ac, off = 0) {
     const out = ac.createGain(); out.connect(ac.destination);
     const s = score(ac, out, (P => api => { const sh = f => (n, t, ...r) => (t - off > -.05 ? f(n, t - off, ...r) : null);
-      return P(Object.assign({}, api, { piano: sh(api.piano), harp: sh(api.harp), bell: sh(api.bell), bass: sh(api.bass), timp: sh(api.timp), haze: sh(api.haze), choir: sh(api.choir),
-        whistle: (line, v) => { const L = line.map(([n, t, d, g]) => [n, t - off, d, g]).filter(x => x[1] >= 0); if (L.length) api.whistle(L, v); } })); })(DAWN_PLAN), null, 'D', 20);
+      return P(Object.assign({}, api, { harp: sh(api.harp), bell: sh(api.bell), bass: sh(api.bass), haze: sh(api.haze), choir: sh(api.choir), pulse: sh(api.pulse),
+        kick: (t, v) => (t - off > -.05 ? api.kick(t - off, v) : null), hat: (t, v) => (t - off > -.05 ? api.hat(t - off, v) : null), snare: (t, v) => (t - off > -.05 ? api.snare(t - off, v) : null), crash: (t, v) => (t - off > -.05 ? api.crash(t - off, v) : null),
+        riser: (t, d, v) => (t - off > -.05 ? api.riser(t - off, d, v) : null),
+        solo: (line, v) => { const L = line.map(([n, t, d]) => [n, t - off, d]).filter(x => x[1] >= 0); if (L.length) api.solo(L, v); } })); })(DAWN_PLAN), null, 'D', 20);
     return { fade: d => { const t = ac.currentTime; out.gain.cancelScheduledValues(t); out.gain.setValueAtTime(out.gain.value, t); out.gain.linearRampToValueAtTime(0, t + d); setTimeout(() => { try { out.disconnect(); } catch (e) { /* もう外れている */ } }, d * 1000 + 200); },
       stop: () => { s.stop(); setTimeout(() => { try { out.disconnect(); } catch (e) { /* もう外れている */ } }, 600); } };
   }
