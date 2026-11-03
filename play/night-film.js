@@ -330,7 +330,7 @@
   // お別れの映像の曲（夜明けの20秒の映像・2026-11-04〜 重吉さんの決め）：前へ進む4拍子の曲（ニ長調・128 の速さ・1小節 1.875秒）。
   // 参考にした曲の雰囲気（和音がふくらんで入り、8分の刻みとバスドラムで前へ進む、明るく力強い曲）で、曲そのものは写さず一から作った。
   // ドラムと刻むシンセは頭から鳴り、15秒まで少しずつ大きくなる。始めの1小節は A の和音がふくらみ → D | A/C# | G | A | Bm | G | Asus→A で旋律が足されていく →
-  // 館が光り輝く 15秒（8小節目の頭）でシンバルと一緒にホ長調へ一段上がり、いちばん満ちる（直前にスネアの連打）。ページが 18秒から4秒で小さくして止める
+  // 館が光り輝く 15秒（8小節目の頭）でシンバルと一緒にホ長調へ一段上がり、いちばん満ちる（直前にスネアの連打）。ページが 19秒から4秒で小さくして止める（映像が薄れはじめる 18秒より1秒あと）
   const DAWN_PLAN = ({ kick, hat, snare, crash, pulse, solo, choir, haze: strings, bass, bell, harp, riser }) => {
     const B = 1.875, q = B / 4, e8 = q / 2;
     const CH = [[45, [57, 64, 69, 71]], [38, [62, 66, 69, 74]], [37, [61, 64, 69, 73]], [43, [62, 67, 71, 74]], [45, [61, 64, 69, 73]], [47, [62, 66, 71, 74]], [43, [62, 67, 71, 74]], [45, [62, 64, 69, 74]]];
@@ -359,9 +359,9 @@
     [[69, 1 * B], [73, 2 * B], [74, 3 * B], [73, 4 * B], [78, 5 * B], [74, 6 * B], [76, 7 * B]].forEach(([n, t]) => bell(n + 12, t, 1.8, .03));
     // 15秒：ホ長調へ。シンバル・合唱「アー」・弦・低い響き・鈴が降りて、ハープが上る。刻みとバスドラムは続く（ページが小さくする）
     const t = 15, r = 40, c = [64, 68, 71, 76, 80];
-    crash(t, .12); choir(c, t, 5, .028, 'ah'); strings([52, 59, 64, 68, 71, 76], t, 5, .022, 3400); bass(r, t, 5, .11);
+    crash(t, .12); choir(c, t, 6, .028, 'ah'); strings([52, 59, 64, 68, 71, 76], t, 6, .022, 3400); bass(r, t, 6, .11);
     [88, 83, 80, 76, 71, 68, 64].forEach((n, i) => bell(n, t + .15 + i * .24, 3.6, .05)); [76, 80, 83, 88, 92].forEach((n, i) => harp(n, t + 2.2 + i * .14, 2, .04));
-    drums(t, t + 28 * e8);
+    drums(t, t + 36 * e8);  // 2026-11-04 重吉さん「この部分をもう1秒長く」：最後の盛り上がりを1秒のばし、19秒から4秒で小さくする（NightFilm.dawn の fade の hold）
   };
   // 夜明けの映像に合わせて鳴らす。ac は、ページが前もって押したときに作った音の場（スマホで音が出るように）。off：映像がすでに進んだ秒
   function dawn(ac, off = 0) {
@@ -371,7 +371,7 @@
         kick: (t, v) => (t - off > -.05 ? api.kick(t - off, v) : null), hat: (t, v) => (t - off > -.05 ? api.hat(t - off, v) : null), snare: (t, v) => (t - off > -.05 ? api.snare(t - off, v) : null), crash: (t, v) => (t - off > -.05 ? api.crash(t - off, v) : null),
         riser: (t, d, v) => (t - off > -.05 ? api.riser(t - off, d, v) : null),
         solo: (line, v) => { const L = line.map(([n, t, d]) => [n, t - off, d]).filter(x => x[1] >= 0); if (L.length) api.solo(L, v); } })); })(DAWN_PLAN), null, 'D', 20);
-    return { fade: d => { const t = ac.currentTime; out.gain.cancelScheduledValues(t); out.gain.setValueAtTime(out.gain.value, t); out.gain.linearRampToValueAtTime(0, t + d); setTimeout(() => { try { out.disconnect(); } catch (e) { /* もう外れている */ } }, d * 1000 + 200); },
+    return { fade: (d, hold = 0) => { const t = ac.currentTime + hold; out.gain.cancelScheduledValues(ac.currentTime); out.gain.setValueAtTime(out.gain.value, t); out.gain.linearRampToValueAtTime(0, t + d); setTimeout(() => { try { out.disconnect(); } catch (e) { /* もう外れている */ } }, (hold + d) * 1000 + 200); },
       stop: () => { s.stop(); setTimeout(() => { try { out.disconnect(); } catch (e) { /* もう外れている */ } }, 600); } };
   }
   // 最後の通路の曲（12秒）：額縁が掛かる鈴 → 歩く脈 → 光の扉で和音
