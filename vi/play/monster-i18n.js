@@ -18,7 +18,7 @@
       filmSkip: 'とばす ›',
       filmAgain: '▶ オープニングをもう一度見る',
       filmAria: 'オープニングの映像',
-      // 使い方の動画（2026-11-02〜）。日本語の会話なので日本語版だけに出す（monster-app.js の guideAgain）
+      // 使い方の動画（2026-11-02〜）。会話の動画がある言語だけに出す（monster-app.js の GUIDE。in は英語版）
       guideAgain: '▶ 使い方の動画を見る',
       guideAria: '使い方の動画',
       guideClose: 'とじる ✕',
@@ -315,7 +315,7 @@
       filmSkip: 'Skip ›',
       filmAgain: '▶ Watch the opening again',
       filmAria: 'Opening film',
-      guideAgain: '▶ How-to video (Japanese)',
+      guideAgain: '▶ Watch the how-to video',
       guideAria: 'How-to video',
       guideClose: 'Close ✕',
       // オープニングの前の物語（2026-10-27〜）。段落の中の \n で行を分ける。storyVoice は金の大きな一言、storyEnd の2行目は金
