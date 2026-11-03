@@ -2373,13 +2373,15 @@
   window.applyI18n();
   renderDex();
   $('filmAgain').addEventListener('click', opening);
-  // 使い方の動画：日本語の会話なので日本語版だけ。押したときだけ読み込む（当方のサーバーの mp4。外へは送らない）
-  if (LANG === 'ja' && $('guideAgain')) {
+  // 使い方の動画：言語ごとの会話の動画がある言語だけ（in は英語版）。押したときだけ読み込む（当方のサーバーの mp4。外へは送らない）
+  const GUIDE = { ja: 'ja', en: 'en', in: 'en' }[LANG];
+  if (GUIDE && $('guideAgain')) {
     const gf = $('guideFilm'), gv = $('guideV');
+    gv.poster = '/play/gallery/guide-' + GUIDE + '.jpg';
     const close = () => { gv.pause(); gf.classList.add('hidden'); $('guideAgain').focus(); };
     $('guideAgain').classList.remove('hidden');
     $('guideAgain').addEventListener('click', () => {
-      if (!gv.src) gv.src = '/play/gallery/guide-ja.mp4';
+      if (!gv.src) gv.src = '/play/gallery/guide-' + GUIDE + '.mp4';
       gf.classList.remove('hidden'); gv.play().catch(() => {}); $('guideClose').focus();
     });
     $('guideClose').addEventListener('click', close);
