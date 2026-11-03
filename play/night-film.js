@@ -201,33 +201,8 @@
       const z = line[line.length - 1], te = T0 + z[1] + z[2]; e.gain.setTargetAtTime(.0001, te, .5);
       [o, o2, l].forEach(x => { x.start(T0 + line[0][1]); x.stop(te + 3); });
     };
-    // 2026-11-01〜 お別れの映像の曲の楽器：笛（ケルトの笛のように、息の音・遅れてかかる揺れ・前に短い飾りの音）・ピアノ・ティンパニ
-    const whistle = (line, v) => {  // line：[[音, 始まり, 長さ, 飾りの音（無ければ 0）], …]
-      const o = ac.createOscillator(), o2 = ac.createOscillator(), l = ac.createOscillator(), lg = ac.createGain(), e = ac.createGain(), h2 = ac.createGain();
-      o.type = 'sine'; o2.type = 'sine'; h2.gain.value = .12; l.frequency.value = 5.6; lg.gain.value = 0; l.connect(lg); lg.connect(o.detune); lg.connect(o2.detune);
-      const br = ac.createBufferSource(), bf = ac.createBiquadFilter(), bg = ac.createGain(); br.buffer = noise; br.loop = true; bf.type = 'bandpass'; bf.Q.value = 9; bg.gain.value = .0001;
-      br.connect(bf); bf.connect(bg); bg.connect(master); bg.connect(wet);
-      o.connect(e); o2.connect(h2); h2.connect(e); e.gain.value = .0001; e.connect(master); e.connect(wet); e.connect(echo);
-      line.forEach(([n, t, d, g]) => {
-        t += T0; const f = N(n);
-        if (g) { const tg = Math.max(ac.currentTime, t - .07); o.frequency.setValueAtTime(N(g), tg); o2.frequency.setValueAtTime(N(g) * 2, tg); }
-        o.frequency.setTargetAtTime(f, t, .012); o2.frequency.setTargetAtTime(f * 2, t, .012); bf.frequency.setTargetAtTime(f * 2, t, .02);
-        e.gain.setTargetAtTime(v, Math.max(ac.currentTime, t - (g ? .07 : 0)), .04); e.gain.setTargetAtTime(v * .7, t + d * .6, .35);
-        bg.gain.setTargetAtTime(v * .5, Math.max(ac.currentTime, t - .02), .02); bg.gain.setTargetAtTime(v * .12, t + .08, .08);
-        lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(d > 1 ? 18 : 6, t + Math.min(1.2, d * .6));
-      });
-      const z = line[line.length - 1], te = T0 + z[1] + z[2]; e.gain.setTargetAtTime(.0001, te, .6); bg.gain.setTargetAtTime(.0001, te, .3);
-      [o, o2, l, br].forEach(x => { x.start(Math.max(ac.currentTime, T0 + line[0][1] - .1)); x.stop(te + 4); });
-    };
-    const piano = (n, t0, d = 3, v = .1) => {
-      const t = t0 + T0, e = ac.createGain(), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(N(n) * 6, t); lp.frequency.exponentialRampToValueAtTime(N(n) * 2, t + d * .5);
-      e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .004); e.gain.exponentialRampToValueAtTime(v * .35, t + .4); e.gain.exponentialRampToValueAtTime(.0001, t + d);
-      [[1, 'triangle', 1, 0], [2, 'sine', .3, 2], [3, 'sine', .1, -3]].forEach(([m, ty, a, dt]) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = ty; o.frequency.value = N(n) * m; o.detune.value = dt; g.gain.value = a; o.connect(g); g.connect(lp); o.start(t); o.stop(t + d + .05); });
-      lp.connect(e); e.connect(master); e.connect(wet);
-    };
-    const timp = (n, t, v) => { t += T0; const o = ac.createOscillator(), e = ac.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(N(n) * 1.04, t); o.frequency.exponentialRampToValueAtTime(N(n), t + .08); e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .01); e.gain.exponentialRampToValueAtTime(.0001, t + 1.4); o.connect(e); e.connect(master); e.connect(wet); o.start(t); o.stop(t + 1.5); };
     const bass = (n, t, d, v) => { t += T0; const o = ac.createOscillator(), e = ac.createGain(); o.type = 'sine'; o.frequency.value = N(n); e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .6); e.gain.setValueAtTime(v, t + d - .4); e.gain.exponentialRampToValueAtTime(.0001, t + d + .6); o.connect(e); e.connect(master); o.start(t); o.stop(t + d + .7); };
-    // 2026-11-04〜 お別れの映像の曲（4拍子の、前へ進む曲）の楽器：バスドラム・ハイハット・スネア・シンバル・刻むシンセ
+    // 2026-11-04〜 お別れの映像の曲（4拍子の、前へ進む曲）の楽器（前の「3C」の笛・ピアノ・ティンパニは使わなくなったので外した）：バスドラム・ハイハット・スネア・シンバル・刻むシンセ
     const kick = (t, v) => { t += T0; const o = ac.createOscillator(), e = ac.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(44, t + .12); e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .004); e.gain.exponentialRampToValueAtTime(.0001, t + .38); o.connect(e); e.connect(master); o.start(t); o.stop(t + .4); };
     const hit = (t, v, d, type, f, q = .7, rv = false) => { t += T0; const s = ac.createBufferSource(), b = ac.createBiquadFilter(), e = ac.createGain(); s.buffer = noise; b.type = type; b.frequency.value = f; b.Q.value = q; e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(v, t + .003); e.gain.exponentialRampToValueAtTime(.0001, t + d); s.connect(b); b.connect(e); e.connect(master); if (rv) e.connect(wet); s.start(t, Math.random()); s.stop(t + d + .05); };
     const hat = (t, v) => hit(t, v, .05, 'highpass', 7500);
@@ -251,7 +226,7 @@
       Eb: { b: 51, t: [58, 63, 67, 69], pad: [51, 55, 58, 62] }, Gm: { b: 43, t: [58, 62, 65, 67], pad: [43, 50, 53, 58] } };
     const ARP = [0, 1, 2, 3, 4, 3, 2, 1, 0, 2, 1, 3, 2, 4, 3, 1];
     const arp = (c, t0, t1, v0, v1, rate = 1, pat = ARP) => { for (let t = t0, i = 0; t < t1; t += STEP / rate, i++) { const a = pat[i % pat.length], k = (t - t0) / (t1 - t0); spark(a === 4 ? c.t[0] + 12 : c.t[a], t, v0 + (v1 - v0) * k); } };
-    plan({ whistle, piano, timp, kick, hat, snare, crash, pulse, bell, haze, spark, sub, boom: (t, v) => boom(t, v * soft), riser: (t, d, v) => riser(t, d, v * soft), arp, CH, STEP, mel, pad, voice, harp, choir, solo, bass, organ, inst });
+    plan({ kick, hat, snare, crash, pulse, bell, haze, spark, sub, boom: (t, v) => boom(t, v * soft), riser: (t, d, v) => riser(t, d, v * soft), arp, CH, STEP, mel, pad, voice, harp, choir, solo, bass, organ, inst });
     return { T0, stop: () => { master.gain.cancelScheduledValues(ac.currentTime); master.gain.setTargetAtTime(0, ac.currentTime, .15); } };
   }
   // その夜のカードから決まる乱数（同じ夜の同じ7体なら同じ。カードか日付が1つ違えば別の曲・別の灯り）
