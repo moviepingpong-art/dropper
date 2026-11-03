@@ -221,6 +221,8 @@ footer a{color:var(--primary-soft)}
   "publisher": { "@type": "Organization", "name": "ドロッパー", "url": "https://dropper-tools.com/" }
 }
 </script>
+<link rel="manifest" href="/play/manifest.webmanifest">
+<meta name="theme-color" content="#0b0d16">
 </head>
 <body>
 <div class="wrap">
@@ -307,5 +309,6 @@ footer a{color:var(--primary-soft)}
 <script>window.LANG = 'ja';</script>
 <script src="monster-i18n.js?v=38"></script>
 <script src="monster-app.js?v=37"></script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/play/sw.js').catch(function(){})});}</script>
 </body>
 </html>
