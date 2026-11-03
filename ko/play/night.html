@@ -30,6 +30,14 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'G-PQPKYYYXKG');
+  var launchMode = 'browser';
+  // Store 版（PWABuilder・新しい Edge）は window.Windows が見えないので、起動したときの referrer でも見分け、同じタブの中では覚えておく
+  var fromStore = false;
+  try { fromStore = document.referrer.indexOf('app-info://platform/microsoft-store') === 0 || sessionStorage.getItem('launch_mode') === 'store_app'; } catch (e) {}
+  if (typeof window.Windows !== 'undefined' || fromStore) launchMode = 'store_app';
+  else if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) launchMode = 'installed_pwa';
+  try { if (launchMode === 'store_app') sessionStorage.setItem('launch_mode', 'store_app'); } catch (e) {}
+  gtag('set', 'user_properties', { launch_mode: launchMode });
 </script>
 <script>window.LANG = 'ko';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
