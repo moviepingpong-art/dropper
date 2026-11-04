@@ -164,7 +164,7 @@ GitHub Pages で公開している静的サイト。公開URL: https://dropper-t
     - 最後の通路の額縁は、ページが canvas に壁の位置へゆがめて描く（通路の絵は額縁なしで書き出す。`drawHall()`。描き方は最後の部屋の映像と同じ `NightFilm.frameCanvas`・`warp`）。額縁の窓の位置は `FR`（`frame.py` の JSON）。
       **CSS の `matrix3d` と影（filter）で重ねる形は 2026-10-28 にやめた**（iPhone の Safari で額縁が描かれなかった）。映像に描く額縁の canvas は半分の大きさ（`FS`）で、使い終わったら空にする（iPhone の Safari は canvas の使える量が少ない）
     - **動画の保存は、スマホ（iPhone・Android）では共有の画面から**（`NightFilm.save`。iPhone はダウンロードの形だと別の画面が開くだけだった。2026-10-28）
-      **スマホでは「動画を保存」の隣に「📤 Instagram・X に共有」**（2026-11-04 重吉さんの決め。「保存」でも共有の画面に Instagram は出るが、共有できると分からなかった）。`night-film.js` の `share()`：`files` と投稿文（`shareText`。`nFilmShareHead`・`nFilmShareLine`・お話の題・守り神・タグ・URL）を渡し、文はクリップボードにも写す（Instagram は文を受け取らない）。共有できない端末と PC には出さない（PC から Instagram へ渡す入口は無い）。計測は `share_film` の回数だけ。ポリシーは `privacy.play7`・ルールは `nRuleMore`
+      **スマホでは「動画を保存」の隣に「📤 Instagram・X に共有」**（2026-11-04 重吉さんの決め。「保存」でも共有の画面に Instagram は出るが、共有できると分からなかった）。`night-film.js` の `share()`：`files` と投稿文（`shareText`。`nFilmShareHead`・`nFilmShareLine`・お話の題・守り神・タグ・URL）を渡し、文はクリップボードにも写す（Instagram は文を受け取らない）。共有できない端末と PC には出さない（PC から Instagram へ渡す入口は無い）。**PC（と共有できない端末）は代わりに「𝕏 で共有」**（2026-11-04 重吉さんの決め。`shareX()`・`nFilmShareX`・`nFilmShareXNote`）：X の投稿画面を文入りで開いてから動画をダウンロードする（X の投稿画面には動画を自動で添えられないので、投稿画面で添えてもらう）。「動画を保存」は別に残す。計測は `share_film` の回数だけ。ポリシーは `privacy.play7`・ルールは `nRuleMore`
       **iPhone のメモリ（2026-11-04）**：保存を押すとページが止まって黒くなった（別のアプリに移るとページも閉じられていた）。動画ができたら `finish()` で額縁の絵・動画の元の絵・作業用の絵・録画の切れ端・最後の部屋の動画をすぐ捨て、録画は 3.5Mbps（55秒で約25MB。前は 6Mbps）。**録画や描く物を増やすときは、iPhone のメモリを先に考える**
     - 額縁を押すと正面から見る画面（`openView`）：呼び名・名前・何回目の朝・説明・生まれた作品（題・美術館・由来）
     - **絵を作り直したら、`FR` と `LAST` の数も直す**（窓の位置がずれると、作品が額縁からはみ出す）
