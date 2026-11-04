@@ -751,7 +751,7 @@
     hikariLit = HAND.some(c => c.rarity === 'gold') ? 'gold' : HAND.some(c => c.rarity === 'silver') ? 'silver' : null;
     $('flash').classList.remove('on');
     // 最後の部屋の映像（55秒）。4つの部屋で手に入れた額縁（部屋の順）の作品と精霊が、壁の4つの額縁に灯る（2026-11-01〜。前はその夜の7体）。保存できる動画にする（night-film.js）
-    if (!filmed) { $('msg').textContent = tr('nFilmLocked', { n: vessel().light, max: VMAX }); await wait(reduce ? 400 : 3200); }
+    if (!filmed) { fdWarm(); $('msg').textContent = tr('nFilmLocked', { n: vessel().light, max: VMAX }); await wait(reduce ? 400 : 3200); }
     else if (window.NightFilm) {
       const wasOn = on; if (wasOn) bgm(false);
       const FC = got.map(e => e.c);
@@ -804,8 +804,10 @@
       saveRec(R);
     }
     if (dawn && filmed) guideDone(guide);
+    // 初めて夜明けを迎えた朝（器はまだ5灯）だけ、一晩目の夜明けの映像を先に流す（2026-11-04 重吉さんの決め）
+    const first = counts && dawn && !filmed && count === 1 && !reduce;
     const st = Math.max(1, lit), lv = PL[st - 1], stages = D(dawn ? 'nStagesDawn' : 'nStagesQuiet') || [];
-    sfx(dawn ? 'dawn' : 'quiet'); if (dawn) burst(.5, .3, 120);
+    if (!first) sfx(dawn ? 'dawn' : 'quiet'); if (dawn) burst(.5, .3, 120);
     track(dawn ? 'night_dawn' : 'night_quiet');
     $('end').className = 'end ' + k;
     // 夜明けの画面は、朝の絵とお礼の言葉と小さな「もう一度挑戦する」だけ（2026-10-25 重吉さんの決め。動画は最後の部屋で保存する）。
@@ -843,7 +845,73 @@
     startScene(k, lv, dawn ? hikariLit : null);
     $('again').onclick = restart;
     if (counts) prepRecord({ k, lv, lit, dawn, filmed: false });
+    if (first) firstDawn(); else fdDrop();
     if ($('saveFilm')) $('saveFilm').onclick = () => window.NightFilm.save(film.blob, film.ext, tr('nFilmFile', { date: isoDate() }));
+  }
+
+  // ---- 一晩目の夜明け（2026-11-04〜、重吉さんの決め。Muse が作った16秒の映像 play/gallery/firstdawn.mp4 と曲 firstdawn.mp3） ----
+  // 初めて夜明けを迎えた朝に1回だけ、朝の画面の上に流す。夜の石の部屋で、器に5灯（一晩目の分）の光がふくらみ、糸杉の絵がひと息だけ光り、白い犬の精霊が目覚めて踊る。
+  // 映像は音なし。曲はページが WebAudio で鳴らす（映像が流れなくても曲は鳴らす。#117 の決め）。最後の部屋の動画と同じく「♪ 音を出す」を押していなくても流し、
+  // 「♪ 止める」の人（muted）には流さない。字幕2文はページが重ねる（7言語。時刻は FD_SUB）。動きを減らす設定では流さない。終われば動画と曲を捨てる（iPhone のメモリ）
+  const FD_SUB = [[2.0, 6.5, 'nFirstDawn1'], [12.5, 15.8, 'nFirstDawn2']];
+  let fdV = null, fdBuf = null, fdSrc = null, fdRun = null;
+  function fdWarm(now) {   // 最後の部屋に入ったとき（器が満ちていない夜）。まだ夜明けを迎えたことがなければ、先に読んでおく
+    if (trial || reduce || (!now && (loadRec().dawn || 0) > 0)) return;
+    if (!fdV) {
+      const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto'; v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
+      v.innerHTML = `<source src="${GAL}firstdawn.mp4" type="video/mp4">`; fdV = v; try { v.load(); } catch (e) { /* 読めなくても遊べる */ }
+    }
+    if (!fdBuf && ac && !muted) {
+      fdBuf = fetch(GAL + 'firstdawn.mp3').then(r => r.arrayBuffer()).then(b => new Promise((ok, ng) => ac.decodeAudioData(b, ok, ng))).catch(() => null);
+    }
+  }
+  function fdDrop() { fdV = null; fdBuf = null; }
+  async function fdMusic() {
+    if (muted || !ac || !fdBuf) return;
+    const buf = await fdBuf; if (!buf || !fdRun) return;
+    try { ac.resume(); const s = ac.createBufferSource(), g = ac.createGain(); g.gain.value = .9; s.buffer = buf; s.connect(g).connect(ac.destination); s.start(); fdSrc = { s, g }; } catch (e) { /* 音が出なくても遊べる */ }
+  }
+  function fdStop(fade) {
+    fdRun = null;
+    if (fdSrc) { const { s, g } = fdSrc; fdSrc = null; try { const t = ac.currentTime; g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.linearRampToValueAtTime(0, t + (fade || .3)); s.stop(t + (fade || .3) + .05); } catch (e) { /* もう止まっている */ } }
+    const L = $('fdawn'); if (L) { L.hidden = true; L.classList.remove('gone'); }
+    const box = $('fdBox'); if (box) box.querySelectorAll('video').forEach(v => { v.pause(); v.removeAttribute('src'); v.innerHTML = ''; try { v.load(); } catch (e) { /* 捨てるだけ */ } v.remove(); });
+    fdDrop();
+  }
+  function firstDawn() {
+    fdWarm(true);
+    const L = $('fdawn'), box = $('fdBox'), sub = $('fdSub'), v = fdV, run = {};
+    if (!L || !v) return;
+    fdRun = run;
+    const wasOn = on && !!timer; if (wasOn) bgm(false);   // 夜のページの曲は、その間止める
+    track('first_dawn');
+    v.className = ''; box.appendChild(v); sub.className = 'fdsub'; sub.textContent = '';
+    const sk = $('fdSkip'); sk.textContent = tr('nFilmSkip') + ' ▶';
+    L.hidden = false;
+    let played = false, closing = false;
+    const close = () => {
+      if (closing || fdRun !== run) return; closing = true;
+      L.classList.add('gone');
+      setTimeout(() => { if (fdRun === run) fdStop(1.5); if (wasOn && on && !timer) bgm(true); }, 1200);
+    };
+    sk.onclick = close;
+    fdMusic();
+    // 流れ出さない端末は、数秒であきらめて朝の画面へ（曲はそのまま鳴らす）
+    const slow = setTimeout(() => { if (!played && fdRun === run) { closing = true; L.hidden = true; setTimeout(() => { if (fdRun === run) fdStop(2); }, 14000); } }, 3000);
+    v.addEventListener('playing', () => { played = true; clearTimeout(slow); v.classList.add('on'); }, { once: true });
+    v.onended = close;
+    v.onerror = () => { clearTimeout(slow); if (!played) { closing = true; L.hidden = true; } };
+    const tick = () => {
+      if (fdRun !== run) return;
+      const e = v.currentTime, S = FD_SUB.find(x => e >= x[0] && e < x[1]);
+      const txt = S ? tr(S[2]) : '';
+      if (S && sub.textContent !== txt) sub.textContent = txt;
+      sub.classList.toggle('on', !!S);
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    try { v.currentTime = 0; } catch (e) { /* まだ読めていない */ }
+    const p = v.play(); if (p && p.catch) p.catch(() => v.onerror());
   }
 
   // ---- 今夜の記録（2026-11-04〜、重吉さんの決め。仕様は共有フォルダ share-record/今夜の記録_共有仕様_改訂2.md） ----
@@ -978,7 +1046,7 @@
       bgm(false); const g = master.gain, t = ac.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + .5);
       setTimeout(() => { if (!on || timer) return; g.cancelScheduledValues(ac.currentTime); g.setValueAtTime(.8, ac.currentTime); bgm(true); }, 1600);
     }
-    $('morning').hidden = true; sceneOn = null; storyP = null; storyA = null; recBlob = null; keyFx(null); if (mornFilm) mornFilm.v.pause(); HAND = []; sel = []; dpick = [];
+    fdStop(); $('morning').hidden = true; sceneOn = null; storyP = null; storyA = null; recBlob = null; keyFx(null); if (mornFilm) mornFilm.v.pause(); HAND = []; sel = []; dpick = [];
     reloadDex().then(() => { $('deck').hidden = false; drawDeck(); });
   }
 

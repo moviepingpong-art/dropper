@@ -162,6 +162,15 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 .vbrimv img,.vbrimv video{display:block;width:100%;height:auto}
 .vbrimt{font-family:var(--serif);color:var(--gold-soft);margin:14px 0 6px;font-size:1.3rem;letter-spacing:.06em}
 .vbrims{margin:0;color:var(--mid);font-size:.92rem;line-height:1.7}
+.layer.fdawn{z-index:62;background:#05070d;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 1.2s}
+.layer.fdawn[hidden]{display:none}
+.layer.fdawn.gone{opacity:0}
+.fdbox{width:min(100vw,calc((100vh - 110px) * 16 / 9));aspect-ratio:16/9;background:#05070d}
+.fdbox video{display:block;width:100%;height:100%;opacity:0;transition:opacity .8s}
+.fdbox video.on{opacity:1}
+.fdsub{min-height:3.2em;margin:14px 16px 0;text-align:center;font-family:var(--serif);color:#fff6dc;font-size:clamp(16px,2.4vw,26px);letter-spacing:.06em;line-height:1.5;opacity:0;transition:opacity .5s}
+.fdsub.on{opacity:1}
+.fdawn .riteskip{position:fixed;right:16px;bottom:16px}
 .vessel .vh{font-family:var(--serif);color:var(--gold-soft);letter-spacing:.06em}
 .vessel .vp{display:inline-flex;gap:3px}
 .vessel .vp i{width:11px;height:15px;border-radius:50% 50% 45% 45%/60% 60% 40% 40%;border:1px solid rgba(201,164,92,.55);background:rgba(255,255,255,.03)}
@@ -546,6 +555,12 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
   <div class="tap" id="vbrimTap" hidden data-i18n="nTap">タップで次へ</div>
  </div>
 </div>
+<!-- 一晩目の夜明け（初めて夜明けを迎えた朝に1回だけ。16秒。2026-11-04 重吉さんの決め。動画は play/gallery/firstdawn.mp4、曲は firstdawn.mp3） -->
+<div class="layer fdawn" id="fdawn" hidden aria-live="polite">
+ <div class="fdbox" id="fdBox"></div>
+ <p class="fdsub" id="fdSub"></p>
+ <button type="button" class="riteskip" id="fdSkip" data-i18n="nFilmSkip">とばす</button>
+</div>
 <div class="layer lt" id="gain" hidden aria-live="polite">
  <div class="ltbox">
   <h2 class="gainh" id="gainH"></h2>
@@ -589,8 +604,8 @@ html:not([lang="ja"]):not(.i18n-ready) body{visibility:hidden}
 </div>
 
 <script src="monster-i18n.js?v=34"></script>
-<script src="night-i18n.js?v=37"></script>
+<script src="night-i18n.js?v=38"></script>
 <script src="night-film.js?v=29"></script>
-<script src="night-app.js?v=54"></script>
+<script src="night-app.js?v=55"></script>
 </body>
 </html>
