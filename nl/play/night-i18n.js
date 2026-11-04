@@ -84,7 +84,7 @@
       nRoomSep: '・',
       nAgain: 'もう一度、目録からえらぶ',
       nThanksBye: 'ありがとうございました。<br>またお会いしましょう。',
-      nFirstDawn1: '器は、朝になっても灯っていた。',
+      nFirstDawn1: '器が半分まで満ちて、犬の精霊がはしゃいでいます。',
       nFirstDawn2: '今夜も、また会いましょう。',
       nRetry: 'もう一度挑戦する',
       // 世界にひとつだけの動画を共有（2026-11-04〜）
@@ -277,7 +277,7 @@
       nRoomSep: ', ',
       nAgain: 'Choose from your catalogue again',
       nThanksBye: 'Thank you for visiting.<br>We hope to see you again.',
-      nFirstDawn1: 'The vessel was still glowing in the morning.',
+      nFirstDawn1: 'The vessel is half full of light, and the dog spirit is frolicking.',
       nFirstDawn2: 'Let’s meet again tonight.',
       nRetry: 'Try again',
       // 世界にひとつだけの動画を共有（2026-11-04〜）
@@ -409,7 +409,7 @@
       nReady: 'Sab ready',
       nAgain: 'Catalogue se phir chuno',
       nThanksBye: 'Aane ke liye shukriya.<br>Phir milenge.',
-      nFirstDawn1: 'Subah ho gayi, par vessel abhi bhi jal raha tha.',
+      nFirstDawn1: 'Vessel aadha roshni se bhar gaya, aur dog spirit khushi se uchhal raha hai.',
       nFirstDawn2: 'Aaj raat phir milenge.',
       nRetry: 'Phir se try karo',
       // 世界にひとつだけの動画を共有（2026-11-04〜）
@@ -498,7 +498,7 @@
       nRoomSep: '·',
       nAgain: '목록에서 다시 고르기',
       nThanksBye: '감사합니다.<br>또 만나요.',
-      nFirstDawn1: '그릇은 아침이 되어도 빛나고 있었다.',
+      nFirstDawn1: '그릇이 절반까지 차올라, 강아지 정령이 신나게 뛰놀고 있어요.',
       nFirstDawn2: '오늘 밤에도 또 만나요.',
       nRetry: '다시 도전하기',
       // 世界にひとつだけの動画を共有（2026-11-04〜）
@@ -688,7 +688,7 @@
       nRoomSep: '・',
       nAgain: '再從目錄選一次',
       nThanksBye: '謝謝您的光臨。<br>期待再次相見。',
-      nFirstDawn1: '到了早晨，器依然亮著。',
+      nFirstDawn1: '器已滿到一半，小狗精靈正開心地蹦蹦跳跳。',
       nFirstDawn2: '今晚，我們再見吧。',
       nRetry: '再挑戰一次',
       // 世界にひとつだけの動画を共有（2026-11-04〜）
@@ -878,7 +878,7 @@
       nRoomSep: ', ',
       nAgain: 'Chọn lại từ danh mục',
       nThanksBye: 'Cảm ơn bạn đã đến.<br>Hẹn gặp lại.',
-      nFirstDawn1: 'Đến sáng, chiếc bình vẫn còn sáng.',
+      nFirstDawn1: 'Chiếc bình đã đầy một nửa, tinh linh chú chó đang nô đùa vui vẻ.',
       nFirstDawn2: 'Đêm nay, mình lại gặp nhau nhé.',
       nRetry: 'Thử lại lần nữa',
       // 世界にひとつだけの動画を共有（2026-11-04〜）
@@ -1069,7 +1069,7 @@
       nQuietP0: 'Vannacht slapen alle zalen nog.<br>Kom vannacht terug en steek er het licht aan.',
       nAgain: 'Kies opnieuw uit je catalogus',
       nThanksBye: 'Dank je voor je bezoek.<br>We hopen je weer te zien.',
-      nFirstDawn1: 'De kruik gloeide ’s ochtends nog steeds.',
+      nFirstDawn1: 'De kruik is half vol licht, en de hondengeest dartelt vrolijk rond.',
       nFirstDawn2: 'Vannacht zien we elkaar weer.',
       nRetry: 'Probeer opnieuw',
       // 世界にひとつだけの動画を共有（2026-11-04〜）
