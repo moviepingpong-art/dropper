@@ -722,6 +722,7 @@
   // 守り神の選び・鍵の画像・あなたの写真は送らない。12秒で答えが無い・うまくいかないときは null（いつものお話と曲で流す）
   const AI_URL = 'https://ai.dropper-tools.com/monster';
   let storyP = null;  // 1晩に1回。もう一度挑戦するときに空にする
+  let storyA = null;  // 届いたお話の答え（朝の「今夜の記録」に題を入れるため。storyP は待っている途中の Promise）
   async function nightStory() {
     const cs = got.map(e => e.c).filter(c => c.art).map(c => ({ f: c.art, n: String(c.n || '').slice(0, 40), rar: c.rarity === 'gold' || c.rarity === 'silver' ? c.rarity : '' }));
     if (trial || cs.length < 2) return null;
@@ -756,7 +757,7 @@
       const FC = got.map(e => e.c);
       const cards = FC.map(c => ({ art: c.art, th: c.th, dx: c.dx, fig: c.fig, rar: c.rarity, t: c.t, n: c.n, no: c.no }));
       $('msg').textContent = tr('nStoryWriting');
-      const st = await story;
+      const st = await story; storyA = st || null;
       try { film = await window.NightFilm.room({ cards, hues: guide ? guideHues(guide) : null, guard: guide ? { th: guide.th, n: guide.n, line: tr('nFilmGuard', { name: guide.n }) } : null, story: st, seed: FC.map(c => c.id).join('|') + '|' + isoDate(), congrats: tr('nFilmCongrats'), only: tr('nFilmOnly'), title: tr('nFilmTitle'), sub: tr('nFilmSub', { date: dateText() }), file: tr('nFilmFile', { date: isoDate() }),
         tx: { modeAuto: tr('nModeAuto'), modePic: tr('nModePic'), picDrop: tr('nPicDrop'), picNote: tr('nPicNote'), meDrop: tr('nMeDrop'), meNote: tr('nMeNote'), meOk: tr('nMeOk'), cam: camTx('nCamMe'), ai: tr(st ? 'nAiYes' : trial ? 'nAiTrial' : 'nAiNo'), aiSub: tr(st ? 'nAiYesSub' : 'nAiNoSub'), loading: tr('nFilmLoading'), play: tr('nFilmPlay'), skip: tr('nFilmSkip'), save: tr('nFilmSave'), close: tr('nFilmClose'), made: tr('nFilmMade'), noRec: tr('nFilmNoRec') } }); } catch (e) { film = null; }
       if (wasOn) bgm(true);
@@ -816,10 +817,12 @@
       $('end').className = 'end dawn solo';
       $('end').innerHTML = `<canvas class="scene" id="scene" aria-hidden="true"></canvas><div class="endin">`
         + `<p class="thanks">${tr('nThanksBye')}</p>`
-        + `<div class="mini" id="gift"><button class="lnk" id="again" type="button">${esc(tr('nRetry'))}</button></div></div>`;
+        + `<div class="mini" id="gift"><button class="lnk" id="share" type="button" hidden>${esc(tr('nRecBtn'))}</button><button class="lnk" id="again" type="button">${esc(tr('nRetry'))}</button></div>`
+        + `<p class="small rechint" id="recHint" hidden></p></div>`;
       $('morning').hidden = false;
       startScene(k, lv, hikariLit, true);
       $('again').onclick = restart;
+      if (counts) prepRecord({ k, lv, lit, dawn, filmed: true });
       return;
     }
     $('end').innerHTML = `<canvas class="scene" id="scene" aria-hidden="true"></canvas><div class="endin">`
@@ -832,12 +835,140 @@
       + (got.length ? `<div class="gift" id="gift"><div class="gotrow">${got.map(e => frameBox(e.f, 72)).join('')}</div><p>${esc(tr(trial ? 'nGotTrial' : 'nGotFrames', { n: got.length }))}</p></div>`
         : `<p class="small">${esc(tr(trial ? 'nGiftTrial' : 'nGiftNone'))}</p>`)
       + (dawn && film ? `<button class="btn ghost" id="saveFilm" type="button">${esc(tr('nSaveFilm'))}</button>` : '')
+      + `<button class="btn" id="share" type="button" hidden>${esc(tr('nRecBtn'))}</button><p class="small rechint" id="recHint" hidden></p>`
       + `<button class="btn" id="again" type="button">${esc(tr('nAgain'))}</button>`
       + `<a class="btn ghost" href="spirit.html">${esc(tr('nBack'))}</a></div>`;
     $('morning').hidden = false;
     startScene(k, lv, dawn ? hikariLit : null);
     $('again').onclick = restart;
+    if (counts) prepRecord({ k, lv, lit, dawn, filmed: false });
     if ($('saveFilm')) $('saveFilm').onclick = () => window.NightFilm.save(film.blob, film.ext, tr('nFilmFile', { date: isoDate() }));
+  }
+
+  // ---- 今夜の記録（2026-11-04〜、重吉さんの決め。仕様は共有フォルダ share-record/今夜の記録_共有仕様_改訂2.md） ----
+  // 朝の画面を出したときに、その夜の記録の画像（1080×1350 の PNG、X と Instagram で共用）を端末の中で作っておき、「今夜の記録を共有」で渡す。
+  // どこにも送らない。入れるのはその夜の事実だけ（精霊の名前・灯した部屋の数・額縁の作品・お話の題・守り神・器）。
+  // 輝き・珍しさなどの点数は入れない。扉3の鍵の画像・壁の画像・あなたの写真（night-film.js の中だけ）は使わない。
+  // おためしの夜と、1部屋も灯らなかった朝は作らない（朝の回数に数えないのと同じ）
+  let recBlob = null;
+  const recImg = src => new Promise(r => { if (!src) { r(null); return; } const im = new Image(); im.onload = () => r(im); im.onerror = () => r(null); im.src = src; });
+  const recUrl = () => { const L = window.LANG || 'ja'; return 'https://dropper-tools.com/' + (L === 'ja' ? '' : L + '/') + 'play/spirit.html'; };
+  // 文字を幅で折り返す（日本語・中国語は字ごと、ほかは語ごと）
+  function recWrap(g, text, w) {
+    const words = /[　-鿿가-힯]/.test(text) ? [...text] : text.split(/(?<=\s)/);
+    const out = []; let line = '';
+    for (const x of words) { if (line && g.measureText(line + x).width > w) { out.push(line.trim()); line = x.trimStart(); } else line += x; }
+    if (line.trim()) out.push(line.trim());
+    return out;
+  }
+  function recFacts(o) {
+    const sep = tr('nRoomSep');
+    const names = HAND.map(c => String(c.n || '')).filter(Boolean);
+    const story = o.filmed && storyA && storyA.title ? String(storyA.title).slice(0, 60) : '';
+    const guard = o.filmed && guide ? String(guide.n || '') : '';
+    return { names, sep, story, guard, all: o.lit >= ROOM.length, lit: o.lit, max: ROOM.length,
+      hikari: o.dawn && hikariLit ? hikariLit : null, vessel: !o.filmed ? vessel().light : null };
+  }
+  function recText(F) {
+    const short = F.names.slice(0, 3).join(F.sep) + (F.names.length > 3 ? tr('nShareMore', { n: F.names.length - 3 }) : '');
+    const rooms = F.all ? tr('nShareRooms4', { max: F.max }) : tr('nShareRooms', { n: F.lit, max: F.max });
+    return [tr('nShareHead'), tr('nShareLine', { date: dateText(), spirits: short, rooms }),
+      F.story ? tr('nRecStory', { title: F.story }) : '', F.guard ? tr('nRecGuard', { name: F.guard }) : '',
+      tr('nShareTag'), recUrl()].filter(Boolean).join('\n');
+  }
+  async function recordCard(o, F) {
+    const W = 1080, H = 1350, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const g = cv.getContext('2d');
+    const serif = (window.LANG || 'ja') === 'ja' ? '"Noto Serif JP", serif' : (D('canvasFont') || '"Noto Serif JP", serif');
+    try { await Promise.race([Promise.all([document.fonts.load(`600 60px "Noto Serif JP"`, tr('nFilmTitle')), document.fonts.ready]), new Promise(r => setTimeout(r, 2500))]); } catch (e) { /* 字体が読めなくても描く */ }
+    g.fillStyle = '#0b0d16'; g.fillRect(0, 0, W, H);
+    // 上：朝の静止画（映像は薄れて消えるので、.scene ではなく絵を描く）
+    const pic = await recImg(`${GAL}morning-${o.k}-${o.lv}.jpg`);
+    const ph = Math.round(W * 400 / 1120);
+    if (pic) g.drawImage(pic, 0, 0, W, ph);
+    const fade = g.createLinearGradient(0, ph - 90, 0, ph + 2); fade.addColorStop(0, 'rgba(11,13,22,0)'); fade.addColorStop(1, '#0b0d16'); g.fillStyle = fade; g.fillRect(0, ph - 90, W, 92);
+    g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    let y = ph + 60;
+    g.fillStyle = '#c9b27a'; g.font = `500 26px ${serif}`; g.fillText(tr('nRecHead'), W / 2, y); y += 66;
+    g.fillStyle = '#f3dc9a'; g.font = `600 60px ${serif}`; g.fillText(tr('nFilmTitle'), W / 2, y); y += 50;
+    g.fillStyle = '#9aa0b8'; g.font = `500 26px ${serif}`; g.fillText(tr('nRecDate', { date: dateText() }), W / 2, y); y += 40;
+    // 中：今夜の額縁の作品（最大4）。左下に精霊、下に名前
+    const fr = got.slice(0, 4);
+    if (fr.length) {
+      const gap = 28, fw = Math.min(190, Math.floor((W - 120 - gap * (fr.length - 1)) / fr.length)), fh = Math.round(fw * 1.25);
+      let x = (W - (fw * fr.length + gap * (fr.length - 1))) / 2; const top = y + 10;
+      const arts = await Promise.all(fr.map(e => recImg(e.c.art ? '/play/museum/' + e.c.art : '')));
+      const figs = await Promise.all(fr.map(e => recImg(e.c.fig || e.c.th)));
+      fr.forEach((e, i) => {
+        const gold = (e.f && e.f.k) === 'dawn';
+        g.fillStyle = gold ? '#b8913f' : '#7d6a52'; g.fillRect(x - 8, top - 8, fw + 16, fh + 16);
+        g.fillStyle = '#141826'; g.fillRect(x, top, fw, fh);
+        const A = arts[i];
+        if (A) { const s = Math.max(fw / A.naturalWidth, fh / A.naturalHeight), sw = fw / s, sh = fh / s; g.drawImage(A, (A.naturalWidth - sw) / 2, (A.naturalHeight - sh) / 2, sw, sh, x, top, fw, fh); }
+        const S = figs[i], d = Math.round(fw * .42);
+        if (S) {
+          g.save(); g.beginPath(); g.arc(x + d / 2 + 8, top + fh - d / 2 - 8, d / 2, 0, Math.PI * 2); g.fillStyle = 'rgba(11,13,22,.75)'; g.fill(); g.clip();
+          if (e.c.fig) g.drawImage(S, x + 8, top + fh - d - 8, d, d);
+          else { const z = Math.min(S.naturalWidth, S.naturalHeight); g.drawImage(S, (S.naturalWidth - z) / 2, (S.naturalHeight - z) / 2, z, z, x + 8, top + fh - d - 8, d, d); }
+          g.restore(); g.strokeStyle = gold ? '#e8c46a' : '#c8ccd8'; g.lineWidth = 3; g.beginPath(); g.arc(x + d / 2 + 8, top + fh - d / 2 - 8, d / 2, 0, Math.PI * 2); g.stroke();
+        }
+        g.fillStyle = '#e8e2d0'; g.font = `500 22px ${serif}`;
+        let nm = String(e.c.n || ''); while (nm.length > 1 && g.measureText(nm).width > fw + 20) nm = nm.slice(0, -1);
+        g.fillText(nm, x + fw / 2, top + fh + 46);
+        x += fw + gap;
+      });
+      y = top + fh + 92;
+    }
+    // 下：その夜の事実
+    const lines = [];
+    lines.push([F.all ? tr('nRecRooms4', { max: F.max }) : tr('nRecRooms', { n: F.lit, max: F.max }), '#f3dc9a', 34]);
+    lines.push([tr('nRecWith', { names: F.names.join(F.sep) }), '#e8e2d0', 26]);
+    if (F.story) lines.push([tr('nRecStory', { title: F.story }), '#f3dc9a', 28]);
+    if (F.guard) lines.push([tr('nRecGuard', { name: F.guard }), '#e8e2d0', 26]);
+    if (F.hikari) lines.push([tr(F.hikari === 'gold' ? 'nHikariGold' : 'nHikariSilver'), '#fff2c4', 22]);
+    if (F.vessel !== null) lines.push([tr('nRecVessel', { n: F.vessel, max: VMAX }), '#c9b27a', 24]);
+    const bottom = H - 110;
+    for (const [t, col, sz] of lines) {
+      g.fillStyle = col; g.font = `500 ${sz}px ${serif}`;
+      for (const l of recWrap(g, t, W - 160)) { if (y > bottom - 10) break; g.fillText(l, W / 2, y); y += Math.round(sz * 1.6); }
+      y += 12;
+    }
+    // いちばん下：その言語の入口（Instagram は文のリンクへ飛べないので、絵の中に）
+    g.strokeStyle = 'rgba(201,178,122,.5)'; g.lineWidth = 1; g.beginPath(); g.moveTo(W * .3, H - 92); g.lineTo(W * .7, H - 92); g.stroke();
+    g.fillStyle = '#c9b27a'; g.font = `500 26px ${serif}`; g.fillText(recUrl().replace('https://', ''), W / 2, H - 50);
+    return new Promise(r => { try { cv.toBlob(b => r(b), 'image/png'); } catch (e) { r(null); } });
+  }
+  // 朝の画面を出したときに作っておく（押してから作ると、iPhone の「押した直後だけ共有を開ける」決まりにかかるため）
+  function prepRecord(o) {
+    if (trial || !o.lit) return;
+    const F = recFacts(o), text = recText(F), run = sceneOn;
+    recordCard(o, F).then(b => {
+      if (!b || sceneOn !== run || !$('share')) return;   // 作れなかったら、ボタンは出さない（エラーは出さない）
+      recBlob = b; $('share').hidden = false;
+      $('share').onclick = () => shareRecord(b, text);
+    }).catch(() => {});
+  }
+  function recHint(k) { const h = $('recHint'); if (h) { h.textContent = tr(k); h.hidden = false; } }
+  function shareRecord(blob, text) {
+    track('share_record');
+    const fn = tr('nRecFile', { date: isoDate() }) + '.png';
+    const mobile = /iP(hone|ad|od)|Android/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const copy = () => { try { if (navigator.clipboard) return navigator.clipboard.writeText(text).then(() => true, () => false); } catch (e) { /* 写せない端末 */ } return Promise.resolve(false); };
+    if (mobile && navigator.share && window.File) {
+      const f = new File([blob], fn, { type: 'image/png' });
+      // url は渡さない（iPhone で画像が落ちる先があるため。URL は文の中）。Instagram は文を受け取らないので、文はクリップボードにも写す
+      const withText = !navigator.canShare || navigator.canShare({ files: [f], text });
+      if (withText || navigator.canShare({ files: [f] })) {
+        navigator.share(withText ? { files: [f], text } : { files: [f] }).catch(() => {});
+        copy().then(ok => { if (ok) recHint('nRecCopied'); });
+        return;
+      }
+    }
+    // PC と共有できない端末：X の投稿画面を（押した直後のうちに）開き、画像はダウンロード。X の投稿画面には画像を自動で添えられない
+    window.open('https://x.com/intent/post?text=' + encodeURIComponent(text), '_blank', 'noopener');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fn;
+    document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+    recHint('nRecHint');
   }
   function restart() {
     // もう一度挑戦するときは、曲も始めの静かな所からかけ直す（2026-10-25。前は朝の曲が続いたままだった）
@@ -846,7 +977,7 @@
       bgm(false); const g = master.gain, t = ac.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + .5);
       setTimeout(() => { if (!on || timer) return; g.cancelScheduledValues(ac.currentTime); g.setValueAtTime(.8, ac.currentTime); bgm(true); }, 1600);
     }
-    $('morning').hidden = true; sceneOn = null; storyP = null; keyFx(null); if (mornFilm) mornFilm.v.pause(); HAND = []; sel = []; dpick = [];
+    $('morning').hidden = true; sceneOn = null; storyP = null; storyA = null; recBlob = null; keyFx(null); if (mornFilm) mornFilm.v.pause(); HAND = []; sel = []; dpick = [];
     reloadDex().then(() => { $('deck').hidden = false; drawDeck(); });
   }
 
@@ -1303,7 +1434,7 @@
     ROOM = tonight(new Date()); sel = []; cur = 0; at = 'door'; pos = 0; page = 0;
     busy = false; ended = false; endArm = false; keyed = false; got = []; doorKeyed = []; doorPics.forEach(u => u && URL.revokeObjectURL(u)); doorPics = []; guide = null; passed = false; hikariLit = null; film = null; lastLit = false; filmed = false;
     $('trialNote').hidden = !trial;
-    $('deck').hidden = true; storyP = null; preload(); vWarm(vessel().light + 1);   // 最初のしずくを先に読んでおく
+    $('deck').hidden = true; storyP = null; storyA = null; recBlob = null; preload(); vWarm(vessel().light + 1);   // 最初のしずくを先に読んでおく
   }
   $('tonight').onclick = () => {
     beginNight(dpick.map(i => Object.assign({}, ZK[i], { used: false })));
