@@ -751,7 +751,14 @@
         if (rec && rec.state !== 'inactive') { await new Promise(r => { rec.onstop = r; rec.stop(); }); if (all && parts.length) blob = new Blob(parts, { type: rec.mimeType }); }
         setTimeout(() => A && A.ac.close(), 800);
         draw(J.n); L.btns.replaceChildren();
-        if (blob) { L.cap.textContent = o.tx.made; btn(L, o.tx.save, '', () => save(blob, rec.ext, o.file)); }
+        if (blob) {
+          L.cap.textContent = o.tx.made; btn(L, o.tx.save, '', () => save(blob, rec.ext, o.file));
+          // スマホは「保存」とは別に「Instagram・X に共有」（2026-11-04 重吉さんの決め。共有できると分かるように）。投稿文はクリップボードにも写す（Instagram は文を受け取らない）
+          if (o.tx.share && canShareFile(blob, rec.ext, o.file)) {
+            const n = document.createElement('span'); n.className = 'nf-note'; n.textContent = o.tx.shareNote || ''; L.cap.append(n);
+            btn(L, o.tx.share, '', () => share(blob, rec.ext, o.file, o.shareText || '', () => { n.textContent = o.tx.shareCopied || n.textContent; }));
+          }
+        }
         else if (all && !rec) L.cap.textContent = o.tx.noRec;
         btn(L, o.tx.close, 'ghost', () => { close(); if (picURL) URL.revokeObjectURL(picURL); if (meURL) URL.revokeObjectURL(meURL); meCv = null; free(fcs, vc, draw.t); draw.t = null; resolve(blob ? { blob, ext: rec.ext } : null); });
       };
@@ -765,6 +772,19 @@
   }
   // スマホ（iPhone・iPad・Android）は、ダウンロードの形では動画を写真に入れにくい（iPhone は別の画面が開くだけ）。
   // 共有の画面を出して「ビデオを保存」などから写真・ギャラリーへ（2026-10-28 重吉さん）。共有できないときと PC は、いままでのダウンロード
+  const isMobile = () => /iP(hone|ad|od)|Android/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const vfile = (blob, ext, name) => new File([blob], `${name || 'lantern-museum'}.${ext}`, { type: ext === 'mp4' ? 'video/mp4' : 'video/webm' });  // 型は codecs を付けない（受け取る側のアプリが「動画」と分かるように）
+  function canShareFile(blob, ext, name) {
+    try { return isMobile() && !!navigator.share && !!window.File && (!navigator.canShare || navigator.canShare({ files: [vfile(blob, ext, name)] })); } catch (e) { return false; }
+  }
+  // 動画を共有の画面へ（files と text。url は渡さない＝iPhone でファイルが落ちる先があるため。URL は文の中）
+  function share(blob, ext, name, text, onCopied) {
+    const f = vfile(blob, ext, name);
+    let withText = !!text; try { if (withText && navigator.canShare && !navigator.canShare({ files: [f], text })) withText = false; } catch (e) { withText = false; }
+    navigator.share(withText ? { files: [f], text } : { files: [f] }).catch(() => {});
+    try { if (text && navigator.clipboard) navigator.clipboard.writeText(text).then(() => onCopied && onCopied(), () => {}); } catch (e) { /* 写せない端末 */ }
+    try { if (typeof gtag === 'function') gtag('event', 'share_film'); } catch (e) { /* 計測が止められていても */ }
+  }
   function save(blob, ext, name) {
     const fn = `${name || 'lantern-museum'}.${ext}`, mobile = /iP(hone|ad|od)|Android/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     if (mobile && navigator.share && window.File) {
