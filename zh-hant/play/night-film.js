@@ -458,58 +458,77 @@
       q.fillStyle = m; q.fillRect(0, 0, ME_W, ME_W); q.setTransform(1, 0, 0, 1, 0, 0); q.globalCompositeOperation = 'source-over';
       return c;
     }
-    // 光の肖像（2026-11-04〜、重吉さんの決め）：あなたの写真を、端末の中だけで名画の肖像画のような味に。
-    // 顔の作りは変えない（美形化・笑顔・性別の変換はしない）。外のライブラリも AI も使わず、この端末の中の計算だけ。
+    // 光の肖像（2026-11-04〜、重吉さんの決め）：あなたの写真を、端末の中だけで名画の肖像画のように描きかえる（はじめ控えめにしたら「ほとんど変わらない、大胆に」）。
+    // 筆の面（クワハラの筆を重ねる）・色の段・輪郭の線・古典の絵の色の並び（こげ茶→琥珀→象牙）・明暗法（まわりを闇に）・画布の目・ほのかな発光。
+    // 真ん中（顔のあたり）は元の細かさを少し残す。顔の作りは変えない（美形化・笑顔・性別の変換はしない）。外のライブラリも AI も使わず、この端末の中の計算だけ。
     // 段を分けて少しずつ計算し、画面を止めない。できたら光の中でゆっくり切り替える（できる前は元の写真）。待たせない・失敗も出さない
+    const PORTRAIT = {  // A 油絵（明暗法）・B 金の光・C 厚塗りの油絵（見本は共有フォルダ lantern-portrait/）
+      A: { kuw: [5, 3], detail: .05, face: .45, step: 20, ink: .35, sat: 1.05, tone: .55, gam: .9, pal: [[28, 16, 10], [96, 56, 30], [190, 130, 70], [244, 214, 160], [255, 246, 220]], spot: .8, canvas: 1, glow: .5, glowT: 190 },
+      B: { kuw: [4], detail: .05, face: .4, step: 0, ink: .2, sat: .35, tone: .9, gam: .85, pal: [[20, 12, 6], [110, 70, 25], [214, 160, 70], [255, 226, 150], [255, 250, 235]], spot: .55, canvas: .6, glow: 1.1, glowT: 160 },
+      C: { kuw: [6, 3], detail: 0, face: .4, step: 0, ink: .55, sat: 1.15, tone: .4, gam: 1, pal: [[24, 18, 14], [110, 66, 40], [210, 150, 90], [250, 228, 185]], spot: .6, canvas: 1.6, glow: .35, glowT: 205 },
+    }.A;
     const tick = () => new Promise(r => setTimeout(r, 0));
     async function portrait(src, job) {
-      const w = ME_W, h = ME_H, n = w * h, q = src.getContext('2d', { willReadFrequently: true }), id = q.getImageData(0, 0, w, h), d = id.data;
-      const W1 = w + 1, sum = (S, x0, y0, x1, y1) => S[y1 * W1 + x1] - S[y0 * W1 + x1] - S[y1 * W1 + x0] + S[y0 * W1 + x0];
-      const integ = (f) => { const S = new Float64Array(W1 * (h + 1)); for (let y = 0; y < h; y++) { let a = 0; for (let x = 0; x < w; x++) { a += f(y * w + x); S[(y + 1) * W1 + x + 1] = S[y * W1 + x + 1] + a; } } return S; };
-      const R = new Float32Array(n), G = new Float32Array(n), B = new Float32Array(n), Y = new Float32Array(n);
-      for (let i = 0; i < n; i++) { R[i] = d[i * 4]; G[i] = d[i * 4 + 1]; B[i] = d[i * 4 + 2]; Y[i] = .299 * R[i] + .587 * G[i] + .114 * B[i]; }
-      // 1) 描いた肌：クワハラの筆（4つの区画のうち、いちばんむらの少ない区画の色）。輪郭は残り、肌はやわらかくなる
-      const SR = integ(i => R[i]), SG = integ(i => G[i]), SB = integ(i => B[i]), SY = integ(i => Y[i]), SY2 = integ(i => Y[i] * Y[i]);
-      await tick(); if (job !== meJob) return null;
-      const K = 2, pR = new Float32Array(n), pG = new Float32Array(n), pB = new Float32Array(n);
+      const S = PORTRAIT, w = ME_W, h = ME_H, n = w * h, d = src.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, w, h).data;
+      const W1 = w + 1, sum = (T, x0, y0, x1, y1) => T[y1 * W1 + x1] - T[y0 * W1 + x1] - T[y1 * W1 + x0] + T[y0 * W1 + x0];
+      const integ = f => { const T = new Float64Array(W1 * (h + 1)); for (let y = 0; y < h; y++) { let a = 0; for (let x = 0; x < w; x++) { a += f(y * w + x); T[(y + 1) * W1 + x + 1] = T[y * W1 + x + 1] + a; } } return T; };
+      const gone = async () => { await tick(); return job !== meJob; };
+      let R = new Float32Array(n), G = new Float32Array(n), B = new Float32Array(n);
+      for (let i = 0; i < n; i++) { R[i] = d[i * 4]; G[i] = d[i * 4 + 1]; B[i] = d[i * 4 + 2]; }
+      const R0 = R.slice(), G0 = G.slice(), B0 = B.slice();
+      // 1) 筆の面：クワハラの筆（4つの区画のうち、いちばんむらの少ない区画の色）を、太い筆→細い筆と重ねる
+      for (const K of S.kuw) {
+        const Y = new Float32Array(n); for (let i = 0; i < n; i++) Y[i] = .299 * R[i] + .587 * G[i] + .114 * B[i];
+        const SR = integ(i => R[i]), SG = integ(i => G[i]), SB = integ(i => B[i]), SY = integ(i => Y[i]), SY2 = integ(i => Y[i] * Y[i]);
+        if (await gone()) return null;
+        const nR = new Float32Array(n), nG = new Float32Array(n), nB = new Float32Array(n);
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            let best = 1e18, br = 0, bg = 0, bb = 0;
+            for (let k = 0; k < 4; k++) {
+              const x0 = Math.max(0, k & 1 ? x : x - K), x1 = Math.min(w, (k & 1 ? x + K : x) + 1), y0 = Math.max(0, k & 2 ? y : y - K), y1 = Math.min(h, (k & 2 ? y + K : y) + 1), c = (x1 - x0) * (y1 - y0);
+              const m = sum(SY, x0, y0, x1, y1) / c, v = sum(SY2, x0, y0, x1, y1) / c - m * m;
+              if (v < best) { best = v; br = sum(SR, x0, y0, x1, y1) / c; bg = sum(SG, x0, y0, x1, y1) / c; bb = sum(SB, x0, y0, x1, y1) / c; }
+            }
+            const i = y * w + x; nR[i] = br; nG[i] = bg; nB[i] = bb;
+          }
+          if (y % 24 === 23 && await gone()) return null;
+        }
+        R = nR; G = nG; B = nB;
+      }
+      const Y0 = new Float32Array(n); for (let i = 0; i < n; i++) Y0[i] = .299 * R[i] + .587 * G[i] + .114 * B[i];
+      const out = new Uint8ClampedArray(n * 4), cx = w / 2, cy = h * .42, pal = S.pal;
+      const hash = (x, y) => { const v = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return v - Math.floor(v); };
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
-          let best = 1e18, br = 0, bg = 0, bb = 0;
-          for (let k = 0; k < 4; k++) {
-            const x0 = Math.max(0, k & 1 ? x : x - K), x1 = Math.min(w, (k & 1 ? x + K : x) + 1), y0 = Math.max(0, k & 2 ? y : y - K), y1 = Math.min(h, (k & 2 ? y + K : y) + 1), c = (x1 - x0) * (y1 - y0);
-            const m = sum(SY, x0, y0, x1, y1) / c, v = sum(SY2, x0, y0, x1, y1) / c - m * m;
-            if (v < best) { best = v; br = sum(SR, x0, y0, x1, y1) / c; bg = sum(SG, x0, y0, x1, y1) / c; bb = sum(SB, x0, y0, x1, y1) / c; }
+          const i = y * w + x;
+          // 2) 真ん中（顔のあたり）ほど元の細かさを残す（別人にしない）
+          const dc = Math.hypot((x - cx) / (w * .3), (y - cy) / (h * .3)), dt = S.detail + S.face * Math.max(0, 1 - dc);
+          let r = R[i] * (1 - dt) + R0[i] * dt, g2 = G[i] * (1 - dt) + G0[i] * dt, b = B[i] * (1 - dt) + B0[i] * dt;
+          if (S.step) { const st = S.step; r = Math.round(r / st) * st; g2 = Math.round(g2 / st) * st; b = Math.round(b / st) * st; }  // 3) 色の段
+          if (S.ink) {  // 4) 輪郭を筆の線のように暗く
+            const xl = Math.max(0, x - 1), xr = Math.min(w - 1, x + 1), yu = Math.max(0, y - 1), yd = Math.min(h - 1, y + 1);
+            const e = Math.min(1, Math.hypot(Y0[y * w + xr] - Y0[y * w + xl], Y0[yd * w + x] - Y0[yu * w + x]) / 90) * S.ink; r *= 1 - e; g2 *= 1 - e; b *= 1 - e * .8;
           }
-          const i = y * w + x; pR[i] = br; pG[i] = bg; pB[i] = bb;
+          // 5) 色：明るさの並びだけを古典の絵の色へ寄せ、肌や服の色の違いは残す（暗い肌を白っぽくしない）
+          const l = .299 * r + .587 * g2 + .114 * b;
+          r = l + (r - l) * S.sat; g2 = l + (g2 - l) * S.sat; b = l + (b - l) * S.sat;
+          const sg = Math.pow(l / 255, S.gam) * (pal.length - 1), k = Math.min(pal.length - 2, Math.floor(sg)), f = sg - k, P0 = pal[k], P1 = pal[k + 1];
+          r = r * (1 - S.tone) + (P0[0] + (P1[0] - P0[0]) * f + (r - l) * .6) * S.tone; g2 = g2 * (1 - S.tone) + (P0[1] + (P1[1] - P0[1]) * f + (g2 - l) * .6) * S.tone; b = b * (1 - S.tone) + (P0[2] + (P1[2] - P0[2]) * f + (b - l) * .6) * S.tone;
+          // 6) 明暗法：真ん中に光、まわりは闇へ
+          const sp = 1 - S.spot * Math.min(1, Math.max(0, (Math.hypot((x - cx) / (w * .42), (y - cy) / (h * .5)) - .35) / .75)); r *= sp; g2 *= sp; b *= sp * .95;
+          // 7) 画布の目と筆のむら
+          const wv = (Math.sin(x * 2.1) * Math.sin(y * 2.1) * 6 + (hash(x >> 1, y >> 2) - .5) * 14) * S.canvas; r += wv; g2 += wv; b += wv * .9;
+          out[i * 4] = r; out[i * 4 + 1] = g2; out[i * 4 + 2] = b; out[i * 4 + 3] = 255;
         }
-        if (y % 24 === 23) { await tick(); if (job !== meJob) return null; }
+        if (y % 48 === 47 && await gone()) return null;
       }
-      // 2) 筆の継ぎ目をならし（ごく小さいぼかし）、元の細かさを少し戻し（別人にしない）、輪郭を少し締める（ぼかしとの差を足す）
-      { const TR = integ(i => pR[i]), TG = integ(i => pG[i]), TB = integ(i => pB[i]);
-        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = y * w + x, x0 = Math.max(0, x - 1), x1 = Math.min(w, x + 2), y0 = Math.max(0, y - 1), y1 = Math.min(h, y + 2), c = (x1 - x0) * (y1 - y0); pR[i] = sum(TR, x0, y0, x1, y1) / c; pG[i] = sum(TG, x0, y0, x1, y1) / c; pB[i] = sum(TB, x0, y0, x1, y1) / c; } }
-      await tick(); if (job !== meJob) return null;
-      const QR = integ(i => pR[i]), QG = integ(i => pG[i]), QB = integ(i => pB[i]);
-      await tick(); if (job !== meJob) return null;
-      const out = new Uint8ClampedArray(n * 4), L = new Float32Array(n), BR = 2;
+      // 8) ほのかな発光：明るい所をぼかして、金色に足す
+      const SL = integ(i => Math.max(0, .299 * out[i * 4] + .587 * out[i * 4 + 1] + .114 * out[i * 4 + 2] - S.glowT)), GR = 9;
+      if (await gone()) return null;
       for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-        const i = y * w + x, x0 = Math.max(0, x - BR), x1 = Math.min(w, x + BR + 1), y0 = Math.max(0, y - BR), y1 = Math.min(h, y + BR + 1), c = (x1 - x0) * (y1 - y0);
-        let r = pR[i] * .7 + R[i] * .3, g2 = pG[i] * .7 + G[i] * .3, b = pB[i] * .7 + B[i] * .3;
-        r += .35 * (pR[i] - sum(QR, x0, y0, x1, y1) / c); g2 += .35 * (pG[i] - sum(QG, x0, y0, x1, y1) / c); b += .35 * (pB[i] - sum(QB, x0, y0, x1, y1) / c);
-        // 3) 色の段を軽く落とす（半分だけ寄せる）
-        const st = 14; r = r * .55 + Math.round(r / st) * st * .45; g2 = g2 * .55 + Math.round(g2 / st) * st * .45; b = b * .55 + Math.round(b / st) * st * .45;
-        // 4) 金の光に合う暖かい色。掛け算だけで寄せ、暗い所を持ち上げない（濃い肌が白っぽく・灰色にならないように）
-        const l = .299 * r + .587 * g2 + .114 * b;
-        r = l + (r - l) * .96; g2 = l + (g2 - l) * .96; b = l + (b - l) * .96;
-        r *= 1.05; g2 *= 1.01; b *= .9;
-        const s = v => { v = Math.min(255, Math.max(0, v)) / 255; return 255 * (v + .1 * v * (1 - v) * (2 * v - 1)); };  // ほんの少しだけ締める
-        out[i * 4] = s(r); out[i * 4 + 1] = s(g2); out[i * 4 + 2] = s(b); out[i * 4 + 3] = 255; L[i] = .299 * out[i * 4] + .587 * out[i * 4 + 1] + .114 * out[i * 4 + 2];
-      }
-      await tick(); if (job !== meJob) return null;
-      // 5) ほのかな発光：明るい所をぼかして、やわらかく足す
-      const SL = integ(i => Math.max(0, L[i] - 185)), GR = 7;
-      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-        const i = y * w + x, x0 = Math.max(0, x - GR), x1 = Math.min(w, x + GR + 1), y0 = Math.max(0, y - GR), y1 = Math.min(h, y + GR + 1), gl = sum(SL, x0, y0, x1, y1) / ((x1 - x0) * (y1 - y0)) * .5;
-        out[i * 4] += gl; out[i * 4 + 1] += gl * .9; out[i * 4 + 2] += gl * .7;
+        const i = y * w + x, x0 = Math.max(0, x - GR), x1 = Math.min(w, x + GR + 1), y0 = Math.max(0, y - GR), y1 = Math.min(h, y + GR + 1), gl = sum(SL, x0, y0, x1, y1) / ((x1 - x0) * (y1 - y0)) * S.glow;
+        out[i * 4] += gl; out[i * 4 + 1] += gl * .85; out[i * 4 + 2] += gl * .55;
       }
       const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').putImageData(new ImageData(out, w, h), 0, 0);
       return meMask(c);
