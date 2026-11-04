@@ -462,11 +462,14 @@
     // 筆の面（クワハラの筆を重ねる）・色の段・輪郭の線・古典の絵の色の並び（こげ茶→琥珀→象牙）・明暗法（まわりを闇に）・画布の目・ほのかな発光。
     // 真ん中（顔のあたり）は元の細かさを少し残す。顔の作りは変えない（美形化・笑顔・性別の変換はしない）。外のライブラリも AI も使わず、この端末の中の計算だけ。
     // 段を分けて少しずつ計算し、画面を止めない。できたら光の中でゆっくり切り替える（できる前は元の写真）。待たせない・失敗も出さない
-    const PORTRAIT = {  // A 油絵（明暗法）・B 金の光・C 厚塗りの油絵（見本は共有フォルダ lantern-portrait/）
+    // 重吉さんが B（金の光）を選び「滑らかに」（2026-11-04）→ B1：筆の4区画をむらの少なさで重みづけして混ぜ（角が出ない）、細い筆を重ね、小さくぼかす。画布の目はなし
+    const PORTRAIT = {  // A 油絵（明暗法）・B 金の光・C 厚塗りの油絵・B1 金の光（なめらか）・B2 さらになめらか（見本は共有フォルダ lantern-portrait/）
+      B1: { kuw: [4, 2], soft: 2, blur: 1, detail: .08, face: .35, step: 0, ink: .1, sat: .35, tone: .9, gam: .85, pal: [[20, 12, 6], [110, 70, 25], [214, 160, 70], [255, 226, 150], [255, 250, 235]], spot: .55, canvas: 0, glow: 1.2, glowT: 160 },
+      B2: { kuw: [5, 3], soft: 2, blur: 2, detail: .05, face: .3, step: 0, ink: 0, sat: .35, tone: .9, gam: .85, pal: [[20, 12, 6], [110, 70, 25], [214, 160, 70], [255, 226, 150], [255, 250, 235]], spot: .55, canvas: 0, glow: 1.5, glowT: 150 },
       A: { kuw: [5, 3], detail: .05, face: .45, step: 20, ink: .35, sat: 1.05, tone: .55, gam: .9, pal: [[28, 16, 10], [96, 56, 30], [190, 130, 70], [244, 214, 160], [255, 246, 220]], spot: .8, canvas: 1, glow: .5, glowT: 190 },
       B: { kuw: [4], detail: .05, face: .4, step: 0, ink: .2, sat: .35, tone: .9, gam: .85, pal: [[20, 12, 6], [110, 70, 25], [214, 160, 70], [255, 226, 150], [255, 250, 235]], spot: .55, canvas: .6, glow: 1.1, glowT: 160 },
       C: { kuw: [6, 3], detail: 0, face: .4, step: 0, ink: .55, sat: 1.15, tone: .4, gam: 1, pal: [[24, 18, 14], [110, 66, 40], [210, 150, 90], [250, 228, 185]], spot: .6, canvas: 1.6, glow: .35, glowT: 205 },
-    }.A;
+    }.B1;
     const tick = () => new Promise(r => setTimeout(r, 0));
     async function portrait(src, job) {
       const S = PORTRAIT, w = ME_W, h = ME_H, n = w * h, d = src.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, w, h).data;
@@ -484,16 +487,23 @@
         const nR = new Float32Array(n), nG = new Float32Array(n), nB = new Float32Array(n);
         for (let y = 0; y < h; y++) {
           for (let x = 0; x < w; x++) {
-            let best = 1e18, br = 0, bg = 0, bb = 0;
+            let best = S.soft ? 0 : 1e18, br = 0, bg = 0, bb = 0;
             for (let k = 0; k < 4; k++) {
               const x0 = Math.max(0, k & 1 ? x : x - K), x1 = Math.min(w, (k & 1 ? x + K : x) + 1), y0 = Math.max(0, k & 2 ? y : y - K), y1 = Math.min(h, (k & 2 ? y + K : y) + 1), c = (x1 - x0) * (y1 - y0);
               const m = sum(SY, x0, y0, x1, y1) / c, v = sum(SY2, x0, y0, x1, y1) / c - m * m;
-              if (v < best) { best = v; br = sum(SR, x0, y0, x1, y1) / c; bg = sum(SG, x0, y0, x1, y1) / c; bb = sum(SB, x0, y0, x1, y1) / c; }
+              if (S.soft) { const wt = 1 / (1 + Math.pow(Math.max(0, v), S.soft)); best += wt; br += wt * sum(SR, x0, y0, x1, y1) / c; bg += wt * sum(SG, x0, y0, x1, y1) / c; bb += wt * sum(SB, x0, y0, x1, y1) / c; }  // なめらか：4区画を重みづけして混ぜる
+              else if (v < best) { best = v; br = sum(SR, x0, y0, x1, y1) / c; bg = sum(SG, x0, y0, x1, y1) / c; bb = sum(SB, x0, y0, x1, y1) / c; }
             }
-            const i = y * w + x; nR[i] = br; nG[i] = bg; nB[i] = bb;
+            const i = y * w + x; if (S.soft) { br /= best; bg /= best; bb /= best; } nR[i] = br; nG[i] = bg; nB[i] = bb;
           }
           if (y % 24 === 23 && await gone()) return null;
         }
+        R = nR; G = nG; B = nB;
+      }
+      if (S.blur) {  // 筆の継ぎ目をならす小さいぼかし
+        const TR = integ(i => R[i]), TG = integ(i => G[i]), TB = integ(i => B[i]), q = S.blur, nR = new Float32Array(n), nG = new Float32Array(n), nB = new Float32Array(n);
+        if (await gone()) return null;
+        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = y * w + x, x0 = Math.max(0, x - q), x1 = Math.min(w, x + q + 1), y0 = Math.max(0, y - q), y1 = Math.min(h, y + q + 1), c = (x1 - x0) * (y1 - y0); nR[i] = sum(TR, x0, y0, x1, y1) / c; nG[i] = sum(TG, x0, y0, x1, y1) / c; nB[i] = sum(TB, x0, y0, x1, y1) / c; }
         R = nR; G = nG; B = nB;
       }
       const Y0 = new Float32Array(n); for (let i = 0; i < n; i++) Y0[i] = .299 * R[i] + .587 * G[i] + .114 * B[i];
