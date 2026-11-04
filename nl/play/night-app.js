@@ -135,7 +135,9 @@
   function vessel() { const v = loadRec().vessel || {}; return { light: Math.max(0, Math.min(VMAX, Math.floor(Number(v.light) || 0))), cycles: Math.max(0, Math.floor(Number(v.cycles) || 0)) }; }
   function addLight() {
     if (trial) return vessel();
-    const R = loadRec(), v = vessel(); v.light = Math.min(VMAX, v.light + 1); R.vessel = v; saveRec(R); return v;
+    const R = loadRec(), v = vessel(), was = v.light; v.light = Math.min(VMAX, v.light + 1); R.vessel = v;
+    if (was < FD_AT && v.light >= FD_AT) R.fd = 1;   // 器が5灯になった：その夜の朝に「器の映像」を流す（2026-11-04 重吉さんの決め。満ちて空に戻ったあとも毎回）
+    saveRec(R); if (R.fd) fdWarm(); return v;
   }
   const vesselFull = () => !trial && vessel().light >= VMAX;
   // 1灯ともったことを、絵の上に少しのあいだ見せる（最後の通路に着いたとき）
@@ -751,7 +753,7 @@
     hikariLit = HAND.some(c => c.rarity === 'gold') ? 'gold' : HAND.some(c => c.rarity === 'silver') ? 'silver' : null;
     $('flash').classList.remove('on');
     // 最後の部屋の映像（55秒）。4つの部屋で手に入れた額縁（部屋の順）の作品と精霊が、壁の4つの額縁に灯る（2026-11-01〜。前はその夜の7体）。保存できる動画にする（night-film.js）
-    if (!filmed) { fdWarm(); $('msg').textContent = tr('nFilmLocked', { n: vessel().light, max: VMAX }); await wait(reduce ? 400 : 3200); }
+    if (!filmed) { $('msg').textContent = tr('nFilmLocked', { n: vessel().light, max: VMAX }); await wait(reduce ? 400 : 3200); }
     else if (window.NightFilm) {
       const wasOn = on; if (wasOn) bgm(false);
       const FC = got.map(e => e.c);
@@ -804,8 +806,8 @@
       saveRec(R);
     }
     if (dawn && filmed) guideDone(guide);
-    // 初めて夜明けを迎えた朝（器はまだ5灯）だけ、一晩目の夜明けの映像を先に流す（2026-11-04 重吉さんの決め）
-    const first = counts && dawn && !filmed && count === 1 && !reduce;
+    // 器が5灯になった夜の朝（夜明けでも静かな朝でも）は、器の映像を先に流す（2026-11-04 重吉さんの決め。最後の部屋の動画を作った朝は流さずに外す）
+    const first = fdTake(!trial && !filmed && !reduce);
     const st = Math.max(1, lit), lv = PL[st - 1], stages = D(dawn ? 'nStagesDawn' : 'nStagesQuiet') || [];
     if (!first) sfx(dawn ? 'dawn' : 'quiet'); if (dawn) burst(.5, .3, 120);
     track(dawn ? 'night_dawn' : 'night_quiet');
@@ -849,14 +851,15 @@
     if ($('saveFilm')) $('saveFilm').onclick = () => window.NightFilm.save(film.blob, film.ext, tr('nFilmFile', { date: isoDate() }));
   }
 
-  // ---- 一晩目の夜明け（2026-11-04〜、重吉さんの決め。Muse が作った16秒の映像 play/gallery/firstdawn.mp4 と曲 firstdawn.mp3） ----
-  // 初めて夜明けを迎えた朝に1回だけ、朝の画面の上に流す。夜の石の部屋で、器に5灯（一晩目の分）の光がふくらみ、糸杉の絵がひと息だけ光り、白い犬の精霊が目覚めて踊る。
+  // ---- 器の映像（一晩目の夜明け。2026-11-04〜、重吉さんの決め。Muse が作った16秒の映像 play/gallery/firstdawn.mp4 と曲 firstdawn.mp3） ----
+  // 器が5灯になった夜の朝に、朝の画面の上に流す（満ちて空に戻ったあとも、また5灯になるたびに）。記録の fd が「次の朝に流す」の印。夜の石の部屋で、器に5灯（一晩目の分）の光がふくらみ、糸杉の絵がひと息だけ光り、白い犬の精霊が目覚めて踊る。
   // 映像は音なし。曲はページが WebAudio で鳴らす（映像が流れなくても曲は鳴らす。#117 の決め）。最後の部屋の動画と同じく「♪ 音を出す」を押していなくても流し、
   // 「♪ 止める」の人（muted）には流さない。字幕2文はページが重ねる（7言語。時刻は FD_SUB）。動きを減らす設定では流さない。終われば動画と曲を捨てる（iPhone のメモリ）
+  const FD_AT = 5;   // 器がこの灯になった夜の朝に流す
   const FD_SUB = [[2.0, 6.5, 'nFirstDawn1'], [12.5, 15.8, 'nFirstDawn2']];
   let fdV = null, fdBuf = null, fdSrc = null, fdRun = null;
-  function fdWarm(now) {   // 最後の部屋に入ったとき（器が満ちていない夜）。まだ夜明けを迎えたことがなければ、先に読んでおく
-    if (trial || reduce || (!now && (loadRec().dawn || 0) > 0)) return;
+  function fdWarm() {   // 器が5灯になったとき（その夜の朝に流す）。動画と曲を先に読んでおく
+    if (trial || reduce) return;
     if (!fdV) {
       const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto'; v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
       v.innerHTML = `<source src="${GAL}firstdawn.mp4" type="video/mp4">`; fdV = v; try { v.load(); } catch (e) { /* 読めなくても遊べる */ }
@@ -878,8 +881,10 @@
     const box = $('fdBox'); if (box) box.querySelectorAll('video').forEach(v => { v.pause(); v.removeAttribute('src'); v.innerHTML = ''; try { v.load(); } catch (e) { /* 捨てるだけ */ } v.remove(); });
     fdDrop();
   }
+  // 朝に流すかを決め、印を外す（流せない朝でも外す＝次の5灯まで待つ）
+  function fdTake(ok) { const R = loadRec(); if (!R.fd) return false; delete R.fd; saveRec(R); return ok; }
   function firstDawn() {
-    fdWarm(true);
+    fdWarm();
     const L = $('fdawn'), box = $('fdBox'), sub = $('fdSub'), v = fdV, run = {};
     if (!L || !v) return;
     fdRun = run;
