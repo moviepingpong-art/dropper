@@ -46,17 +46,17 @@ def spirit_ld(lang, name, alt, desc, in_lang, currency, pub_name, pub_url):
             f'  "publisher": {{ "@type": "Organization", "name": {q(pub_name)}, "url": {q(pub_url)} }}\n'
             '}\n</script>')
 
-JA_DESC = '閉館後の美術館で、作品にひそむ精霊が目を覚ます遊び。くじで並ぶ世界の美術館の15点から、1点で目覚め、2〜3点で結び。1000体に1体の金の光も。自分の写真やファイルは使わず、ログインも不要です。'
+JA_DESC = '閉館後の美術館で、作品にひそむ精霊が目を覚ます遊び。くじで並ぶ世界の美術館の15点から、1点で目覚め、2〜3点で結び。精霊を連れて夜の美術館を灯していくと、あなたの写真が金色の油絵の肖像になって光へ昇る、世界にひとつだけの動画ができます。写真は端末の中だけで描き、どこにも送りません。ログイン不要。'
 
 JA_HEAD = {
     'lang': '<html lang="ja">',
     'title': '<title>ともしびの美術館｜閉館後、作品に宿る精霊が目を覚ます｜ドロッパーの遊び場</title>',
-    'desc': '<meta name="description" content="閉館後の美術館で、作品にひそむ精霊が目を覚ます遊び。くじで並ぶ世界の美術館の15点から、1点で目覚め、2〜3点で結び。1000体に1体の金の光も。自分の写真やファイルは使わず、ログインも不要です。">',
+    'desc': '<meta name="description" content="閉館後の美術館で、作品にひそむ精霊が目を覚ます遊び。くじで並ぶ世界の美術館の15点から、1点で目覚め、2〜3点で結び。精霊を連れて夜の美術館を灯していくと、あなたの写真が金色の油絵の肖像になって光へ昇る、世界にひとつだけの動画ができます。写真は端末の中だけで描き、どこにも送りません。ログイン不要。">',
     'canonical': '<link rel="canonical" href="https://dropper-tools.com/play/spirit.html">',
     'site': '<meta property="og:site_name" content="ドロッパー">',
     'locale': '<meta property="og:locale" content="ja_JP">',
     'ogtitle': '<meta property="og:title" content="ともしびの美術館｜ドロッパーの遊び場">',
-    'ogdesc': '<meta property="og:description" content="閉館後の美術館。作品にひそむ精霊が、あなたの手で目を覚まします。目覚めと結び。1000体に1体の金の光も。">',
+    'ogdesc': '<meta property="og:description" content="閉館後の美術館。作品にひそむ精霊が目を覚まします。夜の美術館を灯すと、あなたの写真が金色の油絵の肖像になる、世界にひとつだけの動画に。">',
     'ogurl': '<meta property="og:url" content="https://dropper-tools.com/play/spirit.html">',
     'ogimage': '<meta property="og:image" content="https://dropper-tools.com/assets/og/og-ja.png">',
     'langjs': "<script>window.LANG = 'ja';</script>",
@@ -85,26 +85,26 @@ def shead(lang, html_lang, title, desc, locale, ogtitle, ogdesc, og, fonts=JA_HE
 
 LANGS = {
     'en': shead('en', 'en', 'The Lantern Museum | Spirits awaken from the artworks after closing | Dropper Playground',
-                'In the museum after closing time, the spirits sleeping in the artworks awaken. Pick 1 of 15 randomly dealt artworks from museums around the world to awaken a spirit, or 2–3 to bind them. And a 1-in-1,000 Gold Light. Your own photos and files are not used. No sign-in needed.',
-                'en_US', 'The Lantern Museum | Dropper Playground', 'The museum after closing time. The spirit sleeping in an artwork awakens in your hands. Awakening and binding. A 1-in-1,000 Gold Light.', 'en'),
+                'In the museum after closing time, the spirits sleeping in the artworks awaken. Pick 1 of 15 randomly dealt artworks from museums around the world to awaken a spirit, or 2–3 to bind them. Take your spirits to light the museum at night, and your photo rises into the light as a golden oil portrait, in a video that is the only one in the world. Your photo is painted on your device only and sent nowhere. No sign-in needed.',
+                'en_US', 'The Lantern Museum | Dropper Playground', 'The museum after closing time. The spirits in the artworks awaken. Light the museum at night, and your photo becomes a golden oil portrait in a video that is the only one in the world.', 'en'),
     'in': shead('in', 'en-IN', 'The Lantern Museum | Band museum ki artworks se spirits jaagte hain | Dropper Playground',
-                'Museum band hone ke baad, artworks mein soye spirits jaag uthte hain. Duniya ke museums ki random 15 artworks mein se 1 chuno to spirit jaagta hai, 2-3 chuno to bandhan. Aur 1,000 mein 1 Gold Light. Apni photos ya files use nahin hotin. Login nahin chahiye.',
-                'en_IN', 'The Lantern Museum | Dropper Playground', 'Museum band hone ke baad. Artwork mein soya spirit aapke haath se jaagta hai. Jagna aur bandhan. 1,000 mein 1 Gold Light.', 'in'),
+                'Museum band hone ke baad, artworks mein soye spirits jaag uthte hain. Duniya ke museums ki random 15 artworks mein se 1 chuno to spirit jaagta hai, 2-3 chuno to bandhan. Spirits ke saath raat ka museum roshan karo, aur aapki photo golden oil portrait banke roshni mein uthti hai, duniya ke ek hi video mein. Photo sirf aapke device par paint hoti hai, kahin nahin bheji jaati. Login nahin chahiye.',
+                'en_IN', 'The Lantern Museum | Dropper Playground', 'Museum band hone ke baad. Artworks ke spirits jaagte hain. Raat ka museum roshan karo, aur aapki photo golden oil portrait ban jaati hai, duniya ke ek hi video mein.', 'in'),
     'ko': shead('ko', 'ko', '등불의 미술관 | 문 닫은 뒤, 작품에 깃든 정령이 깨어난다 | 드로퍼 놀이터',
-                '문 닫은 뒤의 미술관에서, 작품에 깃든 정령이 깨어나는 놀이. 제비뽑기로 놓인 세계 미술관의 15점 중 1점이면 깨어남, 2~3점이면 맺음. 1000체에 1체인 금빛도. 내 사진이나 파일은 쓰지 않으며 로그인도 필요 없습니다.',
-                'ko_KR', '등불의 미술관 | 드로퍼 놀이터', '문 닫은 뒤의 미술관. 작품에 깃든 정령이 당신의 손으로 깨어납니다. 깨어남과 맺음. 1000체에 1체인 금빛도.', 'en',
+                '문 닫은 뒤의 미술관에서, 작품에 깃든 정령이 깨어나는 놀이. 제비뽑기로 놓인 세계 미술관의 15점 중 1점이면 깨어남, 2~3점이면 맺음. 정령과 함께 밤의 미술관을 밝혀 가면, 당신의 사진이 금빛 유화 초상화가 되어 빛으로 오르는 세상에 하나뿐인 동영상이 만들어집니다. 사진은 기기 안에서만 그리며 어디에도 보내지 않습니다. 로그인 불필요.',
+                'ko_KR', '등불의 미술관 | 드로퍼 놀이터', '문 닫은 뒤의 미술관. 작품에 깃든 정령이 깨어납니다. 밤의 미술관을 밝히면, 당신의 사진이 금빛 유화 초상화가 되는 세상에 하나뿐인 동영상으로.', 'en',
                 spirit_fonts('Noto Sans KR', 'Noto Serif KR')),
     'zh-hant': shead('zh-hant', 'zh-Hant', '燈火美術館｜閉館後，沉睡在作品裡的精靈甦醒｜Dropper 遊樂場',
-                     '在閉館後的美術館裡，沉睡在作品中的精靈甦醒的遊戲。從抽出的世界美術館 15 件作品中選 1 件喚醒、選 2～3 件結合。還有 1000 位中 1 位的金光。不使用你自己的照片或檔案，也不需要登入。',
-                     'zh_TW', '燈火美術館｜Dropper 遊樂場', '閉館後的美術館。沉睡在作品裡的精靈，會在你手中甦醒。甦醒與結合。1000 位中 1 位的金光。', 'en',
+                     '在閉館後的美術館裡，沉睡在作品中的精靈甦醒的遊戲。從抽出的世界美術館 15 件作品中選 1 件喚醒、選 2～3 件結合。帶著精靈點亮夜晚的美術館，你的照片會變成金色油畫肖像升入光中，做出世界上獨一無二的影片。照片只在你的裝置裡畫，不會送到任何地方。不需要登入。',
+                     'zh_TW', '燈火美術館｜Dropper 遊樂場', '閉館後的美術館。沉睡在作品裡的精靈甦醒。點亮夜晚的美術館，你的照片會變成金色油畫肖像，成為世界上獨一無二的影片。', 'en',
                      spirit_fonts('Noto Sans TC', 'Noto Serif TC')),
     'vi': shead('vi', 'vi', 'Bảo tàng Đèn lồng | Tinh linh thức tỉnh từ tác phẩm sau giờ đóng cửa | Sân chơi Dropper',
-                'Trong bảo tàng sau giờ đóng cửa, tinh linh ngủ trong các tác phẩm thức tỉnh. Chọn 1 trong 15 tác phẩm bốc thăm từ các bảo tàng thế giới để đánh thức, hoặc 2–3 để kết nối. Và Ánh Vàng 1 trên 1.000. Ảnh và tệp của bạn không được dùng. Không cần đăng nhập.',
-                'vi_VN', 'Bảo tàng Đèn lồng | Sân chơi Dropper', 'Bảo tàng sau giờ đóng cửa. Tinh linh ngủ trong tác phẩm thức tỉnh trong tay bạn. Thức tỉnh và kết nối. Ánh Vàng 1 trên 1.000.', 'en',
+                'Trong bảo tàng sau giờ đóng cửa, tinh linh ngủ trong các tác phẩm thức tỉnh. Chọn 1 trong 15 tác phẩm bốc thăm từ các bảo tàng thế giới để đánh thức, hoặc 2–3 để kết nối. Cùng tinh linh thắp sáng bảo tàng ban đêm, ảnh của bạn sẽ thành chân dung sơn dầu màu vàng bay lên trong ánh sáng, trong một video độc nhất trên thế giới. Ảnh chỉ được vẽ trên thiết bị của bạn và không gửi đi đâu. Không cần đăng nhập.',
+                'vi_VN', 'Bảo tàng Đèn lồng | Sân chơi Dropper', 'Bảo tàng sau giờ đóng cửa. Tinh linh trong tác phẩm thức tỉnh. Thắp sáng bảo tàng ban đêm, ảnh của bạn thành chân dung sơn dầu màu vàng trong một video độc nhất trên thế giới.', 'en',
                 spirit_fonts('Noto Sans', 'Noto Serif')),
     'nl': shead('nl', 'nl', 'Het Lantaarnmuseum | Geesten worden wakker in kunstwerken na sluitingstijd | Droppers speeltuin',
-                'In het museum na sluitingstijd ontwaken de geesten die in de kunstwerken slapen. Kies 1 van 15 willekeurig getrokken kunstwerken uit musea over de hele wereld om een geest te wekken, of 2–3 om ze te verbinden. En een Goudlicht dat maar 1 op de 1.000 keer komt. Je eigen foto\'s en bestanden worden niet gebruikt. Inloggen is niet nodig.',
-                'nl_NL', 'Het Lantaarnmuseum | Droppers speeltuin', 'Het museum na sluitingstijd. De geest die in een kunstwerk slaapt, ontwaakt in jouw handen. Wekken en verbinden. Goudlicht 1 op de 1.000.', 'en',
+                'In het museum na sluitingstijd ontwaken de geesten die in de kunstwerken slapen. Kies 1 van 15 willekeurig getrokken kunstwerken uit musea over de hele wereld om een geest te wekken, of 2–3 om ze te verbinden. Verlicht met je geesten het museum bij nacht, en je foto stijgt als gouden olieverfportret op in het licht, in een video die de enige ter wereld is. Je foto wordt alleen op je apparaat geschilderd en nergens heen gestuurd. Inloggen is niet nodig.',
+                'nl_NL', 'Het Lantaarnmuseum | Droppers speeltuin', 'Het museum na sluitingstijd. De geesten in de kunstwerken ontwaken. Verlicht het museum bij nacht, en je foto wordt een gouden olieverfportret in een video die de enige ter wereld is.', 'en',
                 spirit_fonts('Noto Sans', 'Noto Serif')),
 }
 
