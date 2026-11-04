@@ -763,6 +763,11 @@
           if (o.tx.share && canShareFile(blob, rec.ext, o.file)) {
             const n = document.createElement('span'); n.className = 'nf-note'; n.textContent = o.tx.shareNote || ''; L.cap.append(n);
             btn(L, o.tx.share, '', () => share(blob, rec.ext, o.file, o.shareText || '', () => { n.textContent = o.tx.shareCopied || n.textContent; }));
+          } else if (o.tx.shareX && o.shareText) {
+            // PC（と共有できない端末）は「𝕏 で共有」（2026-11-04 重吉さんの決め）：X の投稿画面を文入りで開き、動画は保存する。X の投稿画面には動画を自動で添えられない。
+            // Instagram は PC のブラウザから渡す入口が無いので出さない
+            const n = document.createElement('span'); n.className = 'nf-note'; n.textContent = o.tx.shareXNote || ''; L.cap.append(n);
+            btn(L, o.tx.shareX, '', () => shareX(blob, rec.ext, o.file, o.shareText));
           }
         }
         else if (all && !rec) L.cap.textContent = o.tx.noRec;
@@ -789,6 +794,13 @@
     let withText = !!text; try { if (withText && navigator.canShare && !navigator.canShare({ files: [f], text })) withText = false; } catch (e) { withText = false; }
     navigator.share(withText ? { files: [f], text } : { files: [f] }).catch(() => {});
     try { if (text && navigator.clipboard) navigator.clipboard.writeText(text).then(() => onCopied && onCopied(), () => {}); } catch (e) { /* 写せない端末 */ }
+    try { if (typeof gtag === 'function') gtag('event', 'share_film'); } catch (e) { /* 計測が止められていても */ }
+  }
+  // X の投稿画面を（押した直後のうちに）開いてから、動画をダウンロード（「今夜の記録を共有」の PC と同じやり方）
+  function shareX(blob, ext, name, text) {
+    window.open('https://x.com/intent/post?text=' + encodeURIComponent(text), '_blank', 'noopener');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${name || 'lantern-museum'}.${ext}`;
+    document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
     try { if (typeof gtag === 'function') gtag('event', 'share_film'); } catch (e) { /* 計測が止められていても */ }
   }
   function save(blob, ext, name) {
