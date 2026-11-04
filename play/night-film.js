@@ -443,16 +443,88 @@
     const lay = X ? Object.assign(document.createElement('canvas'), { width: J.w, height: J.h }) : null;
     // あなたの写真（2026-11-01〜、重吉さんの決め）：光の柱の真ん中に、ふちをぼかした楕円で浮かべる。守り神はそのそばで静かに見守る。
     // 自撮りでも、前からある写真でもよい。顔は探さず、写真の真ん中（少し上寄り）を使う。この端末の中だけで、AI にも当方にも送らず、残さない
-    let meCv = null, meURL = null;
-    function meCut(im) {
+    let meCv = null, mePt = null, meAt = 0, meJob = 0, meMix = null, meURL = null;
+    const ME_W = 300, ME_H = 380;
+    function meCrop(im) {  // 写真の真ん中（少し上寄り）を 300×380 に
       if (!im) return null;
-      const c = document.createElement('canvas'); c.width = 300; c.height = 380; const q = c.getContext('2d');
-      const r = 300 / 380, iw = im.width, ih = im.height, sw = iw / ih > r ? ih * r : iw, sh = iw / ih > r ? ih : iw / r;
-      q.drawImage(im, (iw - sw) / 2, Math.max(0, (ih - sh) * .35), sw, sh, 0, 0, 300, 380);
-      q.globalCompositeOperation = 'destination-in';
-      q.setTransform(1, 0, 0, 380 / 300, 0, 0); const m = q.createRadialGradient(150, 150, 75, 150, 150, 150); m.addColorStop(0, '#000'); m.addColorStop(1, 'rgba(0,0,0,0)');
-      q.fillStyle = m; q.fillRect(0, 0, 300, 300); q.setTransform(1, 0, 0, 1, 0, 0);
+      const c = document.createElement('canvas'); c.width = ME_W; c.height = ME_H; const q = c.getContext('2d', { willReadFrequently: true });
+      const r = ME_W / ME_H, iw = im.width, ih = im.height, sw = iw / ih > r ? ih * r : iw, sh = iw / ih > r ? ih : iw / r;
+      q.drawImage(im, (iw - sw) / 2, Math.max(0, (ih - sh) * .35), sw, sh, 0, 0, ME_W, ME_H);
       return c;
+    }
+    function meMask(c) {  // ふちをぼかした楕円
+      const q = c.getContext('2d'); q.globalCompositeOperation = 'destination-in';
+      q.setTransform(1, 0, 0, ME_H / ME_W, 0, 0); const m = q.createRadialGradient(150, 150, 75, 150, 150, 150); m.addColorStop(0, '#000'); m.addColorStop(1, 'rgba(0,0,0,0)');
+      q.fillStyle = m; q.fillRect(0, 0, ME_W, ME_W); q.setTransform(1, 0, 0, 1, 0, 0); q.globalCompositeOperation = 'source-over';
+      return c;
+    }
+    // 光の肖像（2026-11-04〜、重吉さんの決め）：あなたの写真を、端末の中だけで名画の肖像画のような味に。
+    // 顔の作りは変えない（美形化・笑顔・性別の変換はしない）。外のライブラリも AI も使わず、この端末の中の計算だけ。
+    // 段を分けて少しずつ計算し、画面を止めない。できたら光の中でゆっくり切り替える（できる前は元の写真）。待たせない・失敗も出さない
+    const tick = () => new Promise(r => setTimeout(r, 0));
+    async function portrait(src, job) {
+      const w = ME_W, h = ME_H, n = w * h, q = src.getContext('2d', { willReadFrequently: true }), id = q.getImageData(0, 0, w, h), d = id.data;
+      const W1 = w + 1, sum = (S, x0, y0, x1, y1) => S[y1 * W1 + x1] - S[y0 * W1 + x1] - S[y1 * W1 + x0] + S[y0 * W1 + x0];
+      const integ = (f) => { const S = new Float64Array(W1 * (h + 1)); for (let y = 0; y < h; y++) { let a = 0; for (let x = 0; x < w; x++) { a += f(y * w + x); S[(y + 1) * W1 + x + 1] = S[y * W1 + x + 1] + a; } } return S; };
+      const R = new Float32Array(n), G = new Float32Array(n), B = new Float32Array(n), Y = new Float32Array(n);
+      for (let i = 0; i < n; i++) { R[i] = d[i * 4]; G[i] = d[i * 4 + 1]; B[i] = d[i * 4 + 2]; Y[i] = .299 * R[i] + .587 * G[i] + .114 * B[i]; }
+      // 1) 描いた肌：クワハラの筆（4つの区画のうち、いちばんむらの少ない区画の色）。輪郭は残り、肌はやわらかくなる
+      const SR = integ(i => R[i]), SG = integ(i => G[i]), SB = integ(i => B[i]), SY = integ(i => Y[i]), SY2 = integ(i => Y[i] * Y[i]);
+      await tick(); if (job !== meJob) return null;
+      const K = 2, pR = new Float32Array(n), pG = new Float32Array(n), pB = new Float32Array(n);
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          let best = 1e18, br = 0, bg = 0, bb = 0;
+          for (let k = 0; k < 4; k++) {
+            const x0 = Math.max(0, k & 1 ? x : x - K), x1 = Math.min(w, (k & 1 ? x + K : x) + 1), y0 = Math.max(0, k & 2 ? y : y - K), y1 = Math.min(h, (k & 2 ? y + K : y) + 1), c = (x1 - x0) * (y1 - y0);
+            const m = sum(SY, x0, y0, x1, y1) / c, v = sum(SY2, x0, y0, x1, y1) / c - m * m;
+            if (v < best) { best = v; br = sum(SR, x0, y0, x1, y1) / c; bg = sum(SG, x0, y0, x1, y1) / c; bb = sum(SB, x0, y0, x1, y1) / c; }
+          }
+          const i = y * w + x; pR[i] = br; pG[i] = bg; pB[i] = bb;
+        }
+        if (y % 24 === 23) { await tick(); if (job !== meJob) return null; }
+      }
+      // 2) 筆の継ぎ目をならし（ごく小さいぼかし）、元の細かさを少し戻し（別人にしない）、輪郭を少し締める（ぼかしとの差を足す）
+      { const TR = integ(i => pR[i]), TG = integ(i => pG[i]), TB = integ(i => pB[i]);
+        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = y * w + x, x0 = Math.max(0, x - 1), x1 = Math.min(w, x + 2), y0 = Math.max(0, y - 1), y1 = Math.min(h, y + 2), c = (x1 - x0) * (y1 - y0); pR[i] = sum(TR, x0, y0, x1, y1) / c; pG[i] = sum(TG, x0, y0, x1, y1) / c; pB[i] = sum(TB, x0, y0, x1, y1) / c; } }
+      await tick(); if (job !== meJob) return null;
+      const QR = integ(i => pR[i]), QG = integ(i => pG[i]), QB = integ(i => pB[i]);
+      await tick(); if (job !== meJob) return null;
+      const out = new Uint8ClampedArray(n * 4), L = new Float32Array(n), BR = 2;
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = y * w + x, x0 = Math.max(0, x - BR), x1 = Math.min(w, x + BR + 1), y0 = Math.max(0, y - BR), y1 = Math.min(h, y + BR + 1), c = (x1 - x0) * (y1 - y0);
+        let r = pR[i] * .7 + R[i] * .3, g2 = pG[i] * .7 + G[i] * .3, b = pB[i] * .7 + B[i] * .3;
+        r += .35 * (pR[i] - sum(QR, x0, y0, x1, y1) / c); g2 += .35 * (pG[i] - sum(QG, x0, y0, x1, y1) / c); b += .35 * (pB[i] - sum(QB, x0, y0, x1, y1) / c);
+        // 3) 色の段を軽く落とす（半分だけ寄せる）
+        const st = 14; r = r * .55 + Math.round(r / st) * st * .45; g2 = g2 * .55 + Math.round(g2 / st) * st * .45; b = b * .55 + Math.round(b / st) * st * .45;
+        // 4) 金の光に合う暖かい色。掛け算だけで寄せ、暗い所を持ち上げない（濃い肌が白っぽく・灰色にならないように）
+        const l = .299 * r + .587 * g2 + .114 * b;
+        r = l + (r - l) * .96; g2 = l + (g2 - l) * .96; b = l + (b - l) * .96;
+        r *= 1.05; g2 *= 1.01; b *= .9;
+        const s = v => { v = Math.min(255, Math.max(0, v)) / 255; return 255 * (v + .1 * v * (1 - v) * (2 * v - 1)); };  // ほんの少しだけ締める
+        out[i * 4] = s(r); out[i * 4 + 1] = s(g2); out[i * 4 + 2] = s(b); out[i * 4 + 3] = 255; L[i] = .299 * out[i * 4] + .587 * out[i * 4 + 1] + .114 * out[i * 4 + 2];
+      }
+      await tick(); if (job !== meJob) return null;
+      // 5) ほのかな発光：明るい所をぼかして、やわらかく足す
+      const SL = integ(i => Math.max(0, L[i] - 185)), GR = 7;
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = y * w + x, x0 = Math.max(0, x - GR), x1 = Math.min(w, x + GR + 1), y0 = Math.max(0, y - GR), y1 = Math.min(h, y + GR + 1), gl = sum(SL, x0, y0, x1, y1) / ((x1 - x0) * (y1 - y0)) * .5;
+        out[i * 4] += gl; out[i * 4 + 1] += gl * .9; out[i * 4 + 2] += gl * .7;
+      }
+      const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').putImageData(new ImageData(out, w, h), 0, 0);
+      return meMask(c);
+    }
+    // 光の柱の中のあなたの写真を描く。肖像ができていれば、できた時から1.6秒かけて重ねて切り替える
+    function meDraw(x, y, w, h, a) {
+      const k = mePt ? clamp((performance.now() - meAt) / 1600) : 0;
+      if (k >= 1) { g.globalAlpha = a; g.drawImage(mePt, x, y, w, h); g.globalAlpha = 1; return; }
+      let src = meCv;
+      if (k > 0) {
+        if (!meMix) meMix = Object.assign(document.createElement('canvas'), { width: ME_W, height: ME_H });
+        const mq = meMix.getContext('2d'); mq.clearRect(0, 0, ME_W, ME_H); mq.drawImage(meCv, 0, 0); mq.globalAlpha = k; mq.drawImage(mePt, 0, 0); mq.globalAlpha = 1; src = meMix;
+        halo(x + w / 2, y + h * .45, w * .7, 'rgba(255,236,190,1)', .35 * Math.sin(Math.PI * k) * a);  // 切り替わるとき、光がふわっと
+      }
+      g.globalAlpha = a; g.drawImage(src, x, y, w, h); g.globalAlpha = 1;
     }
     // 好きな画像（2026-10-27〜、重吉さんの決め）：1枚を、柱と柱のあいだの壁ごとに壁いっぱいに貼る（はみ出しは切る）。画像はこの端末の中だけで、どこにも送らない。
     // 壁の所は、動画の抜きの濃さが 128（encode-film.sh wall）。壁の上の点は last.json の cam（カメラの位置と光線の向き）と円い壁の交わりで求める
@@ -518,7 +590,7 @@
         } else if (t.k === 'me') {
           const [u, v, m] = t.p, mh = m * H * 1.6, mw = mh * 300 / 380, cx = u * W, cy = v * H;
           halo(cx, cy, mh * .85, '#fff1d0', .45 * ga * fade);
-          g.globalAlpha = ga * fade * (1 - white * .5); g.drawImage(meCv, cx - mw / 2, cy - mh / 2, mw, mh); g.globalAlpha = 1;
+          meDraw(cx - mw / 2, cy - mh / 2, mw, mh, ga * fade * (1 - white * .5));
         } else {
           const [u, v, m] = t.p, gh = m * H * .62, gw = gh * 4 / 3, cx = u * W, cy = v * H + Math.sin(f / 30) * H * .004;
           halo(cx, cy, gw * .75, 'rgba(255,236,190,.9)', (.3 + .1 * Math.sin(f / 20)) * ga * fade);
@@ -638,7 +710,7 @@
         const ga = clamp((f - T(330)) / (T(380) - T(330)));
         if (!X && meCv && ga > 0) {
           const mw = W * .42, mh = mw * 380 / 300, mx = ox - mw / 2, my = H * .47 - mh / 2 - (1 - ga) * H * .02;
-          g.globalAlpha = ga; g.drawImage(meCv, mx, my, mw, mh); g.globalAlpha = 1;
+          meDraw(mx, my, mw, mh, ga);
         }
         // 守り神は柱のそば（右下・灯籠のそば）で、静かに見守る。浮かび上がらず、ゆっくり光るだけ（2026-11-01 重吉さんの決め。どの人生も同じ大きさ・同じ明るさ）
         if (!X && G && ga > 0) {
@@ -717,15 +789,22 @@
       // あなたの写真を光の中に（2026-11-01〜）。スマホでは押すと、その場で撮るか写真から選べる
       if (o.tx.meDrop) {
         const me = document.createElement('div'); me.className = 'nf-drop nf-me'; me.setAttribute('role', 'button'); me.tabIndex = 0;
-        me.innerHTML = '<i class="nf-mepic" hidden></i><span><b></b><small></small></span><input type="file" accept="image/*" hidden>';
+        me.innerHTML = '<i class="nf-mepic" hidden><i></i></i><span><b></b><small></small></span><input type="file" accept="image/*" hidden>';
         me.querySelector('b').textContent = o.tx.meDrop; me.querySelector('small').textContent = o.tx.meNote || '';
         const mi = me.querySelector('input'), mp2 = me.querySelector('.nf-mepic');
         const useMe = async f => {
           if (!f || !/^image\//.test(f.type)) return;
           if (meURL) URL.revokeObjectURL(meURL);
-          meURL = URL.createObjectURL(f); meCv = meCut(await img(meURL));
-          mp2.style.backgroundImage = `url('${meURL}')`; mp2.hidden = !meCv; me.classList.toggle('has', !!meCv);
+          meURL = URL.createObjectURL(f); const job = ++meJob, raw = meCrop(await img(meURL)); if (job !== meJob) return;
+          mePt = null; mp2.classList.remove('pt'); mp2.firstChild.style.backgroundImage = '';
+          meCv = null; if (raw) { meCv = Object.assign(document.createElement('canvas'), { width: ME_W, height: ME_H }); meCv.getContext('2d').drawImage(raw, 0, 0); meMask(meCv); }
+          mp2.style.backgroundImage = raw ? `url('${raw.toDataURL('image/jpeg', .9)}')` : ''; mp2.hidden = !meCv; me.classList.toggle('has', !!meCv);
           me.querySelector('b').textContent = meCv ? o.tx.meOk || o.tx.meDrop : o.tx.meDrop;
+          // 確認の絵は元の写真をすぐ出し、肖像ができたら光の中でふわりと切り替える。できなければ元の写真のまま（何も出さない）
+          if (raw) portrait(raw, job).then(pt => {
+            if (!pt || job !== meJob) return; mePt = pt; meAt = performance.now();
+            mp2.firstChild.style.backgroundImage = `url('${pt.toDataURL('image/jpeg', .9)}')`; mp2.classList.add('pt');
+          }).catch(() => { /* 元の写真のまま */ });
         };
         me.onclick = () => mi.click(); me.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); mi.click(); } };
         mi.onchange = () => { useMe(mi.files[0]); mi.value = ''; };
@@ -754,7 +833,7 @@
         draw(J.n); L.btns.replaceChildren();
         // 終わりの絵を描いたら、使い終わった物をすぐ捨てる（2026-11-04。iPhone で保存を押すとページが止まって黒くなった＝メモリ不足。
         // 額縁の絵・動画の元の絵（色と透明の縦2段）・作業用の絵・録画の切れ端・最後の部屋の動画そのもの）
-        parts = []; free(fcs, vc, draw.t); draw.t = null; meCv = null;
+        parts = []; free(fcs, vc, draw.t); draw.t = null; meJob++; meCv = mePt = meMix = null;
         try { v.removeAttribute('src'); v.load(); } catch (e) { /* 捨てられなくても進む */ }
         delete VID[GAL + 'lastroom'];
         if (blob) {
@@ -771,7 +850,7 @@
           }
         }
         else if (all && !rec) L.cap.textContent = o.tx.noRec;
-        btn(L, o.tx.close, 'ghost', () => { close(); if (picURL) URL.revokeObjectURL(picURL); if (meURL) URL.revokeObjectURL(meURL); meCv = null; free(fcs, vc, draw.t); draw.t = null; resolve(blob ? { blob, ext: rec.ext } : null); });
+        btn(L, o.tx.close, 'ghost', () => { close(); if (picURL) URL.revokeObjectURL(picURL); if (meURL) URL.revokeObjectURL(meURL); meJob++; meCv = mePt = meMix = null; free(fcs, vc, draw.t); draw.t = null; resolve(blob ? { blob, ext: rec.ext } : null); });
       };
       const stopDraw = onFrames(v, t => draw(Math.floor(t * J.fps) + 1));
       btn(L, o.tx.skip, 'ghost nf-skip', () => finish(false));
