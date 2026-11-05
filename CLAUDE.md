@@ -13,6 +13,17 @@ GitHub Pages で公開している静的サイト。公開URL: https://dropper-t
   必ず `build.py` を実行し、**生成HTMLも一緒にコミットする**。
 - **忘れないように、コミット前のフックで機械に確かめさせている**（下記）
 
+## Cloudflare Workers へ移す準備（2026-11-06〜、重吉さんの決め）
+
+リポジトリを非公開にするため、配信を GitHub Pages から Cloudflare Workers（静的アセット）へ移す。**まだ移していない（本番は GitHub Pages のまま）**。
+- `wrangler.jsonc`：直下を静的アセットとして配信。**`html_handling` は `"none"`**（Pages や既定の設定だと `/play/spirit.html` が `/play/spirit` へ転送され、Store 版 PWA の `start_url`・夢現の掲載・`privacy.html` の登録 URL が変わる）
+- `.assetsignore`：配信しないもの（`CLAUDE.md`・`src/`・`tools/`・`workers/` など）。**材料や道具を直下に増やしたら、ここにも足す**
+- `workers/site/index.js`：ファイルが無いときだけ動く。`/` や `/en/` の `index.html`・`/en` → `/en/` の転送・拡張子なしの URL・`404.html`（GitHub Pages と同じふるまい）
+- `_headers`：`/play/sw.js` と manifest を `no-cache`（GitHub Pages は読まない）
+- `404.html`：直下。build.py の外の手書き
+- 中継（`workers/monster-ai/`）は別の Worker。混ぜない
+- 手順と切り戻しは保管庫の `30_Refs/ともしびの美術館.md`
+
 ## 遊び場（`play/`）は build.py の外（2026-10-14〜）
 
 `play/spirit.html`（ともしびの美術館）は、build.py も サイトの辞書（`src/i18n`）も通らない静的ページ。

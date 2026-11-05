@@ -1,0 +1,6 @@
+# Cloudflare Workers（静的アセット）の応答ヘッダー。GitHub Pages は読まない
+# Service Worker と manifest は毎回確かめさせる（PWA の更新が遅れないように）
+/play/sw.js
+  Cache-Control: no-cache
+/play/manifest.webmanifest
+  Cache-Control: no-cache

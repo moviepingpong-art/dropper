@@ -1,0 +1,17 @@
+// dropper-tools.com を Cloudflare Workers（静的アセット）で配信する設定（2026-11-06〜）。
+// ・html_handling "none"：/play/spirit.html を /play/spirit へ転送させない
+//   （Store 版 PWA の start_url・夢現の掲載・privacy.html の登録 URL を変えないため）
+// ・ファイルが無いときだけ workers/site/index.js が動く（/ と /en/ の index.html、拡張子なしの URL、404.html）
+// ・配信しないファイルは .assetsignore に書く
+// 中継（ai.dropper-tools.com）は別の Worker（workers/monster-ai/wrangler.toml）。混ぜない
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dropper-tools",
+  "main": "workers/site/index.js",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "html_handling": "none"
+  }
+}
