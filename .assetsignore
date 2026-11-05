@@ -1,0 +1,18 @@
+# Cloudflare Workers で配信しないもの（.gitignore と同じ書き方）
+# 材料・道具・中継の中身・メモはサイトに出さない
+.git
+.claude
+.gitattributes
+.nojekyll
+CNAME
+CLAUDE.md
+README.md
+LICENSE
+src
+tools
+workers
+node_modules
+wrangler.jsonc
+wrangler.toml
+.wrangler
+.gitignore
