@@ -20,6 +20,7 @@ GitHub Pages で公開している静的サイト。公開URL: https://dropper-t
 - `.assetsignore`：配信しないもの（`CLAUDE.md`・`src/`・`tools/`・`workers/` など）。**材料や道具を直下に増やしたら、ここにも足す**
 - `workers/site/index.js`：ファイルが無いときだけ動く。`/` や `/en/` の `index.html`・`/en` → `/en/` の転送・拡張子なしの URL・`404.html`（GitHub Pages と同じふるまい）
 - `_headers`：`/play/sw.js` と manifest を `no-cache`（GitHub Pages は読まない）
+- **動画の部分読み込み（Range → 206）**：Workers の静的アセットは Range に答えず全部を 200 で返す（公式の仕様）。iPhone の Safari は 206 が無いと動画を流さないので、`run_worker_first` で `/play/gallery/*` だけ Worker に先に回し、`workers/site/index.js` の `media()` が切り出して 206 で返す（2026-11-06。Muse の調べ）。**動画を `play/gallery/` の外に置くときは `run_worker_first` にも足す**。声（`play/voice/`）と曲の mp3 は fetch で読むので要らない
 - `404.html`：直下。build.py の外の手書き
 - 中継（`workers/monster-ai/`）は別の Worker。混ぜない
 - 手順と切り戻しは保管庫の `30_Refs/ともしびの美術館.md`
